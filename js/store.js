@@ -24,10 +24,6 @@ let ENTERPRISE_USERS = [
     description: 'Operational store staff. Drafts receipts, issues stock, raises indents, and records stock adjustments.'
   },
 
-  getVendorTaxMode(vendor, storeState = 'Delhi') {
-    if (!vendor || !vendor.addressState || vendor.addressState !== storeState) return 'IGST';
-    return 'CGST_SGST';
-  },
   {
     id: 'MGR-8812',
     name: 'Col. Anita Sharma',
@@ -1074,6 +1070,11 @@ class Store {
 
   getRole() {
     return this.getCurrentUser().role;
+  }
+
+  getVendorTaxMode(vendor, storeState = 'Delhi') {
+    if (!vendor || !vendor.addressState || vendor.addressState !== storeState) return 'IGST';
+    return 'CGST_SGST';
   }
 
   isApprover() {
