@@ -33,11 +33,11 @@ function loadUsers() {
 
   const maker = users.find(user => user.role === 'User');
   const checker = users.find(user => user.role === 'Admin');
-  if (User) {
+  if (maker) {
     maker.username = process.env.CMS_MAKER_USERNAME || maker.username;
     maker.password = process.env.CMS_MAKER_PASSWORD || maker.password;
   }
-  if (Admin) {
+  if (checker) {
     checker.username = process.env.CMS_CHECKER_USERNAME || checker.username;
     checker.password = process.env.CMS_CHECKER_PASSWORD || checker.password;
   }
