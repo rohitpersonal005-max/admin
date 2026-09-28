@@ -108,7 +108,8 @@ window.CMS_TRANSACTIONS = {
                     </td>
                     <td class="p-4 font-mono text-xs">
                       <div class="font-bold text-slate-800">${r.docNo}</div>
-                      <div class="text-slate-500 text-[11px]">${r.docDate}</div>
+                      <div class="text-slate-500 text-[11px]">${window.CMS_STORE.formatDate(r.docDate)}</div>
+                      ${r.quotationNo ? `<span class="inline-block px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 text-[10px] font-mono border border-blue-200 mt-1">Quote: ${r.quotationNo}</span>` : ''}
                     </td>
                     <td class="p-4">
                       <div class="font-bold text-slate-900 text-sm">${r.materialName}</div>
@@ -162,17 +163,40 @@ window.CMS_TRANSACTIONS = {
     }
   },
 
+
+  calcWarrantyExpiry() {
+    const docDateVal = document.getElementById('r-date')?.value;
+    const repMonths = parseInt(document.getElementById('r-rep-warr-months')?.value) || 0;
+    const repExpEl = document.getElementById('r-rep-warr-expiry');
+    const repairMonths = parseInt(document.getElementById('r-repair-warr-months')?.value) || 0;
+    const repairExpEl = document.getElementById('r-repair-warr-expiry');
+
+    if (docDateVal) {
+      if (repMonths > 0 && repExpEl) {
+        const d = new Date(docDateVal);
+        d.setMonth(d.getMonth() + repMonths);
+        repExpEl.value = d.toISOString().split('T')[0];
+      }
+      if (repairMonths > 0 && repairExpEl) {
+        const d = new Date(docDateVal);
+        d.setMonth(d.getMonth() + repairMonths);
+        repairExpEl.value = d.toISOString().split('T')[0];
+      }
+    }
+  },
+
   openReceiptModal(type = 'Challan', receiptId = null) {
     const store = window.CMS_STORE.data;
     const isEdit = Boolean(receiptId);
     const r = isEdit ? store.receipts.find(i => i.id === receiptId) : {
       type, vendorId: '', docNo: '', docDate: new Date().toISOString().split('T')[0],
-      materialId: '', qty: '', rate: '', remarks: ''
+      materialId: '', qty: '', rate: '', remarks: '', quotationNo: ''
     };
 
-    const vendors = store.vendors || [];
+    const vendors = (store.vendors || []).filter(v => v.status === "Approved" && !v.isBlocked);
     const categories = store.categories || [];
     const consumables = store.consumables || [];
+    const allQuotes = window.CMS_STORE.getAllQuotations ? window.CMS_STORE.getAllQuotations() : [];
 
     const content = `
       <form id="receipt-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_TRANSACTIONS.saveReceipt('${receiptId || ''}', false);">
@@ -184,6 +208,53 @@ window.CMS_TRANSACTIONS = {
             <span>Receiving Consignment via <strong>${r.type === 'Challan' ? 'Delivery Challan' : 'Tax Invoice'}</strong></span>
           </span>
           <span class="text-[10px] text-slate-500 font-normal">Approved items immediately credit stock ledger</span>
+        </div>
+
+        <!-- COMMERCIAL QUOTATION NUMBER AUTO-FILL OPERATION BOX -->
+        <div class="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg space-y-2.5 shadow-xs">
+          <div class="flex items-center justify-between pb-1.5 border-b border-blue-200">
+            <span class="font-bold text-blue-900 text-xs flex items-center gap-1.5 uppercase tracking-wide">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-700"></i>
+              <span>Commercial Quotation Number (Auto-Fill Operation)</span>
+            </span>
+            <span class="text-[10px] text-blue-800 font-semibold bg-blue-100 px-2 py-0.5 rounded border border-blue-200">
+              Auto-populates Vendor, Quoted Item & Approved Rate
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+            <div class="sm:col-span-8">
+              <label class="block font-bold text-slate-700 mb-1 text-[11px]">
+                Enter or Choose Quotation Number
+              </label>
+              <div class="relative">
+                <input type="text" id="r-quote-lookup" list="quotation-datalist" value="${r.quotationNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_TRANSACTIONS.onQuotationLookup(this.value);" placeholder="Type or select Quotation No. (e.g. QT-2026-881)..." class="w-full pl-8 pr-3 py-2 border-2 border-blue-400 rounded-md font-mono text-xs font-bold text-blue-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" />
+                <i data-lucide="search" class="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-blue-500"></i>
+                <datalist id="quotation-datalist">
+                  ${allQuotes.map(q => `<option value="${q.quotationNo}">${q.quotationNo} | ${q.vendorName} • ${q.materialName} (₹${Number(q.rate).toFixed(2)})</option>`).join('')}
+                </datalist>
+              </div>
+            </div>
+
+            <div class="sm:col-span-4 flex items-center gap-2">
+              <button type="button" onclick="CMS_TRANSACTIONS.applyQuotationLookup()" class="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                <span>Auto-Fill Form</span>
+              </button>
+              <button type="button" onclick="CMS_TRANSACTIONS.clearQuotationLookup()" class="px-2.5 py-2 text-slate-500 hover:text-slate-800 bg-white border border-slate-300 rounded-md text-xs" title="Clear Auto-Fill">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Auto-Fill Confirmation Badge -->
+          <div id="r-quote-badge-alert" class="hidden p-2 bg-emerald-50 border border-emerald-300 rounded text-emerald-900 text-[11px] font-medium flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+              <span id="r-quote-badge-text">Auto-filled from Quotation</span>
+            </div>
+            <span class="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded" id="r-quote-badge-ref">QT-REF</span>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -222,7 +293,7 @@ window.CMS_TRANSACTIONS = {
 
           <!-- OPTION A: EXISTING MASTER SAVED ITEM -->
           <div id="r-existing-mat-sec">
-            <label class="block font-bold text-slate-700 mb-1">Select Existing Material (Consumer or Fixed Asset) *</label>
+            <label class="block font-bold text-slate-700 mb-1">Select Existing Material (Consumable or Fixed Asset) *</label>
             <select id="r-mat" onchange="CMS_TRANSACTIONS.onReceiptMaterialChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
               <option value="">-- Choose Material --</option>
               ${consumables.map(m => `<option value="${m.id}" data-brand="${m.brand || ''}" data-unit="${m.unit}" data-rate="${m.quotationRate || m.vendor1Rate || 0}" ${r.materialId === m.id ? 'selected' : ''}>[${m.inventoryType || 'Consumer'}] ${m.materialName} (${m.brand || 'No Brand'}) - Code: ${m.id}</option>`).join('')}
@@ -240,7 +311,7 @@ window.CMS_TRANSACTIONS = {
               <div>
                 <label class="block font-bold text-slate-700 mb-1">Inventory Type *</label>
                 <select id="r-new-inv-type" onchange="CMS_TRANSACTIONS.toggleNewItemFixedFields(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded bg-white font-bold">
-                  <option value="Consumer">Consumer Materials</option>
+                  <option value="Consumer">Consumable Materials</option>
                   <option value="Fixed">Fixed Capital Asset</option>
                 </select>
               </div>
@@ -305,7 +376,7 @@ window.CMS_TRANSACTIONS = {
                 </div>
               </div>
 
-              <div class="p-2.5 bg-white border border-purple-200 rounded space-y-2">
+              <div id="r-new-pm-container" class="hidden p-2.5 bg-white border border-purple-200 rounded space-y-2">
                 <label class="flex items-center gap-2 font-bold text-purple-900 cursor-pointer">
                   <input type="checkbox" id="r-new-has-pm" onchange="document.getElementById('r-new-pm-box').classList.toggle('hidden', !this.checked)" class="w-3.5 h-3.5 text-purple-600 rounded" />
                   <span>Preventive Maintenance (PM)?</span>
@@ -320,6 +391,66 @@ window.CMS_TRANSACTIONS = {
                   <input type="text" id="r-new-pm-tech" class="w-full px-2 py-1 border border-slate-300 rounded" placeholder="Repairman / Tech Name" />
                   <input type="text" id="r-new-pm-contact" class="w-full px-2 py-1 border border-slate-300 rounded font-mono" placeholder="Tech Contact (+91...)" />
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <!-- Dedicated Warranty Section (Relocated from Material Master as requested) -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-md space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+              <i data-lucide="shield" class="w-4 h-4 text-emerald-600"></i>
+              <span>Goods Warranty Tracking (Replacement & Repair)</span>
+            </span>
+            <label class="inline-flex items-center gap-2 cursor-pointer bg-white px-2.5 py-1 rounded border border-slate-300">
+              <input type="checkbox" id="r-has-warranty" onchange="document.getElementById('r-warranty-container').classList.toggle('hidden', !this.checked)" class="w-4 h-4 text-emerald-600 rounded" />
+              <span class="text-xs font-bold text-slate-800">Warranty Applicable?</span>
+            </label>
+          </div>
+
+          <div id="r-warranty-container" class="hidden space-y-3 pt-2 border-t border-slate-200">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Part 1: Replacement Warranty -->
+              <div class="p-3 bg-white border border-slate-200 rounded-md space-y-2">
+                <span class="font-bold text-blue-900 text-[11px] block">1. Replacement Warranty</span>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-600 mb-1">Duration (Months)</label>
+                    <input type="number" id="r-rep-warr-months" oninput="CMS_TRANSACTIONS.calcWarrantyExpiry()" min="0" placeholder="e.g. 12" class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono text-xs" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-600 mb-1">Calculated Valid Till</label>
+                    <input type="date" id="r-rep-warr-expiry" readonly class="w-full px-2.5 py-1.5 border border-slate-200 rounded bg-slate-100 font-mono text-xs text-blue-900 font-bold" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Part 2: Repair Warranty -->
+              <div class="p-3 bg-white border border-slate-200 rounded-md space-y-2">
+                <span class="font-bold text-purple-900 text-[11px] block">2. Repair / Service Warranty</span>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-600 mb-1">Duration (Months)</label>
+                    <input type="number" id="r-repair-warr-months" oninput="CMS_TRANSACTIONS.calcWarrantyExpiry()" min="0" placeholder="e.g. 24" class="w-full px-2.5 py-1.5 border border-slate-300 rounded font-mono text-xs" />
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-slate-600 mb-1">Calculated Valid Till</label>
+                    <input type="date" id="r-repair-warr-expiry" readonly class="w-full px-2.5 py-1.5 border border-slate-200 rounded bg-slate-100 font-mono text-xs text-purple-900 font-bold" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Warranty Card (PDF/Image)</label>
+                <input type="file" id="r-warranty-file" accept=".pdf,image/*" class="text-xs w-full" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1 text-[11px]">Warranty Claim Contact Number / Email</label>
+                <input type="text" id="r-warranty-contact" placeholder="Toll-free / Helpdesk / Service Center phone" class="w-full px-3 py-1.5 border border-slate-300 rounded text-xs" />
               </div>
             </div>
           </div>
@@ -361,11 +492,95 @@ window.CMS_TRANSACTIONS = {
     setTimeout(() => this.updateReceiptTaxMode(r.vendorId), 50);
   },
 
-  updateReceiptTaxMode(vendorId) {
+  onQuotationLookup(val) {
+    if (!val || val.trim().length < 3) return;
+    this.applyQuotationLookup(val.trim());
+  },
+
+  applyQuotationLookup(explicitNo = null) {
+    const quoteNo = explicitNo || document.getElementById('r-quote-lookup')?.value.trim();
+    if (!quoteNo) return;
+    const store = window.CMS_STORE;
+    const quote = store.findQuotation ? store.findQuotation(quoteNo) : null;
+    if (!quote) return;
+
+    // 1. Auto-select Vendor
+    if (quote.vendorId) {
+      const vendorSelect = document.getElementById('r-vendor');
+      if (vendorSelect) {
+        vendorSelect.value = quote.vendorId;
+        this.updateReceiptTaxMode(quote.vendorId, false);
+      }
+    }
+
+    // 2. Auto-select Material
+    if (quote.materialId) {
+      const matSelect = document.getElementById('r-mat');
+      if (matSelect) {
+        matSelect.value = quote.materialId;
+        this.onReceiptMaterialChange(false);
+      }
+    }
+
+    // 3. Auto-fill Rate
+    const rateInput = document.getElementById('r-rate');
+    if (rateInput && quote.rate > 0) {
+      rateInput.value = quote.rate;
+      this.recalcReceiptTotal();
+    }
+
+    // 4. If Auto-Master Filing mode is active, populate its fields too
+    const autoMatName = document.getElementById('r-new-name');
+    if (autoMatName && quote.materialName) autoMatName.value = quote.materialName;
+    const autoQuoteNo = document.getElementById('r-new-quoteno');
+    if (autoQuoteNo) autoQuoteNo.value = quote.quotationNo;
+    const autoUnit = document.getElementById('r-new-unit');
+    if (autoUnit && quote.unit) autoUnit.value = quote.unit;
+    const autoHsn = document.getElementById('r-new-hsn');
+    if (autoHsn && quote.hsnCode) autoHsn.value = quote.hsnCode;
+
+    // 5. Render live confirmation badge
+    this.showQuotationAlert(quote.quotationNo, quote.vendorName, quote.materialName, quote.rate);
+  },
+
+  clearQuotationLookup() {
+    const input = document.getElementById('r-quote-lookup');
+    if (input) input.value = '';
+    const alertBox = document.getElementById('r-quote-badge-alert');
+    if (alertBox) alertBox.classList.add('hidden');
+  },
+
+  showQuotationAlert(quoteNo, vendorName, materialName, rate) {
+    const alertBox = document.getElementById('r-quote-badge-alert');
+    const alertText = document.getElementById('r-quote-badge-text');
+    const alertRef = document.getElementById('r-quote-badge-ref');
+    if (alertBox && alertText && alertRef) {
+      alertText.innerHTML = `Auto-filled from Quotation: <strong>${vendorName}</strong> &bull; Item: <strong>${materialName}</strong> &bull; Rate: <strong class="text-emerald-700">₹${Number(rate || 0).toFixed(2)}</strong>`;
+      alertRef.innerText = quoteNo;
+      alertBox.classList.remove('hidden');
+    }
+  },
+
+  updateReceiptTaxMode(vendorId, triggerQuoteSync = true) {
     const vendor = window.CMS_STORE.data.vendors.find(item => item.id === vendorId);
     const mode = window.CMS_STORE.getVendorTaxMode(vendor);
     const label = document.getElementById('r-tax-mode');
     if (label) label.innerText = mode === 'IGST' ? 'IGST (inter-state supply)' : 'CGST + SGST (intra-state supply)';
+
+    if (triggerQuoteSync && vendor && vendor.quotationNo) {
+      const quoteInput = document.getElementById('r-quote-lookup');
+      if (quoteInput && (!quoteInput.value || quoteInput.value !== vendor.quotationNo)) {
+        quoteInput.value = vendor.quotationNo;
+      }
+      const matSelect = document.getElementById('r-mat');
+      if (matSelect && (!matSelect.value || matSelect.value === '')) {
+        if (vendor.quotedMaterialId) {
+          matSelect.value = vendor.quotedMaterialId;
+          this.onReceiptMaterialChange(false);
+        }
+      }
+      this.showQuotationAlert(vendor.quotationNo, vendor.name, vendor.quotedMaterialName || 'Quoted Goods', vendor.quotedMaterialRate || 0);
+    }
   },
 
   toggleAutoMasterFiling(checked) {
@@ -388,24 +603,47 @@ window.CMS_TRANSACTIONS = {
 
   toggleNewItemFixedFields(type) {
     const el = document.getElementById('r-new-fixed-fields');
+    const pmEl = document.getElementById('r-new-pm-container');
     if (el) {
       if (type === 'Fixed') el.classList.remove('hidden');
       else el.classList.add('hidden');
     }
+    if (pmEl) {
+      if (type === 'Fixed') pmEl.classList.remove('hidden');
+      else pmEl.classList.add('hidden');
+    }
   },
 
-  onReceiptMaterialChange() {
+  onReceiptMaterialChange(triggerQuoteSync = true) {
     const select = document.getElementById('r-mat');
     if (!select) return;
     const opt = select.options[select.selectedIndex];
     if (opt && opt.value) {
-      const unit = opt.getAttribute('data-unit') || '';
-      const rate = opt.getAttribute('data-rate') || 0;
+      const mat = window.CMS_STORE.data.consumables.find(m => m.id === opt.value);
+      const unit = opt.getAttribute('data-unit') || (mat ? mat.unit : '');
+      const rate = opt.getAttribute('data-rate') || (mat ? (mat.quotationRate || mat.vendor1Rate) : 0);
       const unitLabel = document.getElementById('r-unit-label');
       if (unitLabel) unitLabel.innerText = `Unit: ${unit}`;
       const rateInput = document.getElementById('r-rate');
-      if (rateInput && (!rateInput.value || parseFloat(rateInput.value) === 0)) rateInput.value = rate;
+      if (rateInput && (!rateInput.value || parseFloat(rateInput.value) === 0 || mat?.quotationRate)) {
+        rateInput.value = rate;
+      }
       this.recalcReceiptTotal();
+
+      if (triggerQuoteSync && mat && mat.quotationNo) {
+        const quoteInput = document.getElementById('r-quote-lookup');
+        if (quoteInput && quoteInput.value !== mat.quotationNo) {
+          quoteInput.value = mat.quotationNo;
+        }
+        if (mat.vendor1Id) {
+          const vSelect = document.getElementById('r-vendor');
+          if (vSelect && (!vSelect.value || vSelect.value === '')) {
+            vSelect.value = mat.vendor1Id;
+            this.updateReceiptTaxMode(mat.vendor1Id, false);
+          }
+        }
+        this.showQuotationAlert(mat.quotationNo, mat.vendor1Name || 'Approved Vendor', mat.materialName, mat.quotationRate || mat.vendor1Rate || rate);
+      }
     }
   },
 
@@ -471,8 +709,8 @@ window.CMS_TRANSACTIONS = {
         warrantyPeriod: document.getElementById('r-new-warr-period')?.value.trim() || '',
         warrantyValidTill: document.getElementById('r-new-warr-till')?.value || '',
         warrantyVendor: vendor ? vendor.name : '',
-        hasPm: document.getElementById('r-new-has-pm')?.checked || false,
-        pmFrequency: document.getElementById('r-new-pm-freq')?.value || 'Quarterly',
+        hasPm: (document.getElementById('r-new-inv-type')?.value === 'Fixed') && Boolean(document.getElementById('r-new-has-pm')?.checked),
+        pmFrequency: (document.getElementById('r-new-inv-type')?.value === 'Fixed') ? (document.getElementById('r-new-pm-freq')?.value || 'Quarterly') : '',
         repairmanName: document.getElementById('r-new-pm-tech')?.value.trim() || '',
         repairmanContact: document.getElementById('r-new-pm-contact')?.value.trim() || '',
         assetTag: document.getElementById('r-new-asset-tag')?.value.trim() || '',
@@ -496,6 +734,8 @@ window.CMS_TRANSACTIONS = {
       unit = mat.unit;
     }
 
+    const quotationNo = document.getElementById('r-quote-lookup')?.value.trim() || document.getElementById('r-new-quoteno')?.value.trim() || '';
+
     if (receiptId) {
       const idx = store.data.receipts.findIndex(r => r.id === receiptId);
       if (idx !== -1) {
@@ -503,6 +743,7 @@ window.CMS_TRANSACTIONS = {
           ...store.data.receipts[idx],
           vendorId, vendorName: vendor ? vendor.name : '',
           docNo, docDate,
+          quotationNo,
           materialId, materialName,
           brand, unit,
           qty, rate, totalAmount, remarks,
@@ -519,6 +760,7 @@ window.CMS_TRANSACTIONS = {
         type,
         vendorId, vendorName: vendor ? vendor.name : '', taxMode,
         docNo, docDate,
+        quotationNo,
         materialId, materialName,
         brand, unit,
         qty, rate, totalAmount, remarks,
@@ -819,7 +1061,7 @@ window.CMS_TRANSACTIONS = {
                       <div class="text-[11px] text-slate-500">${req.department}</div>
                     </td>
                     <td class="p-4 text-xs">
-                      <div class="font-mono">${req.requiredDate || '-'}</div>
+                      <div class="font-mono">${window.CMS_STORE.formatDate(req.requiredDate)}</div>
                       <span class="inline-block mt-0.5 text-[10px] px-2 py-0.5 rounded font-semibold ${req.priority === 'Urgent' ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-700'}">
                         ${req.priority || 'Routine'}
                       </span>
@@ -1151,7 +1393,7 @@ window.CMS_TRANSACTIONS = {
                     ${iss.availableStockAtIssue || '-'} ${iss.unit}
                   </td>
                   <td class="p-4 text-xs text-slate-600 font-mono">
-                    ${new Date(iss.issuedAt || Date.now()).toLocaleDateString('en-IN')}
+                    ${window.CMS_STORE.formatDate(iss.issuedAt)}
                   </td>
                   <td class="p-4 text-right space-x-1">
                     <button onclick="CMS_PRINT.printIssueSlip(${JSON.stringify(iss).replace(/"/g, '&quot;')})" class="px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition inline-flex items-center gap-1 shadow-sm" title="Print Official Issue Slip">

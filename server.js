@@ -18,7 +18,8 @@ const sessions = new Map();
 
 const DEFAULT_USERS = [
   { id: 'EMP-2041', username: 'rajesh', password: 'adminutes123', name: 'Rajesh Kumar', role: 'Maker', department: 'Central Warehouse & Logistics', email: 'rajesh.kumar@adminutes.corp' },
-  { id: 'MGR-8812', username: 'anita', password: 'checker4321', name: 'Col. Anita Sharma', role: 'Checker', department: 'Materials & Directorate of Supplies', email: 'anita.sharma@adminutes.corp' }
+  { id: 'MGR-8812', username: 'anita', password: 'checker4321', name: 'Col. Anita Sharma', role: 'Checker', department: 'Materials & Directorate of Supplies', email: 'anita.sharma@adminutes.corp' },
+  { id: 'EMP-3099', username: 'rohit', password: 'rohit123', name: 'Rohit Sharma', role: 'Maker', department: 'Administration & Operations', email: 'rohit.sharma@adminutes.corp' }
 ];
 
 function loadUsers() {
@@ -117,7 +118,12 @@ function getSessionUser(req) {
 
 function publicUsersFor(user) {
   if (!user) return [];
-  return AUTH_USERS.map(publicUser);
+  // Only Checker (Col. Anita Sharma) can view other roles and users
+  if (user.role === 'Checker') {
+    return AUTH_USERS.map(publicUser);
+  }
+  // Operation person (Maker) cannot see profiles of other roles or users
+  return [publicUser(user)];
 }
 
 async function handleApi(req, res) {

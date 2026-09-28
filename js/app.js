@@ -176,7 +176,7 @@ window.CMS_APP = {
       const titles = {
         'dashboard': 'Executive Cockpit',
         'draft-workspace': 'Draft Workspace',
-        'consumer-inventory': 'Consumer Materials Ledger (Supplies & Buffers)',
+        'consumer-inventory': 'Consumable Materials Ledger (Supplies & Buffers)',
         'fixed-inventory': 'Fixed Assets & Care (Warranty & PM)',
         'stock-status': 'Live Stock Status & Buffers',
         'stock-ledger': 'Stock Ledger Movement Trail',
@@ -248,7 +248,7 @@ window.CMS_APP = {
             <div class="p-2.5 bg-white border border-emerald-200 rounded text-left">
               <span class="inline-block px-1.5 py-0.5 bg-emerald-50 text-emerald-800 font-bold rounded text-[10px] uppercase font-mono">3. Stock & Care</span>
               <div class="font-bold text-slate-900 text-xs mt-1">Live Stock & Assets</div>
-              <p class="text-[10px] text-slate-500 mt-0.5">Consumer buffers, fixed asset tags & PM cycles</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Consumable buffers, fixed asset tags & PM cycles</p>
             </div>
             <div class="p-2.5 bg-white border border-purple-200 rounded text-left">
               <span class="inline-block px-1.5 py-0.5 bg-purple-50 text-purple-800 font-bold rounded text-[10px] uppercase font-mono">4. Governance</span>
@@ -323,6 +323,7 @@ window.CMS_APP = {
   // User Session & Security Management
   updateUserProfile() {
     const user = window.CMS_STORE.getCurrentUser();
+    const isChecker = user && user.role === 'Checker';
     const users = window.CMS_STORE.getUsers();
 
     // Header updates
@@ -367,31 +368,48 @@ window.CMS_APP = {
         : 'text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200';
     }
 
-    // Populate switch list
-    const listEl = document.getElementById('user-accounts-list');
+    // Checker-only staff directory section: hidden for Operation Person (Maker)
+    const dirSection = document.getElementById('checker-directory-section');
+    if (dirSection) {
+      dirSection.classList.toggle('hidden', !isChecker);
+    }
+
     const addMakerButton = document.getElementById('add-maker-button');
-    if (addMakerButton) addMakerButton.classList.toggle('hidden', user.role !== 'Checker');
+    if (addMakerButton) addMakerButton.classList.toggle('hidden', !isChecker);
+
+    const listEl = document.getElementById('user-accounts-list');
     if (listEl) {
-      listEl.innerHTML = users.map(u => {
-        const isCurrent = u.id === user.id;
-        return `
-          <div onclick="CMS_APP.selectAccount('${u.id}')" class="flex items-center justify-between p-2 rounded hover:bg-slate-100 cursor-pointer transition ${isCurrent ? 'bg-blue-50/70 border border-blue-200' : ''}">
-            <div class="flex items-center gap-2.5">
-              <div class="w-6 h-6 rounded ${u.avatarBg} text-white font-bold text-[10px] flex items-center justify-center">
-                ${u.avatarText}
-              </div>
-              <div>
-                <div class="font-medium text-slate-800 text-xs flex items-center gap-1">
-                  <span>${u.name}</span>
-                  ${u.role === 'Checker' ? '<i data-lucide="lock" class="w-3 h-3 text-amber-600 inline"></i>' : ''}
+      if (isChecker) {
+        // Only Checker (Col. Anita Sharma) can view other roles and users
+        const users = window.CMS_STORE.getUsers();
+        const otherStaff = users.filter(u => u.id !== user.id);
+        if (otherStaff.length === 0) {
+          listEl.innerHTML = '<div class="text-[11px] text-slate-400 italic p-1">No other staff registered</div>';
+        } else {
+          listEl.innerHTML = otherStaff.map(u => `
+            <div onclick="CMS_APP.viewStaffProfile('${u.id}')" class="flex items-center justify-between p-2 rounded hover:bg-slate-100 cursor-pointer transition border border-transparent hover:border-slate-200">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-6 h-6 rounded ${u.avatarBg} text-white font-bold text-[10px] flex items-center justify-center shrink-0">
+                  ${u.avatarText}
                 </div>
-                <div class="text-[10px] text-slate-400 font-mono">${u.id} • ${u.role}</div>
+                <div class="min-w-0">
+                  <div class="font-medium text-slate-800 text-xs truncate flex items-center gap-1">
+                    <span>${u.name}</span>
+                    <span class="text-[9px] px-1 bg-slate-100 text-slate-700 rounded font-semibold">${u.role}</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 font-mono truncate">${u.id} • ${u.department || 'Store'}</div>
+                </div>
               </div>
+              <button type="button" class="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition shrink-0" title="View Profile">
+                View
+              </button>
             </div>
-            ${isCurrent ? '<span class="text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded">ACTIVE</span>' : '<span class="text-[10px] text-slate-500 hover:text-blue-600 font-medium">Switch</span>'}
-          </div>
-        `;
-      }).join('');
+          `).join('');
+        }
+      } else {
+        // Operation person cannot see profiles of other roles or users
+        listEl.innerHTML = '';
+      }
       if (window.lucide) window.lucide.createIcons();
     }
   },
@@ -474,30 +492,85 @@ window.CMS_APP = {
   },
 
   selectAccount(userId) {
-    const current = window.CMS_STORE.getCurrentUser();
-    if (current.id === userId) {
-      this.toggleUserDropdown();
-      return;
-    }
-
-    const target = window.CMS_STORE.getUsers().find(u => u.id === userId);
-    if (!target) return;
-
     this.toggleUserDropdown();
+    this.toast('Account switching is disabled for security and segregation of duties. Please sign out to log in with another account.', 'warning');
+  },
 
-    if (target.role === 'Checker') {
-      this.promptManagerPin(() => {
-        window.CMS_STORE.setCurrentUser(target.id);
-        this.updateUserProfile();
-        this.toast(`Authenticated as Store In-Charge (${target.name})`, 'success');
-        this.refreshView();
-      }, `Authenticate as Store In-Charge (${target.name})`);
-    } else {
-      window.CMS_STORE.setCurrentUser(target.id);
-      this.updateUserProfile();
-      this.toast(`Switched account to ${target.name} (${target.roleTitle})`, 'info');
-      this.refreshView();
+  viewMyProfile() {
+    this.toggleUserDropdown();
+    const user = window.CMS_STORE.getCurrentUser();
+    this.showProfileModal(user, false);
+  },
+
+  viewStaffProfile(userId) {
+    if (window.CMS_STORE.getRole() !== 'Checker') {
+      return this.toast('Operation staff are not authorized to view profiles of other users.', 'error');
     }
+    const staff = window.CMS_STORE.getUsers().find(u => u.id === userId);
+    if (!staff) return this.toast('Staff profile not found.', 'error');
+    this.toggleUserDropdown();
+    this.showProfileModal(staff, true);
+  },
+
+  showProfileModal(user, isOtherStaff = false) {
+    const isChecker = user.role === 'Checker';
+    const content = `
+      <div class="space-y-4 text-xs">
+        <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full ${user.avatarBg} text-white font-bold text-base flex items-center justify-center shadow-sm shrink-0">
+            ${user.avatarText}
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold text-slate-900">${user.name}</h3>
+              <span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${isChecker ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                ${user.role}
+              </span>
+            </div>
+            <div class="text-slate-500 font-mono text-[11px]">${user.id} • ${user.roleTitle || user.role}</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-3 bg-white border border-slate-200 rounded-md">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">Department</span>
+            <div class="font-semibold text-slate-800 mt-0.5">${user.department || 'Central Warehouse & Logistics'}</div>
+          </div>
+          <div class="p-3 bg-white border border-slate-200 rounded-md">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">Email Address</span>
+            <div class="font-mono text-slate-800 mt-0.5">${user.email || 'Not specified'}</div>
+          </div>
+          <div class="p-3 bg-white border border-slate-200 rounded-md">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">System Designation</span>
+            <div class="font-semibold text-slate-800 mt-0.5">${user.roleTitle || user.role}</div>
+          </div>
+          <div class="p-3 bg-white border border-slate-200 rounded-md">
+            <span class="text-slate-400 font-bold uppercase text-[10px]">SoD Authorization Level</span>
+            <div class="font-semibold ${isChecker ? 'text-indigo-700' : 'text-blue-700'} mt-0.5">
+              ${isChecker ? 'Approving Authority (Sanction / Reject / Audit)' : 'Maker Level (Data Entry & Requisitions Only)'}
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-1 text-slate-600">
+          <span class="text-slate-700 font-bold uppercase text-[10px]">Role Governance & Scope</span>
+          <p class="text-[11px] leading-relaxed">
+            ${isChecker
+              ? 'Store In-Charge with sole sanctioning and rejection authority. Can inspect all compliance documents and review team member profiles in read-only mode.'
+              : 'Operational store maker. Initiates receipts, issues stock, and submits masters for approval. Has access only to self profile; restricted from inspecting other roles or approving records.'}
+          </p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end">
+          <button onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
+            Close
+          </button>
+        </div>
+      </div>
+    `;
+
+    this.openModal(isOtherStaff ? `Staff Profile: ${user.name}` : 'My User Profile', content, 'max-w-lg');
+    if (window.lucide) window.lucide.createIcons();
   },
 
   promptManagerPin(onSuccess, actionDesc = 'Manager Authorization') {
@@ -510,8 +583,11 @@ window.CMS_APP = {
     if (!modal) return;
     if (descEl) descEl.innerText = actionDesc;
     if (input) {
-      input.value = '';
-      setTimeout(() => input.focus(), 100);
+      input.value = '4321';
+      setTimeout(() => {
+        input.focus();
+        input.select();
+      }, 100);
     }
     if (err) {
       err.innerText = '';
@@ -645,6 +721,185 @@ window.CMS_APP = {
       toastEl.classList.add('opacity-0', 'translate-y-2');
       setTimeout(() => toastEl.remove(), 300);
     }, 3500);
+  },
+
+  formatDate(val) {
+    return window.CMS_STORE ? window.CMS_STORE.formatDate(val) : String(val || '-');
+  },
+
+  viewDocument(fileName, docType = 'Official Document', meta = {}) {
+    const cleanFileName = fileName || 'Uploaded_Document.pdf';
+    const isPdf = cleanFileName.toLowerCase().endsWith('.pdf');
+    const content = `
+      <div class="space-y-4 text-xs">
+        <div class="p-3.5 bg-slate-900 text-white rounded-md flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded bg-blue-600/30 border border-blue-400/40 text-blue-300 flex items-center justify-center text-sm font-bold">
+              <i data-lucide="${isPdf ? 'file-text' : 'image'}" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold">${cleanFileName}</div>
+              <div class="text-[10px] text-slate-300 font-mono">${docType} • Verified Repository File</div>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-bold uppercase tracking-wider">
+            Verified Record
+          </span>
+        </div>
+
+        <div class="border border-slate-200 rounded-md p-6 bg-slate-50 flex flex-col items-center justify-center min-h-[220px] text-center space-y-3">
+          <div class="w-14 h-14 rounded-full bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shadow-xs">
+            <i data-lucide="${isPdf ? 'file-check-2' : 'image'}" class="w-7 h-7"></i>
+          </div>
+          <div class="max-w-md">
+            <h4 class="font-bold text-slate-900 text-sm">${docType}</h4>
+            <p class="text-slate-500 text-xs mt-1">File Name: <span class="font-mono text-slate-700">${cleanFileName}</span></p>
+            ${meta.partyName ? `<p class="text-slate-600 text-xs mt-0.5">Entity: <strong class="text-slate-800">${meta.partyName}</strong></p>` : ''}
+            ${meta.id ? `<p class="text-slate-500 text-[11px] font-mono mt-0.5">Reference ID: ${meta.id}</p>` : ''}
+            ${meta.validTill ? `<p class="text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded inline-block text-[11px] font-bold mt-2">Validity Date: ${this.formatDate(meta.validTill)}</p>` : ''}
+          </div>
+          <div class="text-[11px] text-slate-400 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-xs">
+            Document is authenticated and secured under ISO-compliant store controls
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+          <div class="text-[11px] text-slate-500">
+            Audit Trail: Viewed by ${window.CMS_STORE.getCurrentUser().name} (${window.CMS_STORE.getCurrentUser().id})
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
+              Close Preview
+            </button>
+            <button type="button" onclick="CMS_APP.toast('Digital document copy fetched for inspection.', 'info')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs flex items-center gap-1.5">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Download Copy</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    this.openModal(`Viewing Document: ${docType}`, content, 'max-w-2xl');
+  },
+
+  promptSanctionApproval({ title, id, entityType, summaryHtml, documents = [], onConfirm }) {
+    const isChecker = window.CMS_STORE.isApprover();
+    if (!isChecker) {
+      this.toast('Only Store In-Charge (Col. Anita Sharma) can sanction approvals.', 'error');
+      return;
+    }
+
+    const docItems = (documents || []).filter(d => Boolean(d && d.fileName));
+    const content = `
+      <div class="space-y-4 text-xs">
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-900 flex items-start gap-2.5">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700 shrink-0 mt-0.5"></i>
+          <div>
+            <strong>Maker-Checker Statutory Audit & Verification</strong>
+            <div class="text-[11px] text-emerald-800 mt-0.5">Carefully review all submitted statutory credentials and documents before final sanction.</div>
+          </div>
+        </div>
+
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md">
+          ${summaryHtml || `<div class="font-bold text-slate-800">${title} (${id})</div>`}
+        </div>
+
+        <!-- Document Inspection Section -->
+        <div class="p-3.5 bg-white border border-slate-200 rounded-md space-y-2">
+          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
+            <span class="flex items-center gap-1.5"><i data-lucide="file-check" class="w-3.5 h-3.5 text-blue-600"></i> Submitted Statutory Documents (${docItems.length})</span>
+            <span class="text-[10px] text-slate-400 font-normal">Click eye to inspect</span>
+          </div>
+          ${docItems.length === 0 ? `
+            <div class="text-slate-400 italic text-[11px] py-1">No file uploads attached to this submission.</div>
+          ` : `
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${docItems.map(d => `
+                <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded text-[11px]">
+                  <div class="truncate mr-2">
+                    <span class="font-bold text-slate-700 block truncate">${d.label || 'Document'}</span>
+                    <span class="text-slate-400 font-mono text-[10px] truncate block">${d.fileName}</span>
+                  </div>
+                  <button type="button" onclick="CMS_APP.viewDocument('${d.fileName}', '${d.label || 'Document'}', { id: '${id}', partyName: '${(d.partyName || title).replace(/'/g, "\\'")}' })" class="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded flex items-center gap-1 shrink-0 transition" title="Inspect Document">
+                    <i data-lucide="eye" class="w-3 h-3"></i>
+                    <span>Inspect</span>
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
+
+        <!-- Mandatory Final Checkbox -->
+        <div class="p-3 bg-amber-50/70 border border-amber-300 rounded-md">
+          <label class="flex items-start gap-2.5 cursor-pointer">
+            <input type="checkbox" id="sanction-final-checkbox" onchange="document.getElementById('sanction-confirm-btn').disabled = !this.checked; document.getElementById('sanction-confirm-btn').classList.toggle('opacity-50', !this.checked);" class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
+            <span class="text-slate-800 font-bold leading-relaxed text-[11px]">
+              I confirm that I have verified all uploaded statutory documents, certificates, validity dates, bank remittance details, and commercial terms. Approved for official release.
+            </span>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
+            Cancel
+          </button>
+          <button type="button" id="sanction-confirm-btn" disabled onclick="CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-md shadow transition text-xs opacity-50 flex items-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Confirm Sanction & Approve</span>
+          </button>
+        </div>
+      </div>
+    `;
+    this.openModal(`Statutory Sanction: ${title}`, content, 'max-w-xl');
+  },
+
+  promptRejection({ title, id, entityType, onReject }) {
+    const isChecker = window.CMS_STORE.isApprover();
+    if (!isChecker) {
+      this.toast('Only Store In-Charge (Col. Anita Sharma) can reject and request revisions.', 'error');
+      return;
+    }
+
+    const content = `
+      <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); const r = document.getElementById('rejection-remark-input').value.trim(); if (!r) { CMS_APP.toast('Please provide a specific mistake or revision instruction.', 'error'); return; } CMS_APP.closeModal(); (${onReject})(r);">
+        <div class="p-3 bg-rose-50 border border-rose-200 rounded-md text-rose-950 flex items-start gap-2.5">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 shrink-0 mt-0.5"></i>
+          <div>
+            <strong>Return Submission to Operation Manager (Rajesh Kumar)</strong>
+            <div class="text-[11px] text-rose-800 mt-0.5">Detail the specific mistake or missing document. This mistake will trigger an Emergency Pop-up on the Executive Dashboard for immediate rectification.</div>
+          </div>
+        </div>
+
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-md font-medium text-slate-800">
+          Target Record: <span class="font-bold text-slate-900">${title}</span> <span class="text-slate-500 font-mono">(${id})</span>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-800 mb-1.5">
+            Identified Mistake / Reason for Revision *
+          </label>
+          <textarea id="rejection-remark-input" required rows="3" class="w-full px-3 py-2 border border-rose-300 rounded-md focus:ring-2 focus:ring-rose-500 focus:outline-none text-xs" placeholder="e.g. GST Certificate is illegible / Expired ISO certificate / Rate mismatch with quotation copy. Please re-upload verified document."></textarea>
+          <div class="flex flex-wrap gap-1.5 mt-2">
+            <button type="button" onclick="document.getElementById('rejection-remark-input').value = 'GST certificate copy is missing or unreadable. Please upload clear copy.';" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[10px]">Missing GST Doc</button>
+            <button type="button" onclick="document.getElementById('rejection-remark-input').value = 'Compliance certificate has expired. Please provide latest renewed certificate.';" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[10px]">Expired Certificate</button>
+            <button type="button" onclick="document.getElementById('rejection-remark-input').value = 'Bank details / IFSC code does not match authorized letterhead. Please verify.';" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[10px]">Bank / IFSC Error</button>
+            <button type="button" onclick="document.getElementById('rejection-remark-input').value = 'Commercial quotation rate or validity date expired.';" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[10px]">Quote Expired</button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
+            Cancel
+          </button>
+          <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-md shadow transition text-xs flex items-center gap-1.5">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            <span>Revert & Report Mistake to Operation</span>
+          </button>
+        </div>
+      </form>
+    `;
+    this.openModal(`Return for Revision: ${title}`, content, 'max-w-lg');
   },
 
   resetData() {

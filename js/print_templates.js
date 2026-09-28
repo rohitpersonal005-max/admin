@@ -30,10 +30,13 @@ window.CMS_PRINT = {
         <!-- Header -->
         <div class="border-b-2 border-slate-900 pb-4 mb-6">
           <div class="flex justify-between items-start">
-            <div>
-              <h1 class="text-2xl font-bold tracking-tight text-slate-900 uppercase">ADMINUTES CENTRAL STORES</h1>
-              <p class="text-xs text-slate-600">Enterprise Consumable Management ERP</p>
-              <p class="text-xs text-slate-500">Facility Operations, Fixed Assets & Logistics Wing</p>
+            <div class="flex items-center gap-3">
+              <img src="assets/adminutes_logo.jpg?v=2" alt="Adminutes Logo" class="h-12 w-auto rounded object-contain border border-slate-300 shadow-xs" />
+              <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 uppercase">ADMINUTES CENTRAL STORES</h1>
+                <p class="text-xs text-slate-600">Enterprise Consumable Management ERP</p>
+                <p class="text-xs text-slate-500">Facility Operations, Fixed Assets & Logistics Wing</p>
+              </div>
             </div>
             <div class="text-right">
               <span class="inline-block px-3 py-1 bg-slate-900 text-white font-bold text-xs tracking-wider uppercase rounded">

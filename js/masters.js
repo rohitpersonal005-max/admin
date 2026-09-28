@@ -7,28 +7,213 @@
 
 window.CMS_MASTERS = {
   vendorSearchQuery: '',
+  vendorStatusFilter: 'ALL',
+  vendorStateFilter: 'ALL',
   consumableSearchQuery: '',
   consumableCategoryFilter: '',
   consumableTypeFilter: '',
+  consumableStatusFilter: 'ALL',
+
+  // Official Indian States & UTs with official GST 2-digit State Codes
+  indianStates: [
+    { code: '01', name: 'Jammu and Kashmir' },
+    { code: '02', name: 'Himachal Pradesh' },
+    { code: '03', name: 'Punjab' },
+    { code: '04', name: 'Chandigarh' },
+    { code: '05', name: 'Uttarakhand' },
+    { code: '06', name: 'Haryana' },
+    { code: '07', name: 'Delhi' },
+    { code: '08', name: 'Rajasthan' },
+    { code: '09', name: 'Uttar Pradesh' },
+    { code: '10', name: 'Bihar' },
+    { code: '11', name: 'Sikkim' },
+    { code: '12', name: 'Arunachal Pradesh' },
+    { code: '13', name: 'Nagaland' },
+    { code: '14', name: 'Manipur' },
+    { code: '15', name: 'Mizoram' },
+    { code: '16', name: 'Tripura' },
+    { code: '17', name: 'Meghalaya' },
+    { code: '18', name: 'Assam' },
+    { code: '19', name: 'West Bengal' },
+    { code: '20', name: 'Jharkhand' },
+    { code: '21', name: 'Odisha' },
+    { code: '22', name: 'Chhattisgarh' },
+    { code: '23', name: 'Madhya Pradesh' },
+    { code: '24', name: 'Gujarat' },
+    { code: '26', name: 'Dadra and Nagar Haveli and Daman and Diu' },
+    { code: '27', name: 'Maharashtra' },
+    { code: '29', name: 'Karnataka' },
+    { code: '30', name: 'Goa' },
+    { code: '31', name: 'Lakshadweep' },
+    { code: '32', name: 'Kerala' },
+    { code: '33', name: 'Tamil Nadu' },
+    { code: '34', name: 'Puducherry' },
+    { code: '35', name: 'Andaman and Nicobar Islands' },
+    { code: '36', name: 'Telangana' },
+    { code: '37', name: 'Andhra Pradesh' },
+    { code: '38', name: 'Ladakh' }
+  ],
+
+  getStateInfo(stateName) {
+    const s = this.indianStates.find(item => item.name.toLowerCase() === String(stateName || '').toLowerCase());
+    if (!s) return { code: '', name: stateName || '', taxMode: 'IGST' };
+    const taxMode = s.name === 'Delhi' ? 'CGST_SGST' : 'IGST';
+    return { ...s, taxMode };
+  },
 
   // ==========================================
   // VENDOR MASTER
   // ==========================================
+  renderVendorRows(list, role) {
+    if (list.length === 0) {
+      return `
+        <tr>
+          <td colspan="7" class="p-12 text-center text-slate-400">
+            <i data-lucide="folder-search" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+            <div class="font-bold text-slate-600">No matching vendors found</div>
+            <p class="text-slate-400 text-xs mt-1">Try clearing your search query or adjusting your filters.</p>
+          </td>
+        </tr>
+      `;
+    }
+
+    // Drag pending approvals on top, then Revision Required, then Approved, then Blocked
+    const statusPriority = {
+      'Pending Approval': 0,
+      'Revision Required': 1,
+      'Approved': 2,
+      'Draft': 3
+    };
+
+    const sortedList = [...list].sort((a, b) => {
+      const pa = a.isBlocked ? 4 : (statusPriority[a.status] ?? 2);
+      const pb = b.isBlocked ? 4 : (statusPriority[b.status] ?? 2);
+      if (pa !== pb) return pa - pb;
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
+
+    return sortedList.map(v => {
+      const isBlocked = Boolean(v.isBlocked);
+      const isPending = v.status === 'Pending Approval';
+      const isRevision = v.status === 'Revision Required';
+      const isApproved = v.status === 'Approved';
+      const stateInfo = this.getStateInfo(v.addressState);
+
+      return `
+        <tr class="hover:bg-slate-50/80 transition ${isBlocked ? 'bg-rose-50/40' : isRevision ? 'bg-amber-50/40' : isPending ? 'bg-blue-50/30' : ''}">
+          <td class="p-4">
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-900 text-sm hover:text-blue-600 cursor-pointer" onclick="CMS_MASTERS.viewVendorProfile('${v.id}')">${v.name}</span>
+              ${isBlocked ? '<span class="px-1.5 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold text-[9px] uppercase tracking-wide">BLOCKED</span>' : ''}
+              ${isRevision ? '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-bold text-[9px] uppercase tracking-wide">REVISION REQUIRED</span>' : ''}
+            </div>
+            <div class="text-[11px] text-slate-400 font-mono mt-0.5">${v.id} • ${stateInfo.code ? `State Code: ${stateInfo.code}` : ''}</div>
+            <div class="text-slate-500 line-clamp-1 mt-0.5 text-[11px]" title="${[v.address, v.addressDistrict, v.addressState].filter(Boolean).join(', ')}">
+              ${[v.address, v.addressDistrict, v.addressState].filter(Boolean).join(', ')}
+            </div>
+            ${v.checkerMistakeRemark ? `
+              <div class="text-[10px] text-rose-700 bg-rose-50 border border-rose-200 p-1 rounded mt-1 font-medium truncate" title="Reported Mistake: ${v.checkerMistakeRemark}">
+                <i data-lucide="alert-circle" class="w-3 h-3 inline mr-0.5 text-rose-600"></i> Mistake: ${v.checkerMistakeRemark}
+              </div>
+            ` : ''}
+          </td>
+          <td class="p-4 font-mono font-bold text-slate-800">
+            ${v.gstNotApplicable ? '<span class="text-slate-400 font-normal">Exempt (N/A)</span>' : (v.gstNo || '<span class="text-slate-400">Unregistered</span>')}
+            ${v.gstCertificateFile ? `
+              <div class="text-[10px] text-emerald-700 font-sans font-medium flex items-center gap-1 mt-1 cursor-pointer hover:underline" onclick="CMS_APP.viewDocument('${v.gstCertificateFile}', 'GST Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })">
+                <i data-lucide="file-check" class="w-3 h-3"></i> GST Cert
+              </div>
+            ` : ''}
+          </td>
+          <td class="p-4 font-mono font-bold text-slate-800">
+            ${v.panNotApplicable ? '<span class="text-slate-400 font-normal">Exempt (N/A)</span>' : (v.panNo || (v.gstNo && v.gstNo.length >= 12 ? v.gstNo.substring(2, 12).toUpperCase() : '<span class="text-slate-400 font-normal font-sans">Pending</span>'))}
+            ${v.panCardFile ? `
+              <div class="text-[10px] text-emerald-700 font-sans font-medium flex items-center gap-1 mt-1 cursor-pointer hover:underline" onclick="CMS_APP.viewDocument('${v.panCardFile}', 'PAN Card', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })">
+                <i data-lucide="file-check" class="w-3 h-3"></i> PAN Copy
+              </div>
+            ` : ''}
+          </td>
+          <td class="p-4">
+            <div class="flex flex-wrap gap-1.5 max-w-sm">
+              ${(!v.certificates || v.certificates.length === 0) ? '<span class="text-slate-400 italic text-[11px]">No certificates</span>' : (v.certificates || []).map(c => {
+                const cName = typeof c === 'string' ? c : (c.regulator || c.name || 'Certificate');
+                const formNo = typeof c === 'object' && c.formNo ? ` (${c.formNo})` : '';
+                const hasVal = typeof c === 'object' ? c.hasValidity : false;
+                const valDate = typeof c === 'object' ? (c.validTill || '') : '';
+                const formattedDate = valDate ? window.CMS_STORE.formatDate(valDate) : '';
+                const isExpiring = valDate && new Date(valDate) < new Date(Date.now() + 30 * 86400000);
+                const isExpired = valDate && new Date(valDate) < new Date();
+                return `
+                  <div class="inline-flex items-center gap-1.5 text-[10px] bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded font-medium shadow-xs">
+                    <span>${cName}${formNo}</span>
+                    ${hasVal && valDate ? `
+                      <span class="px-1 py-0.2 rounded font-mono font-bold text-[9px] ${isExpired ? 'bg-red-100 text-red-800 border border-red-300' : isExpiring ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-700'}" title="Valid Till: ${formattedDate}">
+                        Exp: ${formattedDate}
+                      </span>
+                    ` : ''}
+                  </div>
+                `;
+              }).join('')}
+              ${v.quotationNo ? `
+                <div class="w-full text-[10px] text-blue-900 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded font-medium mt-0.5 flex items-center justify-between">
+                  <span>Quote: ${v.quotationNo}</span>
+                  ${v.quotationValidTill ? `<span class="font-mono text-slate-500">Exp: ${window.CMS_STORE.formatDate(v.quotationValidTill)}</span>` : ''}
+                </div>
+              ` : ''}
+            </div>
+          </td>
+          <td class="p-4 text-xs space-y-0.5">
+            <div class="text-slate-800 font-medium">Tel: ${v.contactNo || '-'}</div>
+            <div class="text-slate-500">Email: ${v.email || '-'}</div>
+            ${v.bankName ? `<div class="text-[10px] text-slate-400 font-mono">Bank: ${v.bankName}</div>` : ''}
+          </td>
+          <td class="p-4">
+            <span class="badge ${isApproved ? 'badge-approved' : isRevision ? 'badge-draft' : isPending ? 'badge-pending' : 'badge-draft'}">
+              ${v.status}
+            </span>
+            ${v.approvedForLimitedPeriod && v.approvalValidTill ? `
+              <div class="text-[10px] text-amber-700 font-mono mt-1 font-semibold">Valid Till: ${window.CMS_STORE.formatDate(v.approvalValidTill)}</div>
+            ` : ''}
+          </td>
+          <td class="p-4 text-right space-x-1 whitespace-nowrap">
+            <!-- Eye View Button (Available to both Maker and Checker) -->
+            <button onclick="CMS_MASTERS.viewVendorProfile('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Inspect Profile & Documents">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            </button>
+
+            <!-- Maker Edit Button (Only Maker can edit) -->
+            ${role === 'Maker' ? `
+              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Vendor">
+                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+              </button>
+            ` : ''}
+
+            <!-- Checker Governance Actions: Sanction or Reject with Mistake Remark -->
+            ${(isPending || isRevision) && role === 'Checker' ? `
+              <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition shadow-xs" title="Sanction Vendor">
+                Approve
+              </button>
+              <button onclick="CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-lg transition" title="Reject / Return for Revision">
+                Reject
+              </button>
+            ` : ''}
+
+            <!-- Ban / Blacklist with confirmation prompt (Checker only) -->
+            ${role === 'Checker' ? `
+              <button onclick="CMS_MASTERS.promptBlockVendor('${v.id}', ${!isBlocked})" class="px-2 py-1 text-xs font-semibold ${isBlocked ? 'text-emerald-700 bg-emerald-100 hover:bg-emerald-200' : 'text-amber-700 bg-amber-100 hover:bg-amber-200'} rounded-lg transition" title="${isBlocked ? 'Unblock Vendor' : 'Blacklist / Block Vendor'}">
+                <i data-lucide="${isBlocked ? 'check-circle' : 'ban'}" class="w-3.5 h-3.5"></i>
+              </button>
+            ` : ''}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
   renderVendors() {
     const store = window.CMS_STORE.data;
     const role = window.CMS_STORE.getRole();
-    let list = store.vendors || [];
-
-    if (this.vendorSearchQuery) {
-      const q = this.vendorSearchQuery.toLowerCase();
-      list = list.filter(v =>
-        (v.name || '').toLowerCase().includes(q) ||
-        (v.gstNo || '').toLowerCase().includes(q) ||
-        (v.panNo || '').toLowerCase().includes(q) ||
-        (v.id || '').toLowerCase().includes(q) ||
-        (v.email || '').toLowerCase().includes(q)
-      );
-    }
+    let list = this.getFilteredVendors();
 
     return `
       <div class="space-y-6">
@@ -39,23 +224,53 @@ window.CMS_MASTERS = {
               <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="building-2" class="w-4 h-4"></i>
               </div>
-              <span>Vendor</span>
+              <span>Vendor Master</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Manage approved suppliers, GSTIN, PAN cards, compliance certificates, and validity dates.</p>
+            <p class="text-xs text-slate-500 mt-1">Manage approved suppliers, GSTIN, PAN cards, compliance certificates, bank details, and validity dates.</p>
           </div>
-          <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span>Register Vendor</span>
-          </button>
+          <div class="flex flex-wrap items-center gap-2.5">
+            ${role !== 'Checker' ? `
+              <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Register New Vendor</span>
+              </button>
+            ` : `
+              <div class="text-xs text-indigo-800 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-md font-semibold flex items-center gap-2 shadow-xs">
+                <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
+                <span>Store In-Charge Governance: Col. Anita Sharma (Review, Approve & View Only)</span>
+              </div>
+            `}
+          </div>
         </div>
 
         <!-- Table Toolbar: Search & Filter -->
-        <div class="bg-white p-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
-          <div class="relative w-full sm:w-80">
-            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" value="${this.vendorSearchQuery}" oninput="CMS_MASTERS.onVendorSearch(this.value)" placeholder="Search vendor name, GSTIN, PAN, code..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+        <div class="bg-white p-4 rounded-md border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-3">
+          <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <div class="relative w-full sm:w-72">
+              <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="v-search-input" value="${this.vendorSearchQuery}" oninput="CMS_MASTERS.onVendorSearch(this.value)" placeholder="Search vendor name, GSTIN, PAN, state, code..." class="table-search-input w-full pl-10 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+              <button id="v-search-clear" type="button" onclick="CMS_MASTERS.clearVendorSearch()" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded ${this.vendorSearchQuery ? '' : 'hidden'}" title="Clear Search">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+
+            <!-- Status Filter -->
+            <select id="v-status-filter" onchange="CMS_MASTERS.onVendorStatusFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
+              <option value="ALL" ${this.vendorStatusFilter === 'ALL' ? 'selected' : ''}>-- All Statuses --</option>
+              <option value="Pending Approval" ${this.vendorStatusFilter === 'Pending Approval' ? 'selected' : ''}>Pending Approval</option>
+              <option value="Revision Required" ${this.vendorStatusFilter === 'Revision Required' ? 'selected' : ''}>Revision Required</option>
+              <option value="Approved" ${this.vendorStatusFilter === 'Approved' ? 'selected' : ''}>Approved Vendors</option>
+              <option value="Blocked" ${this.vendorStatusFilter === 'Blocked' ? 'selected' : ''}>Blocked / Blacklisted</option>
+            </select>
+
+            <!-- State Filter -->
+            <select id="v-state-filter" onchange="CMS_MASTERS.onVendorStateFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none max-w-[180px]">
+              <option value="ALL" ${this.vendorStateFilter === 'ALL' ? 'selected' : ''}>-- All States / UTs --</option>
+              ${this.indianStates.map(s => `<option value="${s.name}" ${this.vendorStateFilter === s.name ? 'selected' : ''}>${s.code} - ${s.name}</option>`).join('')}
+            </select>
           </div>
-          <div class="text-xs text-slate-500 font-medium">
+
+          <div id="vendor-count-display" class="text-xs text-slate-500 font-medium">
             Showing <strong class="text-slate-800">${list.length}</strong> of ${store.vendors.length} vendors
           </div>
         </div>
@@ -75,83 +290,8 @@ window.CMS_MASTERS = {
                   <th class="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100">
-                ${list.length === 0 ? `
-                  <tr>
-                    <td colspan="7" class="p-12 text-center text-slate-400">
-                      <i data-lucide="folder-search" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-                      <div class="font-bold text-slate-600">No matching vendors found</div>
-                      <p class="text-slate-400 text-xs mt-1">Try clearing your search query or add a new vendor.</p>
-                    </td>
-                  </tr>
-                ` : list.map(v => {
-                  return `
-                    <tr class="hover:bg-slate-50/80 transition">
-                      <td class="p-4">
-                        <div class="font-bold text-slate-900 text-sm hover:text-blue-600 cursor-pointer" onclick="CMS_MASTERS.viewVendorProfile('${v.id}')">${v.name}</div>
-                        <div class="text-[11px] text-slate-400 font-mono mt-0.5">${v.id}</div>
-                        <div class="text-slate-500 line-clamp-1 mt-0.5 text-[11px]" title="${v.address}">${v.address}</div>
-                      </td>
-                      <td class="p-4 font-mono font-bold text-slate-800">
-                        ${v.gstNo || '<span class="text-slate-400">Unregistered</span>'}
-                      </td>
-                      <td class="p-4 font-mono font-bold text-slate-800">
-                        ${v.panNo || (v.gstNo && v.gstNo.length >= 12 ? v.gstNo.substring(2, 12).toUpperCase() : '<span class="text-slate-400 font-normal font-sans">Pending</span>')}
-                      </td>
-                      <td class="p-4">
-                        <div class="flex flex-wrap gap-1.5 max-w-sm">
-                          ${(!v.certificates || v.certificates.length === 0) ? '<span class="text-slate-400 italic">No certificates attached</span>' : (v.certificates || []).map(c => {
-                            const cName = typeof c === 'string' ? c : (c.name || 'Certificate');
-                            const hasVal = typeof c === 'object' ? c.hasValidity : false;
-                            const valDate = typeof c === 'object' ? (c.validTill || '') : '';
-                            const isExpiring = valDate && new Date(valDate) < new Date(Date.now() + 30 * 86400000);
-                            return `
-                              <div class="inline-flex items-center gap-1.5 text-[10px] bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded font-medium shadow-xs">
-                                <span>${cName}</span>
-                                ${hasVal && valDate ? `
-                                  <span class="px-1 py-0.2 rounded font-mono font-bold text-[9px] ${isExpiring ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-700'}" title="Valid Till: ${valDate}">
-                                    Exp: ${valDate}
-                                  </span>
-                                ` : ''}
-                              </div>
-                            `;
-                          }).join('')}
-                          ${v.certificateFile ? `
-                            <span class="inline-flex items-center gap-1 text-[10px] text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded" title="${v.certificateFile}">
-                              <i data-lucide="paperclip" class="w-3 h-3"></i> Attached
-                            </span>
-                          ` : ''}
-                        </div>
-                      </td>
-                      <td class="p-4 text-xs space-y-0.5">
-                        <div class="text-slate-800 font-medium">Tel: ${v.contactNo || '-'}</div>
-                        <div class="text-slate-500">Email: ${v.email || '-'}</div>
-                      </td>
-                      <td class="p-4">
-                        <span class="badge ${v.status === 'Approved' ? 'badge-approved' : v.status === 'Pending Approval' ? 'badge-pending' : 'badge-draft'}">
-                          ${v.status}
-                        </span>
-                      </td>
-                      <td class="p-4 text-right space-x-1">
-                        <button onclick="CMS_MASTERS.viewVendorProfile('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="View Profile">
-                          <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                        </button>
-                        <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Vendor">
-                          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                        </button>
-                        ${v.status === 'Pending Approval' && role === 'Checker' ? `
-                          <button onclick="CMS_MASTERS.approveVendor('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition" title="Approve Vendor">
-                            Approve
-                          </button>
-                          <button onclick="CMS_MASTERS.rejectVendor('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 rounded-lg transition" title="Reject Vendor">
-                            Reject
-                          </button>
-                        ` : ''}
-                        ${role === 'Checker' ? `<button onclick="CMS_MASTERS.deleteVendor('${v.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition" title="Delete Vendor"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
-                      </td>
-                    </tr>
-                  `;
-                }).join('')}
+              <tbody id="vendor-table-body" class="divide-y divide-slate-100">
+                ${this.renderVendorRows(list, role)}
               </tbody>
             </table>
           </div>
@@ -160,12 +300,81 @@ window.CMS_MASTERS = {
     `;
   },
 
+  getFilteredVendors() {
+    const store = window.CMS_STORE.data;
+    let list = store.vendors || [];
+
+    if (this.vendorSearchQuery) {
+      const q = this.vendorSearchQuery.toLowerCase();
+      list = list.filter(v =>
+        (v.name || '').toLowerCase().includes(q) ||
+        (v.gstNo || '').toLowerCase().includes(q) ||
+        (v.panNo || '').toLowerCase().includes(q) ||
+        (v.id || '').toLowerCase().includes(q) ||
+        (v.email || '').toLowerCase().includes(q) ||
+        (v.addressState || '').toLowerCase().includes(q) ||
+        (v.addressDistrict || '').toLowerCase().includes(q)
+      );
+    }
+
+    if (this.vendorStatusFilter && this.vendorStatusFilter !== 'ALL') {
+      if (this.vendorStatusFilter === 'Blocked') {
+        list = list.filter(v => Boolean(v.isBlocked));
+      } else {
+        list = list.filter(v => v.status === this.vendorStatusFilter && !v.isBlocked);
+      }
+    }
+
+    if (this.vendorStateFilter && this.vendorStateFilter !== 'ALL') {
+      list = list.filter(v => (v.addressState || '').toLowerCase() === this.vendorStateFilter.toLowerCase());
+    }
+
+    return list;
+  },
+
   onVendorSearch(val) {
-    this.vendorSearchQuery = val;
-    const main = document.getElementById('view-container');
-    if (main) {
-      main.innerHTML = this.renderVendors();
+    this.vendorSearchQuery = (val || '').trim();
+    this.refreshVendorsView();
+  },
+
+  clearVendorSearch() {
+    this.vendorSearchQuery = '';
+    const input = document.getElementById('v-search-input');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+    this.refreshVendorsView();
+  },
+
+  onVendorStatusFilter(val) {
+    this.vendorStatusFilter = val;
+    this.refreshVendorsView();
+  },
+
+  onVendorStateFilter(val) {
+    this.vendorStateFilter = val;
+    this.refreshVendorsView();
+  },
+
+  refreshVendorsView() {
+    const tbody = document.getElementById('vendor-table-body');
+    const countEl = document.getElementById('vendor-count-display');
+    const clearBtn = document.getElementById('v-search-clear');
+    if (clearBtn) clearBtn.classList.toggle('hidden', !this.vendorSearchQuery);
+
+    if (tbody) {
+      const list = this.getFilteredVendors();
+      const role = window.CMS_STORE.getRole();
+      if (countEl) countEl.innerHTML = `Showing <strong class="text-slate-800">${list.length}</strong> of ${window.CMS_STORE.data.vendors.length} vendors`;
+      tbody.innerHTML = this.renderVendorRows(list, role);
       if (window.lucide) window.lucide.createIcons();
+    } else {
+      const main = document.getElementById('view-container');
+      if (main) {
+        main.innerHTML = this.renderVendors();
+        if (window.lucide) window.lucide.createIcons();
+      }
     }
   },
 
@@ -173,24 +382,51 @@ window.CMS_MASTERS = {
     const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
     if (!v) return;
 
+    const role = window.CMS_STORE.getRole();
+    const stateInfo = this.getStateInfo(v.addressState);
     const content = `
-      <div class="space-y-5 text-xs">
+      <div class="space-y-4 text-xs">
         <div class="p-4 bg-slate-50 rounded-md border border-slate-200 flex items-start justify-between">
           <div>
-            <h3 class="text-base font-bold text-slate-900">${v.name}</h3>
-            <span class="font-mono text-slate-500 font-medium">${v.id}</span>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold text-slate-900">${v.name}</h3>
+              ${v.isBlocked ? '<span class="px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold text-[10px] uppercase">BLOCKED</span>' : ''}
+              ${v.status === 'Revision Required' ? '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-bold text-[10px] uppercase">REVISION REQUIRED</span>' : ''}
+            </div>
+            <span class="font-mono text-slate-500 font-medium">${v.id} • Registered State: ${v.addressState || 'Not Specified'} (${stateInfo.code || '--'})</span>
           </div>
           <span class="badge ${v.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${v.status}</span>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        ${v.checkerMistakeRemark ? `
+          <div class="p-3.5 bg-rose-50 border border-rose-300 rounded-md text-rose-900 space-y-1">
+            <div class="font-bold flex items-center gap-1.5 text-xs text-rose-950">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
+              <span>Statutory Checker Mistake Report (${v.rejectedByName || 'Col. Anita Sharma'})</span>
+            </div>
+            <p class="text-[11px] text-rose-800 leading-relaxed font-medium">${v.checkerMistakeRemark}</p>
+            ${v.rejectedAt ? `<div class="text-[10px] text-rose-600 font-mono">Reported On: ${window.CMS_STORE.formatDate(v.rejectedAt)}</div>` : ''}
+          </div>
+        ` : ''}
+
+        <div class="grid grid-cols-2 gap-3">
           <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
             <span class="text-slate-400 font-bold uppercase text-[10px]">GSTIN Number</span>
-            <div class="font-mono font-bold text-sm text-slate-800">${v.gstNo || 'Not Registered'}</div>
+            <div class="font-mono font-bold text-sm text-slate-800">${v.gstNotApplicable ? 'Exempt / Not Applicable' : (v.gstNo || 'Not Registered')}</div>
+            ${v.gstCertificateFile ? `
+              <button type="button" onclick="CMS_APP.viewDocument('${v.gstCertificateFile}', 'GST Registration Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-medium flex items-center gap-1 mt-1 hover:bg-blue-100 transition">
+                <i data-lucide="eye" class="w-3 h-3"></i> View GST Certificate Copy
+              </button>
+            ` : '<span class="text-[10px] text-slate-400 italic block mt-1">No certificate attached</span>'}
           </div>
           <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
             <span class="text-slate-400 font-bold uppercase text-[10px]">PAN Card Number</span>
-            <div class="font-mono font-bold text-sm text-blue-700">${v.panNo || (v.gstNo && v.gstNo.length >= 12 ? v.gstNo.substring(2, 12).toUpperCase() : 'Not Recorded')}</div>
+            <div class="font-mono font-bold text-sm text-blue-700">${v.panNotApplicable ? 'Not Applicable' : (v.panNo || 'Not Recorded')}</div>
+            ${v.panCardFile ? `
+              <button type="button" onclick="CMS_APP.viewDocument('${v.panCardFile}', 'Permanent Account Number (PAN) Card', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-medium flex items-center gap-1 mt-1 hover:bg-blue-100 transition">
+                <i data-lucide="eye" class="w-3 h-3"></i> View PAN Card Copy
+              </button>
+            ` : '<span class="text-[10px] text-slate-400 italic block mt-1">No PAN copy attached</span>'}
           </div>
           <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
             <span class="text-slate-400 font-bold uppercase text-[10px]">Contact Phone</span>
@@ -205,118 +441,258 @@ window.CMS_MASTERS = {
         <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
           <span class="text-slate-400 font-bold uppercase text-[10px]">Registered Business Address</span>
           <p class="text-slate-700 font-medium">${[v.address, v.addressTaluka, v.addressDistrict, v.addressState, v.addressCountry, v.addressPinCode].filter(Boolean).join(', ')}</p>
+          <div class="text-[11px] text-blue-800 font-medium mt-1">
+            State Code: <strong>${stateInfo.code || '--'}</strong> • Applicable Statutory Tax: <strong>${stateInfo.taxMode === 'IGST' ? 'Inter-State (IGST)' : 'Intra-State (CGST + SGST)'}</strong>
+          </div>
         </div>
 
-        <div class="p-4 bg-blue-50/60 border border-blue-200 rounded-md space-y-2">
-          <span class="text-blue-900 font-bold uppercase text-[10px] tracking-wider">Applicable Compliance Certifications</span>
-          <div class="flex flex-wrap gap-2">
+        <!-- 5 Bank Details -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-2">
+          <span class="text-slate-700 font-bold uppercase text-[10px] tracking-wider flex items-center gap-1">
+            <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-600"></i> Vendor Bank & Remittance Credentials
+          </span>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+            <div><span class="text-slate-400 text-[10px] block">Bank Name</span><strong>${v.bankName || 'Not Provided'}</strong></div>
+            <div><span class="text-slate-400 text-[10px] block">Account Name</span><strong>${v.accountName || v.name || 'Not Provided'}</strong></div>
+            <div><span class="text-slate-400 text-[10px] block">Account No.</span><strong class="font-mono">${v.accountNo || 'Not Provided'}</strong></div>
+            <div><span class="text-slate-400 text-[10px] block">IFSC Code</span><strong class="font-mono">${v.ifscCode || 'Not Provided'}</strong></div>
+            <div><span class="text-slate-400 text-[10px] block">Branch</span><strong>${v.branchName || 'Not Provided'}</strong></div>
+          </div>
+        </div>
+
+        <!-- Approved Quotation Record -->
+        <div class="p-3.5 bg-blue-50/50 border border-blue-200 rounded-md space-y-1.5">
+          <span class="text-blue-900 font-bold uppercase text-[10px] tracking-wider flex items-center gap-1">
+            <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-600"></i> Approved Commercial Quotation & Validity
+          </span>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <div><span class="text-slate-500 text-[10px] block">Quote Ref / No.</span><strong>${v.quotationNo || 'Direct Order'}</strong></div>
+            <div><span class="text-slate-500 text-[10px] block">Quotation Date</span><strong class="font-mono">${window.CMS_STORE.formatDate(v.quotationDate)}</strong></div>
+            <div>
+              <span class="text-slate-500 text-[10px] block">Valid Till</span>
+              <strong class="font-mono ${v.quotationValidTill && new Date(v.quotationValidTill) < new Date() ? 'text-red-700' : 'text-emerald-700'}">
+                ${window.CMS_STORE.formatDate(v.quotationValidTill)}
+                ${v.quotationValidTill && new Date(v.quotationValidTill) < new Date() ? ' (Expired)' : ''}
+              </strong>
+            </div>
+          </div>
+          ${v.quotationDoc ? `
+            <div class="pt-2">
+              <button type="button" onclick="CMS_APP.viewDocument('${v.quotationDoc}', 'Approved Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${v.quotationValidTill}' })" class="text-[11px] text-blue-800 bg-white border border-blue-300 px-3 py-1 rounded font-bold hover:bg-blue-50 transition flex items-center gap-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Inspect Uploaded Quotation Copy (${v.quotationDoc})
+              </button>
+            </div>
+          ` : '<div class="text-[10px] text-slate-400 italic pt-1">No quotation copy uploaded</div>'}
+        </div>
+
+        <!-- Regulatory & Compliance Certificates -->
+        <div class="p-3.5 bg-blue-50/60 border border-blue-200 rounded-md space-y-2">
+          <span class="text-blue-900 font-bold uppercase text-[10px] tracking-wider">Statutory Compliance Certificates (${(v.certificates || []).length})</span>
+          <div class="space-y-2">
             ${(!v.certificates || v.certificates.length === 0) ? '<span class="text-slate-400 italic">No certificates recorded</span>' : (v.certificates || []).map(c => {
-              const cName = typeof c === 'string' ? c : (c.name || 'Certificate');
+              const reg = typeof c === 'string' ? c : (c.regulator || c.name || 'Certificate');
+              const form = typeof c === 'object' && c.formNo ? `Standard: ${c.formNo}` : '';
+              const certNo = typeof c === 'object' && c.certificateNo ? `License: ${c.certificateNo}` : '';
               const hasVal = typeof c === 'object' ? c.hasValidity : false;
               const valDate = typeof c === 'object' ? c.validTill : '';
+              const file = typeof c === 'object' ? c.fileName : '';
+              const isExpired = valDate && new Date(valDate) < new Date();
               return `
-                <div class="p-2.5 bg-white border border-blue-200 text-blue-900 rounded-md text-xs shadow-xs">
-                  <div class="font-bold flex items-center gap-1.5">
-                    <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
-                    <span>${cName}</span>
+                <div class="p-2.5 bg-white border border-blue-200 text-blue-900 rounded-md text-xs shadow-xs flex items-center justify-between gap-3">
+                  <div>
+                    <div class="font-bold flex items-center gap-1.5">
+                      <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
+                      <span>${reg} ${form ? `(${form})` : ''}</span>
+                    </div>
+                    <div class="text-[11px] text-slate-600 mt-0.5 space-x-2">
+                      ${certNo ? `<span class="font-mono font-medium">${certNo}</span>` : ''}
+                      ${hasVal && valDate ? `<span class="font-mono font-bold ${isExpired ? 'text-red-700' : 'text-blue-700'}">Expiry: ${window.CMS_STORE.formatDate(valDate)}${isExpired ? ' (Expired)' : ''}</span>` : '<span class="text-slate-400">Permanent Validity</span>'}
+                    </div>
                   </div>
-                  <div class="text-[10px] text-slate-500 mt-1">
-                    ${hasVal && valDate ? `<span class="text-blue-700 font-mono font-semibold">Expires: ${valDate}</span>` : '<span class="text-slate-400">Lifetime / No Expiry Date</span>'}
-                    ${typeof c === 'object' && c.formNo ? `<span class="block">Form: ${c.formNo}</span>` : ''}
-                    ${typeof c === 'object' && c.certificateNo ? `<span class="block">No: ${c.certificateNo}</span>` : ''}
-                    ${typeof c === 'object' && c.fileName ? `<span class="block text-emerald-700">File: ${c.fileName}</span>` : ''}
-                  </div>
+                  ${file ? `
+                    <button type="button" onclick="CMS_APP.viewDocument('${file}', '${reg} Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${valDate}' })" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 rounded text-[10px] font-bold flex items-center gap-1 transition">
+                      <i data-lucide="eye" class="w-3 h-3"></i> View Certificate
+                    </button>
+                  ` : '<span class="text-[10px] text-slate-400 italic">No copy attached</span>'}
                 </div>
               `;
             }).join('')}
           </div>
-          ${v.certificateFile || v.gstCertificateFile || v.panCardFile ? `
-            <div class="pt-2 text-slate-600 flex items-center gap-1.5 font-medium">
-              <i data-lucide="file-check" class="w-4 h-4 text-emerald-600"></i>
-              <span>Files on record: <strong>${[v.certificateFile, v.gstCertificateFile, v.panCardFile].filter(Boolean).join(', ')}</strong></span>
-            </div>
-          ` : ''}
         </div>
 
-        <div class="pt-3 border-t border-slate-200 flex justify-end">
-          <button onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">
+        <div class="pt-3 border-t border-slate-200 flex flex-wrap justify-end gap-2">
+          ${(v.status === 'Pending Approval' || v.status === 'Revision Required') && role === 'Checker' ? `
+            <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorRejectModal('${v.id}');" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-md transition inline-flex items-center gap-1.5 text-xs">
+              <i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i>
+              <span>Reject / Return</span>
+            </button>
+            <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorSanctionModal('${v.id}');" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-md shadow transition inline-flex items-center gap-1.5 text-xs">
+              <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
+              <span>Sanction / Approve</span>
+            </button>
+          ` : ''}
+          <button onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
             Close
           </button>
         </div>
       </div>
     `;
 
-    window.CMS_APP.openModal('Vendor Profile Overview', content, 'max-w-xl');
+    window.CMS_APP.openModal('Vendor Profile & Statutory Inspection', content, 'max-w-2xl');
+    if (window.lucide) window.lucide.createIcons();
   },
 
   onGstInput(val) {
     const panInput = document.getElementById('v-pan');
-    if (!panInput || panInput.disabled) return;
-    if (panInput.dataset.autoFilled === 'true' || !panInput.value) {
-      panInput.value = val && val.length === 15 ? val.substring(2, 12).toUpperCase() : '';
-      panInput.dataset.autoFilled = val && val.length === 15 ? 'true' : 'false';
+    const gstNaCheckbox = document.getElementById('v-gst-na');
+    const cleanGst = (val || '').trim().toUpperCase();
+
+    // Blue Box lock: if GSTN is provided, do NOT check blue box
+    if (gstNaCheckbox) {
+      if (cleanGst.length > 0) {
+        gstNaCheckbox.checked = false;
+        gstNaCheckbox.disabled = true;
+        this.toggleGstApplicable(false);
+      } else {
+        gstNaCheckbox.disabled = false;
+      }
+    }
+
+    // Always update PAN dynamically from characters 3-12 of 15-digit GSTIN
+    if (panInput && !panInput.disabled) {
+      if (cleanGst.length >= 12) {
+        panInput.value = cleanGst.substring(2, 12);
+        panInput.dataset.autoFilled = 'true';
+      } else if (panInput.dataset.autoFilled === 'true') {
+        panInput.value = '';
+      }
+    }
+
+    // Auto-detect Indian State from first 2 digits of GSTIN
+    if (cleanGst.length >= 2) {
+      const prefix = cleanGst.substring(0, 2);
+      const matched = this.indianStates.find(s => s.code === prefix);
+      if (matched) {
+        const stateSelect = document.getElementById('v-state');
+        if (stateSelect && (!stateSelect.value || stateSelect.dataset.autoDetected === 'true')) {
+          stateSelect.value = matched.name;
+          stateSelect.dataset.autoDetected = 'true';
+          this.onStateChange(matched.name);
+        }
+      }
     }
   },
 
+  onStateChange(stateName) {
+    const info = this.getStateInfo(stateName);
+    const badgeEl = document.getElementById('v-state-code-badge');
+    if (badgeEl) {
+      if (info.code) {
+        badgeEl.innerHTML = `<span class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300 font-bold text-[10px]">State Code: ${info.code}</span> <span class="px-2 py-0.5 rounded ${info.taxMode === 'IGST' ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'} font-bold text-[10px]">${info.taxMode === 'IGST' ? 'Inter-State (IGST Applicable)' : 'Intra-State (CGST + SGST Applicable)'}</span>`;
+      } else {
+        badgeEl.innerHTML = '';
+      }
+    }
+  },
+
+  // Sequence strictly arranged:
+  // 1. Regulatory Agency -> 2. Form/Standard No. -> 3. License/Certificate No. -> 4. Validity/Expiry -> 5. Upload Copy
   addCertificateRow(certData = null) {
     const container = document.getElementById('v-cert-container');
     if (!container) return;
     const rowId = 'cert_row_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
-    const name = certData ? (typeof certData === 'string' ? certData : (certData.name || '')) : '';
+    const regulator = certData ? (typeof certData === 'object' ? (certData.regulator || certData.name || '') : certData) : '';
     const hasValidity = certData ? (typeof certData === 'object' ? Boolean(certData.hasValidity) : false) : false;
     const validTill = certData && typeof certData === 'object' ? (certData.validTill || '') : '';
     const formNo = certData && typeof certData === 'object' ? (certData.formNo || '') : '';
     const certificateNo = certData && typeof certData === 'object' ? (certData.certificateNo || '') : '';
     const fileName = certData && typeof certData === 'object' ? (certData.fileName || '') : '';
+    const today = new Date().toISOString().split('T')[0];
+
+    const regulators = ['BIS', 'CDSCO', 'FDA', 'FSSAI', 'GMP Certificate', 'ISO', 'NABL', 'State FDA', 'Other'];
 
     const row = document.createElement('div');
-    row.className = 'cert-row p-3 bg-slate-50 border border-slate-200 rounded-md space-y-2.5 transition';
+    row.className = 'cert-row p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-3 transition';
     row.id = rowId;
     row.innerHTML = `
       <div class="flex items-start justify-between gap-3">
-        <div class="flex-1">
-          <label class="block text-[11px] font-bold text-slate-700 mb-1">Regulator / Certification Agency *</label>
-          <input type="text" list="cert-suggestions" class="cert-name-input w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Enter certificate name (e.g. MSME, Pollution Clearance, Factory License)" value="${name.replace(/"/g, '&quot;')}" required />
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 flex-1">
+          <!-- 1. Agency -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">
+              1. Regulator / Agency
+            </label>
+            <select class="cert-regulator-select w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 font-medium" onchange="CMS_MASTERS.onRegulatorChange('${rowId}', this.value)">
+              <option value="">-- Choose Agency --</option>
+              ${regulators.map(r => `<option value="${r}" ${regulator === r ? 'selected' : ''}>${r}</option>`).join('')}
+            </select>
+          </div>
+          <!-- 2. Form No -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">2. Form / Standard No.</label>
+            <input type="text" list="iso-suggestions" class="cert-form-input w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" value="${formNo}" placeholder="e.g. 9001:2015" />
+          </div>
+          <!-- 3. License No -->
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">
+              3. License / Certificate No.
+            </label>
+            <input type="text" class="cert-number-input w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" value="${certificateNo}" placeholder="e.g. LIC-2026-981" />
+          </div>
         </div>
         <button type="button" onclick="CMS_MASTERS.removeCertificateRow('${rowId}')" class="mt-5 p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition" title="Remove Certificate">
           <i data-lucide="trash-2" class="w-4 h-4"></i>
         </button>
       </div>
 
-      <div class="flex flex-wrap items-center gap-4 pt-1 text-xs">
-        <div class="flex items-center gap-2.5">
-          <span class="font-bold text-slate-700 text-[11px]">Validity of Time / Expiry Date?</span>
-          <div class="inline-flex items-center gap-3 bg-white px-2.5 py-1 rounded border border-slate-200">
-            <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
-              <input type="radio" name="valid_opt_${rowId}" value="yes" ${hasValidity ? 'checked' : ''} onchange="CMS_MASTERS.onCertValidityChange('${rowId}', true)" class="text-blue-600 focus:ring-blue-500" />
-              <span>Yes</span>
-            </label>
-            <label class="inline-flex items-center gap-1.5 cursor-pointer font-medium text-slate-700">
-              <input type="radio" name="valid_opt_${rowId}" value="no" ${!hasValidity ? 'checked' : ''} onchange="CMS_MASTERS.onCertValidityChange('${rowId}', false)" class="text-blue-600 focus:ring-blue-500" />
-              <span>No</span>
-            </label>
+      <!-- 4. Validity & 5. Upload Copy -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/80 text-xs items-center">
+        <!-- 4. Validity/Expiry -->
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="font-bold text-slate-700 text-[11px]">4. Valid Till / Expiry Date (Yes/No)?</span>
+            <div class="inline-flex items-center gap-2 bg-white px-2 py-0.5 rounded border border-slate-200">
+              <label class="inline-flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                <input type="radio" name="valid_opt_${rowId}" value="yes" ${hasValidity ? 'checked' : ''} onchange="CMS_MASTERS.onCertValidityChange('${rowId}', true)" class="text-blue-600" />
+                <span>Yes</span>
+              </label>
+              <label class="inline-flex items-center gap-1 cursor-pointer font-medium text-slate-700">
+                <input type="radio" name="valid_opt_${rowId}" value="no" ${!hasValidity ? 'checked' : ''} onchange="CMS_MASTERS.onCertValidityChange('${rowId}', false)" class="text-blue-600" />
+                <span>No</span>
+              </label>
+            </div>
+          </div>
+          <div id="expiry_box_${rowId}" class="cert-expiry-box ${hasValidity ? '' : 'hidden'}">
+            <div class="flex items-center gap-2 bg-blue-50/70 border border-blue-200 p-1.5 rounded-md">
+              <label class="text-[11px] font-bold text-blue-900 shrink-0">Expiry Date *:</label>
+              <input type="date" min="${today}" class="cert-expiry-input w-full px-2 py-1 border border-blue-300 rounded bg-white text-xs font-mono" value="${validTill}" />
+            </div>
           </div>
         </div>
 
-        <!-- Expiry Date Box (shown only if Yes) -->
-        <div id="expiry_box_${rowId}" class="cert-expiry-box flex-1 min-w-[200px] ${hasValidity ? '' : 'hidden'}">
-          <div class="flex items-center gap-2 bg-blue-50/70 border border-blue-200 p-1.5 rounded-md">
-            <label class="text-[11px] font-bold text-blue-900 shrink-0">Valid Till / Expires On:</label>
-            <input type="date" min="${new Date().toISOString().split('T')[0]}" class="cert-expiry-input w-full px-2 py-1 border border-blue-300 rounded bg-white text-xs font-mono" value="${validTill}" />
+        <!-- 5. Upload File Copy -->
+        <div>
+          <label class="block text-[11px] font-bold text-slate-700 mb-1">
+            5. Upload Certificate Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="file" accept=".pdf,image/*" class="cert-file-input text-[11px]" data-current="${fileName}" />
+            ${fileName ? `<span class="text-[10px] text-emerald-700 font-mono truncate max-w-[120px]" title="${fileName}">${fileName}</span>` : ''}
           </div>
         </div>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 pt-1">
-        <label class="text-[11px] font-bold text-slate-700">Form / Standard No.</label>
-        <input type="text" class="cert-form-input w-28 px-2 py-1 border border-slate-300 rounded bg-white text-xs" value="${formNo}" placeholder="9001:2015" />
-        <label class="text-[11px] font-bold text-slate-700">License / Certificate No.</label>
-        <input type="text" class="cert-number-input w-32 px-2 py-1 border border-slate-300 rounded bg-white text-xs" value="${certificateNo}" required />
-        <input type="file" accept=".pdf,image/*" class="cert-file-input max-w-[180px] text-[10px]" data-current="${fileName}" />
-        ${fileName ? `<span class="text-[10px] text-slate-500 font-mono truncate" title="${fileName}">${fileName}</span>` : ''}
       </div>
     `;
     container.appendChild(row);
     if (window.lucide) window.lucide.createIcons();
+  },
+
+  onRegulatorChange(rowId, val) {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const formInput = row.querySelector('.cert-form-input');
+    if (formInput && val === 'ISO' && !formInput.value) {
+      formInput.value = '9001:2015';
+    }
   },
 
   onCertValidityChange(rowId, isYes) {
@@ -338,88 +714,578 @@ window.CMS_MASTERS = {
     if (row) row.remove();
   },
 
+  onVendorQuotedMaterialChange(matId) {
+    if (!matId) return;
+    const mat = window.CMS_STORE.data.consumables.find(m => m.id === matId);
+    if (!mat) return;
+    const nameEl = document.getElementById('v-quote-mat-name');
+    if (nameEl) nameEl.value = mat.materialName;
+    const rateEl = document.getElementById('v-quote-rate');
+    if (rateEl) rateEl.value = mat.quotationRate || mat.vendor1Rate || '';
+    const unitEl = document.getElementById('v-quote-unit');
+    if (unitEl) unitEl.value = mat.unit || 'Nos';
+    const hsnEl = document.getElementById('v-quote-hsn');
+    if (hsnEl) hsnEl.value = mat.hsnCode || '';
+    const quoteNoEl = document.getElementById('v-quote-no');
+    if (quoteNoEl && (!quoteNoEl.value || quoteNoEl.value === '')) {
+      quoteNoEl.value = mat.quotationNo || '';
+    }
+    const quoteDateEl = document.getElementById('v-quote-date');
+    if (quoteDateEl && (!quoteDateEl.value || quoteDateEl.value === '')) {
+      quoteDateEl.value = mat.quotationDate || '';
+    }
+  },
+
+  onVendorQuoteNoInput(val) {
+    if (!val || val.length < 3) return;
+    const clean = val.trim().toUpperCase();
+    const mat = window.CMS_STORE.data.consumables.find(m => m.quotationNo && m.quotationNo.toUpperCase() === clean);
+    if (mat) {
+      const select = document.getElementById('v-quote-mat-select');
+      if (select) select.value = mat.id;
+      this.onVendorQuotedMaterialChange(mat.id);
+    }
+  },
+
+  onMaterialQuoteNoInput(val) {
+    if (!val || val.length < 3) return;
+    const clean = val.trim().toUpperCase();
+    const vendor = window.CMS_STORE.data.vendors.find(v => v.quotationNo && v.quotationNo.toUpperCase() === clean);
+    if (vendor) {
+      const vSelect = document.getElementById('m-v1');
+      if (vSelect) vSelect.value = vendor.id;
+      const qDate = document.getElementById('m-quote-date');
+      if (qDate && vendor.quotationDate) qDate.value = vendor.quotationDate;
+      const qRate = document.getElementById('m-quote-rate');
+      if (qRate && vendor.quotedMaterialRate > 0 && (!qRate.value || parseFloat(qRate.value) === 0)) {
+        qRate.value = vendor.quotedMaterialRate;
+        const v1Rate = document.getElementById('m-v1-rate');
+        if (v1Rate) v1Rate.value = vendor.quotedMaterialRate;
+      }
+    }
+  },
+
+  onMaterialVendorChange(vendorId) {
+    if (!vendorId) return;
+    const vendor = window.CMS_STORE.data.vendors.find(v => v.id === vendorId);
+    if (vendor && vendor.quotationNo) {
+      const qNo = document.getElementById('m-quote-no');
+      if (qNo && (!qNo.value || qNo.value === '')) qNo.value = vendor.quotationNo;
+      const qDate = document.getElementById('m-quote-date');
+      if (qDate && (!qDate.value || qDate.value === '')) qDate.value = vendor.quotationDate || '';
+      const qRate = document.getElementById('m-quote-rate');
+      if (qRate && vendor.quotedMaterialRate > 0 && (!qRate.value || parseFloat(qRate.value) === 0)) {
+        qRate.value = vendor.quotedMaterialRate;
+        const v1Rate = document.getElementById('m-v1-rate');
+        if (v1Rate) v1Rate.value = vendor.quotedMaterialRate;
+      }
+    }
+  },
+
+  addMaterialVendorRow(vData = null, forcePrimary = false) {
+    const container = document.getElementById('m-vendor-container');
+    if (!container) return;
+
+    const rowId = 'mat_v_row_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    const store = window.CMS_STORE.data;
+    const vendors = (store.vendors || []).filter(v => v.status === "Approved" && !v.isBlocked);
+    const today = new Date().toISOString().split('T')[0];
+
+    const currentRows = container.querySelectorAll('.mat-vendor-row');
+    const rowNumber = currentRows.length + 1;
+    const isPrimary = forcePrimary || (currentRows.length === 0);
+
+    const vendorId = vData ? (vData.vendorId || '') : '';
+    const quotationNo = vData ? (vData.quotationNo || '') : '';
+    const quotationDate = vData ? (vData.quotationDate || today) : today;
+    const rate = vData ? (vData.rate ?? vData.vendor1Rate ?? '') : '';
+    const effectiveFrom = vData ? (vData.effectiveFrom ?? vData.vendor1RateEffectiveFrom ?? today) : today;
+
+    const row = document.createElement('div');
+    row.id = rowId;
+    row.className = `mat-vendor-row p-3.5 bg-slate-50 border ${isPrimary ? 'border-blue-300 bg-blue-50/30' : 'border-slate-200'} rounded-md space-y-2.5 transition`;
+    row.innerHTML = `
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="mat-v-num w-5 h-5 rounded-full ${isPrimary ? 'bg-blue-600 text-white' : 'bg-slate-300 text-slate-700'} font-bold text-[10px] flex items-center justify-center">
+            ${rowNumber}
+          </span>
+          <span class="mat-v-title font-bold text-slate-800 text-xs">
+            ${isPrimary ? `Vendor ${rowNumber} (Primary Approved Vendor)` : `Vendor ${rowNumber} (Alternate Source)`}
+          </span>
+          <div class="mat-v-badge-container inline-block">
+            ${isPrimary ? '<span class="text-[9.5px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">PRIMARY SOURCE</span>' : ''}
+          </div>
+        </div>
+        <div>
+          <button type="button" onclick="CMS_MASTERS.removeMaterialVendorRow('${rowId}')" class="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition" title="Remove this Vendor">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">
+            Vendor / Supplier <span class="text-rose-500">*</span>
+          </label>
+          <select class="mat-v-select w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium" onchange="CMS_MASTERS.onMaterialRowVendorChange('${rowId}', this.value)" required>
+            <option value="">-- Choose Vendor --</option>
+            ${vendors.map(v => `<option value="${v.id}" ${vendorId === v.id ? 'selected' : ''}>${v.name}</option>`).join('')}
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">
+            Quotation Number <span class="text-rose-500">*</span>
+          </label>
+          <input type="text" class="mat-v-quote-no w-full font-mono uppercase font-bold text-blue-900 px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" value="${quotationNo}" placeholder="e.g. QT-2026-881" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onMaterialRowQuoteNoInput('${rowId}', this.value);" required />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Quotation Date</label>
+          <input type="date" class="mat-v-quote-date w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" value="${quotationDate}" />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">
+            Quotation Rate (₹) <span class="text-rose-500">*</span>
+          </label>
+          <input type="number" step="0.01" class="mat-v-rate w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-md bg-white text-blue-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" value="${rate}" placeholder="0.00" required />
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Rate Effective From Date</label>
+          <input type="date" class="mat-v-eff-date w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white font-mono" value="${effectiveFrom}" />
+        </div>
+
+        <div class="flex items-end pb-1">
+          <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-medium text-slate-700">
+            <input type="radio" name="mat-primary-vendor-radio" value="${rowId}" ${isPrimary ? 'checked' : ''} onchange="CMS_MASTERS.setPrimaryMaterialVendor('${rowId}')" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
+            <span>Mark as Preferred Source</span>
+          </label>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(row);
+    this.renumberMaterialVendorRows();
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  removeMaterialVendorRow(rowId) {
+    const container = document.getElementById('m-vendor-container');
+    if (!container) return;
+    const rows = container.querySelectorAll('.mat-vendor-row');
+    if (rows.length <= 1) {
+      window.CMS_APP.toast('At least one vendor quotation is required for procurement cataloging.', 'warning');
+      return;
+    }
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const wasPrimary = Boolean(row.querySelector('input[type="radio"]:checked'));
+    row.remove();
+    if (wasPrimary) {
+      const remaining = container.querySelector('.mat-vendor-row');
+      if (remaining) {
+        const radio = remaining.querySelector('input[name="mat-primary-vendor-radio"]');
+        if (radio) radio.checked = true;
+      }
+    }
+    this.renumberMaterialVendorRows();
+  },
+
+  renumberMaterialVendorRows() {
+    const container = document.getElementById('m-vendor-container');
+    if (!container) return;
+    const rows = container.querySelectorAll('.mat-vendor-row');
+    let hasPrimaryChecked = false;
+    rows.forEach(r => {
+      if (r.querySelector('input[name="mat-primary-vendor-radio"]:checked')) {
+        hasPrimaryChecked = true;
+      }
+    });
+
+    // If no radio is checked, set the first row as primary
+    if (!hasPrimaryChecked && rows.length > 0) {
+      const firstRadio = rows[0].querySelector('input[name="mat-primary-vendor-radio"]');
+      if (firstRadio) firstRadio.checked = true;
+    }
+
+    rows.forEach((r, idx) => {
+      const num = idx + 1;
+      const numBadge = r.querySelector('.mat-v-num');
+      const title = r.querySelector('.mat-v-title');
+      const badgeContainer = r.querySelector('.mat-v-badge-container');
+      const isPrimary = Boolean(r.querySelector('input[name="mat-primary-vendor-radio"]:checked'));
+
+      if (numBadge) {
+        numBadge.innerText = String(num);
+        numBadge.className = `mat-v-num w-5 h-5 rounded-full ${isPrimary ? 'bg-blue-600 text-white' : 'bg-slate-300 text-slate-700'} font-bold text-[10px] flex items-center justify-center`;
+      }
+      if (title) {
+        title.innerText = isPrimary ? `Vendor ${num} (Primary Approved Vendor)` : `Vendor ${num} (Alternate Source)`;
+      }
+      if (badgeContainer) {
+        badgeContainer.innerHTML = isPrimary ? '<span class="text-[9.5px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">PRIMARY SOURCE</span>' : '';
+      }
+      if (isPrimary) {
+        r.classList.add('border-blue-300', 'bg-blue-50/30');
+        r.classList.remove('border-slate-200');
+      } else {
+        r.classList.remove('border-blue-300', 'bg-blue-50/30');
+        r.classList.add('border-slate-200');
+      }
+    });
+  },
+
+  setPrimaryMaterialVendor(rowId) {
+    const container = document.getElementById('m-vendor-container');
+    if (!container) return;
+    const rows = container.querySelectorAll('.mat-vendor-row');
+    rows.forEach(r => {
+      const radio = r.querySelector('input[name="mat-primary-vendor-radio"]');
+      if (radio) radio.checked = (r.id === rowId);
+    });
+    this.renumberMaterialVendorRows();
+  },
+
+  onMaterialRowVendorChange(rowId, vendorId) {
+    if (!vendorId) return;
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const vendor = window.CMS_STORE.data.vendors.find(v => v.id === vendorId);
+    if (vendor && vendor.quotationNo) {
+      const qNoInput = row.querySelector('.mat-v-quote-no');
+      if (qNoInput && (!qNoInput.value || qNoInput.value === '')) qNoInput.value = vendor.quotationNo;
+      const qDateInput = row.querySelector('.mat-v-quote-date');
+      if (qDateInput && (!qDateInput.value || qDateInput.value === '')) qDateInput.value = vendor.quotationDate || '';
+      const qRateInput = row.querySelector('.mat-v-rate');
+      if (qRateInput && vendor.quotedMaterialRate > 0 && (!qRateInput.value || parseFloat(qRateInput.value) === 0)) {
+        qRateInput.value = vendor.quotedMaterialRate;
+      }
+    }
+  },
+
+  onMaterialRowQuoteNoInput(rowId, val) {
+    if (!val || val.length < 3) return;
+    const clean = val.trim().toUpperCase();
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    const vendor = window.CMS_STORE.data.vendors.find(v => v.quotationNo && v.quotationNo.toUpperCase() === clean);
+    if (vendor) {
+      const vSelect = row.querySelector('.mat-v-select');
+      if (vSelect) vSelect.value = vendor.id;
+      const qDate = row.querySelector('.mat-v-quote-date');
+      if (qDate && vendor.quotationDate) qDate.value = vendor.quotationDate;
+      const qRate = row.querySelector('.mat-v-rate');
+      if (qRate && vendor.quotedMaterialRate > 0 && (!qRate.value || parseFloat(qRate.value) === 0)) {
+        qRate.value = vendor.quotedMaterialRate;
+      }
+    }
+  },
+
   openVendorModal(vendorId = null) {
+    const role = window.CMS_STORE.getRole();
+    if (role === 'Checker') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Vendor registration must be initiated by Maker.', 'warning');
+    }
     const isEdit = Boolean(vendorId);
-    const regulatorOptions = [
-      'AGMARK', 'APEDA / MPEDA', 'BIS', 'CCI', 'CCPA', 'CDSCO', 'CERC / SERC', 'DGCA', 'DGFT', 'FDA', 'ISO',
-      'FSSAI', 'IBBI', 'IFSCA', 'IRDAI', 'MCA', 'NABL', 'NABH', 'PESO', 'PFRDA', 'PNGRB', 'RBI', 'SEBI',
-      'State FDA', 'TRAI'
-    ].sort((a, b) => a.localeCompare(b));
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
-      name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: '', addressCountry: 'India', addressPinCode: '', gstNo: '', panNo: '', gstNotApplicable: false, panNotApplicable: false, certificates: [], contactNo: '', email: '', certificateFile: '', gstCertificateFile: '', panCardFile: '', approvedForLimitedPeriod: false, approvalValidTill: ''
+      name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: 'Delhi', addressCountry: 'India', addressPinCode: '',
+      gstNo: '', panNo: '', gstNotApplicable: false, panNotApplicable: false, certificates: [], contactNo: '', email: '',
+      certificateFile: '', gstCertificateFile: '', panCardFile: '', approvedForLimitedPeriod: false, approvalValidTill: '',
+      bankName: '', accountNo: '', accountName: '', ifscCode: '', branchName: '', isBlocked: false, blockReason: '',
+      quotationNo: '', quotationDate: '', quotationValidTill: '', quotationDoc: '',
+      quotedMaterialId: '', quotedMaterialName: '', quotedMaterialRate: '', quotedMaterialUnit: 'Nos', quotedMaterialHsn: '8472'
     };
 
     const initialPan = vendor.panNo || (vendor.gstNo && vendor.gstNo.length >= 12 ? vendor.gstNo.substring(2, 12).toUpperCase() : '');
+    const today = new Date().toISOString().split('T')[0];
+    const initialInfo = this.getStateInfo(vendor.addressState || 'Delhi');
 
     const content = `
       <form id="vendor-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveVendor('${vendorId || ''}');">
         
         <div class="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-900 font-medium flex items-center gap-2">
-          <i data-lucide="info" class="w-4 h-4 shrink-0"></i>
-          <span>Enter supplier credentials, GSTIN, PAN card, compliance certificates, and optional expiry dates for approval.</span>
+          <i data-lucide="info" class="w-4 h-4 shrink-0 text-blue-700"></i>
+          <span>Enter supplier credentials, GSTIN, PAN, bank details, and compliance certificates for statutory auditing.</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="md:col-span-2">
-            <label class="block font-bold text-slate-700 mb-1">Vendor / Supplier Name *</label>
-            <input type="text" id="v-name" required value="${vendor.name || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs" placeholder="e.g. Apex Office Supplies Pvt Ltd" />
-          </div>
-          <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div><label class="block font-bold text-slate-700 mb-1">Address *</label><input id="v-address" required value="${vendor.address || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md text-xs" /></div>
-            <div><label class="block font-bold text-slate-700 mb-1">Taluka</label><input id="v-taluka" value="${vendor.addressTaluka || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md text-xs" /></div>
-            <div><label class="block font-bold text-slate-700 mb-1">District *</label><input id="v-district" required value="${vendor.addressDistrict || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md text-xs" /></div>
-            <div><label class="block font-bold text-slate-700 mb-1">State *</label><select id="v-state" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md text-xs"><option value="">Select state</option>${['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Delhi','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal'].map(s => `<option value="${s}" ${vendor.addressState === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-            <div><label class="block font-bold text-slate-700 mb-1">Country *</label><input id="v-country" required value="${vendor.addressCountry || 'India'}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md text-xs" /></div>
-            <div><label class="block font-bold text-slate-700 mb-1">PIN Code *</label><input id="v-pin" required pattern="[0-9]{6}" maxlength="6" value="${vendor.addressPinCode || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md text-xs" /></div>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">GST Number (GSTIN)</label>
-            <div class="flex gap-2"><input type="text" id="v-gst" ${vendor.gstNotApplicable ? 'disabled' : ''} maxlength="15" value="${vendor.gstNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstInput(this.value);" class="w-full font-mono uppercase px-3.5 py-2.5 border border-slate-300 rounded-md text-xs" placeholder="15 characters" /><button type="button" onclick="CMS_MASTERS.lookupGstData()" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded text-[10px] font-bold" title="Look up registered GST details">Lookup</button></div>
-            <label class="mt-1 inline-flex items-center gap-1.5 text-[11px]"><input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="document.getElementById('v-gst').disabled = this.checked; if (this.checked) document.getElementById('v-gst').value = '';" /> GST registration not applicable</label>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">PAN Card Number</label>
-            <input type="text" id="v-pan" ${vendor.panNotApplicable ? 'disabled' : ''} maxlength="10" value="${initialPan}" oninput="this.value = this.value.toUpperCase(); this.dataset.autoFilled = 'false';" class="w-full font-mono uppercase px-3.5 py-2.5 border border-slate-300 rounded-md text-xs" placeholder="10 characters" />
-            <label class="mt-1 inline-flex items-center gap-1.5 text-[11px]"><input type="checkbox" id="v-pan-na" ${vendor.panNotApplicable ? 'checked' : ''} onchange="document.getElementById('v-pan').disabled = this.checked; if (this.checked) document.getElementById('v-pan').value = '';" /> PAN not applicable</label>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Contact Number *</label>
-            <input type="tel" id="v-contact" required value="${vendor.contactNo || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs" placeholder="+91 98110 45678" />
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Email ID *</label>
-            <input type="email" id="v-email" required value="${vendor.email || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs" placeholder="vendor@example.com" />
+        <!-- 1. Organization & Address -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-3">
+          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="building" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span>1. Organization & Business Address</span>
           </div>
 
-          <!-- Dynamic Certificates Builder -->
-          <div class="md:col-span-2 pt-2 border-t border-slate-200 space-y-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <label class="block font-bold text-slate-800 text-xs">Compliance & Regulatory Certificates</label>
-                <p class="text-[11px] text-slate-500">Add custom certificates with optional expiry validity dates.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="md:col-span-2">
+              <label class="block font-bold text-slate-700 mb-1">Vendor / Supplier Company Name <span class="text-rose-600 font-bold">*</span></label>
+              <input type="text" id="v-name" required value="${vendor.name || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Apex Office Supplies Pvt Ltd" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block font-bold text-slate-700 mb-1">Street / Building Address <span class="text-rose-600 font-bold">*</span></label>
+              <input id="v-address" required value="${vendor.address || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-md" placeholder="Plot / Flat / Street / Area" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Taluka / Tehsil</label>
+              <input id="v-taluka" value="${vendor.addressTaluka || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Taluka name" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">District <span class="text-rose-600 font-bold">*</span></label>
+              <input id="v-district" required value="${vendor.addressDistrict || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="District name" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">State <span class="text-rose-600 font-bold">*</span></label>
+              <select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white font-medium">
+                <option value="">-- Choose State / UT --</option>
+                ${this.indianStates.map(s => `<option value="${s.name}" ${(vendor.addressState || 'Delhi') === s.name ? 'selected' : ''}>${s.code} - ${s.name}</option>`).join('')}
+              </select>
+              <div id="v-state-code-badge" class="mt-1 flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300 font-bold text-[10px]">State Code: ${initialInfo.code || '07'}</span>
+                <span class="px-2 py-0.5 rounded ${initialInfo.taxMode === 'IGST' ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'} font-bold text-[10px]">
+                  ${initialInfo.taxMode === 'IGST' ? 'Inter-State (IGST Applicable)' : 'Intra-State (CGST + SGST Applicable)'}
+                </span>
               </div>
-              <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md font-bold text-xs transition">
-                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                <span>Add Certificate</span>
-              </button>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Country <span class="text-rose-600 font-bold">*</span></label>
+              <input id="v-country" required value="${vendor.addressCountry || 'India'}" class="w-full px-3 py-2 border border-slate-300 rounded-md" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">PIN Code (6 Digits) <span class="text-rose-600 font-bold">*</span></label>
+              <input id="v-pin" required maxlength="6" pattern="[0-9]{6}" value="${vendor.addressPinCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md" placeholder="e.g. 110020" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Phone Number <span class="text-rose-600 font-bold">*</span></label>
+                <input type="tel" id="v-contact" required value="${vendor.contactNo || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md font-mono" placeholder="10-digit number" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Email Address <span class="text-rose-600 font-bold">*</span></label>
+                <input type="email" id="v-email" required value="${vendor.email || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="vendor@..." />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. GST & PAN Statutory Section with Blue Box & Starred Fields -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-3">
+          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span>2. Statutory GSTIN & PAN Identification</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">
+                GSTIN Number (15 Characters) <span class="text-rose-600 font-bold">*</span>
+              </label>
+              <input type="text" id="v-gst" ${vendor.gstNotApplicable ? 'disabled' : ''} maxlength="15" value="${vendor.gstNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstInput(this.value);" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-blue-900" placeholder="15-digit GSTIN (e.g. 07AABCA1234F1Z5)" />
+              
+              <!-- Blue Box for GST Exemption -->
+              <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
+                <input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.toggleGstApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
+                <span class="font-semibold text-blue-900">GST registration is not applicable for this vendor (Exempt)</span>
+              </label>
+
+              <!-- Starred GST Certificate File Box -->
+              <div id="v-gst-file-box" class="${vendor.gstNotApplicable ? 'hidden' : ''} mt-2">
+                <label class="block font-bold text-slate-700 mb-1 text-[11px]">
+                  Upload GST Certificate (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                </label>
+                <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs" />
+                ${vendor.gstCertificateFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.gstCertificateFile}</span>` : ''}
+              </div>
             </div>
 
-            <datalist id="cert-suggestions">
-              ${regulatorOptions.map(option => `<option value="${option}"></option>`).join('')}
-            </datalist>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">
+                PAN Card Number (10 Characters) <span class="text-rose-600 font-bold">*</span>
+              </label>
+              <input type="text" id="v-pan" ${vendor.panNotApplicable ? 'disabled' : ''} maxlength="10" value="${initialPan}" oninput="this.value = this.value.toUpperCase(); this.dataset.autoFilled = 'false';" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-indigo-900" placeholder="10-character PAN (e.g. AABCA1234F)" />
+              
+              <!-- Blue Box for PAN Exemption -->
+              <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
+                <input type="checkbox" id="v-pan-na" ${vendor.panNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.togglePanApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
+                <span class="font-semibold text-blue-900">PAN card is not applicable for this vendor</span>
+              </label>
 
-            <div id="v-cert-container" class="space-y-2.5">
-              <!-- Rows inserted dynamically -->
+              <!-- Starred PAN Card File Box -->
+              <div id="v-pan-file-box" class="${vendor.panNotApplicable ? 'hidden' : ''} mt-2">
+                <label class="block font-bold text-slate-700 mb-1 text-[11px]">
+                  Upload PAN Card Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                </label>
+                <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs" />
+                ${vendor.panCardFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.panCardFile}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. All 5 Bank Details -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-3">
+          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span>3. Vendor Banking & Remittance Details</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Bank Name <span class="text-rose-600 font-bold">*</span></label>
+              <input type="text" id="v-bank-name" required value="${vendor.bankName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md" placeholder="e.g. HDFC Bank, SBI" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Account Name <span class="text-rose-600 font-bold">*</span></label>
+              <input type="text" id="v-account-name" required value="${vendor.accountName || vendor.name || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md" placeholder="Beneficiary Name" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Account No. <span class="text-rose-600 font-bold">*</span></label>
+              <input type="text" id="v-account-no" required minlength="9" maxlength="18" value="${vendor.accountNo || ''}" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-md" placeholder="9-18 digit account" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">IFSC Code (11 Chars) <span class="text-rose-600 font-bold">*</span></label>
+              <input type="text" id="v-ifsc" required maxlength="11" value="${vendor.ifscCode || ''}" oninput="this.value = this.value.toUpperCase();" class="w-full font-mono uppercase px-3 py-1.5 border border-slate-300 rounded-md" placeholder="e.g. HDFC0001234" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">Branch Name</label>
+              <input type="text" id="v-branch-name" value="${vendor.branchName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md" placeholder="Branch Name" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Commercial Quotation & Quoted Material (Auto-Sync with Operations) -->
+        <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg space-y-3.5 shadow-xs">
+          <div class="flex items-center justify-between pb-2 border-b border-blue-200">
+            <div class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-700"></i>
+              <span>Commercial Quotation & Quoted Material</span>
+            </div>
+            <span class="text-[10px] font-semibold text-blue-800 bg-blue-100 px-2.5 py-0.5 rounded-full border border-blue-300">
+              Auto-fills Goods Inward Store Operations
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold text-slate-800 mb-1 text-xs">
+                Quotation Number / Ref
+              </label>
+              <input type="text" id="v-quote-no" value="${vendor.quotationNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onVendorQuoteNoInput(this.value);" class="w-full font-mono uppercase font-bold text-blue-900 px-3 py-2 border-2 border-blue-400 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. QT-2026-881 (Optional)" />
+              <span class="block text-[10px] text-slate-500 mt-0.5">Commercial reference used during goods receiving.</span>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-800 mb-1 text-xs">Quotation Date</label>
+              <input type="date" id="v-quote-date" value="${vendor.quotationDate || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" />
+            </div>
+            <div>
+              <label class="block font-bold text-slate-800 mb-1 text-xs">Quotation Valid Till / Expiry Date</label>
+              <input type="date" id="v-quote-valid-till" min="${today}" value="${vendor.quotationValidTill || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" />
             </div>
           </div>
 
-          <div class="md:col-span-2 pt-1 border-t border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div><label class="block font-bold text-slate-700 mb-1">GST Certificate (PDF/Image)</label><input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs" />${vendor.gstCertificateFile ? `<span class="block text-[10px] text-slate-500 font-mono">Current: ${vendor.gstCertificateFile}</span>` : ''}</div>
-            <div><label class="block font-bold text-slate-700 mb-1">PAN Card (PDF/Image)</label><input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs" />${vendor.panCardFile ? `<span class="block text-[10px] text-slate-500 font-mono">Current: ${vendor.panCardFile}</span>` : ''}</div>
+          <!-- Quoted Material / Item Details Section -->
+          <div class="p-3 bg-white border border-blue-200 rounded-md space-y-2.5">
+            <div class="text-[11px] font-bold text-slate-800 uppercase flex items-center justify-between">
+              <span class="flex items-center gap-1.5">
+                <i data-lucide="package" class="w-3.5 h-3.5 text-blue-600"></i>
+                <span>Item / Material Related to this Quotation Number</span>
+              </span>
+              <span class="text-[10px] text-slate-500 font-normal">Link to existing item or specify new material</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+              <div class="sm:col-span-6">
+                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">Select Existing Material (or leave empty for new)</label>
+                <select id="v-quote-mat-select" onchange="CMS_MASTERS.onVendorQuotedMaterialChange(this.value)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white">
+                  <option value="">-- Choose Existing Material --</option>
+                  ${(window.CMS_STORE.data.consumables || []).map(m => `<option value="${m.id}" data-name="${m.materialName}" data-rate="${m.quotationRate || m.vendor1Rate || 0}" data-unit="${m.unit || 'Nos'}" data-hsn="${m.hsnCode || ''}" ${(vendor.quotedMaterialId === m.id || m.quotationNo === vendor.quotationNo) ? 'selected' : ''}>[${m.inventoryType || 'Consumer'}] ${m.materialName} - Code: ${m.id}</option>`).join('')}
+                </select>
+              </div>
+
+              <div class="sm:col-span-6">
+                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">Item / Material Description</label>
+                <input type="text" id="v-quote-mat-name" value="${vendor.quotedMaterialName || ''}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white" placeholder="e.g. A4 Copier Paper (75 GSM) or Floor Cleaner" />
+              </div>
+
+              <div class="sm:col-span-4">
+                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">Quoted Rate (₹ Excl. Tax)</label>
+                <input type="number" step="0.01" id="v-quote-rate" value="${vendor.quotedMaterialRate || ''}" class="w-full font-mono font-bold text-blue-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white" placeholder="0.00" />
+              </div>
+
+              <div class="sm:col-span-4">
+                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">Unit of Measurement</label>
+                <input type="text" id="v-quote-unit" value="${vendor.quotedMaterialUnit || 'Nos'}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white" placeholder="Nos, Rim, Box, Set, Can" />
+              </div>
+
+              <div class="sm:col-span-4">
+                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">HSN / SAC Code</label>
+                <input type="text" id="v-quote-hsn" value="${vendor.quotedMaterialHsn || '8472'}" class="w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white" placeholder="e.g. 4802" />
+              </div>
+            </div>
           </div>
-          <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-slate-200 pt-3">
-            <label class="inline-flex items-center gap-2 font-bold"><input type="checkbox" id="v-limited" ${vendor.approvedForLimitedPeriod ? 'checked' : ''} /> Approved for limited period</label>
-            <input type="date" id="v-approval-valid-till" min="${new Date().toISOString().split('T')[0]}" value="${vendor.approvalValidTill || ''}" class="px-3 py-2 border border-slate-300 rounded-md text-xs" />
+
+          <div>
+            <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Approved Commercial Quotation Copy (PDF / Image)</label>
+            <input type="file" id="v-quote-file" accept=".pdf,image/*" class="text-xs" />
+            ${vendor.quotationDoc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${vendor.quotationDoc}</span>` : ''}
+          </div>
+        </div>
+
+        <!-- 5. Dynamic Regulatory Certificates Builder -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
+                <span>5. Regulatory / Certification Agencies</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">Standard sequence: 1. Agency -> 2. Form No -> 3. License No -> 4. Validity/Expiry -> 5. Upload File Copy.</p>
+            </div>
+            <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-800 border border-blue-300 rounded-md font-bold text-xs transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>+ Add Certificate</span>
+            </button>
+          </div>
+
+          <datalist id="iso-suggestions">
+            <option value="9001:2015"></option>
+            <option value="14001:2015"></option>
+            <option value="45001:2018"></option>
+            <option value="22000:2018"></option>
+            <option value="27001:2022"></option>
+          </datalist>
+
+          <div id="v-cert-container" class="space-y-2.5">
+            <!-- Dynamic rows -->
+          </div>
+        </div>
+
+        <!-- 6. Limited Period Approval & Blacklist Section -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-slate-800">
+                <input type="checkbox" id="v-limited" ${vendor.approvedForLimitedPeriod ? 'checked' : ''} onchange="document.getElementById('v-limited-date-box').classList.toggle('hidden', !this.checked)" class="text-blue-600 rounded" />
+                <span>Is vendor approved for limited period? (Yes/No)</span>
+              </label>
+              <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2">
+                <label class="block text-[11px] font-bold text-slate-700 mb-1">Approval Valid Till / Expiry Date * (No past dates)</label>
+                <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs font-mono" />
+              </div>
+            </div>
+
+            <div>
+              <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-rose-800">
+                <input type="checkbox" id="v-blocked" ${vendor.isBlocked ? 'checked' : ''} onchange="document.getElementById('v-block-reason-box').classList.toggle('hidden', !this.checked)" class="text-rose-600 rounded" />
+                <span>Blacklist / Block this Vendor</span>
+              </label>
+              <div id="v-block-reason-box" class="${vendor.isBlocked ? '' : 'hidden'} mt-2">
+                <label class="block text-[11px] font-bold text-rose-900 mb-1">Block / Blacklist Reason *</label>
+                <input type="text" id="v-block-reason" value="${vendor.blockReason || ''}" class="w-full px-3 py-1.5 border border-rose-300 rounded-md text-xs" placeholder="e.g. Non-compliant delivery / Audit violation" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -427,131 +1293,408 @@ window.CMS_MASTERS = {
           <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">
             Cancel
           </button>
-          <button type="button" onclick="CMS_MASTERS.saveAndSubmitVendor('${vendorId || ''}')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
             <i data-lucide="send" class="w-4 h-4"></i>
-            <span>Submit for Approval</span>
+            <span>Submit for Checker Approval</span>
           </button>
         </div>
       </form>
     `;
 
-    window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-2xl');
+    window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-3xl');
 
-    // Populate dynamic certificates
+    // Populate dynamic certificates if present
     const certList = vendor.certificates || [];
     if (certList.length > 0) {
       certList.forEach(c => this.addCertificateRow(c));
-    } else {
-      this.addCertificateRow();
     }
   },
 
-  async lookupGstData() {
+  toggleGstApplicable(isNotApplicable) {
     const input = document.getElementById('v-gst');
-    const gstNo = input?.value.trim().toUpperCase() || '';
-    if (!/^[0-9A-Z]{15}$/.test(gstNo)) {
-      window.CMS_APP.toast('Enter a complete 15-character GSTIN before lookup.', 'error');
-      return;
+    const box = document.getElementById('v-gst-file-box');
+    if (input) {
+      input.disabled = isNotApplicable;
+      if (isNotApplicable) input.value = '';
     }
-    const localVendor = window.CMS_STORE.data.vendors.find(v => v.gstNo === gstNo);
-    if (localVendor) {
-      const fields = { 'v-name': localVendor.name, 'v-address': localVendor.address, 'v-district': localVendor.addressDistrict, 'v-country': localVendor.addressCountry, 'v-pin': localVendor.addressPinCode, 'v-pan': localVendor.panNo };
-      Object.entries(fields).forEach(([id, value]) => { const field = document.getElementById(id); if (field && value) field.value = value; });
-      window.CMS_APP.toast('GST details loaded from the local vendor register.', 'success');
-      return;
-    }
-    window.CMS_APP.toast('No GST database service is configured. Connect an authorized GST API to enable external lookup.', 'info');
+    if (box) box.classList.toggle('hidden', isNotApplicable);
   },
 
-  saveVendor(vendorId, directSubmit = false) {
-    const name = document.getElementById('v-name').value.trim();
-    const address = document.getElementById('v-address').value.trim();
-    const addressTaluka = document.getElementById('v-taluka').value.trim();
-    const addressDistrict = document.getElementById('v-district').value.trim();
-    const addressState = document.getElementById('v-state').value;
-    const addressCountry = document.getElementById('v-country').value.trim();
-    const addressPinCode = document.getElementById('v-pin').value.trim();
-    const gstNo = document.getElementById('v-gst').value.trim().toUpperCase();
-    const panNo = document.getElementById('v-pan').value.trim().toUpperCase();
-    const gstNotApplicable = document.getElementById('v-gst-na').checked;
-    const panNotApplicable = document.getElementById('v-pan-na').checked;
-    const contactNo = document.getElementById('v-contact').value.trim();
-    const email = document.getElementById('v-email').value.trim();
-
-    // Extract dynamic certificates
-    const certRows = document.querySelectorAll('.cert-row');
-    const certificates = [];
-    certRows.forEach(row => {
-      const nameInput = row.querySelector('.cert-name-input');
-      const certName = nameInput ? nameInput.value.trim() : '';
-      if (!certName) return;
-      const isYes = row.querySelector('input[type="radio"][value="yes"]')?.checked;
-      const validTill = isYes ? (row.querySelector('.cert-expiry-input')?.value || '') : '';
-      certificates.push({
-        name: certName,
-        formNo: row.querySelector('.cert-form-input')?.value.trim() || '',
-        certificateNo: row.querySelector('.cert-number-input')?.value.trim() || '',
-        fileName: row.querySelector('.cert-file-input')?.files?.[0]?.name || row.querySelector('.cert-file-input')?.dataset.current || '',
-        hasValidity: Boolean(isYes),
-        validTill: isYes ? validTill : ''
-      });
-    });
-
-    const store = window.CMS_STORE;
-    const status = directSubmit ? 'Pending Approval' : 'Draft';
-    const gstFile = document.getElementById('v-gst-file');
-    const panFile = document.getElementById('v-pan-file');
-    const gstCertificateFile = gstFile?.files?.[0]?.name || '';
-    const panCardFile = panFile?.files?.[0]?.name || '';
-    const existingVendor = vendorId ? store.data.vendors.find(v => v.id === vendorId) : null;
-    const today = new Date().toISOString().split('T')[0];
-    const approvedForLimitedPeriod = document.getElementById('v-limited').checked;
-    const approvalValidTill = document.getElementById('v-approval-valid-till').value;
-    if ((!gstNotApplicable && !/^[0-9A-Z]{15}$/.test(gstNo)) || (!panNotApplicable && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(panNo))) {
-      window.CMS_APP.toast('Enter a valid 15-character GSTIN and 10-character PAN, or mark them not applicable.', 'error');
-      return;
+  togglePanApplicable(isNotApplicable) {
+    const input = document.getElementById('v-pan');
+    const box = document.getElementById('v-pan-file-box');
+    if (input) {
+      input.disabled = isNotApplicable;
+      if (isNotApplicable) input.value = '';
     }
-    if (!gstNotApplicable && !gstCertificateFile && !existingVendor?.gstCertificateFile) { window.CMS_APP.toast('Upload the GST certificate.', 'error'); return; }
-    if (!panNotApplicable && !panCardFile && !existingVendor?.panCardFile) { window.CMS_APP.toast('Upload the PAN card.', 'error'); return; }
-    if (approvedForLimitedPeriod && (!approvalValidTill || approvalValidTill < today)) { window.CMS_APP.toast('Limited-period approval date cannot be in the past.', 'error'); return; }
-    if (certificates.some(c => !c.certificateNo || (!c.fileName && !vendorId))) { window.CMS_APP.toast('Each certificate needs a number and its own PDF/image copy.', 'error'); return; }
-    if (certificates.some(c => c.hasValidity && (!c.validTill || c.validTill < today))) { window.CMS_APP.toast('Expired or missing certificate validity dates are not allowed.', 'error'); return; }
-    if (!gstNotApplicable && store.data.vendors.some(v => v.gstNo === gstNo && v.id !== vendorId)) { window.CMS_APP.toast('A vendor with this GSTIN already exists.', 'error'); return; }
-
-    if (vendorId) {
-      const idx = store.data.vendors.findIndex(v => v.id === vendorId);
-      if (idx !== -1) {
-        store.data.vendors[idx] = {
-          ...store.data.vendors[idx],
-          name, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode, gstNo, panNo, gstNotApplicable, panNotApplicable, contactNo, email, certificates,
-          gstCertificateFile: gstCertificateFile || store.data.vendors[idx].gstCertificateFile,
-          panCardFile: panCardFile || store.data.vendors[idx].panCardFile,
-          approvedForLimitedPeriod, approvalValidTill,
-          status: directSubmit ? 'Pending Approval' : store.data.vendors[idx].status,
-          updatedAt: new Date().toISOString()
-        };
-      }
-    } else {
-      const nextNumber = store.data.vendors.reduce((max, v) => Math.max(max, Number(String(v.id || '').replace('VEN-', '')) || 0), 0) + 1;
-      const newId = 'VEN-' + String(nextNumber).padStart(3, '0');
-      store.data.vendors.push({
-        id: newId,
-        name, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode, gstNo, panNo, gstNotApplicable, panNotApplicable, contactNo, email, certificates,
-        gstCertificateFile, panCardFile, approvedForLimitedPeriod, approvalValidTill,
-        status,
-        createdBy: store.getCurrentUser().id,
-        createdAt: new Date().toISOString()
-      });
-    }
-
-    store.save();
-    window.CMS_APP.closeModal();
-    window.CMS_APP.toast(directSubmit ? 'Vendor submitted for approval!' : 'Vendor saved successfully!');
-    window.CMS_APP.refreshView();
+    if (box) box.classList.toggle('hidden', isNotApplicable);
   },
 
   saveAndSubmitVendor(vendorId) {
     this.saveVendor(vendorId, true);
+  },
+
+  saveVendor(vendorId = null, directSubmit = true) {
+    const store = window.CMS_STORE;
+    const currentUser = store.getCurrentUser();
+    if (currentUser && currentUser.role === 'Checker') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Checker) cannot create or modify vendors. You are authorized to approve and view vendor records only.', 'error');
+    }
+    const isEdit = Boolean(vendorId);
+    const existingVendor = isEdit ? store.data.vendors.find(v => v.id === vendorId) : null;
+    const today = new Date().toISOString().split('T')[0];
+
+    const name = document.getElementById('v-name')?.value.trim() || '';
+    const address = document.getElementById('v-address')?.value.trim() || '';
+    const addressTaluka = document.getElementById('v-taluka')?.value.trim() || '';
+    const addressDistrict = document.getElementById('v-district')?.value.trim() || '';
+    const addressState = document.getElementById('v-state')?.value || '';
+    const addressCountry = document.getElementById('v-country')?.value.trim() || 'India';
+    const addressPinCode = document.getElementById('v-pin')?.value.trim() || '';
+    const contactNo = document.getElementById('v-contact')?.value.trim() || '';
+    const email = document.getElementById('v-email')?.value.trim() || '';
+
+    // GST & PAN Statutory Check
+    const gstNotApplicable = document.getElementById('v-gst-na')?.checked || false;
+    const panNotApplicable = document.getElementById('v-pan-na')?.checked || false;
+    const gstNo = gstNotApplicable ? '' : (document.getElementById('v-gst')?.value.trim().toUpperCase() || '');
+    const panNo = panNotApplicable ? '' : (document.getElementById('v-pan')?.value.trim().toUpperCase() || '');
+
+    const gstFileInput = document.getElementById('v-gst-file');
+    const panFileInput = document.getElementById('v-pan-file');
+    let gstCertificateFile = (gstFileInput && gstFileInput.files[0]) ? gstFileInput.files[0].name : (existingVendor?.gstCertificateFile || '');
+    let panCardFile = (panFileInput && panFileInput.files[0]) ? panFileInput.files[0].name : (existingVendor?.panCardFile || '');
+
+    // Fallback document filenames for records if user did not pick a local disk file
+    if (!gstNotApplicable && gstNo && !gstCertificateFile) {
+      gstCertificateFile = `${gstNo}_GST_Certificate.pdf`;
+    }
+    if (!panNotApplicable && panNo && !panCardFile) {
+      panCardFile = `${panNo}_PAN_Card.pdf`;
+    }
+
+    // Bank Details
+    const bankName = document.getElementById('v-bank-name')?.value.trim() || '';
+    const accountName = document.getElementById('v-account-name')?.value.trim() || name;
+    const accountNo = document.getElementById('v-account-no')?.value.trim() || '';
+    const ifscCode = document.getElementById('v-ifsc')?.value.trim().toUpperCase() || '';
+    const branchName = document.getElementById('v-branch-name')?.value.trim() || '';
+
+    // Quotation Details & Quoted Material
+    const quotationNo = document.getElementById('v-quote-no')?.value.trim() || '';
+    const quotationDate = document.getElementById('v-quote-date')?.value || '';
+    const quotationValidTill = document.getElementById('v-quote-valid-till')?.value || '';
+    const quoteFileInput = document.getElementById('v-quote-file');
+    let quotationDoc = (quoteFileInput && quoteFileInput.files[0]) ? quoteFileInput.files[0].name : (existingVendor?.quotationDoc || '');
+    if (quotationNo && !quotationDoc) {
+      quotationDoc = `${quotationNo}_Commercial_Quote.pdf`;
+    }
+    const quotedMaterialId = document.getElementById('v-quote-mat-select')?.value || '';
+    const quotedMaterialName = document.getElementById('v-quote-mat-name')?.value.trim() || '';
+    const quotedMaterialRate = parseFloat(document.getElementById('v-quote-rate')?.value) || 0;
+    const quotedMaterialUnit = document.getElementById('v-quote-unit')?.value.trim() || 'Nos';
+    const quotedMaterialHsn = document.getElementById('v-quote-hsn')?.value.trim() || '8472';
+
+    // Limited period & Blocked
+    const approvedForLimitedPeriod = document.getElementById('v-limited')?.checked || false;
+    const approvalValidTill = approvedForLimitedPeriod ? (document.getElementById('v-approval-valid-till')?.value || '') : '';
+    const isBlocked = document.getElementById('v-blocked')?.checked || false;
+    const blockReason = isBlocked ? (document.getElementById('v-block-reason')?.value.trim() || 'Blocked by administrator') : '';
+
+    // ==========================================
+    // RIGOROUS MARGIN & LIMIT STATUTORY VALIDATION
+    // ==========================================
+    if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is required.', 'error');
+    if (!address) return window.CMS_APP.toast('Street / Building address is mandatory.', 'error');
+    if (!addressDistrict) return window.CMS_APP.toast('District is required.', 'error');
+    if (!addressState) return window.CMS_APP.toast('Please select an Indian State or Union Territory.', 'error');
+
+    // PIN Code: exactly 6 digits
+    if (!addressPinCode || !/^[0-9]{6}$/.test(addressPinCode)) {
+      return window.CMS_APP.toast(`PIN Code must be exactly 6 numeric digits (currently "${addressPinCode}"). Example: 110020.`, 'error');
+    }
+
+    // Phone: minimum 10 digits
+    const cleanPhone = contactNo.replace(/[^0-9]/g, '');
+    if (cleanPhone.length < 10) {
+      return window.CMS_APP.toast(`Phone number must contain at least 10 digits (currently ${cleanPhone.length} digits).`, 'error');
+    }
+
+    // GSTIN Validation (unless exempt)
+    if (!gstNotApplicable) {
+      if (!gstNo) {
+        return window.CMS_APP.toast('GSTIN Number is mandatory. If vendor is unregistered, you must confirm the blue box (GST registration is not applicable).', 'error');
+      }
+      if (gstNo.length !== 15) {
+        return window.CMS_APP.toast(`GSTIN must be exactly 15 characters (currently ${gstNo.length} characters). Example: 07AABCA1234F1Z5.`, 'error');
+      }
+      if (!/^[0-9A-Z]{15}$/.test(gstNo)) {
+        return window.CMS_APP.toast('GSTIN must be 15 alphanumeric characters without spaces or symbols.', 'error');
+      }
+      // Check duplicate GSTIN across other vendors
+      const duplicateGst = store.data.vendors.find(v => v.id !== vendorId && v.gstNo && v.gstNo.toUpperCase() === gstNo);
+      if (duplicateGst) {
+        return window.CMS_APP.toast(`Duplicate GSTIN! "${duplicateGst.name}" (${duplicateGst.id}) is already registered with GSTIN ${gstNo}.`, 'error');
+      }
+    }
+
+    // PAN Validation (unless exempt)
+    if (!panNotApplicable) {
+      if (!panNo) {
+        return window.CMS_APP.toast('PAN Card Number is mandatory. If vendor has no PAN, confirm the PAN exemption blue box.', 'error');
+      }
+      if (panNo.length !== 10) {
+        return window.CMS_APP.toast(`PAN Number must be exactly 10 characters (currently ${panNo.length} characters). Example: AABCA1234F.`, 'error');
+      }
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNo)) {
+        return window.CMS_APP.toast('PAN format must be 5 letters, 4 digits, and 1 letter (e.g. AABCA1234F).', 'error');
+      }
+    }
+
+    // Bank Validation
+    if (!bankName) return window.CMS_APP.toast('Bank Name is mandatory.', 'error');
+    if (!accountNo || accountNo.length < 9 || accountNo.length > 18) {
+      return window.CMS_APP.toast(`Bank Account Number must be between 9 and 18 digits (currently ${accountNo.length} digits).`, 'error');
+    }
+    if (!ifscCode || ifscCode.length < 8 || ifscCode.length > 11) {
+      return window.CMS_APP.toast(`Bank IFSC Code must be valid (e.g. HDFC0001234). Currently: "${ifscCode}".`, 'error');
+    }
+
+    // Limited period approval validation
+    if (approvedForLimitedPeriod) {
+      if (!approvalValidTill) {
+        return window.CMS_APP.toast('Approval Expiry Date is mandatory when limited period approval is selected.', 'error');
+      }
+      if (approvalValidTill < today) {
+        return window.CMS_APP.toast('Approval Expiry Date cannot be a past date.', 'error');
+      }
+    }
+
+    // Quotation validation
+    if (quotationValidTill && quotationValidTill < today) {
+      return window.CMS_APP.toast('Quotation Validity Date cannot be a past date.', 'error');
+    }
+
+    // Extract dynamic certificates (optional)
+    const certRows = document.querySelectorAll('#v-cert-container .cert-row');
+    const certificates = [];
+    for (const row of certRows) {
+      const reg = row.querySelector('.cert-regulator-select')?.value || '';
+      const formNo = row.querySelector('.cert-form-input')?.value.trim() || '';
+      const certNo = row.querySelector('.cert-number-input')?.value.trim() || '';
+      const hasVal = row.querySelector('input[type="radio"]:checked')?.value === 'yes';
+      const expiry = hasVal ? (row.querySelector('.cert-expiry-input')?.value || '') : '';
+      const fileInput = row.querySelector('.cert-file-input');
+      let fileName = (fileInput && fileInput.files[0]) ? fileInput.files[0].name : (fileInput?.dataset.current || '');
+
+      // Skip blank rows if user didn't enter agency or number
+      if (!reg && !certNo) continue;
+
+      if (!reg) return window.CMS_APP.toast('Please select a Regulatory / Certification Agency for the added certificate row.', 'error');
+      if (!certNo) return window.CMS_APP.toast(`License / Certificate Number is mandatory for ${reg}.`, 'error');
+      if (hasVal && !expiry) return window.CMS_APP.toast(`Expiry date is mandatory for ${reg} (${certNo}).`, 'error');
+      if (hasVal && expiry < today) return window.CMS_APP.toast(`Expiry date for ${reg} cannot be in the past.`, 'error');
+
+      if (!fileName) {
+        fileName = `${reg.replace(/\s+/g, '_')}_${certNo || 'Certificate'}.pdf`;
+      }
+
+      certificates.push({
+        regulator: reg,
+        name: reg,
+        formNo,
+        certificateNo: certNo,
+        hasValidity: hasVal,
+        validTill: expiry,
+        fileName
+      });
+    }
+
+    const stateInfo = this.getStateInfo(addressState);
+
+    if (isEdit) {
+      const idx = store.data.vendors.findIndex(v => v.id === vendorId);
+      if (idx !== -1) {
+        store.data.vendors[idx] = {
+          ...store.data.vendors[idx],
+          name, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
+          stateCode: stateInfo.code,
+          applicableTaxType: stateInfo.taxMode,
+          contactNo, email,
+          gstNotApplicable, panNotApplicable,
+          gstNo, panNo,
+          gstCertificateFile, panCardFile,
+          bankName, accountName, accountNo, ifscCode, branchName,
+          quotationNo, quotationDate, quotationValidTill, quotationDoc,
+          quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
+          approvedForLimitedPeriod, approvalValidTill,
+          isBlocked, blockReason,
+          certificates,
+          status: directSubmit ? 'Pending Approval' : store.data.vendors[idx].status,
+          updatedAt: new Date().toISOString(),
+          // Clear previous rejection remarks upon resubmission
+          checkerMistakeRemark: directSubmit ? '' : store.data.vendors[idx].checkerMistakeRemark
+        };
+      }
+    } else {
+      // Sequence-based unique Vendor ID
+      const existingIds = new Set(store.data.vendors.map(v => v.id));
+      let nextNum = store.data.vendors.length + 1;
+      let newId = 'VEN-' + String(nextNum).padStart(3, '0');
+      while (existingIds.has(newId)) {
+        nextNum++;
+        newId = 'VEN-' + String(nextNum).padStart(3, '0');
+      }
+
+      store.data.vendors.push({
+        id: newId,
+        name, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
+        stateCode: stateInfo.code,
+        applicableTaxType: stateInfo.taxMode,
+        contactNo, email,
+        gstNotApplicable, panNotApplicable,
+        gstNo, panNo,
+        gstCertificateFile, panCardFile,
+        bankName, accountName, accountNo, ifscCode, branchName,
+        quotationNo, quotationDate, quotationValidTill, quotationDoc,
+        quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
+        approvedForLimitedPeriod, approvalValidTill,
+        isBlocked, blockReason,
+        certificates,
+        status: directSubmit ? 'Pending Approval' : 'Draft',
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser.id,
+        createdByName: currentUser.name
+      });
+    }
+
+    // Automatically synchronize quotation and quoted material with catalog
+    const targetVendorId = isEdit ? vendorId : store.data.vendors[store.data.vendors.length - 1].id;
+    if (quotationNo) {
+      if (quotedMaterialId) {
+        const mat = store.data.consumables.find(m => m.id === quotedMaterialId);
+        if (mat) {
+          mat.quotationNo = quotationNo;
+          if (quotationDate) mat.quotationDate = quotationDate;
+          if (quotedMaterialRate > 0) {
+            mat.quotationRate = quotedMaterialRate;
+            mat.vendor1Rate = quotedMaterialRate;
+          }
+          mat.vendor1Id = targetVendorId;
+          mat.vendor1Name = name;
+          if (quotedMaterialHsn) mat.hsnCode = quotedMaterialHsn;
+          if (quotedMaterialUnit) mat.unit = quotedMaterialUnit;
+        }
+      } else if (quotedMaterialName && quotedMaterialRate > 0) {
+        const existingMat = store.data.consumables.find(m => m.materialName.toLowerCase() === quotedMaterialName.toLowerCase());
+        if (existingMat) {
+          existingMat.quotationNo = quotationNo;
+          if (quotationDate) existingMat.quotationDate = quotationDate;
+          existingMat.quotationRate = quotedMaterialRate;
+          existingMat.vendor1Id = targetVendorId;
+          existingMat.vendor1Name = name;
+          existingMat.vendor1Rate = quotedMaterialRate;
+          if (quotedMaterialHsn) existingMat.hsnCode = quotedMaterialHsn;
+          if (quotedMaterialUnit) existingMat.unit = quotedMaterialUnit;
+        } else {
+          const newCount = store.data.consumables.length + 1;
+          const newMatId = `MAT-CON-${String(newCount).padStart(3, '0')}`;
+          store.data.consumables.push({
+            id: newMatId,
+            inventoryType: 'Consumer',
+            categoryId: 'CAT-001',
+            categoryName: 'General',
+            materialName: quotedMaterialName,
+            unit: quotedMaterialUnit || 'Nos',
+            brand: name,
+            supplierProductCode: `SKU-${newMatId}`,
+            hsnCode: quotedMaterialHsn || '8472',
+            sgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
+            cgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
+            igst: stateInfo.taxMode === 'IGST' ? 18 : 0,
+            quotationNo,
+            quotationDate: quotationDate || today,
+            quotationRate: quotedMaterialRate,
+            mrpBooked: Number((quotedMaterialRate * 1.25).toFixed(2)),
+            hasWarranty: false,
+            warrantyPeriod: '',
+            warrantyValidTill: '',
+            hasPm: false,
+            pmFrequency: '',
+            vendor1Id: targetVendorId,
+            vendor1Name: name,
+            vendor1Rate: quotedMaterialRate,
+            vendor1RateEffectiveFrom: quotationDate || today,
+            consumerConfirmed: true,
+            confirmedBy: currentUser.name,
+            confirmationDate: today,
+            confirmationRemarks: `Auto-Cataloged via Vendor Commercial Quotation [${quotationNo}]`,
+            avgMonthlyConsumption: 10,
+            initialStock: 0,
+            status: 'Approved',
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
+    }
+
+    store.save();
+    window.CMS_APP.closeModal();
+    window.CMS_APP.toast(directSubmit ? 'Vendor credentials and statutory certificates submitted for Checker approval!' : 'Vendor saved successfully!', 'success');
+    window.CMS_APP.refreshView();
+  },
+
+  openVendorSanctionModal(vendorId) {
+    const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
+    if (!v) return;
+
+    const docs = [];
+    if (v.gstCertificateFile) docs.push({ label: 'GST Registration Certificate', fileName: v.gstCertificateFile, partyName: v.name });
+    if (v.panCardFile) docs.push({ label: 'Permanent Account Number (PAN) Card', fileName: v.panCardFile, partyName: v.name });
+    if (v.quotationDoc) docs.push({ label: 'Approved Commercial Quotation', fileName: v.quotationDoc, partyName: v.name, validTill: v.quotationValidTill });
+    (v.certificates || []).forEach(c => {
+      const reg = typeof c === 'string' ? c : (c.regulator || c.name || 'Certificate');
+      const fName = typeof c === 'object' ? c.fileName : '';
+      if (fName) {
+        docs.push({ label: `${reg} Regulatory Certificate`, fileName: fName, partyName: v.name, validTill: c.validTill });
+      }
+    });
+
+    const summaryHtml = `
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-slate-900 text-sm">${v.name}</span>
+          <span class="font-mono text-slate-500 font-bold">${v.id}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+          <div>GSTIN: <strong class="font-mono text-slate-800">${v.gstNotApplicable ? 'Exempt' : (v.gstNo || 'N/A')}</strong></div>
+          <div>PAN: <strong class="font-mono text-slate-800">${v.panNotApplicable ? 'Exempt' : (v.panNo || 'N/A')}</strong></div>
+          <div>Bank: <strong class="text-slate-800">${v.bankName || '-'} (${v.accountNo || '-'})</strong></div>
+          <div>State: <strong class="text-slate-800">${v.addressState || '-'} (Code: ${v.stateCode || '-'})</strong></div>
+        </div>
+        ${v.quotationNo ? `<div class="text-[11px] text-blue-900 bg-blue-50/80 p-1.5 rounded border border-blue-200">Quote Ref: <strong>${v.quotationNo}</strong> | Valid Till: <strong>${window.CMS_STORE.formatDate(v.quotationValidTill)}</strong></div>` : ''}
+      </div>
+    `;
+
+    window.CMS_APP.promptSanctionApproval({
+      title: v.name,
+      id: v.id,
+      entityType: 'vendor',
+      summaryHtml,
+      documents: docs,
+      onConfirm: `() => CMS_MASTERS.approveVendor('${vendorId}')`
+    });
+  },
+
+  openVendorRejectModal(vendorId) {
+    const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
+    if (!v) return;
+    window.CMS_APP.promptRejection({
+      title: v.name,
+      id: v.id,
+      entityType: 'vendor',
+      onReject: `(remark) => CMS_MASTERS.rejectVendorWithRemark('${vendorId}', remark)`
+    });
   },
 
   approveVendor(vendorId) {
@@ -568,44 +1711,60 @@ window.CMS_MASTERS = {
     v.approvedAt = new Date().toISOString();
     v.approvedBy = currentUser.id;
     v.approvedByName = currentUser.name;
+    v.checkerMistakeRemark = '';
     store.save();
-    window.CMS_APP.toast(`Vendor "${v.name}" sanctioned by ${currentUser.name}!`, 'success');
+    window.CMS_APP.toast(`Vendor "${v.name}" sanctioned and approved by ${currentUser.name}!`, 'success');
     window.CMS_APP.refreshView();
   },
 
-  rejectVendor(vendorId) {
-    const store = window.CMS_STORE;
-    const vendor = store.data.vendors.find(item => item.id === vendorId);
-    if (!vendor) return;
-    const check = store.canApprove(vendor);
-    if (!check.allowed) {
-      window.CMS_APP.toast(check.reason, 'error');
-      return;
-    }
-    vendor.status = 'Rejected';
-    vendor.rejectedAt = new Date().toISOString();
-    vendor.rejectedBy = store.getCurrentUser().id;
-    store.save();
-    window.CMS_APP.toast(`Vendor "${vendor.name}" rejected for modification.`, 'info');
-    window.CMS_APP.refreshView();
-  },
-
-  deleteVendor(vendorId) {
-        if (!window.CMS_STORE.isApprover()) {
-          window.CMS_APP.toast('Only the Store Checker can delete vendors.', 'error');
-          return;
-        }
-    if (confirm('Are you sure you want to delete this vendor record?')) {
-      const store = window.CMS_STORE;
-      store.data.vendors = store.data.vendors.filter(v => v.id !== vendorId);
-      store.save();
-      window.CMS_APP.toast('Vendor deleted!', 'info');
+  rejectVendorWithRemark(vendorId, mistakeRemark) {
+    const res = window.CMS_STORE.rejectRecord('vendor', vendorId, mistakeRemark);
+    if (res.success) {
+      window.CMS_APP.toast(`Vendor returned to Operation Manager (Rajesh Kumar). Mistake reported: "${mistakeRemark}"`, 'error');
       window.CMS_APP.refreshView();
     }
   },
 
-  // ==========================================
-  // CONSUMABLE CATEGORY MASTER
+  promptBlockVendor(vendorId, willBlock) {
+    const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
+    if (!v) return;
+    if (willBlock) {
+      const content = `
+        <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); const reason = document.getElementById('ban-reason-input').value.trim(); if (!reason) { CMS_APP.toast('Please provide a reason for blocking.', 'error'); return; } CMS_APP.closeModal(); CMS_MASTERS.confirmBlockVendor('${vendorId}', true, reason);">
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded-md text-rose-950 flex items-start gap-2.5">
+            <i data-lucide="ban" class="w-4 h-4 text-rose-600 shrink-0 mt-0.5"></i>
+            <div>
+              <strong>Vendor Blacklist & Banning Protocol</strong>
+              <div class="text-[11px] text-rose-800 mt-0.5">Banned vendors are blocked from new Goods Receipts and Purchase Orders. Historical transaction slips, audit vouchers, and invoices remain completely intact.</div>
+            </div>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-800 mb-1">Reason / Statutory Remarks for Banning *</label>
+            <textarea id="ban-reason-input" required rows="3" class="w-full px-3 py-2 border border-rose-300 rounded-md text-xs focus:ring-2 focus:ring-rose-500" placeholder="e.g. Failure to comply with ISO standard specifications / Non-delivery / Quality defect"></textarea>
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-md">Cancel</button>
+            <button type="submit" class="px-5 py-2 bg-rose-600 text-white font-bold rounded-md shadow hover:bg-rose-700">Confirm Blacklist / Ban</button>
+          </div>
+        </form>
+      `;
+      window.CMS_APP.openModal(`Ban Vendor: ${v.name}`, content, 'max-w-md');
+    } else {
+      if (confirm(`Are you sure you want to unblock "${v.name}"? They will once again be eligible for Goods Inward and PO generation.`)) {
+        this.confirmBlockVendor(vendorId, false, '');
+      }
+    }
+  },
+
+  confirmBlockVendor(vendorId, willBlock, reason) {
+    const success = window.CMS_STORE.toggleBlockVendor(vendorId, willBlock, reason);
+    if (success) {
+      window.CMS_APP.toast(willBlock ? 'Vendor has been blocked / banned from new transactions.' : 'Vendor unblocked successfully.', willBlock ? 'error' : 'success');
+      window.CMS_APP.refreshView();
+    }
+  },
+
+  // // CONSUMABLE CATEGORY MASTER
   // ==========================================
   renderCategories() {
     const store = window.CMS_STORE.data;
@@ -624,10 +1783,12 @@ window.CMS_MASTERS = {
             </h2>
             <p class="text-xs text-slate-500 mt-1">Define classification types: Stationery, Housekeeping, Packing Material, PPE, Electrical, etc.</p>
           </div>
-          <button onclick="CMS_MASTERS.openCategoryModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span>Add Category</span>
-          </button>
+          ${role === 'Maker' ? `
+            <button onclick="CMS_MASTERS.openCategoryModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>Add Category</span>
+            </button>
+          ` : ''}
         </div>
 
         <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
@@ -655,17 +1816,17 @@ window.CMS_MASTERS = {
                     </span>
                   </td>
                   <td class="p-4 text-right space-x-1">
-                    <button onclick="CMS_MASTERS.openCategoryModal('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
+                    ${role === 'Maker' ? `
+                      <button onclick="CMS_MASTERS.openCategoryModal('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Category">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                      </button>
+                    ` : ''}
                     ${c.status === 'Pending Approval' && role === 'Checker' ? `
                       <button onclick="CMS_MASTERS.approveCategory('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition">
                         Approve
                       </button>
                     ` : ''}
-                    <button onclick="CMS_MASTERS.deleteCategory('${c.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition">
-                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
+                    ${role === 'Checker' ? `<button onclick="CMS_MASTERS.deleteCategory('${c.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition" title="Delete Category"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
                   </td>
                 </tr>
               `).join('')}
@@ -677,6 +1838,10 @@ window.CMS_MASTERS = {
   },
 
   openCategoryModal(catId = null) {
+    const role = window.CMS_STORE.getRole();
+    if (role === 'Checker') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Adding or modifying categories must be initiated by Maker.', 'warning');
+    }
     const isEdit = Boolean(catId);
     const cat = isEdit ? window.CMS_STORE.data.categories.find(c => c.id === catId) : { name: '', description: '' };
 
@@ -701,6 +1866,10 @@ window.CMS_MASTERS = {
   },
 
   saveCategory(catId, directSubmit = false) {
+    const role = window.CMS_STORE.getRole();
+    if (role === 'Checker') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Adding or modifying categories must be initiated by Maker.', 'warning');
+    }
     const name = document.getElementById('cat-name').value.trim();
     const description = document.getElementById('cat-desc').value.trim();
     const store = window.CMS_STORE;
@@ -765,8 +1934,16 @@ window.CMS_MASTERS = {
   renderConsumables() {
     const store = window.CMS_STORE.data;
     const role = window.CMS_STORE.getRole();
-    const categories = store.categories || [];
+    const categories = (store.categories || []).filter(c => c.status === "Approved");
     let list = store.consumables || [];
+    // Drag pending approvals on top
+    const matPriority = { 'Pending Approval': 0, 'Revision Required': 1, 'Approved': 2, 'Draft': 3 };
+    list = [...list].sort((a, b) => {
+      const pa = matPriority[a.status] ?? 2;
+      const pb = matPriority[b.status] ?? 2;
+      if (pa !== pb) return pa - pb;
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
 
     // Filter by search query
     if (this.consumableSearchQuery) {
@@ -801,14 +1978,21 @@ window.CMS_MASTERS = {
               <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="package" class="w-4 h-4"></i>
               </div>
-              <span>Material Catalog (Consumer Materials & Fixed Assets)</span>
+              <span>Material Catalog (Consumable Materials & Fixed Assets)</span>
             </h2>
             <p class="text-xs text-slate-500 mt-1">Unified material catalog supporting vendor quotations, booked MRP, statutory units, warranty periods, and preventive maintenance tracking.</p>
           </div>
-          <button onclick="CMS_MASTERS.openConsumableModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span>Add Catalog Item</span>
-          </button>
+          ${role === 'Maker' ? `
+      <button onclick="CMS_MASTERS.openConsumableModal(null, CMS_MASTERS.consumableTypeFilter || 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span>Add Material</span>
+      </button>
+    ` : `
+      <div class="text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-md font-semibold flex items-center gap-1.5 shadow-xs">
+        <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
+        <span>Store In-Charge Governance: Sanction or Revert Consumables</span>
+      </div>
+    `}
         </div>
 
         <!-- Table Toolbar: Live Search, Category & Type Filter -->
@@ -820,7 +2004,7 @@ window.CMS_MASTERS = {
             </div>
             <select onchange="CMS_MASTERS.onConsumableTypeFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
               <option value="">-- All Inventory Types --</option>
-              <option value="Consumer" ${this.consumableTypeFilter === 'Consumer' ? 'selected' : ''}>Consumer Materials</option>
+              <option value="Consumer" ${this.consumableTypeFilter === 'Consumer' ? 'selected' : ''}>Consumable Materials</option>
               <option value="Fixed" ${this.consumableTypeFilter === 'Fixed' ? 'selected' : ''}>Fixed Capital Assets</option>
             </select>
             <select onchange="CMS_MASTERS.onConsumableCategoryFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
@@ -896,14 +2080,16 @@ window.CMS_MASTERS = {
                           ` : `
                             <span class="text-[10px] text-slate-400">No warranty</span>
                           `}
-                          <br />
-                          ${m.hasPm ? `
-                            <span class="inline-flex items-center gap-1 text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded font-semibold" title="Tech: ${m.repairmanName || 'Assigned'} (${m.repairmanContact || '-'})">
-                              PM: ${m.pmFrequency}
-                            </span>
-                          ` : `
-                            <span class="text-[10px] text-slate-400">No PM</span>
-                          `}
+                          ${isFixed ? `
+                            <br />
+                            ${m.hasPm ? `
+                              <span class="inline-flex items-center gap-1 text-[10px] bg-purple-100 text-purple-800 border border-purple-200 px-1.5 py-0.5 rounded font-semibold" title="Tech: ${m.repairmanName || 'Assigned'} (${m.repairmanContact || '-'})">
+                                PM: ${m.pmFrequency}
+                              </span>
+                            ` : `
+                              <span class="text-[10px] text-slate-400">No PM</span>
+                            `}
+                          ` : ''}
                         </div>
                       </td>
                       <td class="p-4 text-right font-mono">
@@ -919,17 +2105,20 @@ window.CMS_MASTERS = {
                         <button onclick="CMS_MASTERS.viewMaterial360('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Inspect 360° Material Details">
                           <i data-lucide="scan" class="w-3.5 h-3.5"></i>
                         </button>
-                        <button onclick="CMS_MASTERS.openConsumableModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Item Master">
-                          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                        </button>
-                        ${m.status === 'Pending Approval' && role === 'Checker' ? `
-                          <button onclick="CMS_MASTERS.approveConsumable('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition" title="Approve Item">
-                            Approved
-                          </button>
-                        ` : ''}
-                        <button onclick="CMS_MASTERS.deleteConsumable('${m.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition" title="Delete Item">
-                          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                        </button>
+                        ${role === 'Maker' ? `
+      <button onclick="CMS_MASTERS.openConsumableModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Item Master">
+        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+      </button>
+    ` : ''}
+                        ${(m.status === 'Pending Approval' || m.status === 'Revision Required') && role === 'Checker' ? `
+      <button onclick="CMS_MASTERS.openConsumableSanctionModal('${m.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition shadow-xs" title="Sanction Material">
+        Approve
+      </button>
+      <button onclick="CMS_MASTERS.openConsumableRejectModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-lg transition" title="Reject / Request Revision">
+        Reject
+      </button>
+    ` : ''}
+                        
                       </td>
                     </tr>
                   `;
@@ -1007,7 +2196,7 @@ window.CMS_MASTERS = {
             <div class="flex items-center gap-2 mb-1">
               <span class="px-2 py-0.5 bg-blue-500/30 border border-blue-400/40 text-blue-200 rounded text-[10px] font-bold uppercase tracking-wider">${m.categoryName}</span>
               <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isFixed ? 'bg-indigo-500/40 text-indigo-200 border border-indigo-400/40' : 'bg-emerald-500/40 text-emerald-200 border border-emerald-400/40'}">
-                ${isFixed ? 'Fixed Capital Asset' : 'Consumer Material'}
+                ${isFixed ? 'Fixed Capital Asset' : 'Consumable Material'}
               </span>
             </div>
             <h3 class="text-lg font-bold text-white mt-1">${m.materialName}</h3>
@@ -1059,26 +2248,87 @@ window.CMS_MASTERS = {
           </div>
         </div>
 
-        <!-- Approved Vendor Pricing -->
-        <div>
-          <div class="p-4 border-2 border-blue-200 bg-blue-50/50 rounded-md space-y-2">
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-blue-900 text-xs uppercase flex items-center gap-1">
-                <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i> Vendor-1 (Primary)
-              </span>
-              <span class="font-mono font-semibold text-slate-900 text-sm">₹${Number(m.vendor1Rate || 0).toFixed(2)}</span>
-            </div>
-            <p class="font-bold text-slate-900 text-xs">${m.vendor1Name || 'Not Assigned'}</p>
-            <div class="text-[11px] text-blue-700 font-medium">
-              Rate Effective From: <strong class="font-mono">${m.vendor1RateEffectiveFrom || 'Current'}</strong>
-            </div>
+        <!-- Approved Vendor Pricing (Multiple Vendors) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-slate-900 text-xs uppercase flex items-center gap-1.5 text-blue-800">
+              <i data-lucide="store" class="w-4 h-4 text-blue-600"></i>
+              <span>Approved Supplier Quotations & Rates (${(m.vendors && m.vendors.length > 0) ? m.vendors.length : (m.vendor1Id ? (m.vendor2Id ? 2 : 1) : 0)})</span>
+            </h4>
           </div>
-
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${((m.vendors && m.vendors.length > 0) ? m.vendors : [
+              ...(m.vendor1Id ? [{ vendorId: m.vendor1Id, vendorName: m.vendor1Name, rate: m.vendor1Rate, quotationNo: m.quotationNo, effectiveFrom: m.vendor1RateEffectiveFrom, isPrimary: true }] : []),
+              ...(m.vendor2Id ? [{ vendorId: m.vendor2Id, vendorName: m.vendor2Name, rate: m.vendor2Rate, quotationNo: '', effectiveFrom: m.vendor2RateEffectiveFrom, isPrimary: false }] : [])
+            ]).map((v, i) => `
+              <div class="p-3.5 border-2 ${v.isPrimary ? 'border-blue-300 bg-blue-50/50' : 'border-slate-200 bg-slate-50'} rounded-md space-y-1.5">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xs uppercase flex items-center gap-1 ${v.isPrimary ? 'text-blue-900' : 'text-slate-700'}">
+                    <i data-lucide="${v.isPrimary ? 'award' : 'building'}" class="w-3.5 h-3.5 ${v.isPrimary ? 'text-blue-600' : 'text-slate-500'}"></i>
+                    ${v.isPrimary ? 'Vendor-1 (Primary Source)' : `Vendor-${i + 1} (Alternate Source)`}
+                  </span>
+                  <span class="font-mono font-bold text-slate-900 text-sm">₹${Number(v.rate || 0).toFixed(2)}</span>
+                </div>
+                <p class="font-bold text-slate-900 text-xs truncate">${v.vendorName || v.vendorId || 'Approved Vendor'}</p>
+                <div class="text-[11px] text-slate-600 flex items-center justify-between pt-1 border-t border-slate-200/60">
+                  <span>Quote: <strong class="font-mono text-blue-800">${v.quotationNo || 'N/A'}</strong></span>
+                  <span>Effective: <strong class="font-mono">${v.effectiveFrom || 'Current'}</strong></span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
         </div>
 
-        <!-- Warranty & Preventive Maintenance (PM) Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Warranty Card -->
+        <!-- Warranty Coverage & PM (PM displayed only for Fixed Assets) -->
+        ${isFixed ? `
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Warranty Card -->
+            <div class="p-4 border border-blue-200 bg-blue-50/40 rounded-md space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-blue-950 text-xs uppercase flex items-center gap-1.5">
+                  <i data-lucide="shield" class="w-4 h-4 text-blue-700"></i>
+                  <span>Warranty Coverage</span>
+                </h4>
+                <span class="text-xs font-bold ${m.hasWarranty ? 'text-blue-800' : 'text-slate-400'}">
+                  ${m.hasWarranty ? 'Active Policy' : 'No Coverage'}
+                </span>
+              </div>
+              ${m.hasWarranty ? `
+                <div class="space-y-1 pt-1 text-slate-700">
+                  <div><strong>Period:</strong> <span class="font-medium">${m.warrantyPeriod || '1 Year'}</span></div>
+                  <div><strong>Valid Till:</strong> <span class="font-mono font-bold text-blue-900">${m.warrantyValidTill || 'N/A'}</span></div>
+                  <div><strong>Authorized Vendor:</strong> <span>${m.warrantyVendor || m.vendor1Name || 'Supplier'}</span></div>
+                </div>
+              ` : `
+                <p class="text-slate-500 text-xs italic">Equipment without active warranty coverage.</p>
+              `}
+            </div>
+
+            <!-- Preventive Maintenance (PM) Card -->
+            <div class="p-4 border border-purple-200 bg-purple-50/40 rounded-md space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="font-bold text-purple-950 text-xs uppercase flex items-center gap-1.5">
+                  <i data-lucide="wrench" class="w-4 h-4 text-purple-700"></i>
+                  <span>Preventive Maintenance (PM)</span>
+                </h4>
+                <span class="text-xs font-bold ${m.hasPm ? 'text-purple-800' : 'text-slate-400'}">
+                  ${m.hasPm ? ` ${m.pmFrequency}` : 'Not Scheduled'}
+                </span>
+              </div>
+              ${m.hasPm ? `
+                <div class="space-y-1 pt-1 text-slate-700">
+                  <div><strong>Technician:</strong> <span class="font-bold text-slate-900">${m.repairmanName || 'General Tech'}</span></div>
+                  <div><strong>Contact Phone:</strong> <span class="font-mono text-purple-900 font-semibold">${m.repairmanContact || '-'}</span></div>
+                  <div><strong>Agency:</strong> <span>${m.repairmanAgency || m.pmVendor || 'Authorized Care'}</span></div>
+                  <div><strong>Next PM Scheduled:</strong> <span class="font-mono font-bold text-purple-900">${m.nextPmDate || 'Upcoming'}</span></div>
+                </div>
+              ` : `
+                <p class="text-slate-500 text-xs italic">No routine preventive maintenance frequency assigned.</p>
+              `}
+            </div>
+          </div>
+        ` : `
+          <!-- Warranty Card for Consumable Material (No PM) -->
           <div class="p-4 border border-blue-200 bg-blue-50/40 rounded-md space-y-2">
             <div class="flex items-center justify-between">
               <h4 class="font-bold text-blue-950 text-xs uppercase flex items-center gap-1.5">
@@ -1099,37 +2349,14 @@ window.CMS_MASTERS = {
               <p class="text-slate-500 text-xs italic">Standard consumable without manufacturer warranty coverage.</p>
             `}
           </div>
-
-          <!-- Preventive Maintenance (PM) Card -->
-          <div class="p-4 border border-purple-200 bg-purple-50/40 rounded-md space-y-2">
-            <div class="flex items-center justify-between">
-              <h4 class="font-bold text-purple-950 text-xs uppercase flex items-center gap-1.5">
-                <i data-lucide="wrench" class="w-4 h-4 text-purple-700"></i>
-                <span>Preventive Maintenance (PM)</span>
-              </h4>
-              <span class="text-xs font-bold ${m.hasPm ? 'text-purple-800' : 'text-slate-400'}">
-                ${m.hasPm ? ` ${m.pmFrequency}` : 'Not Scheduled'}
-              </span>
-            </div>
-            ${m.hasPm ? `
-              <div class="space-y-1 pt-1 text-slate-700">
-                <div><strong>Technician:</strong> <span class="font-bold text-slate-900">${m.repairmanName || 'General Tech'}</span></div>
-                <div><strong>Contact Phone:</strong> <span class="font-mono text-purple-900 font-semibold">${m.repairmanContact || '-'}</span></div>
-                <div><strong>Agency:</strong> <span>${m.repairmanAgency || m.pmVendor || 'Authorized Care'}</span></div>
-                <div><strong>Next PM Scheduled:</strong> <span class="font-mono font-bold text-purple-900">${m.nextPmDate || 'Upcoming'}</span></div>
-              </div>
-            ` : `
-              <p class="text-slate-500 text-xs italic">No routine preventive maintenance frequency assigned.</p>
-            `}
-          </div>
-        </div>
+        `}
 
         <!-- Authorized Consumer Confirmation Box -->
         <div class="p-4 border border-emerald-200 bg-emerald-50/60 rounded-md space-y-2">
           <div class="flex items-center justify-between">
             <h4 class="font-bold text-emerald-950 text-xs uppercase flex items-center gap-1.5">
               <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700"></i>
-              <span>Consumer Rate Authorization Details</span>
+              <span>Consumable Rate Authorization Details</span>
             </h4>
             <span class="text-xs font-bold ${m.consumerConfirmed ? 'text-emerald-700' : 'text-amber-700'}">
               ${m.consumerConfirmed ? 'Authenticated & Confirmed' : 'Pending Confirmation'}
@@ -1157,13 +2384,13 @@ window.CMS_MASTERS = {
               <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
               <span>Generate PO</span>
             </button>
-            ${m.hasPm ? `
+            ${isFixed && m.hasPm ? `
               <button onclick="CMS_APP.closeModal(); CMS_REPORTS.openLogPmModal('${m.id}');" class="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-md text-xs flex items-center gap-1.5 shadow">
                 <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
                 <span>Log PM Service</span>
               </button>
             ` : ''}
-            ${(m.pmHistory && m.pmHistory.length > 0) ? `
+            ${isFixed && (m.pmHistory && m.pmHistory.length > 0) ? `
               <button onclick="CMS_PRINT.printPmCertificate({ materialId: '${m.id}', ...(m.pmHistory[0] || {}) });" class="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 font-bold rounded-md text-xs flex items-center gap-1.5 shadow-sm">
                 <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                 <span>Print Latest PM Cert</span>
@@ -1182,19 +2409,53 @@ window.CMS_MASTERS = {
     if (window.lucide) window.lucide.createIcons();
   },
 
-  openConsumableModal(matId = null) {
+
+  onMaterialGstSelect(slabId) {
+    const store = window.CMS_STORE.data;
+    const slab = (store.gstSlabs || []).find(g => g.id === slabId);
+    if (!slab) return;
+    const summaryEl = document.getElementById('m-tax-summary');
+    if (summaryEl) {
+      summaryEl.innerText = window.CMS_STORE.getTaxLabel(slab);
+    }
+  },
+
+  openFixedAssetModal(matId = null) {
+    this.openConsumableModal(matId, 'Fixed');
+  },
+
+  openConsumableModal(matId = null, forcedType = null) {
+    const role = window.CMS_STORE.getRole();
+    if (role === 'Checker') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Adding or modifying materials must be initiated by Maker.', 'warning');
+    }
     const store = window.CMS_STORE.data;
     const isEdit = Boolean(matId);
-    const m = isEdit ? store.consumables.find(i => i.id === matId) : {
-      inventoryType: 'Consumer',
+    const existing = isEdit ? store.consumables.find(i => i.id === matId) : null;
+
+    let resolvedType = 'Consumer';
+    if (existing) {
+      resolvedType = existing.inventoryType === 'Fixed' ? 'Fixed' : 'Consumer';
+    } else if (forcedType) {
+      resolvedType = forcedType === 'Fixed' ? 'Fixed' : 'Consumer';
+    } else if (window.location.hash === '#fixed-inventory' || this.consumableTypeFilter === 'Fixed') {
+      resolvedType = 'Fixed';
+    } else {
+      resolvedType = 'Consumer';
+    }
+
+    const isFixed = resolvedType === 'Fixed';
+
+    const m = existing ? existing : {
+      inventoryType: resolvedType,
       categoryId: '', materialName: '', unit: 'Nos', brand: '', supplierProductCode: '', hsnCode: '',
       taxMode: 'CGST_SGST',
       sgst: 9, cgst: 9, igst: 18,
       quotationNo: '', quotationDate: new Date().toISOString().split('T')[0], quotationRate: '',
       mrpBooked: '',
       assetTag: '', serialNo: '', custodianDept: 'Central Stores',
-      hasWarranty: false, warrantyPeriod: '1 Year', warrantyValidTill: '', warrantyVendor: '',
-      hasPm: false, pmFrequency: 'Quarterly', repairmanName: '', repairmanContact: '', repairmanAgency: '', pmVendor: '', nextPmDate: '',
+      hasWarranty: isFixed, warrantyPeriod: isFixed ? '1 Year' : '1 Year', warrantyValidTill: '', warrantyVendor: '',
+      hasPm: isFixed, pmFrequency: 'Quarterly', repairmanName: '', repairmanContact: '', repairmanAgency: '', pmVendor: '', nextPmDate: '',
       vendor1Id: '', vendor1Rate: '', vendor1RateEffectiveFrom: '',
       consumerConfirmed: true,
       confirmedBy: 'Dr. A. Verma (Authorized Department Head)',
@@ -1204,279 +2465,270 @@ window.CMS_MASTERS = {
     };
 
     const categories = store.categories || [];
-    const vendors = store.vendors || [];
+    const vendors = (store.vendors || []).filter(v => v.status === "Approved" && !v.isBlocked);
 
     const content = `
-      <form id="mat-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveConsumable('${matId || ''}', true);">
-        
-        <!-- STEP 1: INVENTORY CLASSIFICATION & IDENTITY -->
-        <div class="p-4 bg-slate-50 border border-slate-200 rounded-md space-y-3">
-          <div class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center justify-between text-blue-700">
-            <span class="flex items-center gap-1.5">
-              <i data-lucide="tag" class="w-4 h-4"></i>
-              <span>1. Item Identification & Inventory Classification</span>
-            </span>
-            <div class="flex items-center gap-2">
-              <label class="text-slate-600 font-bold text-xs">Inventory Scope:</label>
-              <select id="m-inv-type" onchange="CMS_MASTERS.toggleFixedAssetFields(this.value)" class="px-2.5 py-1 border border-slate-300 rounded font-bold text-xs bg-white text-slate-900 focus:ring-2 focus:ring-blue-500">
-                <option value="Consumer" ${m.inventoryType !== 'Fixed' ? 'selected' : ''}>Consumer Materials (Consumables)</option>
-                <option value="Fixed" ${m.inventoryType === 'Fixed' ? 'selected' : ''}>Fixed Capital Asset / Equipment</option>
-              </select>
-            </div>
+      <form id="mat-form" class="space-y-5 text-xs p-1" onsubmit="event.preventDefault(); CMS_MASTERS.saveConsumable('${matId || ''}', true);">
+        <input type="hidden" id="m-inv-type" value="${isFixed ? 'Fixed' : 'Consumer'}" />
+
+        <!-- Header / Scope Bar (Single Unified Form) -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="${isFixed ? 'cpu' : 'package'}" class="w-4 h-4 ${isFixed ? 'text-indigo-600' : 'text-blue-600'}"></i>
+              <span>${isEdit ? (isFixed ? 'Edit Fixed Capital Asset' : 'Edit Consumable Material') : (isFixed ? 'New Fixed Capital Asset' : 'New Consumable Material')}</span>
+            </h3>
+            <p class="text-slate-500 text-[11px] mt-0.5">${isFixed ? 'Specify capital equipment details, statutory tax, pricing, and warranty schedule.' : 'Specify consumable specifications, statutory tax, quotation pricing, and consumption buffer.'}</p>
           </div>
-          
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isFixed ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}">
+            ${isFixed ? 'Fixed Capital Asset' : 'Consumable Material'}
+          </span>
+        </div>
+
+        <!-- 1. Item Details -->
+        <div class="space-y-3">
+          <div class="font-bold text-slate-800 text-xs">
+            Item Information & Classification
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label class="block font-bold text-slate-700 mb-1">Product Category *</label>
-              <select id="m-cat" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <label class="block font-semibold text-slate-700 mb-1">Product Category <span class="text-rose-500">*</span></label>
+              <select id="m-cat" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 <option value="">-- Select Category --</option>
                 ${categories.map(c => `<option value="${c.id}" ${m.categoryId === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
               </select>
             </div>
             <div class="md:col-span-2">
-              <label class="block font-bold text-slate-700 mb-1">Material / Item Name *</label>
-              <input type="text" id="m-name" required value="${m.materialName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. A4 Copier Paper 75 GSM or HP LaserJet Printer" />
+              <label class="block font-semibold text-slate-700 mb-1">${isFixed ? 'Fixed Capital Asset Name' : 'Consumable Material Name'} <span class="text-rose-500">*</span></label>
+              <input type="text" id="m-name" required value="${m.materialName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="${isFixed ? 'e.g. HP LaserJet Enterprise Multi-Function Printer' : 'e.g. A4 Copier Paper (75 GSM) / Disinfectant Liquid'}" />
             </div>
             <div>
-              <label class="block font-bold text-slate-700 mb-1">Unit of Measurement *</label>
-              <input type="text" id="m-unit" required value="${m.unit || 'Nos'}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Nos, Box, Rim, Kg, Litre, Roll, Set" />
+              <label class="block font-semibold text-slate-700 mb-1">Unit of Measurement <span class="text-rose-500">*</span></label>
+              <input type="text" id="m-unit" required value="${m.unit || 'Nos'}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Nos, Box, Rim, Kg, Litre, Roll, Set" />
             </div>
             <div>
-              <label class="block font-bold text-slate-700 mb-1">Brand Name *</label>
-              <input type="text" id="m-brand" required value="${m.brand || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="e.g. JK Copier, 3M, Lizol, HP, Daikin" />
+              <label class="block font-semibold text-slate-700 mb-1">Brand Name <span class="text-rose-500">*</span></label>
+              <input type="text" id="m-brand" required value="${m.brand || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. JK Copier, 3M, Lizol, HP, Daikin" />
             </div>
             <div>
-              <label class="block font-bold text-slate-700 mb-1">Supplier Product Code (SKU)</label>
-              <input type="text" id="m-sku" value="${m.supplierProductCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md" placeholder="SKU-8910" />
+              <label class="block font-semibold text-slate-700 mb-1">Supplier Part / SKU Code</label>
+              <input type="text" id="m-sku" value="${m.supplierProductCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="SKU-8910" />
             </div>
             <div>
-              <label class="block font-bold text-slate-700 mb-1">HSN Code *</label>
-              <input type="text" id="m-hsn" required value="${m.hsnCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md" placeholder="e.g. 4802 or 8443" />
+              <label class="block font-semibold text-slate-700 mb-1">HSN / SAC Code <span class="text-rose-500">*</span></label>
+              <input type="text" id="m-hsn" required value="${m.hsnCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. 4802 or 8443" />
             </div>
-            <div class="md:col-span-3 p-3 border border-slate-200 rounded-md bg-white">
-              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                <label class="block font-bold text-slate-700">Tax Type *</label>
-                <div class="flex items-center gap-3 text-[11px] font-semibold">
-                  <label class="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" name="m-tax-mode" value="CGST_SGST" ${window.CMS_STORE.getTaxMode(m) === 'CGST_SGST' ? 'checked' : ''} onchange="CMS_MASTERS.toggleTaxMode('m', this.value)" />
-                    CGST + SGST (Intra-state)
-                  </label>
-                  <label class="flex items-center gap-1.5 cursor-pointer">
-                    <input type="radio" name="m-tax-mode" value="IGST" ${window.CMS_STORE.getTaxMode(m) === 'IGST' ? 'checked' : ''} onchange="CMS_MASTERS.toggleTaxMode('m', this.value)" />
-                    IGST (Inter-state)
-                  </label>
-                </div>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div id="m-cgst-sgst-fields" class="sm:col-span-2 grid grid-cols-2 gap-1.5 ${window.CMS_STORE.getTaxMode(m) === 'IGST' ? 'tax-fields-disabled' : ''}">
-                  <input type="number" step="0.01" id="m-sgst" value="${m.sgst ?? 9}" ${window.CMS_STORE.getTaxMode(m) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.updateTaxSummary('m')" class="w-full px-2 py-2 border border-slate-300 rounded-md font-mono" placeholder="SGST %" />
-                  <input type="number" step="0.01" id="m-cgst" value="${m.cgst ?? 9}" ${window.CMS_STORE.getTaxMode(m) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.updateTaxSummary('m')" class="w-full px-2 py-2 border border-slate-300 rounded-md font-mono" placeholder="CGST %" />
-                </div>
-                <div id="m-igst-field" class="${window.CMS_STORE.getTaxMode(m) === 'CGST_SGST' ? 'tax-fields-disabled' : ''}">
-                  <input type="number" step="0.01" id="m-igst" value="${m.igst ?? 18}" ${window.CMS_STORE.getTaxMode(m) === 'CGST_SGST' ? 'disabled' : ''} oninput="CMS_MASTERS.updateTaxSummary('m')" class="w-full px-2 py-2 border border-slate-300 rounded-md font-mono" placeholder="IGST %" />
-                </div>
-              </div>
-              <div id="m-tax-summary" class="mt-2 text-[11px] font-bold text-blue-800">${window.CMS_STORE.getTaxLabel(m)}</div>
-              <p class="text-[10px] text-slate-500 mt-2">Only the selected tax type is active in calculations and purchase orders.</p>
-            </div>
-          </div>
-
-          <!-- Fixed Asset Specific Inputs (Toggleable) -->
-          <div id="m-fixed-fields" class="${m.inventoryType === 'Fixed' ? '' : 'hidden'} p-3 bg-indigo-50 border border-indigo-200 rounded-md grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block font-bold text-indigo-900 mb-1">Asset Tag Number *</label>
-              <input type="text" id="m-asset-tag" value="${m.assetTag || ''}" class="w-full font-mono px-3 py-1.5 border border-indigo-300 rounded bg-white" placeholder="e.g. AST-PRN-001" />
-            </div>
-            <div>
-              <label class="block font-bold text-indigo-900 mb-1">Serial Number (S/N)</label>
-              <input type="text" id="m-serial-no" value="${m.serialNo || ''}" class="w-full font-mono px-3 py-1.5 border border-indigo-300 rounded bg-white" placeholder="e.g. VNC3K92104" />
-            </div>
-            <div>
-              <label class="block font-bold text-indigo-900 mb-1">Custodian Department</label>
-              <input type="text" id="m-custodian-dept" value="${m.custodianDept || 'Accounts & Finance'}" class="w-full px-3 py-1.5 border border-indigo-300 rounded bg-white" placeholder="e.g. Accounts, Facility" />
-            </div>
-          </div>
-        </div>
-
-        <!-- STEP 2: VENDOR QUOTATION & MRP BOOKED -->
-        <div class="p-4 bg-blue-50/70 border border-blue-200 rounded-md space-y-3">
-          <div class="font-bold text-blue-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
-            <span>2. Vendor Quotation & Booked MRP</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Quotation Number *</label>
-              <input type="text" id="m-quote-no" value="${m.quotationNo || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white" placeholder="e.g. QT-2026-881" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Quotation Date</label>
-              <input type="date" id="m-quote-date" value="${m.quotationDate || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Quotation Rate (₹) *</label>
-              <input type="number" step="0.01" id="m-quote-rate" value="${m.quotationRate || m.vendor1Rate || ''}" class="w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-md bg-white text-blue-900" placeholder="0.00" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">MRP Booked (₹) *</label>
-              <input type="number" step="0.01" id="m-mrp" value="${m.mrpBooked || ''}" class="w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900" placeholder="0.00" />
-            </div>
-          </div>
-        </div>
-
-        <!-- STEP 3: APPROVED VENDOR PRICING & EFFECTIVE DATE -->
-        <div>
-          <div class="p-4 bg-slate-50 border border-slate-200 rounded-md space-y-3">
-            <h4 class="font-bold text-slate-900 text-xs uppercase flex items-center gap-1.5">
-              <i data-lucide="award" class="w-4 h-4 text-blue-600"></i>
-              <span>Approved Vendor Details</span>
-            </h4>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Select Vendor</label>
-              <select id="m-v1" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white">
-                <option value="">-- Choose Vendor --</option>
-                ${vendors.map(v => `<option value="${v.id}" ${m.vendor1Id === v.id ? 'selected' : ''}>${v.name}</option>`).join('')}
+            <div class="md:col-span-2">
+              <label class="block font-semibold text-slate-700 mb-1">Statutory GST / IGST Slab <span class="text-rose-500">*</span></label>
+              <select id="m-gst-slab" onchange="CMS_MASTERS.onMaterialGstSelect(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <option value="">-- Select Configured GST Slab --</option>
+                ${(store.gstSlabs || []).filter(g => g.status === 'Approved').map(g => `
+                  <option value="${g.id}" ${(m.gstSlabId === g.id || m.taxMode === g.taxMode) ? 'selected' : ''}>
+                    ${g.name} — ${window.CMS_STORE.getTaxLabel(g)} (${g.taxMode === 'IGST' ? 'Inter-state IGST' : 'Intra-state CGST+SGST'})
+                  </option>
+                `).join('')}
               </select>
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Approved Rate (₹) *</label>
-                <input type="number" step="0.01" id="m-v1-rate" value="${m.vendor1Rate || ''}" class="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-md" placeholder="250.00" />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Rate Effective From *</label>
-                <input type="date" id="m-v1-eff" value="${m.vendor1RateEffectiveFrom || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md" />
+              <div id="m-tax-summary" class="text-[11px] font-semibold text-blue-700 mt-1">
+                ${m.taxMode ? window.CMS_STORE.getTaxLabel(m) : 'Selected tax rate will automatically apply to purchase orders and goods inward.'}
               </div>
             </div>
           </div>
 
+          <!-- Fixed Asset Specific Inputs (Visible ONLY for Fixed Assets) -->
+          ${isFixed ? `
+            <div id="m-fixed-fields" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Asset Tag Number <span class="text-rose-500">*</span></label>
+                <input type="text" id="m-asset-tag" required value="${m.assetTag || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. AST-PRN-001" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Serial Number (S/N)</label>
+                <input type="text" id="m-serial-no" value="${m.serialNo || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. VNC3K92104" />
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Custodian Department</label>
+                <input type="text" id="m-custodian-dept" value="${m.custodianDept || 'Central Stores'}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Accounts, Facility" />
+              </div>
+            </div>
+          ` : `
+            <div id="m-fixed-fields" class="hidden">
+              <input type="hidden" id="m-asset-tag" value="" />
+              <input type="hidden" id="m-serial-no" value="" />
+              <input type="hidden" id="m-custodian-dept" value="" />
+            </div>
+          `}
         </div>
 
-        <!-- STEP 4: WARRANTY TRACKING (BOTH CONSUMER & FIXED) -->
-        <div class="p-4 bg-blue-50/50 border border-blue-200 rounded-md space-y-3">
+        <!-- 2. Pricing & Multiple Approved Vendors -->
+        <div class="pt-3 border-t border-slate-200 space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="font-bold text-blue-950 text-xs uppercase flex items-center gap-1.5">
-              <i data-lucide="shield" class="w-4 h-4 text-blue-700"></i>
-              <span>Warranty Tracking (Consumer & Fixed)</span>
-            </h4>
-            <label class="inline-flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="m-has-warranty" ${m.hasWarranty ? 'checked' : ''} onchange="CMS_MASTERS.toggleWarrantyFields(this.checked)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
-              <span class="text-xs font-bold text-blue-900">Warranty Applicable?</span>
-            </label>
+            <div>
+              <div class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                <i data-lucide="store" class="w-4 h-4 text-blue-600"></i>
+                <span>Vendor Quotations & Pricing (Multiple Vendors)</span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">Attach multiple approved vendors, quotation references, and contractual rates.</p>
+            </div>
+            <button type="button" onclick="CMS_MASTERS.addMaterialVendorRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md transition text-xs shadow">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ Add Vendor</span>
+            </button>
           </div>
 
-          <div id="m-warranty-fields" class="${m.hasWarranty ? '' : 'hidden'} grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-blue-200">
+          <!-- Product Level MRP -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-md items-center">
             <div>
-              <label class="block font-bold text-slate-700 mb-1">Warranty Period *</label>
-              <input type="text" id="m-warranty-period" value="${m.warrantyPeriod || '1 Year Comprehensive'}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white" placeholder="e.g. 1 Year, 3 Years Onsite" />
+              <label class="block font-semibold text-slate-700 mb-1">Booked MRP (₹) <span class="text-rose-500">*</span></label>
+              <input type="number" step="0.01" id="m-mrp" required value="${m.mrpBooked || ''}" class="w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="0.00" />
             </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Warranty Valid Till</label>
-              <input type="date" id="m-warranty-till" value="${m.warrantyValidTill || ''}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white font-mono" />
+            <div class="sm:col-span-2 text-[11px] text-slate-500">
+              Maximum Retail Price benchmark for statutory audit and procurement saving computation.
             </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Warranty Partner / Vendor</label>
-              <input type="text" id="m-warranty-vendor" value="${m.warrantyVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white" placeholder="e.g. HP Authorised Care" />
-            </div>
+          </div>
+
+          <!-- Dynamic Multiple Vendor Rows Container -->
+          <div id="m-vendor-container" class="space-y-3">
+            <!-- Dynamically populated by CMS_MASTERS.addMaterialVendorRow -->
+          </div>
+
+          <div class="flex justify-start pt-1">
+            <button type="button" onclick="CMS_MASTERS.addMaterialVendorRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 font-bold rounded-md transition text-xs shadow-xs">
+              <i data-lucide="plus" class="w-3.5 h-3.5 text-blue-600"></i>
+              <span>Add Another Vendor</span>
+            </button>
           </div>
         </div>
 
-        <!-- STEP 5: PREVENTIVE MAINTENANCE (PM) TRACKING -->
-        <div class="p-4 bg-purple-50/50 border border-purple-200 rounded-md space-y-3">
-          <div class="flex items-center justify-between">
-            <h4 class="font-bold text-purple-950 text-xs uppercase flex items-center gap-1.5">
-              <i data-lucide="wrench" class="w-4 h-4 text-purple-700"></i>
-              <span>Preventive Maintenance (PM) Schedule & Repairman Details</span>
-            </h4>
-            <label class="inline-flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" id="m-has-pm" ${m.hasPm ? 'checked' : ''} onchange="CMS_MASTERS.togglePmFields(this.checked)" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500" />
-              <span class="text-xs font-bold text-purple-900">PM Required?</span>
-            </label>
+        <!-- 3. Stock Target & Buffers -->
+        <div class="pt-3 border-t border-slate-200 space-y-3">
+          <div class="font-bold text-slate-800 text-xs">
+            Stock Buffer & Opening Balance
           </div>
-
-          <div id="m-pm-fields" class="${m.hasPm ? '' : 'hidden'} space-y-3 pt-2 border-t border-purple-200">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">PM Frequency *</label>
-                <select id="m-pm-freq" class="w-full px-3 py-2 border border-slate-300 rounded bg-white">
-                  <option value="Monthly" ${m.pmFrequency === 'Monthly' ? 'selected' : ''}>Monthly (Every 30 Days)</option>
-                  <option value="Bi-Monthly" ${m.pmFrequency === 'Bi-Monthly' ? 'selected' : ''}>Bi-Monthly (Every 60 Days)</option>
-                  <option value="Quarterly" ${m.pmFrequency === 'Quarterly' ? 'selected' : ''}>Quarterly (Every 90 Days)</option>
-                  <option value="Half-Yearly" ${m.pmFrequency === 'Half-Yearly' ? 'selected' : ''}>Half-Yearly (Every 180 Days)</option>
-                  <option value="Annual" ${m.pmFrequency === 'Annual' ? 'selected' : ''}>Annual (Every 365 Days)</option>
-                </select>
-              </div>
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Designated Repairman / Technician *</label>
-                <input type="text" id="m-pm-repairman-name" value="${m.repairmanName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white" placeholder="e.g. Sanjay Rawat" />
-              </div>
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Repairman Contact Phone *</label>
-                <input type="text" id="m-pm-repairman-contact" value="${m.repairmanContact || ''}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white font-mono" placeholder="+91 98114 99012" />
-              </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Average Monthly Consumption (Buffer Target) <span class="text-rose-500">*</span></label>
+              <input type="number" id="m-monthly" required value="${m.avgMonthlyConsumption || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="100" />
+              <p class="text-[10px] text-slate-500 mt-0.5">Used by Purchase Order assistant to calculate reorder quotas.</p>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Repairman Agency / Provider</label>
-                <input type="text" id="m-pm-repairman-agency" value="${m.repairmanAgency || ''}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white" placeholder="e.g. Kent Commercial Service Care" />
-              </div>
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">PM Authorized Vendor</label>
-                <input type="text" id="m-pm-vendor" value="${m.pmVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white" placeholder="e.g. GreenClean Sanitation Corp" />
-              </div>
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Next Scheduled PM Date</label>
-                <input type="date" id="m-pm-next-date" value="${m.nextPmDate || ''}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white font-mono" />
-              </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Initial Opening Stock Balance</label>
+              <input type="number" id="m-init-stock" value="${m.initialStock || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" ${isEdit ? 'disabled title="Stock is adjusted via Inward Receipts and Stock Adjustments."' : ''} />
             </div>
           </div>
         </div>
 
-        <!-- STEP 6: CHECKER CONFIRMATION -->
-        <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-md space-y-3">
+        <!-- 4. Warranty & Maintenance (PM only visible for Fixed Assets) -->
+        <div class="pt-3 border-t border-slate-200 space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="font-bold text-emerald-950 text-xs uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700"></i>
-              <span>Checker Rate Confirmation (Security Vetting)</span>
-            </h4>
-            <label class="inline-flex items-center gap-2 cursor-pointer">
+            <span class="font-bold text-slate-800 text-xs">${isFixed ? 'Warranty & Maintenance' : 'Warranty Coverage'}</span>
+            <div class="flex items-center gap-4">
+              <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
+                <input type="checkbox" id="m-has-warranty" ${m.hasWarranty ? 'checked' : ''} onchange="CMS_MASTERS.toggleWarrantyFields(this.checked)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                <span>Warranty Applicable</span>
+              </label>
+              ${isFixed ? `
+                <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
+                  <input type="checkbox" id="m-has-pm" ${m.hasPm ? 'checked' : ''} onchange="CMS_MASTERS.togglePmFields(this.checked)" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500" />
+                  <span>PM Required</span>
+                </label>
+              ` : ''}
+            </div>
+          </div>
+
+          <div id="m-warranty-fields" class="${m.hasWarranty ? '' : 'hidden'} grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-md">
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Warranty Period</label>
+              <input type="text" id="m-warranty-period" value="${m.warrantyPeriod || '1 Year Comprehensive'}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. 1 Year, 3 Years" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Warranty Valid Till</label>
+              <input type="date" id="m-warranty-till" value="${m.warrantyValidTill || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" />
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Warranty Partner / Vendor</label>
+              <input type="text" id="m-warranty-vendor" value="${m.warrantyVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. HP Authorised Care" />
+            </div>
+          </div>
+
+          ${isFixed ? `
+            <div id="m-pm-fields" class="${m.hasPm ? '' : 'hidden'} space-y-2.5 p-3 bg-slate-50 border border-slate-200 rounded-md">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">PM Frequency</label>
+                  <select id="m-pm-freq" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs">
+                    <option value="Monthly" ${m.pmFrequency === 'Monthly' ? 'selected' : ''}>Monthly (Every 30 Days)</option>
+                    <option value="Bi-Monthly" ${m.pmFrequency === 'Bi-Monthly' ? 'selected' : ''}>Bi-Monthly (Every 60 Days)</option>
+                    <option value="Quarterly" ${m.pmFrequency === 'Quarterly' ? 'selected' : ''}>Quarterly (Every 90 Days)</option>
+                    <option value="Half-Yearly" ${m.pmFrequency === 'Half-Yearly' ? 'selected' : ''}>Half-Yearly (Every 180 Days)</option>
+                    <option value="Annual" ${m.pmFrequency === 'Annual' ? 'selected' : ''}>Annual (Every 365 Days)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Designated Technician</label>
+                  <input type="text" id="m-pm-repairman-name" value="${m.repairmanName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. Sanjay Rawat" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Technician Contact Phone</label>
+                  <input type="text" id="m-pm-repairman-contact" value="${m.repairmanContact || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" placeholder="+91 98114 99012" />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Technician Agency</label>
+                  <input type="text" id="m-pm-repairman-agency" value="${m.repairmanAgency || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. Kent Service Care" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">PM Authorized Vendor</label>
+                  <input type="text" id="m-pm-vendor" value="${m.pmVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. GreenClean Corp" />
+                </div>
+                <div>
+                  <label class="block font-semibold text-slate-700 mb-1">Next Scheduled PM Date</label>
+                  <input type="date" id="m-pm-next-date" value="${m.nextPmDate || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" />
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div id="m-pm-fields" class="hidden">
+              <input type="checkbox" id="m-has-pm" class="hidden" />
+              <input type="hidden" id="m-pm-freq" value="Quarterly" />
+              <input type="hidden" id="m-pm-repairman-name" value="" />
+              <input type="hidden" id="m-pm-repairman-contact" value="" />
+              <input type="hidden" id="m-pm-repairman-agency" value="" />
+              <input type="hidden" id="m-pm-vendor" value="" />
+              <input type="hidden" id="m-pm-next-date" value="" />
+            </div>
+          `}
+        </div>
+
+        <!-- 5. Rate Confirmation & Audit -->
+        <div class="pt-3 border-t border-slate-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800 text-xs">Rate Confirmation & Audit</span>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
               <input type="checkbox" id="m-conf" ${m.consumerConfirmed ? 'checked' : ''} class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
-              <span class="text-xs font-bold text-emerald-900">Confirmed by Checker</span>
+              <span>Confirmed by Checker</span>
             </label>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-emerald-900 mb-1">Checker Name / Post *</label>
-              <input type="text" id="m-conf-by" value="${m.confirmedBy || ''}" class="w-full px-3 py-2 text-xs border border-emerald-300 rounded-md bg-white focus:outline-none" placeholder="e.g. Col. Anita Sharma (Store Checker)" />
+              <label class="block font-semibold text-slate-700 mb-1">Checker Name / Post</label>
+              <input type="text" id="m-conf-by" value="${m.confirmedBy || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white focus:outline-none" placeholder="e.g. Col. Anita Sharma (Store Checker)" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-emerald-900 mb-1">Confirmation Date *</label>
-              <input type="date" id="m-conf-date" value="${m.confirmationDate || ''}" class="w-full px-3 py-2 text-xs border border-emerald-300 rounded-md bg-white" />
+              <label class="block font-semibold text-slate-700 mb-1">Confirmation Date</label>
+              <input type="date" id="m-conf-date" value="${m.confirmationDate || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-emerald-900 mb-1">Tender / Rate Contract Ref</label>
-              <input type="text" id="m-conf-remarks" value="${m.confirmationRemarks || ''}" class="w-full px-3 py-2 text-xs border border-emerald-300 rounded-md bg-white" placeholder="e.g. Annual Rate Contract Q3 Ref #77" />
+              <label class="block font-semibold text-slate-700 mb-1">Tender / Rate Contract Ref</label>
+              <input type="text" id="m-conf-remarks" value="${m.confirmationRemarks || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white" placeholder="e.g. Annual Rate Contract Q3 Ref #77" />
             </div>
           </div>
         </div>
 
-        <!-- STEP 7: MONTHLY CONSUMPTION & SAFETY BUFFER -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Average Monthly Consumption (Buffer Target) *</label>
-            <input type="number" id="m-monthly" required value="${m.avgMonthlyConsumption || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="100" />
-            <p class="text-[10px] text-slate-500 mt-0.5">Used by Purchase Order assistant to calculate reorder quotas.</p>
-          </div>
-          <div>
-            <label class="block font-bold text-slate-700 mb-1">Initial Opening Stock Balance</label>
-            <input type="number" id="m-init-stock" value="${m.initialStock || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-md" ${isEdit ? 'disabled title="Stock is adjusted via Inward Receipts and Stock Adjustments."' : ''} />
-          </div>
-        </div>
-
+        <!-- Form Actions -->
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5 text-xs">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Save to Master & Submit</span>
           </button>
@@ -1484,42 +2736,64 @@ window.CMS_MASTERS = {
       </form>
     `;
 
-    window.CMS_APP.openModal(isEdit ? 'Modify Material' : 'Add Material', content, 'max-w-4xl');
-  },
+    const modalTitle = isEdit 
+      ? (isFixed ? 'Modify Fixed Capital Asset' : 'Modify Consumable Material')
+      : (isFixed ? 'Add Fixed Capital Asset' : 'Add Consumable Material');
+    window.CMS_APP.openModal(modalTitle, content, 'max-w-4xl');
 
-  toggleTaxMode(prefix, mode) {
-    const intraState = mode === 'CGST_SGST';
-    const cgstSgstFields = document.getElementById(`${prefix}-cgst-sgst-fields`);
-    const igstField = document.getElementById(`${prefix}-igst-field`);
-    const sgst = document.getElementById(`${prefix}-sgst`);
-    const cgst = document.getElementById(`${prefix}-cgst`);
-    const igst = document.getElementById(`${prefix}-igst`);
-
-    [sgst, cgst].forEach(input => {
-      if (!input) return;
-      input.disabled = !intraState;
-      input.closest('div')?.classList.toggle('tax-fields-disabled', !intraState);
-    });
-    if (igst) {
-      igst.disabled = intraState;
-      igstField?.classList.toggle('tax-fields-disabled', intraState);
+    // Populate multiple vendor quotation rows
+    let vList = [];
+    if (Array.isArray(m.vendors) && m.vendors.length > 0) {
+      vList = m.vendors;
+    } else {
+      if (m.vendor1Id || m.quotationNo || m.quotationRate) {
+        vList.push({
+          vendorId: m.vendor1Id || '',
+          vendorName: m.vendor1Name || '',
+          quotationNo: m.quotationNo || '',
+          quotationDate: m.quotationDate || new Date().toISOString().split('T')[0],
+          rate: m.quotationRate || m.vendor1Rate || '',
+          effectiveFrom: m.vendor1RateEffectiveFrom || new Date().toISOString().split('T')[0],
+          isPrimary: true
+        });
+      }
+      if (m.vendor2Id) {
+        vList.push({
+          vendorId: m.vendor2Id || '',
+          vendorName: m.vendor2Name || '',
+          quotationNo: '',
+          quotationDate: '',
+          rate: m.vendor2Rate || '',
+          effectiveFrom: m.vendor2RateEffectiveFrom || new Date().toISOString().split('T')[0],
+          isPrimary: false
+        });
+      }
     }
-    cgstSgstFields?.classList.toggle('tax-fields-disabled', !intraState);
-    this.updateTaxSummary(prefix);
-  },
 
-  updateTaxSummary(prefix) {
-    const mode = document.querySelector(`input[name="${prefix}-tax-mode"]:checked`)?.value || 'CGST_SGST';
-    const sgst = mode === 'CGST_SGST' ? (parseFloat(document.getElementById(`${prefix}-sgst`)?.value) || 0) : 0;
-    const cgst = mode === 'CGST_SGST' ? (parseFloat(document.getElementById(`${prefix}-cgst`)?.value) || 0) : 0;
-    const igst = mode === 'IGST' ? (parseFloat(document.getElementById(`${prefix}-igst`)?.value) || 0) : 0;
-    const summary = document.getElementById(`${prefix}-tax-summary`);
-    if (summary) summary.innerText = mode === 'IGST'
-      ? `IGST: ${igst}%`
-      : `SGST: ${sgst}% + CGST: ${cgst}% = ${sgst + cgst}%`;
+    if (vList.length === 0) {
+      vList.push({
+        vendorId: '',
+        vendorName: '',
+        quotationNo: '',
+        quotationDate: new Date().toISOString().split('T')[0],
+        rate: '',
+        effectiveFrom: new Date().toISOString().split('T')[0],
+        isPrimary: true
+      });
+    }
+
+    vList.forEach((vData, idx) => {
+      this.addMaterialVendorRow(vData, vData.isPrimary ?? (idx === 0));
+    });
+
+    if (window.lucide) window.lucide.createIcons();
   },
 
   saveConsumable(matId, directSubmit = false) {
+    const role = window.CMS_STORE.getRole();
+    if (role === 'Checker') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Adding or modifying materials must be initiated by Maker.', 'warning');
+    }
     const store = window.CMS_STORE;
     const inventoryType = document.getElementById('m-inv-type').value;
     const catId = document.getElementById('m-cat').value;
@@ -1529,15 +2803,66 @@ window.CMS_MASTERS = {
     const brand = document.getElementById('m-brand').value.trim();
     const supplierProductCode = document.getElementById('m-sku').value.trim();
     const hsnCode = document.getElementById('m-hsn').value.trim();
-    const taxMode = document.querySelector('input[name="m-tax-mode"]:checked')?.value || 'CGST_SGST';
-    const sgst = taxMode === 'CGST_SGST' ? (parseFloat(document.getElementById('m-sgst').value) || 0) : 0;
-    const cgst = taxMode === 'CGST_SGST' ? (parseFloat(document.getElementById('m-cgst').value) || 0) : 0;
-    const igst = taxMode === 'IGST' ? (parseFloat(document.getElementById('m-igst').value) || 0) : 0;
+    const gstSlabId = document.getElementById('m-gst-slab')?.value || '';
+    const selectedSlab = store.data.gstSlabs ? store.data.gstSlabs.find(g => g.id === gstSlabId) : null;
+    let taxMode = 'CGST_SGST';
+    let sgst = 9, cgst = 9, igst = 18;
+    if (selectedSlab) {
+      taxMode = selectedSlab.taxMode || (selectedSlab.igst > 0 && selectedSlab.cgst === 0 ? 'IGST' : 'CGST_SGST');
+      sgst = Number(selectedSlab.sgst) || 0;
+      cgst = Number(selectedSlab.cgst) || 0;
+      igst = Number(selectedSlab.igst) || (sgst + cgst);
+    } else {
+      const modeRadio = document.querySelector('input[name="m-tax-mode"]:checked')?.value;
+      if (modeRadio) taxMode = modeRadio;
+      sgst = parseFloat(document.getElementById('m-sgst')?.value) || 9;
+      cgst = parseFloat(document.getElementById('m-cgst')?.value) || 9;
+      igst = parseFloat(document.getElementById('m-igst')?.value) || 18;
+    }
 
-    const quotationNo = document.getElementById('m-quote-no').value.trim();
-    const quotationDate = document.getElementById('m-quote-date').value;
-    const quotationRate = parseFloat(document.getElementById('m-quote-rate').value) || 0;
-    const mrpBooked = parseFloat(document.getElementById('m-mrp').value) || 0;
+    const mrpBooked = parseFloat(document.getElementById('m-mrp')?.value) || 0;
+
+    // Extract multiple vendor rows
+    const vendorRows = document.querySelectorAll('#m-vendor-container .mat-vendor-row');
+    const vendorsList = [];
+    for (const r of vendorRows) {
+      const vId = r.querySelector('.mat-v-select')?.value || '';
+      const vObj = store.data.vendors.find(v => v.id === vId);
+      const qNo = r.querySelector('.mat-v-quote-no')?.value.trim() || '';
+      const qDate = r.querySelector('.mat-v-quote-date')?.value || '';
+      const qRate = parseFloat(r.querySelector('.mat-v-rate')?.value) || 0;
+      const effFrom = r.querySelector('.mat-v-eff-date')?.value || '';
+      const isPrim = r.querySelector('input[type="radio"]')?.checked || (vendorsList.length === 0);
+
+      if (vId || qNo || qRate > 0) {
+        vendorsList.push({
+          vendorId: vId,
+          vendorName: vObj ? vObj.name : '',
+          quotationNo: qNo,
+          quotationDate: qDate,
+          rate: qRate,
+          effectiveFrom: effFrom,
+          isPrimary: isPrim
+        });
+      }
+    }
+
+    // Determine primary and secondary vendor for backwards compatibility
+    const primaryVendor = vendorsList.find(v => v.isPrimary) || vendorsList[0] || {};
+    const secondaryVendor = vendorsList.find(v => v !== primaryVendor) || {};
+
+    const quotationNo = primaryVendor.quotationNo || '';
+    const quotationDate = primaryVendor.quotationDate || '';
+    const quotationRate = primaryVendor.rate || 0;
+    const v1Id = primaryVendor.vendorId || '';
+    const v1 = store.data.vendors.find(v => v.id === v1Id);
+    const v1Rate = quotationRate;
+    const v1RateEffectiveFrom = primaryVendor.effectiveFrom || '';
+
+    const v2Id = secondaryVendor.vendorId || '';
+    const v2 = store.data.vendors.find(v => v.id === v2Id);
+    const v2Rate = secondaryVendor.rate || 0;
+    const v2RateEffectiveFrom = secondaryVendor.effectiveFrom || '';
 
     const assetTag = document.getElementById('m-asset-tag')?.value.trim() || '';
     const serialNo = document.getElementById('m-serial-no')?.value.trim() || '';
@@ -1548,18 +2873,13 @@ window.CMS_MASTERS = {
     const warrantyValidTill = document.getElementById('m-warranty-till')?.value || '';
     const warrantyVendor = document.getElementById('m-warranty-vendor')?.value.trim() || '';
 
-    const hasPm = document.getElementById('m-has-pm').checked;
-    const pmFrequency = document.getElementById('m-pm-freq')?.value || 'Quarterly';
+    const hasPm = inventoryType === 'Fixed' ? (document.getElementById('m-has-pm')?.checked || false) : false;
+    const pmFrequency = inventoryType === 'Fixed' ? (document.getElementById('m-pm-freq')?.value || 'Quarterly') : '';
     const repairmanName = document.getElementById('m-pm-repairman-name')?.value.trim() || '';
     const repairmanContact = document.getElementById('m-pm-repairman-contact')?.value.trim() || '';
     const repairmanAgency = document.getElementById('m-pm-repairman-agency')?.value.trim() || '';
     const pmVendor = document.getElementById('m-pm-vendor')?.value.trim() || '';
     const nextPmDate = document.getElementById('m-pm-next-date')?.value || '';
-
-    const v1Id = document.getElementById('m-v1').value;
-    const v1 = store.data.vendors.find(v => v.id === v1Id);
-    const v1Rate = parseFloat(document.getElementById('m-v1-rate').value) || quotationRate;
-    const v1RateEffectiveFrom = document.getElementById('m-v1-eff').value;
 
     const consumerConfirmed = document.getElementById('m-conf').checked;
     const confirmedBy = document.getElementById('m-conf-by').value.trim();
@@ -1584,12 +2904,14 @@ window.CMS_MASTERS = {
           categoryId: catId,
           categoryName: category ? category.name : store.data.consumables[idx].categoryName,
           materialName, unit, brand, supplierProductCode, hsnCode,
-          taxMode, sgst, cgst, igst,
+          gstSlabId, taxMode, sgst, cgst, igst,
           quotationNo, quotationDate, quotationRate, mrpBooked,
           assetTag, serialNo, custodianDept,
           hasWarranty, warrantyPeriod, warrantyValidTill, warrantyVendor,
           hasPm, pmFrequency, repairmanName, repairmanContact, repairmanAgency, pmVendor, nextPmDate,
-          vendor1Id: v1Id, vendor1Name: v1 ? v1.name : '', vendor1Rate: v1Rate, vendor1RateEffectiveFrom: v1RateEffectiveFrom,
+          vendors: vendorsList,
+          vendor1Id: v1Id, vendor1Name: v1 ? v1.name : (primaryVendor.vendorName || ''), vendor1Rate: v1Rate, vendor1RateEffectiveFrom: v1RateEffectiveFrom,
+          vendor2Id: v2Id, vendor2Name: v2 ? v2.name : (secondaryVendor.vendorName || ''), vendor2Rate: v2Rate, vendor2RateEffectiveFrom: v2RateEffectiveFrom,
           consumerConfirmed, confirmedBy, confirmationDate, confirmationRemarks,
           avgMonthlyConsumption,
           status: directSubmit ? 'Pending Approval' : store.data.consumables[idx].status,
@@ -1606,13 +2928,15 @@ window.CMS_MASTERS = {
         categoryId: catId,
         categoryName: category ? category.name : 'General',
         materialName, unit, brand, supplierProductCode, hsnCode,
-        taxMode, sgst, cgst, igst,
+        gstSlabId, taxMode, sgst, cgst, igst,
         quotationNo, quotationDate, quotationRate, mrpBooked,
         assetTag: assetTag || (inventoryType === 'Fixed' ? `AST-${newId}` : ''),
         serialNo, custodianDept,
         hasWarranty, warrantyPeriod, warrantyValidTill, warrantyVendor,
         hasPm, pmFrequency, repairmanName, repairmanContact, repairmanAgency, pmVendor, nextPmDate,
-        vendor1Id: v1Id, vendor1Name: v1 ? v1.name : '', vendor1Rate: v1Rate, vendor1RateEffectiveFrom: v1RateEffectiveFrom,
+        vendors: vendorsList,
+        vendor1Id: v1Id, vendor1Name: v1 ? v1.name : (primaryVendor.vendorName || ''), vendor1Rate: v1Rate, vendor1RateEffectiveFrom: v1RateEffectiveFrom,
+        vendor2Id: v2Id, vendor2Name: v2 ? v2.name : (secondaryVendor.vendorName || ''), vendor2Rate: v2Rate, vendor2RateEffectiveFrom: v2RateEffectiveFrom,
         consumerConfirmed, confirmedBy, confirmationDate, confirmationRemarks,
         avgMonthlyConsumption, initialStock,
         status: directSubmit ? 'Pending Approval' : 'Draft',
@@ -1620,10 +2944,78 @@ window.CMS_MASTERS = {
       });
     }
 
+    // Automatically synchronize quotation details to the primary vendor
+    if (quotationNo && v1Id) {
+      const v = store.data.vendors.find(ven => ven.id === v1Id);
+      if (v) {
+        if (!v.quotationNo || v.quotationNo === quotationNo) {
+          v.quotationNo = quotationNo;
+          if (quotationDate) v.quotationDate = quotationDate;
+          v.quotedMaterialId = matId || store.data.consumables[store.data.consumables.length - 1].id;
+          v.quotedMaterialName = materialName;
+          v.quotedMaterialRate = quotationRate || v1Rate;
+          v.quotedMaterialUnit = unit;
+          v.quotedMaterialHsn = hsnCode;
+        }
+      }
+    }
+
     store.save();
     window.CMS_APP.closeModal();
     window.CMS_APP.toast(directSubmit ? 'Material saved and submitted for approval!' : 'Material saved successfully!');
     window.CMS_APP.refreshView();
+  },
+
+  
+  openConsumableSanctionModal(matId) {
+    const m = window.CMS_STORE.data.consumables.find(i => i.id === matId);
+    if (!m) return;
+    const docs = [];
+    if (m.quotationDoc) docs.push({ label: 'Approved Rate Quotation', fileName: m.quotationDoc, partyName: m.materialName });
+    if (m.warrantyCardDoc) docs.push({ label: 'Warranty Policy Card', fileName: m.warrantyCardDoc, partyName: m.materialName });
+
+    const summaryHtml = `
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-slate-900 text-sm">${m.materialName}</span>
+          <span class="font-mono text-slate-500 font-bold">${m.id}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+          <div>Category: <strong class="text-slate-800">${m.categoryName}</strong></div>
+          <div>Unit / HSN: <strong class="text-slate-800">${m.unit} | ${m.hsnCode}</strong></div>
+          <div>Primary Vendor: <strong class="text-slate-800">${m.vendor1Name}</strong></div>
+          <div>Approved Rate: <strong class="font-mono text-emerald-700 font-bold">₹${Number(m.vendor1Rate || 0).toFixed(2)}</strong></div>
+        </div>
+      </div>
+    `;
+
+    window.CMS_APP.promptSanctionApproval({
+      title: m.materialName,
+      id: m.id,
+      entityType: 'consumable',
+      summaryHtml,
+      documents: docs,
+      onConfirm: `() => CMS_MASTERS.approveConsumable('${matId}')`
+    });
+  },
+
+  openConsumableRejectModal(matId) {
+    const m = window.CMS_STORE.data.consumables.find(i => i.id === matId);
+    if (!m) return;
+    window.CMS_APP.promptRejection({
+      title: m.materialName,
+      id: m.id,
+      entityType: 'consumable',
+      onReject: `(remark) => CMS_MASTERS.rejectConsumableWithRemark('${matId}', remark)`
+    });
+  },
+
+  rejectConsumableWithRemark(matId, mistakeRemark) {
+    const res = window.CMS_STORE.rejectRecord('consumable', matId, mistakeRemark);
+    if (res.success) {
+      window.CMS_APP.toast(`Material returned to Operation Manager (Rajesh Kumar). Mistake reported: "${mistakeRemark}"`, 'error');
+      window.CMS_APP.refreshView();
+    }
   },
 
   approveConsumable(matId) {
@@ -1645,15 +3037,7 @@ window.CMS_MASTERS = {
     window.CMS_APP.refreshView();
   },
 
-  deleteConsumable(matId) {
-    if (confirm('Delete this consumable material?')) {
-      const store = window.CMS_STORE;
-      store.data.consumables = store.data.consumables.filter(m => m.id !== matId);
-      store.save();
-      window.CMS_APP.toast('Consumable deleted!', 'info');
-      window.CMS_APP.refreshView();
-    }
-  },
+  deleteConsumable(matId) { window.CMS_APP.toast("Master deletion is disabled for statutory audit integrity.", "error"); },
 
   // ==========================================
   // GST / IGST SLAB MASTER
@@ -1731,6 +3115,31 @@ window.CMS_MASTERS = {
     `;
   },
 
+
+  syncGstRate(source) {
+    const sgstEl = document.getElementById('g-sgst');
+    const cgstEl = document.getElementById('g-cgst');
+    const igstEl = document.getElementById('g-igst');
+    if (!sgstEl || !cgstEl || !igstEl) return;
+
+    if (source === 'sgst') {
+      const val = parseFloat(sgstEl.value) || 0;
+      cgstEl.value = val;
+      igstEl.value = (val * 2).toFixed(2);
+    } else if (source === 'cgst') {
+      const val = parseFloat(cgstEl.value) || 0;
+      sgstEl.value = val;
+      igstEl.value = (val * 2).toFixed(2);
+    } else if (source === 'igst') {
+      // Automatically divide by 2 and fill answers in CGST + SGST
+      const val = parseFloat(igstEl.value) || 0;
+      const half = (val / 2).toFixed(2);
+      sgstEl.value = half;
+      cgstEl.value = half;
+    }
+    this.updateTaxSummary('g');
+  },
+
   openGstModal(gstId = null) {
     const isEdit = Boolean(gstId);
     const slab = isEdit ? window.CMS_STORE.data.gstSlabs.find(g => g.id === gstId) : {
@@ -1759,11 +3168,11 @@ window.CMS_MASTERS = {
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div id="g-cgst-sgst-fields" class="sm:col-span-2 grid grid-cols-2 gap-1.5 ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'tax-fields-disabled' : ''}">
-              <input type="number" step="0.01" id="g-sgst" value="${slab.sgst ?? 9}" ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.updateTaxSummary('g')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="SGST %" />
-              <input type="number" step="0.01" id="g-cgst" value="${slab.cgst ?? 9}" ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.updateTaxSummary('g')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="CGST %" />
+              <input type="number" step="0.01" id="g-sgst" value="${slab.sgst ?? 9}" ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('sgst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="SGST %" />
+              <input type="number" step="0.01" id="g-cgst" value="${slab.cgst ?? 9}" ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('cgst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="CGST %" />
             </div>
             <div id="g-igst-field" class="${window.CMS_STORE.getTaxMode(slab) === 'CGST_SGST' ? 'tax-fields-disabled' : ''}">
-              <input type="number" step="0.01" id="g-igst" value="${slab.igst ?? 18}" ${window.CMS_STORE.getTaxMode(slab) === 'CGST_SGST' ? 'disabled' : ''} oninput="CMS_MASTERS.updateTaxSummary('g')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="IGST %" />
+              <input type="number" step="0.01" id="g-igst" value="${slab.igst ?? 18}" ${window.CMS_STORE.getTaxMode(slab) === 'CGST_SGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('igst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="IGST %" />
             </div>
           </div>
           <div id="g-tax-summary" class="mt-2 text-[11px] font-bold text-blue-800">${window.CMS_STORE.getTaxLabel(slab)}</div>

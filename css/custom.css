@@ -276,6 +276,24 @@ input, select, textarea {
   background-color: #ffffff;
 }
 
+/* Search bars: restore left-padding so the icon doesn't overlap the placeholder text */
+.table-search-input {
+  padding-left: 2.5rem !important; /* equivalent to pl-10 */
+  padding-right: 1rem !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0.5rem !important;
+}
+
+/* Vendor search has a clear (x) button, needs extra right padding */
+.table-search-input.pr-9 {
+  padding-right: 2.25rem !important;
+}
+
+/* Quotation lookup field (pl-8 with search icon at left-2.5) */
+input.pl-8 {
+  padding-left: 2rem !important;
+}
+
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: #2563eb !important;

@@ -21,6 +21,27 @@ window.CMS_DASHBOARD = {
     );
     const outOfStock = (store.consumables || []).filter(item => window.CMS_STORE.getStock(item.id) === 0);
 
+    // Emergency Mistake & Revision Alerts reported by Checker
+    const revisionVendors = (store.vendors || []).filter(v => v.status === 'Revision Required');
+    const revisionConsumables = (store.consumables || []).filter(m => m.status === 'Revision Required');
+    const allRevisions = [
+      ...revisionVendors.map(v => ({ type: 'vendors', id: v.id, name: v.name, remark: v.checkerMistakeRemark })),
+      ...revisionConsumables.map(m => ({ type: 'consumables', id: m.id, name: m.materialName, remark: m.checkerMistakeRemark }))
+    ];
+
+    if (allRevisions.length > 0) {
+      alerts.push({
+        id: `revision-required-${allRevisions.map(r => r.id).join('-')}`,
+        type: allRevisions[0].type,
+        tone: 'red',
+        icon: 'alert-triangle',
+        label: 'EMERGENCY REVISION REQUIRED',
+        title: `Checker Col. Anita returned ${allRevisions.length} submission(s) for correction`,
+        details: `Reported Mistake: "${allRevisions[0].remark || 'Statutory documentation non-compliant'}". Operation manager must rectify and resubmit.`,
+        actionLabel: 'Rectify & Resubmit'
+      });
+    }
+
     if (window.CMS_STORE.isApprover() && pendingApprovals > 0) {
       alerts.push({
         id: `approvals-${pendingApprovals}`,
@@ -67,6 +88,8 @@ window.CMS_DASHBOARD = {
     CMS_APP.closeModal();
     if (type === 'approvals') CMS_APP.navigateTo('pending-approvals');
     if (type === 'urgent-requests') CMS_APP.navigateTo('requests');
+    if (type === 'vendors') CMS_APP.navigateTo('vendors');
+    if (type === 'consumables') CMS_APP.navigateTo('consumables');
     if (type === 'out-of-stock') {
       this.activeFilter = 'reorder';
       CMS_APP.navigateTo('dashboard');
@@ -332,7 +355,7 @@ window.CMS_DASHBOARD = {
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono ${isDepleted ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
                   ${isDepleted ? 'Out of Stock' : 'Low Buffer'}
                 </span>
-                <span class="text-[10px] font-mono text-slate-500 font-semibold">${item.inventoryType || 'Consumer'}</span>
+                <span class="text-[10px] font-mono text-slate-500 font-semibold">${item.inventoryType === 'Fixed' ? 'Fixed Asset' : 'Consumable Material'}</span>
               </div>
 
               <!-- Title & Brand -->

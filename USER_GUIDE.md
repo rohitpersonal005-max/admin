@@ -21,6 +21,7 @@ Open:
 |---|---|---|---|
 | Store Staff / Maker | `rajesh` | `adminutes123` | Create records and submit them for approval |
 | Store In-Charge / Checker | `anita` | `checker4321` | Review and approve submitted records |
+| General Staff / Indentor | `rohit` | `rohit123` | Raise departmental material indents and track approvals |
 
 The Maker creates transactions. The Checker approves them. A Maker cannot approve their own submissions.
 

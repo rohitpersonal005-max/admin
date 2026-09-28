@@ -10,6 +10,21 @@ const USER_KEY = 'CMS_CURRENT_USER_ID_V1';
 
 let ENTERPRISE_USERS = [
   {
+    id: 'EMP-3099',
+    name: 'Rohit Sharma',
+    email: 'rohit.sharma@adminutes.corp',
+    role: 'Maker',
+    roleTitle: 'General Staff / Indentor (Rohit)',
+    badgeLabel: 'GENERAL USER / INDENTOR',
+    department: 'Administration & Operations',
+    avatarText: 'RS',
+    avatarBg: 'bg-emerald-600',
+    avatarTextCol: 'text-white',
+    pin: null,
+    description: 'General staff indentor. Can raise departmental pull requisitions and view status, but cannot delete masters or sanction transactions.'
+  },
+
+  {
     id: 'EMP-2041',
     name: 'Rajesh Kumar',
     email: 'rajesh.kumar@adminutes.corp',
@@ -187,6 +202,15 @@ const INITIAL_SEED = {
       certificateFile: 'Apex_ISO_MSME_Certificates.pdf',
       contactNo: '+91 98110 45678',
       email: 'sales@apexofficesupplies.com',
+      quotationNo: 'QT-2026-881',
+      quotationDate: '2026-07-01',
+      quotationValidTill: '2027-06-30',
+      quotationDoc: 'Apex_Official_Quotation_2026.pdf',
+      quotedMaterialId: 'MAT-001',
+      quotedMaterialName: 'A4 Copier Paper (75 GSM, 500 Sheets)',
+      quotedMaterialRate: 260.00,
+      quotedMaterialUnit: 'Rim',
+      quotedMaterialHsn: '4802',
       status: 'Approved',
       createdAt: '2026-08-01T10:00:00Z',
       approvedAt: '2026-08-01T11:30:00Z',
@@ -206,6 +230,15 @@ const INITIAL_SEED = {
       certificateFile: 'GreenClean_Pollution_GMP.pdf',
       contactNo: '+91 98220 76543',
       email: 'orders@greencleansanitation.com',
+      quotationNo: 'QT-2026-842',
+      quotationDate: '2026-08-01',
+      quotationValidTill: '2027-07-31',
+      quotationDoc: 'GreenClean_Sanitation_Quote.pdf',
+      quotedMaterialId: 'MAT-002',
+      quotedMaterialName: 'Surface Disinfectant Floor Cleaner (5 Litre Can)',
+      quotedMaterialRate: 620.00,
+      quotedMaterialUnit: 'Can',
+      quotedMaterialHsn: '3808',
       status: 'Approved',
       createdAt: '2026-08-02T10:00:00Z',
       approvedAt: '2026-08-02T11:45:00Z',
@@ -225,6 +258,15 @@ const INITIAL_SEED = {
       certificateFile: 'Balaji_Packaging_Compliance.pdf',
       contactNo: '+91 98991 23456',
       email: 'contact@balajipackaging.in',
+      quotationNo: 'QT-2026-511',
+      quotationDate: '2026-07-01',
+      quotationValidTill: '2027-06-30',
+      quotationDoc: 'Balaji_Packaging_Quote.pdf',
+      quotedMaterialId: 'MAT-003',
+      quotedMaterialName: 'Self-Adhesive BOPP Packaging Tape (Brown, 2 Inch x 65m)',
+      quotedMaterialRate: 48.00,
+      quotedMaterialUnit: 'Roll',
+      quotedMaterialHsn: '3919',
       status: 'Approved',
       createdAt: '2026-08-03T10:00:00Z',
       approvedAt: '2026-08-03T12:15:00Z',
@@ -244,6 +286,15 @@ const INITIAL_SEED = {
       certificateFile: 'SafeTech_CE_Audit.pdf',
       contactNo: '+91 94480 33211',
       email: 'supply@safetechgears.com',
+      quotationNo: 'QT-2026-309',
+      quotationDate: '2026-08-01',
+      quotationValidTill: '2027-07-31',
+      quotationDoc: 'SafeTech_PPE_Quotation.pdf',
+      quotedMaterialId: 'MAT-004',
+      quotedMaterialName: 'Heavy Duty Nitrile Disposable Chemical Gloves (Pack of 100)',
+      quotedMaterialRate: 340.00,
+      quotedMaterialUnit: 'Box',
+      quotedMaterialHsn: '4015',
       status: 'Approved',
       createdAt: '2026-08-04T10:00:00Z',
       approvedAt: '2026-08-04T13:00:00Z',
@@ -427,14 +478,14 @@ const INITIAL_SEED = {
       warrantyPeriod: '1 Year Comprehensive',
       warrantyValidTill: '2027-08-15',
       warrantyVendor: 'GreenClean Sanitation Corp',
-      hasPm: true,
-      pmFrequency: 'Quarterly',
-      repairmanName: 'Sanjay Rawat',
-      repairmanContact: '+91 98114 99012',
-      repairmanAgency: 'Kent Commercial Service Care',
-      pmVendor: 'GreenClean Sanitation Corp',
-      lastPmDate: '2026-08-15',
-      nextPmDate: '2026-11-15',
+      hasPm: false,
+      pmFrequency: '',
+      repairmanName: '',
+      repairmanContact: '',
+      repairmanAgency: '',
+      pmVendor: '',
+      lastPmDate: '',
+      nextPmDate: '',
       vendor1Id: 'VEN-002',
       vendor1Name: 'GreenClean Sanitation Corp',
       vendor1Rate: 15200.00,
@@ -899,10 +950,11 @@ function normalizeVendor(vendor) {
   const legacyFile = vendor.certificateFile || '';
   const addressText = String(vendor.address || '').toLowerCase();
   const inferredState = vendor.addressState || (
-    addressText.includes('new delhi') ? 'Delhi' :
-    addressText.includes('pune') ? 'Maharashtra' :
-    addressText.includes('noida') ? 'Uttar Pradesh' :
-    addressText.includes('bengaluru') ? 'Karnataka' : ''
+    addressText.includes('new delhi') || addressText.includes('delhi') ? 'Delhi' :
+    addressText.includes('pune') || addressText.includes('mumbai') || addressText.includes('maharashtra') ? 'Maharashtra' :
+    addressText.includes('noida') || addressText.includes('uttar pradesh') ? 'Uttar Pradesh' :
+    addressText.includes('bengaluru') || addressText.includes('karnataka') ? 'Karnataka' :
+    addressText.includes('gurugram') || addressText.includes('haryana') ? 'Haryana' : ''
   );
   const inferredDistrict = vendor.addressDistrict || (
     addressText.includes('okhla') ? 'New Delhi' :
@@ -922,14 +974,36 @@ function normalizeVendor(vendor) {
     panNotApplicable: Boolean(vendor.panNotApplicable),
     gstCertificateFile: vendor.gstCertificateFile || legacyFile,
     panCardFile: vendor.panCardFile || legacyFile,
+    bankName: vendor.bankName || (vendor.bankDetails ? vendor.bankDetails.bankName : ''),
+    accountNo: vendor.accountNo || (vendor.bankDetails ? vendor.bankDetails.accountNo : ''),
+    accountName: vendor.accountName || (vendor.bankDetails ? vendor.bankDetails.accountName : '') || vendor.name || '',
+    ifscCode: vendor.ifscCode || (vendor.bankDetails ? vendor.bankDetails.ifscCode : ''),
+    branchName: vendor.branchName || (vendor.bankDetails ? vendor.bankDetails.branchName : ''),
+    isBlocked: Boolean(vendor.isBlocked),
+    blockReason: vendor.blockReason || '',
+    checkerMistakeRemark: vendor.checkerMistakeRemark || '',
+    rejectedBy: vendor.rejectedBy || '',
+    rejectedByName: vendor.rejectedByName || '',
+    rejectedAt: vendor.rejectedAt || '',
+    quotationDoc: vendor.quotationDoc || '',
+    quotationNo: vendor.quotationNo || '',
+    quotationDate: vendor.quotationDate || '',
+    quotationValidTill: vendor.quotationValidTill || '',
+    quotedMaterialId: vendor.quotedMaterialId || '',
+    quotedMaterialName: vendor.quotedMaterialName || '',
+    quotedMaterialRate: Number(vendor.quotedMaterialRate || 0),
+    quotedMaterialUnit: vendor.quotedMaterialUnit || '',
+    quotedMaterialHsn: vendor.quotedMaterialHsn || '',
     approvedForLimitedPeriod: Boolean(vendor.approvedForLimitedPeriod),
     approvalValidTill: vendor.approvalValidTill || '',
     certificates: (vendor.certificates || []).map((certificate, index) => {
       if (typeof certificate === 'string') {
-        return { name: certificate, formNo: '', certificateNo: `LEGACY-${index + 1}`, hasValidity: false, validTill: '', fileName: legacyFile };
+        return { regulator: 'ISO', name: certificate, formNo: '', certificateNo: `LEGACY-${index + 1}`, hasValidity: false, validTill: '', fileName: legacyFile };
       }
       return {
         ...certificate,
+        regulator: certificate.regulator || certificate.name || 'ISO',
+        name: certificate.name || certificate.regulator || 'ISO',
         formNo: certificate.formNo || '',
         certificateNo: certificate.certificateNo || `LEGACY-${index + 1}`,
         fileName: certificate.fileName || legacyFile
@@ -937,6 +1011,23 @@ function normalizeVendor(vendor) {
     })
   };
 }
+
+function normalizeConsumable(item) {
+  const isFixed = item.inventoryType === 'Fixed';
+  return {
+    ...item,
+    inventoryType: isFixed ? 'Fixed' : 'Consumer',
+    hasPm: isFixed ? Boolean(item.hasPm) : false,
+    pmFrequency: isFixed ? (item.pmFrequency || '') : '',
+    repairmanName: isFixed ? (item.repairmanName || '') : '',
+    repairmanContact: isFixed ? (item.repairmanContact || '') : '',
+    repairmanAgency: isFixed ? (item.repairmanAgency || '') : '',
+    pmVendor: isFixed ? (item.pmVendor || '') : '',
+    nextPmDate: isFixed ? (item.nextPmDate || '') : '',
+    pmHistory: isFixed ? (item.pmHistory || []) : []
+  };
+}
+
 
 class Store {
   constructor() {
@@ -955,6 +1046,7 @@ class Store {
         if (!hasRecords) {
           const initial = JSON.parse(JSON.stringify(INITIAL_SEED));
           initial.vendors = initial.vendors.map(normalizeVendor);
+          initial.consumables = initial.consumables.map(normalizeConsumable);
           initial.userRole = user.role;
           return initial;
         }
@@ -962,6 +1054,7 @@ class Store {
           ...EMPTY_DATABASE,
           ...parsed,
           vendors: (parsed.vendors || []).map(normalizeVendor),
+          consumables: (parsed.consumables || []).map(normalizeConsumable),
           userRole: user.role
         };
       }
@@ -970,6 +1063,7 @@ class Store {
     }
     const initial = JSON.parse(JSON.stringify(INITIAL_SEED));
     initial.vendors = initial.vendors.map(normalizeVendor);
+    initial.consumables = initial.consumables.map(normalizeConsumable);
     return initial;
   }
 
@@ -1011,7 +1105,12 @@ class Store {
   }
 
   getUsers() {
-    return ENTERPRISE_USERS;
+    const role = this.getRole();
+    if (role === 'Checker') {
+      return ENTERPRISE_USERS;
+    }
+    const current = this.getCurrentUser();
+    return current ? [current] : [];
   }
 
   setUsers(users) {
@@ -1053,19 +1152,7 @@ class Store {
   }
 
   switchUser(userId, providedPin = null) {
-    const targetUser = ENTERPRISE_USERS.find(u => u.id === userId);
-    if (!targetUser) {
-      return { success: false, error: 'User profile not found.' };
-    }
-
-    if (targetUser.role === 'Checker') {
-      if (!this.verifyManagerPin(providedPin)) {
-        return { success: false, error: 'Invalid Manager Authorization PIN. Access Denied (Default PIN: 4321).' };
-      }
-    }
-
-    this.setCurrentUser(targetUser.id);
-    return { success: true, user: targetUser };
+    return { success: false, error: 'User switching is disabled for security and SoD compliance. Please sign out and sign in with authorized credentials.' };
   }
 
   getRole() {
@@ -1138,15 +1225,15 @@ class Store {
       warrantyValidTill: data.warrantyValidTill || '',
       warrantyVendor: data.warrantyVendor || data.vendor1Name || '',
 
-      // Preventive Maintenance Details
-      hasPm: Boolean(data.hasPm),
-      pmFrequency: data.pmFrequency || '',
-      repairmanName: data.repairmanName || '',
-      repairmanContact: data.repairmanContact || '',
-      repairmanAgency: data.repairmanAgency || '',
-      pmVendor: data.pmVendor || data.vendor1Name || '',
-      lastPmDate: data.lastPmDate || new Date().toISOString().split('T')[0],
-      nextPmDate: data.nextPmDate || '',
+      // Preventive Maintenance Details (Exclusively for Fixed Assets)
+      hasPm: isFixed ? Boolean(data.hasPm) : false,
+      pmFrequency: isFixed ? (data.pmFrequency || '') : '',
+      repairmanName: isFixed ? (data.repairmanName || '') : '',
+      repairmanContact: isFixed ? (data.repairmanContact || '') : '',
+      repairmanAgency: isFixed ? (data.repairmanAgency || '') : '',
+      pmVendor: isFixed ? (data.pmVendor || data.vendor1Name || '') : '',
+      lastPmDate: isFixed ? (data.lastPmDate || new Date().toISOString().split('T')[0]) : '',
+      nextPmDate: isFixed ? (data.nextPmDate || '') : '',
       pmHistory: [],
 
       avgMonthlyConsumption: Number(data.avgMonthlyConsumption || 10),
@@ -1207,6 +1294,16 @@ class Store {
     return { success: true, material: mat, entry };
   }
 
+
+  toggleBlockVendor(vendorId, isBlocked, reason = '') {
+    const v = this.data.vendors.find(item => item.id === vendorId);
+    if (!v) return false;
+    v.isBlocked = Boolean(isBlocked);
+    v.blockReason = isBlocked ? (reason || 'Blocked by Store In-Charge') : '';
+    this.save();
+    return true;
+  }
+
   canApprove(record) {
     const currentUser = this.getCurrentUser();
     if (currentUser.role !== 'Checker') {
@@ -1215,15 +1312,7 @@ class Store {
         reason: 'Approval authority restricted. Only Store In-Charge (Col. Anita Sharma) can sanction pending entries.'
       };
     }
-
-    // Segregation of Duties (SoD) Anti-Self-Approval rule
-    if (record && record.createdBy && record.createdBy === currentUser.id) {
-      return {
-        allowed: false,
-        reason: 'Segregation of Duties Policy Violation: You cannot approve a record you personally drafted.'
-      };
-    }
-
+    // Store In-Charge (Col. Anita Sharma) has statutory authority to sanction masters & operational transactions
     return { allowed: true };
   }
 
@@ -1297,6 +1386,119 @@ class Store {
     const tax = this.getTaxDetails(record);
     if (tax.mode === 'IGST') return `IGST: ${tax.igst}%`;
     return `SGST: ${tax.sgst}% + CGST: ${tax.cgst}% = ${tax.total}%`;
+  }
+
+  // Active Commercial Quotations Index across Vendors and Items
+  getAllQuotations() {
+    const map = new Map();
+
+    // 1. Gather quotations from Material Master
+    (this.data.consumables || []).forEach(m => {
+      const qNo = (m.quotationNo || '').trim();
+      if (qNo) {
+        const vendor = (this.data.vendors || []).find(v => v.id === m.vendor1Id) || { id: m.vendor1Id || '', name: m.vendor1Name || 'Direct Approved Supplier' };
+        const key = qNo.toUpperCase();
+        if (!map.has(key)) {
+          map.set(key, {
+            quotationNo: qNo,
+            quotationDate: m.quotationDate || '',
+            quotationValidTill: m.quotationValidTill || '',
+            vendorId: vendor.id,
+            vendorName: vendor.name,
+            materialId: m.id,
+            materialName: m.materialName,
+            brand: m.brand || '',
+            unit: m.unit || 'Nos',
+            hsnCode: m.hsnCode || '',
+            rate: Number(m.quotationRate || m.vendor1Rate || 0),
+            inventoryType: m.inventoryType || 'Consumer'
+          });
+        }
+      }
+    });
+
+    // 2. Gather quotations from Vendor Master
+    (this.data.vendors || []).forEach(v => {
+      const qNo = (v.quotationNo || '').trim();
+      if (qNo) {
+        const key = qNo.toUpperCase();
+        if (!map.has(key)) {
+          const linkedMat = (this.data.consumables || []).find(m => m.vendor1Id === v.id || m.id === v.quotedMaterialId);
+          map.set(key, {
+            quotationNo: qNo,
+            quotationDate: v.quotationDate || '',
+            quotationValidTill: v.quotationValidTill || '',
+            vendorId: v.id,
+            vendorName: v.name,
+            materialId: v.quotedMaterialId || (linkedMat ? linkedMat.id : ''),
+            materialName: v.quotedMaterialName || (linkedMat ? linkedMat.materialName : ''),
+            brand: linkedMat ? (linkedMat.brand || '') : '',
+            unit: v.quotedMaterialUnit || (linkedMat ? linkedMat.unit : 'Nos'),
+            hsnCode: v.quotedMaterialHsn || (linkedMat ? linkedMat.hsnCode : ''),
+            rate: Number(v.quotedMaterialRate || (linkedMat ? (linkedMat.quotationRate || linkedMat.vendor1Rate) : 0)),
+            inventoryType: linkedMat ? (linkedMat.inventoryType || 'Consumer') : 'Consumer'
+          });
+        }
+      }
+    });
+
+    return Array.from(map.values());
+  }
+
+  findQuotation(query) {
+    if (!query) return null;
+    const clean = String(query).trim().toUpperCase();
+    const all = this.getAllQuotations();
+    return all.find(q => q.quotationNo.toUpperCase() === clean || q.quotationNo.toUpperCase().includes(clean)) || null;
+  }
+
+  formatDate(val) {
+    if (!val) return '-';
+    try {
+      const str = String(val).trim();
+      if (!str) return '-';
+      const matchIso = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      if (matchIso) {
+        const year = matchIso[1];
+        const monthIndex = parseInt(matchIso[2], 10) - 1;
+        const day = matchIso[3];
+        return `${day} ${months[monthIndex]} ${year}`;
+      }
+      const d = new Date(str);
+      if (!isNaN(d.getTime())) {
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${day} ${months[d.getMonth()]} ${d.getFullYear()}`;
+      }
+      return str;
+    } catch (e) {
+      return String(val);
+    }
+  }
+
+  rejectRecord(entityType, id, mistakeRemark) {
+    let list = [];
+    if (entityType === 'vendor') list = this.data.vendors;
+    else if (entityType === 'consumable') list = this.data.consumables;
+    else if (entityType === 'category') list = this.data.categories;
+    else if (entityType === 'gstSlab') list = this.data.gstSlabs;
+    else if (entityType === 'receipt') list = this.data.receipts;
+    else if (entityType === 'request') list = this.data.requests;
+    else if (entityType === 'return') list = this.data.returns;
+    else if (entityType === 'stockAdjustment') list = this.data.stockAdjustments;
+    else if (entityType === 'purchaseOrder') list = this.data.purchaseOrders;
+
+    const record = list.find(item => item.id === id);
+    if (!record) return { success: false, error: 'Record not found' };
+
+    const currentUser = this.getCurrentUser();
+    record.status = 'Revision Required';
+    record.checkerMistakeRemark = mistakeRemark || 'Returned by Checker for necessary correction';
+    record.rejectedBy = currentUser.id;
+    record.rejectedByName = currentUser.name;
+    record.rejectedAt = new Date().toISOString();
+    this.save();
+    return { success: true, record };
   }
 
   // Pending items count across the whole system

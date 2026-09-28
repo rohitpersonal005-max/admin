@@ -384,7 +384,7 @@ window.CMS_REPORTS = {
             (${currentUser.roleTitle}).
           </p>
           <p class="text-[11px] text-slate-500 mt-3">
-            Switch to the authorized approver account from the profile menu to review sanctions.
+            Please sign in with the authorized approver account (Col. Anita Sharma) to review and sanction records.
           </p>
           <button onclick="CMS_APP.navigateTo('dashboard')" class="mt-5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-full transition">
             Return to Executive Dashboard
@@ -404,14 +404,18 @@ window.CMS_REPORTS = {
 
     const pending = [];
 
-    (store.vendors || []).filter(v => v.status === 'Pending Approval').forEach(v => {
+    (store.vendors || []).filter(v => v.status === 'Pending Approval' || v.status === 'Revision Required').forEach(v => {
       pending.push({
         module: 'Vendor',
         id: v.id,
         title: v.name,
-        details: `GST: ${v.gstNo || 'Unregistered'} | Expiry: ${v.validTill}`,
+        details: `GST: ${v.gstNotApplicable ? 'Exempt' : (v.gstNo || 'Unregistered')} | State: ${v.addressState || 'Delhi'} | Bank: ${v.bankName || 'Recorded'}`,
         date: v.createdAt,
-        onApprove: `CMS_MASTERS.approveVendor('${v.id}')`
+        status: v.status,
+        checkerMistakeRemark: v.checkerMistakeRemark,
+        onView: `CMS_MASTERS.viewVendorProfile('${v.id}')`,
+        onApprove: `CMS_MASTERS.openVendorSanctionModal('${v.id}')`,
+        onReject: `CMS_MASTERS.openVendorRejectModal('${v.id}')`
       });
     });
 
@@ -426,14 +430,18 @@ window.CMS_REPORTS = {
       });
     });
 
-    (store.consumables || []).filter(m => m.status === 'Pending Approval').forEach(m => {
+    (store.consumables || []).filter(m => m.status === 'Pending Approval' || m.status === 'Revision Required').forEach(m => {
       pending.push({
         module: 'Material',
         id: m.id,
         title: m.materialName,
-        details: `Brand: ${m.brand} | HSN: ${m.hsnCode} | Rate: ₹${m.vendor1Rate}`,
+        details: `Brand: ${m.brand || '-'} | HSN: ${m.hsnCode} | Primary Vendor: ${m.vendor1Name} | Rate: ₹${m.vendor1Rate}`,
         date: m.createdAt,
-        onApprove: `CMS_MASTERS.approveConsumable('${m.id}')`
+        status: m.status,
+        checkerMistakeRemark: m.checkerMistakeRemark,
+        onView: `CMS_MASTERS.viewMaterial360('${m.id}')`,
+        onApprove: `CMS_MASTERS.openConsumableSanctionModal('${m.id}')`,
+        onReject: `CMS_MASTERS.openConsumableRejectModal('${m.id}')`
       });
     });
 
@@ -546,15 +554,11 @@ window.CMS_REPORTS = {
                 <span class="text-[11px] font-mono bg-white px-2 py-0.5 rounded border border-emerald-300 font-semibold">SOD VERIFIED</span>
               </div>
             ` : `
-              <div class="p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-900 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div class="p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-900 text-xs flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <i data-lucide="shield-alert" class="w-4 h-4 text-amber-700 shrink-0"></i>
-                  <span><strong>Operational Staff View:</strong> Logged in as Store Staff. To prevent self-approval tampering, manager authorization requires Col. Anita Sharma's PIN.</span>
+                  <span><strong>Operational Staff View:</strong> Logged in as Store Staff. To prevent self-approval tampering, sanctioning transactions requires Col. Anita Sharma (Checker).</span>
                 </div>
-                <button onclick="CMS_APP.selectAccount('MGR-8812')" class="px-2.5 py-1 bg-white hover:bg-amber-100 border border-amber-300 text-amber-900 font-semibold text-xs rounded transition flex items-center gap-1 shrink-0">
-                  <i data-lucide="key" class="w-3 h-3 text-amber-700"></i>
-                  <span>Sign In as Approver</span>
-                </button>
               </div>
             `}
 
@@ -573,24 +577,43 @@ window.CMS_REPORTS = {
                     <div>
                       <div class="flex justify-between items-start mb-2">
                         <span class="text-[10.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">${item.module}</span>
-                        <span class="badge badge-pending">Pending Approval</span>
+                        <span class="badge ${item.status === 'Revision Required' ? 'badge-draft' : 'badge-pending'}">${item.status || 'Pending Approval'}</span>
                       </div>
                       <h4 class="font-bold text-slate-900 text-sm mt-2">${item.title}</h4>
                       <p class="text-xs text-slate-600 mt-1 font-medium leading-relaxed">${item.details}</p>
+                      ${item.checkerMistakeRemark ? `
+                        <div class="text-[10px] text-rose-700 bg-rose-50 border border-rose-200 p-1.5 rounded mt-2 font-medium">
+                          <strong>Reported Mistake:</strong> ${item.checkerMistakeRemark}
+                        </div>
+                      ` : ''}
                     </div>
-                    <div class="mt-5 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
-                      <span class="text-slate-400 font-mono text-[11px]">Submitted: ${new Date(item.date || Date.now()).toLocaleDateString('en-IN')}</span>
-                      ${isChecker ? `
-                        <button onclick="${item.onApprove}" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-sm transition text-xs flex items-center gap-1.5">
-                          <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                          <span>Sanction Record</span>
-                        </button>
-                      ` : `
-                        <button onclick="CMS_APP.promptManagerPin(() => { ${item.onApprove} }, 'Sanction ${item.title}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium rounded border border-slate-300 transition text-xs flex items-center gap-1.5">
-                          <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-600"></i>
-                          <span>Authorize with PIN</span>
-                        </button>
-                      `}
+                    <div class="mt-5 pt-3 border-t border-slate-100 flex flex-wrap justify-between items-center gap-2 text-xs">
+                      <span class="text-slate-400 font-mono text-[11px]">Submitted: ${window.CMS_STORE.formatDate(item.date)}</span>
+                      <div class="flex items-center gap-1.5">
+                        ${item.onView ? `
+                          <button onclick="${item.onView}" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 font-semibold rounded text-xs flex items-center gap-1" title="Inspect Submitted Documents">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                            <span>View Docs</span>
+                          </button>
+                        ` : ''}
+                        ${isChecker ? `
+                          <button onclick="${item.onApprove}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-sm transition text-xs flex items-center gap-1">
+                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                            <span>Sanction</span>
+                          </button>
+                          ${item.onReject ? `
+                            <button onclick="${item.onReject}" class="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold rounded transition text-xs flex items-center gap-1" title="Reject / Request Revision">
+                              <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                              <span>Reject</span>
+                            </button>
+                          ` : ''}
+                        ` : `
+                          <button onclick="CMS_APP.promptManagerPin(() => { ${item.onApprove} }, 'Sanction ${item.title}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium rounded border border-slate-300 transition text-xs flex items-center gap-1.5">
+                            <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-600"></i>
+                            <span>Authorize with PIN</span>
+                          </button>
+                        `}
+                      </div>
                     </div>
                   </div>
                 `).join('')}
@@ -642,6 +665,7 @@ window.CMS_REPORTS = {
   // ==========================================
   renderConsumerInventory() {
     const store = window.CMS_STORE.data;
+    const role = window.CMS_STORE.getRole();
     const categories = store.categories || [];
     let list = (store.consumables || []).filter(m => (m.inventoryType || 'Consumer') === 'Consumer');
 
@@ -682,26 +706,28 @@ window.CMS_REPORTS = {
               <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <i data-lucide="package" class="w-4 h-4"></i>
               </div>
-              <span>Consumer Materials Ledger</span>
+              <span>Consumable Materials Ledger</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">High-turnover consumable supplies, monthly safety buffer gauges, vendor quotations, warranty terms, and active PM care.</p>
+            <p class="text-xs text-slate-500 mt-1">High-turnover consumable supplies, monthly safety buffer gauges, vendor quotations, and warranty terms.</p>
           </div>
           <div class="flex flex-wrap gap-2.5">
             <button onclick="CMS_REPORTS.exportStockCSV()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md border border-slate-300 transition text-xs">
               <i data-lucide="download" class="w-4 h-4"></i>
               <span>Export CSV</span>
             </button>
-            <button onclick="CMS_MASTERS.openConsumableModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
-              <i data-lucide="plus-circle" class="w-4 h-4"></i>
-              <span>+ Add Consumer Item</span>
-            </button>
+            ${role === 'Maker' ? `
+              <button onclick="CMS_MASTERS.openConsumableModal(null, 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>+ Add Consumable Item</span>
+              </button>
+            ` : ''}
           </div>
         </div>
 
         <!-- Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-emerald">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Consumer Items</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Consumable Items</span>
             <div class="text-2xl font-bold font-mono text-slate-900 mt-1">${list.length}</div>
             <div class="text-xs text-slate-500 mt-0.5">Active SKU lines</div>
           </div>
@@ -716,9 +742,9 @@ window.CMS_REPORTS = {
             <div class="text-xs text-amber-600 font-medium mt-0.5">Below 50% monthly target</div>
           </div>
           <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-purple">
-            <span class="text-xs font-bold uppercase tracking-wider text-purple-600">Warranty & PM Items</span>
-            <div class="text-2xl font-bold font-mono text-purple-700 mt-1">${warrantedCount} <span class="text-xs text-slate-500 font-normal">/ ${pmActiveCount} PM</span></div>
-            <div class="text-xs text-purple-600 font-medium mt-0.5">Appliances & water systems</div>
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-600">Warranty Covered Items</span>
+            <div class="text-2xl font-bold font-mono text-purple-700 mt-1">${warrantedCount}</div>
+            <div class="text-xs text-purple-600 font-medium mt-0.5">Active warranty policies</div>
           </div>
         </div>
 
@@ -727,7 +753,7 @@ window.CMS_REPORTS = {
           <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-72">
               <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-              <input type="text" value="${this.consumerSearchQuery}" oninput="CMS_REPORTS.onConsumerSearch(this.value)" placeholder="Search consumer supplies, brand, quote..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+              <input type="text" value="${this.consumerSearchQuery}" oninput="CMS_REPORTS.onConsumerSearch(this.value)" placeholder="Search consumable supplies, brand, quote..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
             </div>
             <select onchange="CMS_REPORTS.onConsumerCategoryFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
               <option value="">-- All Categories (${categories.length}) --</option>
@@ -750,13 +776,13 @@ window.CMS_REPORTS = {
                   <th class="p-4">Vendor Quotation & MRP</th>
                   <th class="p-4">Live Stock vs Buffer</th>
                   <th class="p-4 text-right">Total Valuation</th>
-                  <th class="p-4">Warranty & PM</th>
+                  <th class="p-4">Warranty Coverage</th>
                   <th class="p-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
                 ${list.length === 0 ? `
-                  <tr><td colspan="7" class="p-12 text-center text-slate-400 font-medium">No consumer supplies found matching criteria.</td></tr>
+                  <tr><td colspan="7" class="p-12 text-center text-slate-400 font-medium">No consumable supplies found matching criteria.</td></tr>
                 ` : list.map(m => {
                   const stock = window.CMS_STORE.getStock(m.id);
                   const rate = Number(m.quotationRate || m.vendor1Rate || 0);
@@ -793,32 +819,22 @@ window.CMS_REPORTS = {
                         ₹${val.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
                       <td class="p-4">
-                        <div class="space-y-1">
-                          ${m.hasWarranty ? `
-                            <span class="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-semibold" title="Valid till: ${m.warrantyValidTill || 'N/A'}">
-                               ${m.warrantyPeriod || '1 Year'}
-                            </span>
-                          ` : '<span class="text-[10px] text-slate-400">No warranty</span>'}
-                          <br />
-                          ${m.hasPm ? `
-                            <span class="inline-flex items-center gap-1 text-[10px] bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded font-semibold" title="Technician: ${m.repairmanName || 'Assigned'}">
-                               ${m.pmFrequency} PM
-                            </span>
-                          ` : '<span class="text-[10px] text-slate-400">No PM</span>'}
-                        </div>
+                        ${m.hasWarranty ? `
+                          <span class="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-1 rounded font-semibold" title="Valid till: ${m.warrantyValidTill || 'N/A'}">
+                            <i data-lucide="shield" class="w-3 h-3 text-blue-600"></i>
+                            <span>${m.warrantyPeriod || '1 Year'}</span>
+                          </span>
+                        ` : '<span class="text-[10px] text-slate-400 italic">No warranty policy</span>'}
                       </td>
                       <td class="p-4 text-right space-x-1">
                         <button onclick="CMS_MASTERS.viewMaterial360('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Inspect 360°">
                           <i data-lucide="scan" class="w-3.5 h-3.5"></i>
                         </button>
-                        ${m.hasPm ? `
-                          <button onclick="CMS_REPORTS.openLogPmModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-lg transition" title="Log PM Service">
-                            <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
+                        ${role === 'Maker' ? `
+                          <button onclick="CMS_MASTERS.openConsumableModal('${m.id}', 'Consumer')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Edit in Master">
+                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                           </button>
                         ` : ''}
-                        <button onclick="CMS_MASTERS.openConsumableModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Edit in Master">
-                          <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                        </button>
                       </td>
                     </tr>
                   `;
@@ -854,6 +870,7 @@ window.CMS_REPORTS = {
   // ==========================================
   renderFixedInventory() {
     const store = window.CMS_STORE.data;
+    const role = window.CMS_STORE.getRole();
     const categories = store.categories || [];
     let list = (store.consumables || []).filter(m => m.inventoryType === 'Fixed');
 
@@ -905,10 +922,12 @@ window.CMS_REPORTS = {
             <p class="text-xs text-slate-500 mt-1">Capital equipment registry with asset tags, serial numbers, warranty validity tracking, and designated technician PM schedules.</p>
           </div>
           <div class="flex flex-wrap gap-2.5">
-            <button onclick="CMS_MASTERS.openConsumableModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md shadow transition text-xs">
-              <i data-lucide="plus-circle" class="w-4 h-4"></i>
-              <span>+ Register Capital Asset</span>
-            </button>
+            ${role === 'Maker' ? `
+              <button onclick="CMS_MASTERS.openConsumableModal(null, 'Fixed')" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md shadow transition text-xs">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>+ Register Capital Asset</span>
+              </button>
+            ` : ''}
           </div>
         </div>
 
@@ -1049,9 +1068,11 @@ window.CMS_REPORTS = {
                         <span>Cert</span>
                       </button>
                     ` : ''}
-                    <button onclick="CMS_MASTERS.openConsumableModal('${m.id}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded transition">
-                      <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                    </button>
+                    ${role === 'Maker' ? `
+                      <button onclick="CMS_MASTERS.openConsumableModal('${m.id}', 'Fixed')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded transition" title="Modify Asset">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                      </button>
+                    ` : ''}
                   </div>
                 </div>
               </div>

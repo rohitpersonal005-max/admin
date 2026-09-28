@@ -47,7 +47,7 @@ window.CMS_PO = {
                   <tr class="hover:bg-slate-50/80 transition">
                     <td class="p-4 font-mono text-xs">
                       <div class="font-bold text-blue-900">${po.poNo}</div>
-                      <div class="text-slate-500">${new Date(po.createdAt || Date.now()).toLocaleDateString('en-IN')}</div>
+                      <div class="text-slate-500">${window.CMS_STORE.formatDate(po.createdAt)}</div>
                     </td>
                     <td class="p-4">
                       <div class="font-medium text-slate-900">${po.vendorName}</div>
