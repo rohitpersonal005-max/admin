@@ -258,12 +258,12 @@ window.CMS_PRINT = {
         <div class="grid grid-cols-2 gap-12 text-center text-xs pt-8 border-t border-slate-300">
           <div>
             <div class="h-10 mb-1 border-b border-slate-400"></div>
-            <p class="font-bold text-slate-900">Procurement Officer (Maker)</p>
+            <p class="font-bold text-slate-900">Procurement Officer (User)</p>
             <p class="text-slate-500">Prepared & Checked</p>
           </div>
           <div>
             <div class="h-10 mb-1 border-b border-slate-400"></div>
-            <p class="font-bold text-slate-900">General Manager - Supply Chain (Checker)</p>
+            <p class="font-bold text-slate-900">General Manager - Supply Chain (Admin)</p>
             <p class="text-slate-500">Approved & Issued</p>
           </div>
         </div>

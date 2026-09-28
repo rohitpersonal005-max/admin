@@ -4,7 +4,7 @@
     "username": "rajesh",
     "password": "adminutes123",
     "name": "Rajesh Kumar",
-    "role": "Maker",
+    "role": "User",
     "department": "Central Warehouse & Logistics",
     "email": "rajesh.kumar@adminutes.corp"
   },
@@ -13,7 +13,7 @@
     "username": "anita",
     "password": "checker4321",
     "name": "Col. Anita Sharma",
-    "role": "Checker",
+    "role": "Admin",
     "department": "Materials & Directorate of Supplies",
     "email": "anita.sharma@adminutes.corp"
   }

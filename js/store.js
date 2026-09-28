@@ -1,7 +1,7 @@
 /**
  * Consumable Management System - Data Store & State Engine
  * Handles localStorage persistence, seed data, stock ledger computations,
- * and Maker-Checker approval workflow.
+ * and User-Admin approval workflow.
  */
 
 const STORAGE_KEY = 'CMS_DATABASE_V2';
@@ -13,7 +13,7 @@ let ENTERPRISE_USERS = [
     id: 'EMP-3099',
     name: 'Rohit Sharma',
     email: 'rohit.sharma@adminutes.corp',
-    role: 'Maker',
+    role: 'User',
     roleTitle: 'General Staff / Indentor (Rohit)',
     badgeLabel: 'GENERAL USER / INDENTOR',
     department: 'Administration & Operations',
@@ -28,9 +28,9 @@ let ENTERPRISE_USERS = [
     id: 'EMP-2041',
     name: 'Rajesh Kumar',
     email: 'rajesh.kumar@adminutes.corp',
-    role: 'Maker',
-    roleTitle: 'Store Staff (Maker)',
-    badgeLabel: 'STORE CLERK / MAKER',
+    role: 'User',
+    roleTitle: 'Store Staff (User)',
+    badgeLabel: 'STORE CLERK / USER',
     department: 'Central Warehouse & Logistics',
     avatarText: 'RK',
     avatarBg: 'bg-blue-600',
@@ -43,9 +43,9 @@ let ENTERPRISE_USERS = [
     id: 'MGR-8812',
     name: 'Col. Anita Sharma',
     email: 'anita.sharma@adminutes.corp',
-    role: 'Checker',
-    roleTitle: 'Store In-Charge (Checker)',
-    badgeLabel: 'STORE IN-CHARGE / CHECKER',
+    role: 'Admin',
+    roleTitle: 'Store In-Charge (Admin)',
+    badgeLabel: 'STORE IN-CHARGE / ADMIN',
     department: 'Materials & Directorate of Supplies',
     avatarText: 'AS',
     avatarBg: 'bg-indigo-600',
@@ -56,7 +56,7 @@ let ENTERPRISE_USERS = [
 ];
 
 const INITIAL_SEED = {
-  userRole: 'Maker', // Default to Maker (Rajesh Kumar) for realistic enterprise flow
+  userrole: 'User', // Default to User (Rajesh Kumar) for realistic enterprise flow
   categories: [
     {
       id: 'CAT-001',
@@ -65,7 +65,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T10:00:00Z',
       approvedAt: '2026-08-01T11:00:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'CAT-002',
@@ -74,7 +74,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T10:15:00Z',
       approvedAt: '2026-08-01T11:05:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'CAT-003',
@@ -83,7 +83,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T10:30:00Z',
       approvedAt: '2026-08-01T11:10:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'CAT-004',
@@ -136,7 +136,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T09:00:00Z',
       approvedAt: '2026-08-01T09:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'GST-002',
@@ -148,7 +148,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T09:00:00Z',
       approvedAt: '2026-08-01T09:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'GST-003',
@@ -160,7 +160,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T09:00:00Z',
       approvedAt: '2026-08-01T09:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'GST-004',
@@ -172,7 +172,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T09:00:00Z',
       approvedAt: '2026-08-01T09:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'GST-005',
@@ -184,7 +184,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T09:00:00Z',
       approvedAt: '2026-08-01T09:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     }
   ],
   vendors: [
@@ -214,7 +214,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T10:00:00Z',
       approvedAt: '2026-08-01T11:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'VEN-002',
@@ -242,7 +242,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-02T10:00:00Z',
       approvedAt: '2026-08-02T11:45:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'VEN-003',
@@ -270,7 +270,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-03T10:00:00Z',
       approvedAt: '2026-08-03T12:15:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'VEN-004',
@@ -298,7 +298,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-04T10:00:00Z',
       approvedAt: '2026-08-04T13:00:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     }
   ],
   consumables: [
@@ -338,7 +338,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-01T14:00:00Z',
       approvedAt: '2026-08-01T16:00:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'MAT-002',
@@ -376,7 +376,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-02T12:00:00Z',
       approvedAt: '2026-08-02T15:00:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'MAT-003',
@@ -414,7 +414,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-03T11:00:00Z',
       approvedAt: '2026-08-03T14:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'MAT-004',
@@ -736,7 +736,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-10T11:00:00Z',
       approvedAt: '2026-08-10T12:00:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     },
     {
       id: 'REC-002',
@@ -763,7 +763,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-12T14:00:00Z',
       approvedAt: '2026-08-12T15:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     }
   ],
   requests: [
@@ -824,7 +824,7 @@ const INITIAL_SEED = {
       issuedTo: 'Amitabh Sen',
       department: 'Accounts & Finance',
       remarks: 'Issued in full against approved requisition',
-      issuedBy: 'Storekeeper (Maker)',
+      issuedBy: 'Storekeeper (User)',
       issuedAt: '2026-08-16T11:30:00Z',
       status: 'Issued'
     }
@@ -845,7 +845,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-18T16:00:00Z',
       approvedAt: '2026-08-18T16:30:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     }
   ],
   stockAdjustments: [
@@ -864,7 +864,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-15T09:30:00Z',
       approvedAt: '2026-08-15T11:00:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     }
   ],
   purchaseOrders: [
@@ -896,7 +896,7 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-20T10:00:00Z',
       approvedAt: '2026-08-20T14:00:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     }
   ],
   reconciliations: [
@@ -924,13 +924,13 @@ const INITIAL_SEED = {
       status: 'Approved',
       createdAt: '2026-08-25T17:00:00Z',
       approvedAt: '2026-08-25T18:00:00Z',
-      approvedBy: 'Admin (Checker)'
+      approvedBy: 'Admin (Admin)'
     }
   ]
 };
 
 const EMPTY_DATABASE = {
-  userRole: 'Maker',
+  userrole: 'User',
   categories: [],
   gstSlabs: [],
   vendors: [],
@@ -1106,7 +1106,7 @@ class Store {
 
   getUsers() {
     const role = this.getRole();
-    if (role === 'Checker') {
+    if (role === 'Admin') {
       return ENTERPRISE_USERS;
     }
     const current = this.getCurrentUser();
@@ -1119,13 +1119,13 @@ class Store {
       const existing = ENTERPRISE_USERS.find(candidate => candidate.id === user.id);
       return {
         ...user,
-        roleTitle: user.role === 'Checker' ? 'Store In-Charge (Checker)' : 'Store Staff (Maker)',
-        badgeLabel: user.role === 'Checker' ? 'STORE IN-CHARGE / CHECKER' : 'STORE CLERK / MAKER',
+        roleTitle: user.role === 'Admin' ? 'Store In-Charge (Admin)' : 'Store Staff (User)',
+        badgeLabel: user.role === 'Admin' ? 'STORE IN-CHARGE / ADMIN' : 'STORE CLERK / USER',
         avatarText: (user.name || 'User').split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase(),
-        avatarBg: user.role === 'Checker' ? 'bg-indigo-600' : 'bg-blue-600',
+        avatarBg: user.role === 'Admin' ? 'bg-indigo-600' : 'bg-blue-600',
         avatarTextCol: 'text-white',
         pin: existing ? existing.pin : null,
-        description: user.role === 'Checker' ? 'Store approval authority.' : 'Operational store maker.'
+        description: user.role === 'Admin' ? 'Store approval authority.' : 'Operational store maker.'
       };
     });
   }
@@ -1147,7 +1147,7 @@ class Store {
   }
 
   verifyManagerPin(pin) {
-    const mgr = ENTERPRISE_USERS.find(u => u.role === 'Checker');
+    const mgr = ENTERPRISE_USERS.find(u => u.role === 'Admin');
     return mgr && String(pin).trim() === String(mgr.pin);
   }
 
@@ -1165,7 +1165,7 @@ class Store {
   }
 
   isApprover() {
-    return this.getCurrentUser().role === 'Checker';
+    return this.getCurrentUser().role === 'Admin';
   }
 
   setRole(role) {
@@ -1306,7 +1306,7 @@ class Store {
 
   canApprove(record) {
     const currentUser = this.getCurrentUser();
-    if (currentUser.role !== 'Checker') {
+    if (currentUser.role !== 'Admin') {
       return {
         allowed: false,
         reason: 'Approval authority restricted. Only Store In-Charge (Col. Anita Sharma) can sanction pending entries.'
@@ -1493,7 +1493,7 @@ class Store {
 
     const currentUser = this.getCurrentUser();
     record.status = 'Revision Required';
-    record.checkerMistakeRemark = mistakeRemark || 'Returned by Checker for necessary correction';
+    record.checkerMistakeRemark = mistakeRemark || 'Returned by Admin for necessary correction';
     record.rejectedBy = currentUser.id;
     record.rejectedByName = currentUser.name;
     record.rejectedAt = new Date().toISOString();

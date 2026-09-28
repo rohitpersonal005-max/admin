@@ -1,7 +1,7 @@
 /**
  * Adminutes - Main Application Orchestrator
  * Handles view routing, Executive Dashboard, modal dialogues,
- * Lucide icon hydration, toast notifications, Maker-Checker role switching,
+ * Lucide icon hydration, toast notifications, User-Admin role switching,
  * and database backups.
  */
 
@@ -192,7 +192,7 @@ window.CMS_APP = {
         'challan-conversion': 'Challan to Invoice Conversion',
         'po-generation': 'Purchase Order (PO) Replenishment',
         'reconciliation': 'Physical Stock Reconciliation Audit',
-        'pending-approvals': 'Maker-Checker Approval Hub'
+        'pending-approvals': 'User-Admin Approval Hub'
       };
 
       breadcrumb.innerHTML = `${modBadge} <span class="font-semibold text-slate-800">${titles[route] || route}</span>`;
@@ -253,7 +253,7 @@ window.CMS_APP = {
             <div class="p-2.5 bg-white border border-purple-200 rounded text-left">
               <span class="inline-block px-1.5 py-0.5 bg-purple-50 text-purple-800 font-bold rounded text-[10px] uppercase font-mono">4. Governance</span>
               <div class="font-bold text-slate-900 text-xs mt-1">Statutory Sanctions</div>
-              <p class="text-[10px] text-slate-500 mt-0.5">Checker PIN 4321 & anti-self-approval</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Admin PIN 4321 & anti-self-approval</p>
             </div>
           </div>
         </div>
@@ -299,12 +299,12 @@ window.CMS_APP = {
               <div class="pt-1 border-t border-slate-100">
                 <strong>Key Safeguards:</strong>
                 <ul class="list-disc list-inside mt-0.5 text-slate-700 space-y-0.5">
-                  <li><strong>Maker-Checker Split:</strong> Staff (Rajesh Kumar) drafts, In-Charge approves.</li>
+                  <li><strong>User-Admin Split:</strong> Staff (Rajesh Kumar) drafts, In-Charge approves.</li>
                   <li><strong>Manager PIN (4321):</strong> Blocks unauthorized sign-offs.</li>
                   <li><strong>Anti-Self-Approval:</strong> Blocks sanctioning one's own drafts.</li>
                 </ul>
               </div>
-              <div class="text-[10px] text-slate-400 font-mono mt-1">Views: #pending-approvals, Maker-Checker Verification</div>
+              <div class="text-[10px] text-slate-400 font-mono mt-1">Views: #pending-approvals, User-Admin Verification</div>
             </div>
           </div>
         </div>
@@ -323,7 +323,7 @@ window.CMS_APP = {
   // User Session & Security Management
   updateUserProfile() {
     const user = window.CMS_STORE.getCurrentUser();
-    const isChecker = user && user.role === 'Checker';
+    const isChecker = user && user.role === 'Admin';
     const users = window.CMS_STORE.getUsers();
 
     // Header updates
@@ -340,7 +340,7 @@ window.CMS_APP = {
     if (empId) empId.innerText = user.id;
     if (rolePill) {
       rolePill.innerText = user.role;
-      if (user.role === 'Checker') {
+      if (user.role === 'Admin') {
         rolePill.className = 'text-[9.5px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-300';
       } else {
         rolePill.className = 'text-[9.5px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300';
@@ -363,12 +363,12 @@ window.CMS_APP = {
     if (dId) dId.innerText = user.id;
     if (dBadge) {
       dBadge.innerText = user.roleTitle;
-      dBadge.className = user.role === 'Checker'
+      dBadge.className = user.role === 'Admin'
         ? 'text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200'
         : 'text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200';
     }
 
-    // Checker-only staff directory section: hidden for Operation Person (Maker)
+    // Checker-only staff directory section: hidden for Operation Person (User)
     const dirSection = document.getElementById('checker-directory-section');
     if (dirSection) {
       dirSection.classList.toggle('hidden', !isChecker);
@@ -426,7 +426,7 @@ window.CMS_APP = {
       <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_APP.createMaker();">
         <div class="p-3 bg-cyan-50 border border-cyan-200 rounded-lg text-cyan-950 flex items-start gap-2">
           <i data-lucide="shield-check" class="w-4 h-4 text-cyan-700 shrink-0"></i>
-          <span>Only the Store Checker can create Maker accounts. Makers can access shared approved data but cannot approve records or view other Maker profiles.</span>
+          <span>Only the Store Admin can create User accounts. Users can access shared approved data but cannot approve records or view other User profiles.</span>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="sm:col-span-2">
@@ -453,11 +453,11 @@ window.CMS_APP = {
         <div id="new-maker-error" class="hidden p-2.5 bg-red-50 border border-red-200 text-red-800 rounded-lg font-medium"></div>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" onclick="CMS_APP.closeModal()" class="px-3.5 py-2 bg-slate-100 text-slate-700 font-semibold rounded-lg">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold rounded-lg">Create Maker</button>
+          <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold rounded-lg">Create User</button>
         </div>
       </form>
     `;
-    this.openModal('Add Maker Account', content, 'max-w-xl');
+    this.openModal('Add User Account', content, 'max-w-xl');
   },
 
   async createMaker() {
@@ -478,11 +478,11 @@ window.CMS_APP = {
         body: JSON.stringify(payload)
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Unable to create Maker.');
+      if (!response.ok) throw new Error(result.error || 'Unable to create User.');
       await window.CMS_AUTH.loadUsers();
       this.closeModal();
       this.updateUserProfile();
-      this.toast(`Maker account created for ${result.user.name}.`, 'success');
+      this.toast(`User account created for ${result.user.name}.`, 'success');
     } catch (error) {
       if (errorEl) {
         errorEl.innerText = error.message;
@@ -513,7 +513,7 @@ window.CMS_APP = {
   },
 
   showProfileModal(user, isOtherStaff = false) {
-    const isChecker = user.role === 'Checker';
+    const isChecker = user.role === 'Admin';
     const content = `
       <div class="space-y-4 text-xs">
         <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 flex items-center gap-3">
@@ -547,7 +547,7 @@ window.CMS_APP = {
           <div class="p-3 bg-white border border-slate-200 rounded-md">
             <span class="text-slate-400 font-bold uppercase text-[10px]">SoD Authorization Level</span>
             <div class="font-semibold ${isChecker ? 'text-indigo-700' : 'text-blue-700'} mt-0.5">
-              ${isChecker ? 'Approving Authority (Sanction / Reject / Audit)' : 'Maker Level (Data Entry & Requisitions Only)'}
+              ${isChecker ? 'Approving Authority (Sanction / Reject / Audit)' : 'User level (Data Entry & Requisitions Only)'}
             </div>
           </div>
         </div>
@@ -795,7 +795,7 @@ window.CMS_APP = {
         <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-900 flex items-start gap-2.5">
           <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700 shrink-0 mt-0.5"></i>
           <div>
-            <strong>Maker-Checker Statutory Audit & Verification</strong>
+            <strong>User-Admin Statutory Audit & Verification</strong>
             <div class="text-[11px] text-emerald-800 mt-0.5">Carefully review all submitted statutory credentials and documents before final sanction.</div>
           </div>
         </div>

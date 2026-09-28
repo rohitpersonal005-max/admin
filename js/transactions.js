@@ -130,7 +130,7 @@ window.CMS_TRANSACTIONS = {
                       <button onclick="CMS_TRANSACTIONS.openReceiptModal('${r.type}', '${r.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Receipt">
                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                       </button>
-                      ${r.status === 'Pending Approval' && role === 'Checker' ? `
+                      ${r.status === 'Pending Approval' && role === 'Admin' ? `
                         <button onclick="CMS_TRANSACTIONS.approveReceipt('${r.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition" title="Approve Receipt & Restock Inventory">
                           Approve
                         </button>
@@ -1686,7 +1686,7 @@ window.CMS_TRANSACTIONS = {
                     <span class="badge ${ret.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${ret.status}</span>
                   </td>
                   <td class="p-4 text-right space-x-1">
-                    ${ret.status === 'Pending Approval' && role === 'Checker' ? `
+                    ${ret.status === 'Pending Approval' && role === 'Admin' ? `
                       <button onclick="CMS_TRANSACTIONS.approveReturn('${ret.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition">
                         Approve
                       </button>
@@ -1892,7 +1892,7 @@ window.CMS_TRANSACTIONS = {
                     <span class="badge ${adj.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${adj.status}</span>
                   </td>
                   <td class="p-4 text-right space-x-1">
-                    ${adj.status === 'Pending Approval' && role === 'Checker' ? `
+                    ${adj.status === 'Pending Approval' && role === 'Admin' ? `
                       <button onclick="CMS_TRANSACTIONS.approveStockAdjustment('${adj.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition">
                         Approve
                       </button>
@@ -1918,7 +1918,7 @@ window.CMS_TRANSACTIONS = {
       <form id="adj-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_TRANSACTIONS.saveStockAdjustment();">
         <div class="p-3.5 bg-indigo-50 border border-indigo-200 rounded-md text-indigo-950 font-medium flex items-center gap-2">
           <i data-lucide="scale" class="w-4 h-4 text-indigo-600 shrink-0"></i>
-          <span>Direct Manual Stock Adjustment allows calibrating physical inventory with an audit trail and maker-checker approval.</span>
+          <span>Direct Manual Stock Adjustment allows calibrating physical inventory with an audit trail and User-Admin approval.</span>
         </div>
 
         <div>

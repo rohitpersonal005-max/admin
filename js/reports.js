@@ -1,7 +1,7 @@
 /**
  * Adminutes - Reports & Analytics Engine
  * Generates Live Stock Status with Buffer Progress Meters, Stock Movement Ledger,
- * Maker-Checker Pending Approvals Queue, and CSV Data Export.
+ * User-Admin Pending Approvals Queue, and CSV Data Export.
  */
 
 window.CMS_REPORTS = {
@@ -367,7 +367,7 @@ window.CMS_REPORTS = {
   },
 
   // ==========================================
-  // 3. PENDING APPROVALS QUEUE (MAKER-CHECKER HUB)
+  // 3. PENDING APPROVALS QUEUE (User-Admin HUB)
   // ==========================================
   renderApprovalsAccessDenied() {
     const currentUser = window.CMS_STORE.getCurrentUser();
@@ -379,7 +379,7 @@ window.CMS_REPORTS = {
           </div>
           <h2 class="text-base font-bold text-slate-900">Approvals restricted</h2>
           <p class="text-xs text-slate-600 mt-2 leading-relaxed">
-            The Maker-Checker Approval Hub is available only to the Store In-Charge
+            The User-Admin Approval Hub is available only to the Store In-Charge
             (Col. Anita Sharma). You are signed in as <strong>${currentUser.name}</strong>
             (${currentUser.roleTitle}).
           </p>
@@ -512,7 +512,7 @@ window.CMS_REPORTS = {
     });
 
     const currentUser = window.CMS_STORE.getCurrentUser();
-    const isChecker = currentUser.role === 'Checker';
+    const isChecker = currentUser.role === 'Admin';
 
     return `
       <div class="space-y-4">
@@ -524,7 +524,7 @@ window.CMS_REPORTS = {
                   <div class="w-8 h-8 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center">
                     <i data-lucide="shield-check" class="w-4 h-4"></i>
                   </div>
-                  <span>Maker-Checker Statutory Approval Hub</span>
+                  <span>User-Admin Statutory Approval Hub</span>
                 </h2>
                 <p class="text-xs text-slate-500 mt-0.5">Centralized regulatory queue for master data vetting, stock adjustments (+/-), and inward vouchers.</p>
               </div>
@@ -557,7 +557,7 @@ window.CMS_REPORTS = {
               <div class="p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-900 text-xs flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <i data-lucide="shield-alert" class="w-4 h-4 text-amber-700 shrink-0"></i>
-                  <span><strong>Operational Staff View:</strong> Logged in as Store Staff. To prevent self-approval tampering, sanctioning transactions requires Col. Anita Sharma (Checker).</span>
+                  <span><strong>Operational Staff View:</strong> Logged in as Store Staff. To prevent self-approval tampering, sanctioning transactions requires Col. Anita Sharma (Admin).</span>
                 </div>
               </div>
             `}
@@ -567,7 +567,7 @@ window.CMS_REPORTS = {
                 <div class="w-12 h-12 rounded bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-3">
                   <i data-lucide="check" class="w-6 h-6"></i>
                 </div>
-                <h3 class="text-sm font-bold text-slate-900">All Maker-Checker Queues Cleared</h3>
+                <h3 class="text-sm font-bold text-slate-900">All User-Admin Queues Cleared</h3>
                 <p class="text-xs text-slate-500 mt-1">There are zero pending submissions awaiting statutory sanction.</p>
               </div>
             ` : `
@@ -715,7 +715,7 @@ window.CMS_REPORTS = {
               <i data-lucide="download" class="w-4 h-4"></i>
               <span>Export CSV</span>
             </button>
-            ${role === 'Maker' ? `
+            ${role === 'User' ? `
               <button onclick="CMS_MASTERS.openConsumableModal(null, 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                 <span>+ Add Consumable Item</span>
@@ -830,7 +830,7 @@ window.CMS_REPORTS = {
                         <button onclick="CMS_MASTERS.viewMaterial360('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Inspect 360°">
                           <i data-lucide="scan" class="w-3.5 h-3.5"></i>
                         </button>
-                        ${role === 'Maker' ? `
+                        ${role === 'User' ? `
                           <button onclick="CMS_MASTERS.openConsumableModal('${m.id}', 'Consumer')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Edit in Master">
                             <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                           </button>
@@ -922,7 +922,7 @@ window.CMS_REPORTS = {
             <p class="text-xs text-slate-500 mt-1">Capital equipment registry with asset tags, serial numbers, warranty validity tracking, and designated technician PM schedules.</p>
           </div>
           <div class="flex flex-wrap gap-2.5">
-            ${role === 'Maker' ? `
+            ${role === 'User' ? `
               <button onclick="CMS_MASTERS.openConsumableModal(null, 'Fixed')" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md shadow transition text-xs">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                 <span>+ Register Capital Asset</span>
@@ -1068,7 +1068,7 @@ window.CMS_REPORTS = {
                         <span>Cert</span>
                       </button>
                     ` : ''}
-                    ${role === 'Maker' ? `
+                    ${role === 'User' ? `
                       <button onclick="CMS_MASTERS.openConsumableModal('${m.id}', 'Fixed')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded transition" title="Modify Asset">
                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                       </button>

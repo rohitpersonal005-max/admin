@@ -176,20 +176,20 @@ window.CMS_MASTERS = {
             ` : ''}
           </td>
           <td class="p-4 text-right space-x-1 whitespace-nowrap">
-            <!-- Eye View Button (Available to both Maker and Checker) -->
+            <!-- Eye View Button (Available to both User and Admin) -->
             <button onclick="CMS_MASTERS.viewVendorProfile('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Inspect Profile & Documents">
               <i data-lucide="eye" class="w-3.5 h-3.5"></i>
             </button>
 
-            <!-- Maker Edit Button (Only Maker can edit) -->
-            ${role === 'Maker' ? `
+            <!-- Maker Edit Button (Only User can edit) -->
+            ${role === 'User' ? `
               <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Vendor">
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
               </button>
             ` : ''}
 
             <!-- Checker Governance Actions: Sanction or Reject with Mistake Remark -->
-            ${(isPending || isRevision) && role === 'Checker' ? `
+            ${(isPending || isRevision) && role === 'Admin' ? `
               <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition shadow-xs" title="Sanction Vendor">
                 Approve
               </button>
@@ -199,7 +199,7 @@ window.CMS_MASTERS = {
             ` : ''}
 
             <!-- Ban / Blacklist with confirmation prompt (Checker only) -->
-            ${role === 'Checker' ? `
+            ${role === 'Admin' ? `
               <button onclick="CMS_MASTERS.promptBlockVendor('${v.id}', ${!isBlocked})" class="px-2 py-1 text-xs font-semibold ${isBlocked ? 'text-emerald-700 bg-emerald-100 hover:bg-emerald-200' : 'text-amber-700 bg-amber-100 hover:bg-amber-200'} rounded-lg transition" title="${isBlocked ? 'Unblock Vendor' : 'Blacklist / Block Vendor'}">
                 <i data-lucide="${isBlocked ? 'check-circle' : 'ban'}" class="w-3.5 h-3.5"></i>
               </button>
@@ -229,7 +229,7 @@ window.CMS_MASTERS = {
             <p class="text-xs text-slate-500 mt-1">Manage approved suppliers, GSTIN, PAN cards, compliance certificates, bank details, and validity dates.</p>
           </div>
           <div class="flex flex-wrap items-center gap-2.5">
-            ${role !== 'Checker' ? `
+            ${role !== 'Admin' ? `
               <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                 <span>Register New Vendor</span>
@@ -402,7 +402,7 @@ window.CMS_MASTERS = {
           <div class="p-3.5 bg-rose-50 border border-rose-300 rounded-md text-rose-900 space-y-1">
             <div class="font-bold flex items-center gap-1.5 text-xs text-rose-950">
               <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
-              <span>Statutory Checker Mistake Report (${v.rejectedByName || 'Col. Anita Sharma'})</span>
+              <span>Statutory Admin Mistake Report (${v.rejectedByName || 'Col. Anita Sharma'})</span>
             </div>
             <p class="text-[11px] text-rose-800 leading-relaxed font-medium">${v.checkerMistakeRemark}</p>
             ${v.rejectedAt ? `<div class="text-[10px] text-rose-600 font-mono">Reported On: ${window.CMS_STORE.formatDate(v.rejectedAt)}</div>` : ''}
@@ -521,7 +521,7 @@ window.CMS_MASTERS = {
         </div>
 
         <div class="pt-3 border-t border-slate-200 flex flex-wrap justify-end gap-2">
-          ${(v.status === 'Pending Approval' || v.status === 'Revision Required') && role === 'Checker' ? `
+          ${(v.status === 'Pending Approval' || v.status === 'Revision Required') && role === 'Admin' ? `
             <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorRejectModal('${v.id}');" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-md transition inline-flex items-center gap-1.5 text-xs">
               <i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i>
               <span>Reject / Return</span>
@@ -987,8 +987,8 @@ window.CMS_MASTERS = {
 
   openVendorModal(vendorId = null) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Checker') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Vendor registration must be initiated by Maker.', 'warning');
+    if (role === 'Admin') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Vendor registration must be initiated by User.', 'warning');
     }
     const isEdit = Boolean(vendorId);
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
@@ -1295,7 +1295,7 @@ window.CMS_MASTERS = {
           </button>
           <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
             <i data-lucide="send" class="w-4 h-4"></i>
-            <span>Submit for Checker Approval</span>
+            <span>Submit for Admin Approval</span>
           </button>
         </div>
       </form>
@@ -1337,8 +1337,8 @@ window.CMS_MASTERS = {
   saveVendor(vendorId = null, directSubmit = true) {
     const store = window.CMS_STORE;
     const currentUser = store.getCurrentUser();
-    if (currentUser && currentUser.role === 'Checker') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Checker) cannot create or modify vendors. You are authorized to approve and view vendor records only.', 'error');
+    if (currentUser && currentUser.role === 'Admin') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Admin) cannot create or modify vendors. You are authorized to approve and view vendor records only.', 'error');
     }
     const isEdit = Boolean(vendorId);
     const existingVendor = isEdit ? store.data.vendors.find(v => v.id === vendorId) : null;
@@ -1640,7 +1640,7 @@ window.CMS_MASTERS = {
 
     store.save();
     window.CMS_APP.closeModal();
-    window.CMS_APP.toast(directSubmit ? 'Vendor credentials and statutory certificates submitted for Checker approval!' : 'Vendor saved successfully!', 'success');
+    window.CMS_APP.toast(directSubmit ? 'Vendor credentials and statutory certificates submitted for Admin approval!' : 'Vendor saved successfully!', 'success');
     window.CMS_APP.refreshView();
   },
 
@@ -1783,7 +1783,7 @@ window.CMS_MASTERS = {
             </h2>
             <p class="text-xs text-slate-500 mt-1">Define classification types: Stationery, Housekeeping, Packing Material, PPE, Electrical, etc.</p>
           </div>
-          ${role === 'Maker' ? `
+          ${role === 'User' ? `
             <button onclick="CMS_MASTERS.openCategoryModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
               <i data-lucide="plus-circle" class="w-4 h-4"></i>
               <span>Add Category</span>
@@ -1816,17 +1816,17 @@ window.CMS_MASTERS = {
                     </span>
                   </td>
                   <td class="p-4 text-right space-x-1">
-                    ${role === 'Maker' ? `
+                    ${role === 'User' ? `
                       <button onclick="CMS_MASTERS.openCategoryModal('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Category">
                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                       </button>
                     ` : ''}
-                    ${c.status === 'Pending Approval' && role === 'Checker' ? `
+                    ${c.status === 'Pending Approval' && role === 'Admin' ? `
                       <button onclick="CMS_MASTERS.approveCategory('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition">
                         Approve
                       </button>
                     ` : ''}
-                    ${role === 'Checker' ? `<button onclick="CMS_MASTERS.deleteCategory('${c.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition" title="Delete Category"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+                    ${role === 'Admin' ? `<button onclick="CMS_MASTERS.deleteCategory('${c.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition" title="Delete Category"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
                   </td>
                 </tr>
               `).join('')}
@@ -1839,8 +1839,8 @@ window.CMS_MASTERS = {
 
   openCategoryModal(catId = null) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Checker') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Adding or modifying categories must be initiated by Maker.', 'warning');
+    if (role === 'Admin') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying categories must be initiated by User.', 'warning');
     }
     const isEdit = Boolean(catId);
     const cat = isEdit ? window.CMS_STORE.data.categories.find(c => c.id === catId) : { name: '', description: '' };
@@ -1867,8 +1867,8 @@ window.CMS_MASTERS = {
 
   saveCategory(catId, directSubmit = false) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Checker') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Adding or modifying categories must be initiated by Maker.', 'warning');
+    if (role === 'Admin') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying categories must be initiated by User.', 'warning');
     }
     const name = document.getElementById('cat-name').value.trim();
     const description = document.getElementById('cat-desc').value.trim();
@@ -1982,7 +1982,7 @@ window.CMS_MASTERS = {
             </h2>
             <p class="text-xs text-slate-500 mt-1">Unified material catalog supporting vendor quotations, booked MRP, statutory units, warranty periods, and preventive maintenance tracking.</p>
           </div>
-          ${role === 'Maker' ? `
+          ${role === 'User' ? `
       <button onclick="CMS_MASTERS.openConsumableModal(null, CMS_MASTERS.consumableTypeFilter || 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
         <span>Add Material</span>
@@ -2105,12 +2105,12 @@ window.CMS_MASTERS = {
                         <button onclick="CMS_MASTERS.viewMaterial360('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Inspect 360° Material Details">
                           <i data-lucide="scan" class="w-3.5 h-3.5"></i>
                         </button>
-                        ${role === 'Maker' ? `
+                        ${role === 'User' ? `
       <button onclick="CMS_MASTERS.openConsumableModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Item Master">
         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
       </button>
     ` : ''}
-                        ${(m.status === 'Pending Approval' || m.status === 'Revision Required') && role === 'Checker' ? `
+                        ${(m.status === 'Pending Approval' || m.status === 'Revision Required') && role === 'Admin' ? `
       <button onclick="CMS_MASTERS.openConsumableSanctionModal('${m.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition shadow-xs" title="Sanction Material">
         Approve
       </button>
@@ -2426,8 +2426,8 @@ window.CMS_MASTERS = {
 
   openConsumableModal(matId = null, forcedType = null) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Checker') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Adding or modifying materials must be initiated by Maker.', 'warning');
+    if (role === 'Admin') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying materials must be initiated by User.', 'warning');
     }
     const store = window.CMS_STORE.data;
     const isEdit = Boolean(matId);
@@ -2706,13 +2706,13 @@ window.CMS_MASTERS = {
             <span class="font-bold text-slate-800 text-xs">Rate Confirmation & Audit</span>
             <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
               <input type="checkbox" id="m-conf" ${m.consumerConfirmed ? 'checked' : ''} class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500" />
-              <span>Confirmed by Checker</span>
+              <span>Confirmed by Admin</span>
             </label>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label class="block font-semibold text-slate-700 mb-1">Checker Name / Post</label>
-              <input type="text" id="m-conf-by" value="${m.confirmedBy || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white focus:outline-none" placeholder="e.g. Col. Anita Sharma (Store Checker)" />
+              <label class="block font-semibold text-slate-700 mb-1">Admin Name / Post</label>
+              <input type="text" id="m-conf-by" value="${m.confirmedBy || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white focus:outline-none" placeholder="e.g. Col. Anita Sharma (Store Admin)" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Confirmation Date</label>
@@ -2791,8 +2791,8 @@ window.CMS_MASTERS = {
 
   saveConsumable(matId, directSubmit = false) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Checker') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Checker) is authorized for review and approval only. Adding or modifying materials must be initiated by Maker.', 'warning');
+    if (role === 'Admin') {
+      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying materials must be initiated by User.', 'warning');
     }
     const store = window.CMS_STORE;
     const inventoryType = document.getElementById('m-inv-type').value;
@@ -3097,7 +3097,7 @@ window.CMS_MASTERS = {
                     <button onclick="CMS_MASTERS.openGstModal('${g.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
                       <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                     </button>
-                    ${g.status === 'Pending Approval' && role === 'Checker' ? `
+                    ${g.status === 'Pending Approval' && role === 'Admin' ? `
                       <button onclick="CMS_MASTERS.approveGst('${g.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition">
                         Approve
                       </button>

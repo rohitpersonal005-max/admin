@@ -77,7 +77,7 @@ window.CMS_PO = {
                       <button onclick="CMS_PRINT.printPurchaseOrder(${JSON.stringify(po).replace(/"/g, '&quot;')})" class="px-2.5 py-1.5 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition" title="Print Purchase Order">
                         Print PO
                       </button>
-                      ${po.status === 'Pending Approval' && role === 'Checker' ? `
+                      ${po.status === 'Pending Approval' && role === 'Admin' ? `
                         <button onclick="CMS_PO.approvePO('${po.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded transition">
                           Approve
                         </button>

@@ -21,7 +21,7 @@ window.CMS_DASHBOARD = {
     );
     const outOfStock = (store.consumables || []).filter(item => window.CMS_STORE.getStock(item.id) === 0);
 
-    // Emergency Mistake & Revision Alerts reported by Checker
+    // Emergency Mistake & Revision Alerts reported by Admin
     const revisionVendors = (store.vendors || []).filter(v => v.status === 'Revision Required');
     const revisionConsumables = (store.consumables || []).filter(m => m.status === 'Revision Required');
     const allRevisions = [
@@ -36,7 +36,7 @@ window.CMS_DASHBOARD = {
         tone: 'red',
         icon: 'alert-triangle',
         label: 'EMERGENCY REVISION REQUIRED',
-        title: `Checker Col. Anita returned ${allRevisions.length} submission(s) for correction`,
+        title: `Admin Col. Anita returned ${allRevisions.length} submission(s) for correction`,
         details: `Reported Mistake: "${allRevisions[0].remark || 'Statutory documentation non-compliant'}". Operation manager must rectify and resubmit.`,
         actionLabel: 'Rectify & Resubmit'
       });
@@ -50,7 +50,7 @@ window.CMS_DASHBOARD = {
         icon: 'shield-alert',
         label: 'Action required',
         title: `${pendingApprovals} approval${pendingApprovals === 1 ? '' : 's'} waiting`,
-        details: 'Maker-Checker submissions are blocked until you review and sanction them.',
+        details: 'User-Admin submissions are blocked until you review and sanction them.',
         actionLabel: 'Review approvals'
       });
     }
@@ -307,7 +307,7 @@ window.CMS_DASHBOARD = {
             <span class="text-[11px] font-mono text-amber-800 font-bold">PIN 4321</span>
           </div>
 
-          <h3 class="text-sm font-bold text-slate-900 mt-2">Maker-Checker Sanctions</h3>
+          <h3 class="text-sm font-bold text-slate-900 mt-2">User-Admin Sanctions</h3>
           <p class="text-xs text-slate-600 mt-1 leading-relaxed">
             Statutory store approvals awaiting Store In-Charge (Col. Anita Sharma) verification.
           </p>

@@ -67,7 +67,7 @@ window.CMS_RECONCILIATION = {
                       <button onclick="CMS_PRINT.printReconciliationSheet(${JSON.stringify(rec).replace(/"/g, '&quot;')})" class="px-2.5 py-1.5 text-xs font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg transition" title="Print Audit Sheet">
                         Print Audit Sheet
                       </button>
-                      ${rec.status === 'Pending Approval' && role === 'Checker' ? `
+                      ${rec.status === 'Pending Approval' && role === 'Admin' ? `
                         <button onclick="CMS_RECONCILIATION.approveReconciliation('${rec.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded transition">
                           Approve
                         </button>
@@ -308,7 +308,7 @@ window.CMS_RECONCILIATION = {
     if (r) {
       r.status = 'Approved';
       r.approvedAt = new Date().toISOString();
-      r.approvedBy = 'Admin (Checker)';
+      r.approvedBy = 'Admin (Admin)';
       store.save();
       window.CMS_APP.toast(`Reconciliation ${r.reconciliationNo} approved and live warehouse stock calibrated!`, 'success');
       window.CMS_APP.refreshView();

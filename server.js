@@ -17,9 +17,9 @@ const USERS_FILE = path.join(ROOT, 'users.json');
 const sessions = new Map();
 
 const DEFAULT_USERS = [
-  { id: 'EMP-2041', username: 'rajesh', password: 'adminutes123', name: 'Rajesh Kumar', role: 'Maker', department: 'Central Warehouse & Logistics', email: 'rajesh.kumar@adminutes.corp' },
-  { id: 'MGR-8812', username: 'anita', password: 'checker4321', name: 'Col. Anita Sharma', role: 'Checker', department: 'Materials & Directorate of Supplies', email: 'anita.sharma@adminutes.corp' },
-  { id: 'EMP-3099', username: 'rohit', password: 'rohit123', name: 'Rohit Sharma', role: 'Maker', department: 'Administration & Operations', email: 'rohit.sharma@adminutes.corp' }
+  { id: 'EMP-2041', username: 'rajesh', password: 'adminutes123', name: 'Rajesh Kumar', role: 'User', department: 'Central Warehouse & Logistics', email: 'rajesh.kumar@adminutes.corp' },
+  { id: 'MGR-8812', username: 'anita', password: 'checker4321', name: 'Col. Anita Sharma', role: 'Admin', department: 'Materials & Directorate of Supplies', email: 'anita.sharma@adminutes.corp' },
+  { id: 'EMP-3099', username: 'rohit', password: 'rohit123', name: 'Rohit Sharma', role: 'User', department: 'Administration & Operations', email: 'rohit.sharma@adminutes.corp' }
 ];
 
 function loadUsers() {
@@ -31,13 +31,13 @@ function loadUsers() {
     console.warn('Unable to load users.json; using default users.');
   }
 
-  const maker = users.find(user => user.role === 'Maker');
-  const checker = users.find(user => user.role === 'Checker');
-  if (maker) {
+  const maker = users.find(user => user.role === 'User');
+  const checker = users.find(user => user.role === 'Admin');
+  if (User) {
     maker.username = process.env.CMS_MAKER_USERNAME || maker.username;
     maker.password = process.env.CMS_MAKER_PASSWORD || maker.password;
   }
-  if (checker) {
+  if (Admin) {
     checker.username = process.env.CMS_CHECKER_USERNAME || checker.username;
     checker.password = process.env.CMS_CHECKER_PASSWORD || checker.password;
   }
@@ -119,10 +119,10 @@ function getSessionUser(req) {
 function publicUsersFor(user) {
   if (!user) return [];
   // Only Checker (Col. Anita Sharma) can view other roles and users
-  if (user.role === 'Checker') {
+  if (user.role === 'Admin') {
     return AUTH_USERS.map(publicUser);
   }
-  // Operation person (Maker) cannot see profiles of other roles or users
+  // Operation person (User) cannot see profiles of other roles or users
   return [publicUser(user)];
 }
 
@@ -148,8 +148,8 @@ async function handleApi(req, res) {
 
   if (apiPath === '/users' && req.method === 'POST') {
     const checker = getSessionUser(req);
-    if (!checker || checker.role !== 'Checker') {
-      sendJson(res, 403, { error: 'Only the Store Checker can add makers.' });
+    if (!checker || checker.role !== 'Admin') {
+      sendJson(res, 403, { error: 'Only the Store Admin can add makers.' });
       return true;
     }
 
@@ -170,13 +170,13 @@ async function handleApi(req, res) {
         return true;
       }
 
-      const makerNumber = AUTH_USERS.filter(user => user.role === 'Maker').length + 1;
+      const makerNumber = AUTH_USERS.filter(user => user.role === 'User').length + 1;
       const newUser = {
         id: `EMP-${String(2041 + makerNumber).padStart(4, '0')}`,
         username,
         password,
         name,
-        role: 'Maker',
+        role: 'User',
         department: department || 'Central Warehouse & Logistics',
         email
       };

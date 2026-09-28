@@ -37,7 +37,7 @@ window.CMS_DRAFTS = {
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
-            ${role === 'Maker' ? `
+            ${role === 'User' ? `
               <button onclick="CMS_MASTERS.openConsumableModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md text-xs transition">
                 <i data-lucide="file-plus-2" class="w-3.5 h-3.5"></i>
                 New Quotation
@@ -64,7 +64,7 @@ window.CMS_DRAFTS = {
           <div class="p-4 bg-white border border-slate-200 rounded-md shadow-sm">
             <div class="text-[10px] uppercase tracking-wider font-bold text-amber-600">Awaiting Approval</div>
             <div class="text-2xl font-bold font-mono text-slate-900 mt-1">${pendingCount}</div>
-            <div class="text-xs text-slate-500 mt-1">Submitted for Checker review</div>
+            <div class="text-xs text-slate-500 mt-1">Submitted for Admin review</div>
           </div>
         </div>
 
@@ -98,7 +98,7 @@ window.CMS_DRAFTS = {
               </div>
               <div class="flex items-center justify-between gap-3 mt-3">
                 <div class="text-xs text-slate-600">Quote rate <strong class="font-mono text-slate-900">₹${Number(item.quotationRate || item.vendor1Rate || 0).toFixed(2)}</strong> · MRP <strong class="font-mono text-slate-900">₹${Number(item.mrpBooked || 0).toFixed(2)}</strong></div>
-                ${window.CMS_STORE.getRole() === 'Maker' ? `
+                ${window.CMS_STORE.getRole() === 'User' ? `
                   <div class="flex gap-1.5 shrink-0">
                     <button onclick="CMS_MASTERS.openConsumableModal('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200">Edit</button>
                     <button onclick="CMS_MASTERS.deleteConsumable('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded border border-red-200">Delete</button>
@@ -134,7 +134,7 @@ window.CMS_DRAFTS = {
               </div>
               <div class="flex items-center justify-between gap-3 mt-3">
                 <div class="text-xs text-slate-600">Invoice value <strong class="font-mono text-slate-900">₹${Number(item.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong></div>
-                ${window.CMS_STORE.getRole() === 'Maker' ? `
+                ${window.CMS_STORE.getRole() === 'User' ? `
                   <div class="flex gap-1.5 shrink-0">
                     <button onclick="CMS_TRANSACTIONS.openReceiptModal('Invoice', '${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-200">Edit</button>
                     <button onclick="CMS_TRANSACTIONS.deleteReceipt('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded border border-red-200">Delete</button>
