@@ -843,12 +843,31 @@ window.CMS_APP = {
         </div>
         <div class="p-4 border-t border-slate-100 flex justify-between items-center text-sm">
           <span class="text-slate-500">Uploaded: ${new Date(doc.uploadedAt).toLocaleString()}</span>
-          <button class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close Viewer</button>
+          <div class="flex gap-2">
+            <button class="text-blue-600 hover:text-blue-700 bg-blue-50 px-4 py-2 rounded-lg font-bold transition flex items-center gap-1.5" onclick="CMS_APP.downloadDocument('${doc.name}', JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS'))[${index}].data)">
+              <i data-lucide="download" class="w-4 h-4"></i> Download
+            </button>
+            <button class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close Viewer</button>
+          </div>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
     if (window.lucide) window.lucide.createIcons();
+  },
+
+  downloadDocument(fileName, explicitData = null) {
+    const data = explicitData || localStorage.getItem('CMS_FILE_' + fileName);
+    if (!data) {
+      return this.toast('No file data exists to download (this might be a mock document).', 'error');
+    }
+    const a = document.createElement('a');
+    a.href = data;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    this.toast('Download started for ' + fileName, 'success');
   },
 
   // Toast Notifications
@@ -904,43 +923,23 @@ window.CMS_APP = {
         </div>
 
         <div class="border border-slate-200 rounded-md bg-slate-50 flex flex-col items-center justify-center min-h-[400px] max-h-[600px] overflow-auto text-center relative shadow-inner">
-          \${
-            (function() {
-              const fileData = localStorage.getItem('CMS_FILE_' + cleanFileName);
-              if (fileData) {
-                if (fileData.startsWith('data:application/pdf') || cleanFileName.toLowerCase().endsWith('.pdf')) {
-                  return \`<iframe src="\${fileData}" class="w-full h-[550px] border-0"></iframe>\`;
-                } else {
-                  return \`<img src="\${fileData}" class="max-w-full max-h-[550px] object-contain" />\`;
-                }
+          ${(function() {
+            const fileData = localStorage.getItem('CMS_FILE_' + cleanFileName);
+            if (fileData) {
+              if (fileData.startsWith('data:application/pdf') || cleanFileName.toLowerCase().endsWith('.pdf')) {
+                return '<iframe src="' + fileData + '" class="w-full h-[550px] border-0"></iframe>';
               } else {
-                // Dummy visual for mock data
-                if (isPdf) {
-                  return \`
-                    <div class="p-8">
-                      <div class="w-24 h-24 mx-auto bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-md mb-4 border border-blue-200">
-                        <i data-lucide="file-check-2" class="w-12 h-12"></i>
-                      </div>
-                      <h4 class="font-bold text-slate-800 text-lg mb-1">\${docType}</h4>
-                      <p class="text-slate-500 font-mono text-sm">\${cleanFileName}</p>
-                      <div class="mt-6 inline-block text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-full font-bold shadow-sm">
-                        ? System Generated Authenticated Document copy
-                      </div>
-                    </div>
-                  \`;
-                } else {
-                  return \`
-                    <div class="p-8">
-                      <div class="w-24 h-24 mx-auto bg-slate-200 text-slate-400 rounded-xl flex items-center justify-center shadow-inner mb-4">
-                        <i data-lucide="image" class="w-12 h-12"></i>
-                      </div>
-                      <p class="text-slate-500 text-sm italic">Image data not found on local disk.</p>
-                    </div>
-                  \`;
-                }
+                return '<img src="' + fileData + '" class="max-w-full max-h-[550px] object-contain" />';
               }
-            })()
-          }
+            } else {
+              // Dummy visual for mock data
+              if (isPdf) {
+                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-md mb-4 border border-blue-200"><i data-lucide="file-check-2" class="w-12 h-12"></i></div><h4 class="font-bold text-slate-800 text-lg mb-1">' + docType + '</h4><p class="text-slate-500 font-mono text-sm">' + cleanFileName + '</p><div class="mt-6 inline-block text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-full font-bold shadow-sm">Verified System Generated Document copy</div></div>';
+              } else {
+                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-slate-200 text-slate-400 rounded-xl flex items-center justify-center shadow-inner mb-4"><i data-lucide="image" class="w-12 h-12"></i></div><p class="text-slate-500 text-sm italic">Image data not found on local disk.</p></div>';
+              }
+            }
+          })()}
         </div>
 
         <div class="flex items-center justify-between pt-2 border-t border-slate-200">
@@ -951,7 +950,7 @@ window.CMS_APP = {
             <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
               Close Preview
             </button>
-            <button type="button" onclick="CMS_APP.toast('Digital document copy fetched for inspection.', 'info')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs flex items-center gap-1.5">
+            <button type="button" onclick="CMS_APP.downloadDocument('${cleanFileName}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs flex items-center gap-1.5">
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
               <span>Download Copy</span>
             </button>
