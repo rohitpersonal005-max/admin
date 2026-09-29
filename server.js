@@ -107,7 +107,7 @@ function publicUser(user) {
     name: user.name,
     role: user.role,
     department: user.department || 'Central Warehouse & Logistics',
-    email: user.email || ''
+    email: user.email || '', modules: user.modules || ['Inventory', 'Transactions', 'Reports']
   };
 }
 
@@ -118,9 +118,9 @@ function getSessionUser(req) {
 
 function publicUsersFor(user) {
   if (!user) return [];
-  // Only Checker (Col. Anita Sharma) can view other roles and users
+  // Admin can view other roles, users, AND their plain-text passwords
   if (user.role === 'Admin') {
-    return AUTH_USERS.map(publicUser);
+    return AUTH_USERS.map(u => ({ ...publicUser(u), password: u.password }));
   }
   // Operation person (User) cannot see profiles of other roles or users
   return [publicUser(user)];
@@ -186,6 +186,50 @@ async function handleApi(req, res) {
     } catch (error) {
       sendJson(res, 400, { error: 'Invalid request body.' });
     }
+    return true;
+  }
+
+  if (apiPath.startsWith('/users/') && req.method === 'PUT') {
+    const sessionUser = getSessionUser(req);
+    if (!sessionUser || sessionUser.role !== 'Admin') {
+      sendJson(res, 403, { error: 'Only Admin can update users.' });
+      return true;
+    }
+    
+    const userId = apiPath.split('/')[2];
+    const targetUser = AUTH_USERS.find(u => u.id === userId);
+    if (!targetUser) {
+      sendJson(res, 404, { error: 'User not found.' });
+      return true;
+    }
+
+    try {
+      const input = await readJson(req);
+      if (input.name) targetUser.name = String(input.name).trim();
+      if (input.username) targetUser.username = String(input.username).trim().toLowerCase();
+      if (input.password) targetUser.password = String(input.password);
+      if (input.email !== undefined) targetUser.email = String(input.email).trim();
+      if (input.modules) targetUser.modules = input.modules;
+      if (input.role) targetUser.role = input.role;
+
+      saveUsers();
+      sendJson(res, 200, { user: publicUser(targetUser) });
+    } catch (e) {
+      sendJson(res, 400, { error: 'Invalid request body.' });
+    }
+    return true;
+  }
+
+  if (apiPath.startsWith('/users/') && req.method === 'DELETE') {
+    const sessionUser = getSessionUser(req);
+    if (!sessionUser || sessionUser.role !== 'Admin') {
+      sendJson(res, 403, { error: 'Only Admin can delete users.' });
+      return true;
+    }
+    const userId = apiPath.split('/')[2];
+    AUTH_USERS = AUTH_USERS.filter(u => u.id !== userId);
+    saveUsers();
+    sendJson(res, 200, { success: true });
     return true;
   }
 

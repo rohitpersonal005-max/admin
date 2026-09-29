@@ -65,6 +65,13 @@
       <!-- Navigation Links -->
       <nav class="flex-1 overflow-y-auto px-2.5 py-3 space-y-4 text-xs">
         
+                <!-- 0. ADMIN HOME -->
+        <div id="nav-admin-home" class="hidden mb-2">
+          <a href="#home" data-route="home" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-bold bg-indigo-900/30 border border-indigo-800/50">
+            <i data-lucide="home" class="w-4 h-4 text-indigo-400"></i>
+            <span class="text-indigo-100">Admin Home</span>
+          </a>
+        </div>
         <!-- 1. DASHBOARD -->
         <div>
           <a href="#dashboard" data-route="dashboard" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
@@ -79,12 +86,13 @@
 
         <!-- 2. STOCK & ASSET CARE (2ND IN LIST) -->
         <div class="pt-0.5">
-          <div class="px-2.5 mb-1 flex items-center justify-between">
-            <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1">
-              <i data-lucide="package" class="w-3 h-3 text-emerald-400"></i> Stock & Asset Care
+          <button type="button" onclick="document.getElementById('menu-inventory').classList.toggle('hidden'); document.getElementById('icon-inventory').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800/50 py-1.5 rounded cursor-pointer transition outline-none">
+            <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1 pointer-events-none">
+              <i data-lucide="package" class="w-3 h-3 text-emerald-400"></i> Inventory
             </span>
-          </div>
-          <div class="space-y-0.5 pl-1.5 ml-2">
+            <i id="icon-inventory" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
+          </button>
+          <div id="menu-inventory" class="space-y-0.5 pl-1.5 ml-2 transition-all">
             <a href="#consumer-inventory" data-route="consumer-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
               <i data-lucide="package" class="w-4 h-4 text-emerald-400"></i>
               <span>Consumable Materials</span>
@@ -106,12 +114,13 @@
 
         <!-- 3. SETUP & CATALOG (3RD) -->
         <div class="pt-0.5">
-          <div class="px-2.5 mb-1 flex items-center justify-between">
-            <span class="text-[10px] uppercase font-bold text-blue-400 tracking-wider flex items-center gap-1">
-              <i data-lucide="folder" class="w-3 h-3 text-blue-400"></i> Setup
+          <button type="button" onclick="document.getElementById('menu-transactions').classList.toggle('hidden'); document.getElementById('icon-transactions').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800/50 py-1.5 rounded cursor-pointer transition outline-none">
+            <span class="text-[10px] uppercase font-bold text-blue-400 tracking-wider flex items-center gap-1 pointer-events-none">
+              <i data-lucide="folder" class="w-3 h-3 text-blue-400"></i> Transactions
             </span>
-          </div>
-          <div class="space-y-0.5 pl-1.5 ml-2">
+            <i id="icon-transactions" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
+          </button>
+          <div id="menu-transactions" class="space-y-0.5 pl-1.5 ml-2 transition-all">
             <a href="#vendors" data-route="vendors" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
               <i data-lucide="building" class="w-4 h-4 text-slate-400"></i>
               <span>Vendor</span>
@@ -133,12 +142,13 @@
 
         <!-- 4. STORE OPERATIONS & MOVEMENT (4TH - MOVED BELOW) -->
         <div class="pt-0.5">
-          <div class="px-2.5 mb-1 flex items-center justify-between">
-            <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center gap-1">
-              <i data-lucide="sliders" class="w-3 h-3 text-amber-400"></i> Store Operations
+          <button type="button" onclick="document.getElementById('menu-reports').classList.toggle('hidden'); document.getElementById('icon-reports').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800/50 py-1.5 rounded cursor-pointer transition outline-none">
+            <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center gap-1 pointer-events-none">
+              <i data-lucide="sliders" class="w-3 h-3 text-amber-400"></i> Reports
             </span>
-          </div>
-          <div class="space-y-0.5 pl-1.5 ml-2">
+            <i id="icon-reports" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
+          </button>
+          <div id="menu-reports" class="space-y-0.5 pl-1.5 ml-2 transition-all">
             <a href="#receipts" data-route="receipts" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
               <i data-lucide="arrow-down-left" class="w-4 h-4 text-amber-400"></i>
               <span>Goods Inward (Auto Material)</span>
@@ -271,7 +281,11 @@
                 <span class="flex items-center gap-1"><i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i> Four-Eyes SoD</span>
                 <span class="font-mono text-[10px]">Active Session</span>
               </div>
-              <button type="button" onclick="CMS_AUTH.logout()" class="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded bg-slate-900 text-white hover:bg-slate-700 transition font-semibold">
+              <button type="button" onclick="CMS_APP.showCompanyProfile()" class="w-full flex items-center gap-2.5 px-2 py-2 rounded text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition font-bold mb-1 mt-1 text-left">
+                <i data-lucide="building-2" class="w-4 h-4 text-indigo-500"></i>
+                Company Profile & Docs
+              </button>
+              <button type="button" onclick="CMS_AUTH.logout()" class="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 rounded bg-slate-900 text-white hover:bg-slate-700 transition font-semibold">
                 <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                 Sign out
               </button>
@@ -391,6 +405,7 @@
   <script src="js/reports.js?v=20260923"></script>
   <script src="js/dashboard.js?v=20260923"></script>
   <script src="js/drafts.js?v=20260923"></script>
+    <script src="js/home.js?v=20260929"></script>
   <script src="js/app.js?v=20260923"></script>
 </body>
 </html>

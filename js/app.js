@@ -12,13 +12,36 @@ window.CMS_APP = {
     this.bindEvents();
     this.updateUserProfile();
     this.updatePendingBadge();
-    const route = this.getHashRoute() || 'dashboard';
+    const role = window.CMS_STORE.getRole();
+    let route = this.getHashRoute();
+    if (!route) {
+      route = role === 'Admin' ? 'home' : 'dashboard';
+    } else if (route === 'home' && role !== 'Admin') {
+      route = 'dashboard';
+    }
     this.navigateTo(route);
+
+    // Global interceptor for all file uploads
+    document.addEventListener('change', (e) => {
+      if (e.target && e.target.type === 'file' && e.target.files.length > 0) {
+        const file = e.target.files[0];
+        if (file.size > 5 * 1024 * 1024) return; // Ignore large files
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          localStorage.setItem('CMS_FILE_' + file.name, ev.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
   },
 
   bindEvents() {
     window.addEventListener('hashchange', () => {
-      this.navigateTo(this.getHashRoute() || 'dashboard');
+      const role = window.CMS_STORE.getRole();
+      let r = this.getHashRoute();
+      if (!r) r = role === 'Admin' ? 'home' : 'dashboard';
+      if (r === 'home' && role !== 'Admin') r = 'dashboard';
+      this.navigateTo(r);
     });
 
     window.addEventListener('cms-store-updated', () => {
@@ -50,6 +73,23 @@ window.CMS_APP = {
   },
 
   navigateTo(route) {
+    const user = window.CMS_STORE.getCurrentUser();
+    if (user && user.role !== 'Admin') {
+      const allowedModules = user.modules || ['Inventory', 'Transactions', 'Reports'];
+      let requiredModule = null;
+      
+      const invRoutes = ['vendors', 'categories', 'consumables', 'gst-slabs', 'consumer-inventory', 'fixed-inventory', 'stock-status', 'stock-ledger'];
+      const transRoutes = ['receipts', 'requests', 'issuances', 'draft-workspace'];
+      
+      if (invRoutes.includes(route)) requiredModule = 'Inventory';
+      else if (transRoutes.includes(route)) requiredModule = 'Transactions';
+      
+      if (requiredModule && !allowedModules.includes(requiredModule)) {
+        this.toast('Access Denied: Your role does not have permission for the ' + requiredModule + ' module.', 'error');
+        route = 'dashboard';
+      }
+    }
+
     if (route === 'vendors' && this.currentView !== 'vendors' && window.CMS_MASTERS) {
       window.CMS_MASTERS.vendorSearchQuery = '';
     }
@@ -77,6 +117,9 @@ window.CMS_APP = {
 
     // Render corresponding view
     switch (route) {
+      case 'home':
+        if (window.CMS_HOME) window.CMS_HOME.render();
+        break;
       case 'dashboard':
         main.innerHTML = window.CMS_DASHBOARD.render();
         window.setTimeout(() => window.CMS_DASHBOARD.showEmergencyAlerts(), 0);
@@ -324,6 +367,8 @@ window.CMS_APP = {
   updateUserProfile() {
     const user = window.CMS_STORE.getCurrentUser();
     const isChecker = user && user.role === 'Admin';
+    const navAdminHome = document.getElementById('nav-admin-home');
+    if (navAdminHome) navAdminHome.classList.toggle('hidden', !isChecker);
     const users = window.CMS_STORE.getUsers();
 
     // Header updates
@@ -695,6 +740,117 @@ window.CMS_APP = {
     document.body.style.overflow = 'auto';
   },
 
+  showCompanyProfile() {
+    this.toggleUserDropdown();
+    const info = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}');
+    const docs = JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS') || '[]');
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-[90] bg-slate-900/60 flex items-center justify-center p-4 backdrop-blur-sm';
+    modal.innerHTML = `
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden max-h-[90vh]">
+        <div class="bg-indigo-600 p-5 text-white flex justify-between items-start">
+          <div>
+            <h2 class="text-xl font-bold flex items-center gap-2">
+              <i data-lucide="building-2" class="w-6 h-6"></i>
+              ${info.name || 'Company Profile'}
+            </h2>
+            <p class="text-indigo-100 text-sm mt-1">Official Company Details & Statutory Documents</p>
+          </div>
+          <button class="text-indigo-200 hover:text-white transition" onclick="this.closest('.fixed').remove()">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        <div class="p-5 overflow-auto flex-1">
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-slate-50 p-3 rounded border border-slate-100">
+              <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">GSTIN</div>
+              <div class="font-mono text-sm font-bold text-slate-800">${info.gstin || '-'}</div>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-100">
+              <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">PAN</div>
+              <div class="font-mono text-sm font-bold text-slate-800">${info.pan || '-'}</div>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-100">
+              <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">Certificate No</div>
+              <div class="font-mono text-sm font-bold text-slate-800">${info.cert || '-'}</div>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-100">
+              <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">License No</div>
+              <div class="font-mono text-sm font-bold text-slate-800">${info.license || '-'}</div>
+            </div>
+            <div class="col-span-2 bg-slate-50 p-3 rounded border border-slate-100">
+              <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">Registered Address</div>
+              <div class="text-sm font-medium text-slate-700">${[info.address, info.taluka, info.district, info.state, info.pin].filter(Boolean).join(', ') || '-'}</div>
+            </div>
+          </div>
+          <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-1.5"><i data-lucide="files" class="w-4 h-4 text-blue-500"></i> Uploaded Documents</h3>
+          <div class="flex flex-col gap-2">
+            ${docs.length > 0 ? docs.map((doc, i) => `
+              <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                    <i data-lucide="${doc.type.includes('pdf') ? 'file-text' : 'image'}" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <div class="font-bold text-slate-800 text-sm">${doc.name}</div>
+                    <div class="text-[10px] text-slate-400">Uploaded: ${new Date(doc.uploadedAt).toLocaleString()}</div>
+                  </div>
+                </div>
+                <button class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded flex items-center gap-1 transition" onclick="CMS_APP.previewDocument(${i})">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i> View Document
+                </button>
+              </div>
+            `).join('') : '<div class="text-sm text-slate-500 italic p-4 text-center border border-dashed border-slate-300 rounded-lg">No documents published yet.</div>'}
+          </div>
+        </div>
+        <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+          <button class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  previewDocument(index) {
+    const docs = JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS') || '[]');
+    const doc = docs[index];
+    if (!doc) return this.toast('Document not found', 'error');
+
+    let contentHtml = '';
+    if (doc.type.includes('pdf')) {
+      contentHtml = `<iframe src="${doc.data}" class="w-full h-[60vh] border-0 rounded"></iframe>`;
+    } else {
+      contentHtml = `<img src="${doc.data}" class="max-w-full max-h-[70vh] object-contain mx-auto rounded shadow-sm" />`;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-[100] bg-slate-900/80 flex items-center justify-center p-4 backdrop-blur-sm';
+    modal.innerHTML = `
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh]">
+        <div class="flex items-center justify-between p-4 border-b border-slate-100">
+          <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+            <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
+            ${doc.name}
+          </h3>
+          <button class="text-slate-400 hover:text-slate-600 transition p-1" onclick="this.closest('.fixed').remove()">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        <div class="p-4 overflow-auto flex-1 bg-slate-50 flex items-center justify-center">
+          ${contentHtml}
+        </div>
+        <div class="p-4 border-t border-slate-100 flex justify-between items-center text-sm">
+          <span class="text-slate-500">Uploaded: ${new Date(doc.uploadedAt).toLocaleString()}</span>
+          <button class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close Viewer</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    if (window.lucide) window.lucide.createIcons();
+  },
+
   // Toast Notifications
   toast(message, type = 'success') {
     const container = document.getElementById('toast-container');
@@ -747,20 +903,44 @@ window.CMS_APP = {
           </span>
         </div>
 
-        <div class="border border-slate-200 rounded-md p-6 bg-slate-50 flex flex-col items-center justify-center min-h-[220px] text-center space-y-3">
-          <div class="w-14 h-14 rounded-full bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center shadow-xs">
-            <i data-lucide="${isPdf ? 'file-check-2' : 'image'}" class="w-7 h-7"></i>
-          </div>
-          <div class="max-w-md">
-            <h4 class="font-bold text-slate-900 text-sm">${docType}</h4>
-            <p class="text-slate-500 text-xs mt-1">File Name: <span class="font-mono text-slate-700">${cleanFileName}</span></p>
-            ${meta.partyName ? `<p class="text-slate-600 text-xs mt-0.5">Entity: <strong class="text-slate-800">${meta.partyName}</strong></p>` : ''}
-            ${meta.id ? `<p class="text-slate-500 text-[11px] font-mono mt-0.5">Reference ID: ${meta.id}</p>` : ''}
-            ${meta.validTill ? `<p class="text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded inline-block text-[11px] font-bold mt-2">Validity Date: ${this.formatDate(meta.validTill)}</p>` : ''}
-          </div>
-          <div class="text-[11px] text-slate-400 bg-white border border-slate-200 px-3 py-1.5 rounded-full shadow-xs">
-            Document is authenticated and secured under ISO-compliant store controls
-          </div>
+        <div class="border border-slate-200 rounded-md bg-slate-50 flex flex-col items-center justify-center min-h-[400px] max-h-[600px] overflow-auto text-center relative shadow-inner">
+          \${
+            (function() {
+              const fileData = localStorage.getItem('CMS_FILE_' + cleanFileName);
+              if (fileData) {
+                if (fileData.startsWith('data:application/pdf') || cleanFileName.toLowerCase().endsWith('.pdf')) {
+                  return \`<iframe src="\${fileData}" class="w-full h-[550px] border-0"></iframe>\`;
+                } else {
+                  return \`<img src="\${fileData}" class="max-w-full max-h-[550px] object-contain" />\`;
+                }
+              } else {
+                // Dummy visual for mock data
+                if (isPdf) {
+                  return \`
+                    <div class="p-8">
+                      <div class="w-24 h-24 mx-auto bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-md mb-4 border border-blue-200">
+                        <i data-lucide="file-check-2" class="w-12 h-12"></i>
+                      </div>
+                      <h4 class="font-bold text-slate-800 text-lg mb-1">\${docType}</h4>
+                      <p class="text-slate-500 font-mono text-sm">\${cleanFileName}</p>
+                      <div class="mt-6 inline-block text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-full font-bold shadow-sm">
+                        ? System Generated Authenticated Document copy
+                      </div>
+                    </div>
+                  \`;
+                } else {
+                  return \`
+                    <div class="p-8">
+                      <div class="w-24 h-24 mx-auto bg-slate-200 text-slate-400 rounded-xl flex items-center justify-center shadow-inner mb-4">
+                        <i data-lucide="image" class="w-12 h-12"></i>
+                      </div>
+                      <p class="text-slate-500 text-sm italic">Image data not found on local disk.</p>
+                    </div>
+                  \`;
+                }
+              }
+            })()
+          }
         </div>
 
         <div class="flex items-center justify-between pt-2 border-t border-slate-200">

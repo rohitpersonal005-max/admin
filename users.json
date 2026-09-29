@@ -6,13 +6,18 @@
     "name": "Rajesh Kumar",
     "role": "User",
     "department": "Central Warehouse & Logistics",
-    "email": "rajesh.kumar@adminutes.corp"
+    "email": "rajesh.kumar@adminutes.corp",
+    "modules": [
+      "Inventory",
+      "Transactions",
+      "Reports"
+    ]
   },
   {
     "id": "MGR-8812",
     "username": "anita",
-    "password": "checker4321",
-    "name": "Col. Anita Sharma",
+    "password": "password123",
+    "name": "Anita Sharma",
     "role": "Admin",
     "department": "Materials & Directorate of Supplies",
     "email": "anita.sharma@adminutes.corp"
