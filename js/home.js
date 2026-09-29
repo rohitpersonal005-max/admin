@@ -145,10 +145,14 @@ window.CMS_HOME = {
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-3 gap-4">
               <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">State <span class="text-rose-600">*</span></label>
                 <input type="text" id="home-comp-state" value="${this.companyInfo.state || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-md" required placeholder="State / UT" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">State Code</label>
+                <input type="text" id="home-comp-state-code" value="${this.companyInfo.stateCode || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-md font-mono" placeholder="e.g. 27" maxlength="2" />
               </div>
               <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">PIN Code <span class="text-rose-600">*</span></label>
@@ -312,6 +316,7 @@ window.CMS_HOME = {
       taluka: document.getElementById('home-comp-taluka').value,
       district: document.getElementById('home-comp-district').value,
       state: document.getElementById('home-comp-state').value,
+      stateCode: document.getElementById('home-comp-state-code').value.trim(),
       pin: document.getElementById('home-comp-pin').value,
       contact: document.getElementById('home-comp-contact').value,
       email: document.getElementById('home-comp-email').value,
@@ -363,3 +368,4 @@ window.CMS_HOME = {
     }
   }
 };
+

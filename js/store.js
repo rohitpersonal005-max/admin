@@ -1159,9 +1159,19 @@ class Store {
     return this.getCurrentUser().role;
   }
 
-  getVendorTaxMode(vendor, storeState = 'Delhi') {
-    if (!vendor || !vendor.addressState || vendor.addressState !== storeState) return 'IGST';
-    return 'CGST_SGST';
+  getVendorTaxMode(vendor) {
+    if (!vendor) return 'IGST';
+    
+    const companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}');
+    const compState = (companyInfo.state || 'Delhi').toLowerCase();
+    
+    const isSameStateName = vendor.addressState && vendor.addressState.toLowerCase() === compState;
+    const isSameStateCode = vendor.stateCode && companyInfo.stateCode && vendor.stateCode === companyInfo.stateCode;
+    
+    if (isSameStateName || isSameStateCode) {
+      return 'CGST_SGST';
+    }
+    return 'IGST';
   }
 
   isApprover() {
@@ -1518,3 +1528,4 @@ class Store {
 }
 
 window.CMS_STORE = new Store();
+

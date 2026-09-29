@@ -55,9 +55,14 @@ window.CMS_MASTERS = {
   ],
 
   getStateInfo(stateName) {
+    const companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}');
+    const compState = (companyInfo.state || 'Delhi').toLowerCase();
+    
     const s = this.indianStates.find(item => item.name.toLowerCase() === String(stateName || '').toLowerCase());
     if (!s) return { code: '', name: stateName || '', taxMode: 'IGST' };
-    const taxMode = s.name === 'Delhi' ? 'CGST_SGST' : 'IGST';
+    
+    const isSameState = s.name.toLowerCase() === compState || (companyInfo.stateCode && s.code === companyInfo.stateCode);
+    const taxMode = isSameState ? 'CGST_SGST' : 'IGST';
     return { ...s, taxMode };
   },
 
@@ -3255,3 +3260,4 @@ window.CMS_MASTERS = {
     }
   }
 };
+
