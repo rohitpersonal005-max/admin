@@ -57,6 +57,30 @@ window.CMS_HOME = {
     }
   },
 
+  onStateChange(stateName) {
+    if (window.CMS_MASTERS) {
+      const stateObj = window.CMS_MASTERS.indianStates.find(s => s.name === stateName);
+      if (stateObj) {
+        const codeInput = document.getElementById('home-comp-state-code');
+        if (codeInput) {
+          codeInput.value = stateObj.code;
+        }
+      }
+    }
+  },
+
+  onStateChange(stateName) {
+    if (window.CMS_MASTERS) {
+      const stateObj = window.CMS_MASTERS.indianStates.find(s => s.name === stateName);
+      if (stateObj) {
+        const codeInput = document.getElementById('home-comp-state-code');
+        if (codeInput) {
+          codeInput.value = stateObj.code;
+        }
+      }
+    }
+  },
+
   render() {
     const container = document.getElementById('view-container');
     if (!container) return;
@@ -148,7 +172,10 @@ window.CMS_HOME = {
             <div class="grid grid-cols-3 gap-4">
               <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">State <span class="text-rose-600">*</span></label>
-                <input type="text" id="home-comp-state" value="${this.companyInfo.state || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-md" required placeholder="State / UT" />
+                <select id="home-comp-state" class="w-full border border-slate-200 px-3 py-2 rounded-md bg-white" required onchange="window.CMS_HOME.onStateChange(this.value)">
+                  <option value="">-- Choose State --</option>
+                  ${(window.CMS_MASTERS ? window.CMS_MASTERS.indianStates : []).map(s => `<option value="${s.name}" ${this.companyInfo.state === s.name ? 'selected' : ''}>${s.name}</option>`).join('')}
+                </select>
               </div>
               <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">State Code</label>
@@ -368,4 +395,5 @@ window.CMS_HOME = {
     }
   }
 };
+
 
