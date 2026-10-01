@@ -11,23 +11,40 @@
   <!-- Lucide Icons via CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- Google Fonts: Inter & IBM Plex Mono for a polished enterprise UI -->
+  <!-- Google Fonts: Roboto & IBM Plex Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
   <!-- Custom Stylesheet -->
-  <link rel="stylesheet" href="css/custom.css" />
+  <link rel="stylesheet" href="css/custom.css?v=20261001" />
   
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'Segoe UI', 'sans-serif'],
+            sans: ['Roboto', 'Segoe UI', 'sans-serif'],
             mono: ['IBM Plex Mono', 'Consolas', 'monospace'],
           },
           colors: {
+            slate: {
+              800: '#1e2235',
+              900: '#141724',
+              950: '#0c0f18'
+            },
+            blue: {
+              50: '#f0f5ff',
+              100: '#e5edff',
+              500: '#2563eb',
+              600: '#1159eb',
+              700: '#0f4bc6',
+            },
+            green: {
+              400: '#5ac973',
+              500: '#48c263',
+              600: '#3bab53'
+            },
             brand: {
               50: '#f0f4fe',
               100: '#dbe4fc',
@@ -42,7 +59,7 @@
     }
   </script>
 </head>
-<body class="bg-slate-100 text-slate-900 antialiased min-h-screen flex flex-col font-sans app-shell">
+<body class="bg-white text-slate-900 antialiased min-h-screen flex flex-col font-sans app-shell">
 
   <!-- Main Container -->
   <div class="flex h-screen overflow-hidden">
@@ -398,16 +415,35 @@
   <script src="js/store.js?v=20260930_2"></script>
   <script src="js/auth.js?v=20260930"></script>
   <script src="js/print_templates.js?v=20260930"></script>
-  <script src="js/masters.js?v=20260930_2"></script>
-  <script src="js/transactions.js?v=20260930"></script>
+  <script src="js/masters.js?v=20261001_14"></script>
+  <script src="js/transactions.js?v=20261001"></script>
   <script src="js/po_generator.js?v=20260930"></script>
   <script src="js/reconciliation.js?v=20260930"></script>
   <script src="js/reports.js?v=20260930"></script>
   <script src="js/dashboard.js?v=20260930"></script>
   <script src="js/drafts.js?v=20260930"></script>
-    <script src="js/home.js?v=20260930_3"></script>
-  <script src="js/app.js?v=20260930"></script>
+    <script src="js/home.js?v=20261001_4"></script>
+  <script src="js/app.js?v=20261001_3"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

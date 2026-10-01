@@ -10,6 +10,17 @@ window.CMS_MASTERS = {
   vendorStatusFilter: 'ALL',
   vendorStateFilter: 'ALL',
   consumableSearchQuery: '',
+  countries: [
+    { name: 'India', code: '+91' },
+    { name: 'United States', code: '+1' },
+    { name: 'United Kingdom', code: '+44' },
+    { name: 'United Arab Emirates', code: '+971' },
+    { name: 'Singapore', code: '+65' },
+    { name: 'Australia', code: '+61' },
+    { name: 'Canada', code: '+1' },
+    { name: 'Germany', code: '+49' },
+    { name: 'Japan', code: '+81' }
+  ],
   consumableCategoryFilter: '',
   consumableTypeFilter: '',
   consumableStatusFilter: 'ALL',
@@ -467,30 +478,60 @@ window.CMS_MASTERS = {
 
         <!-- Approved Quotation Record -->
         <div class="p-3.5 bg-blue-50/50 border border-blue-200 rounded-md space-y-1.5">
-          <span class="text-blue-900 font-bold uppercase text-[10px] tracking-wider flex items-center gap-1">
-            <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-600"></i> Approved Commercial Quotation & Validity
-          </span>
-          <div class="grid grid-cols-3 gap-2 text-xs">
-            <div><span class="text-slate-500 text-[10px] block">Quote Ref / No.</span><strong>${v.quotationNo || 'Direct Order'}</strong></div>
-            <div><span class="text-slate-500 text-[10px] block">Quotation Date</span><strong class="font-mono">${window.CMS_STORE.formatDate(v.quotationDate)}</strong></div>
-            <div>
-              <span class="text-slate-500 text-[10px] block">Valid Till</span>
-              <strong class="font-mono ${v.quotationValidTill && new Date(v.quotationValidTill) < new Date() ? 'text-red-700' : 'text-emerald-700'}">
-                ${window.CMS_STORE.formatDate(v.quotationValidTill)}
-                ${v.quotationValidTill && new Date(v.quotationValidTill) < new Date() ? ' (Expired)' : ''}
-              </strong>
+          <span class="text-blue-900 font-bold uppercase text-[10px] tracking-wider flex items-center ga
+              <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-600"></i> Approved Commercial Quotations & Materials
+            </span>
+            <div class="space-y-3">
+              ${(v.quotedItems && v.quotedItems.length > 0) ? v.quotedItems.map(q => `
+                <div class="border border-blue-200 bg-white rounded p-2 text-xs">
+                  <div class="flex items-center justify-between mb-1.5 pb-1.5 border-b border-blue-100">
+                    <div>
+                      <span class="text-slate-500 text-[10px]">Quote Ref:</span> <strong class="text-blue-900">${q.quotationNo || 'Direct'}</strong>
+                      <span class="text-slate-500 text-[10px] ml-3">Date:</span> <strong class="font-mono">${window.CMS_STORE.formatDate(q.quotationDate)}</strong>
+                      <span class="text-slate-500 text-[10px] ml-3">Effective:</span> <strong class="font-mono">\${window.CMS_STORE.formatDate(q.effectiveFrom) || '-'}</strong>
+                      <span class="text-slate-500 text-[10px] ml-3">Valid Till:</span> 
+                      <strong class="font-mono ${q.quotationValidTill && new Date(q.quotationValidTill) < new Date() ? 'text-red-700' : 'text-emerald-700'}">
+                        ${window.CMS_STORE.formatDate(q.quotationValidTill)} ${q.quotationValidTill && new Date(q.quotationValidTill) < new Date() ? '(Expired)' : ''}
+                      </strong>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-4 gap-2 text-[10px]">
+                    <div class="col-span-2"><span class="text-slate-500 block">Item / Material:</span><strong class="text-sm">${q.materialName || q.materialId || '-'}</strong></div>
+                    <div><span class="text-slate-500 block">Approved Rate:</span><strong class="text-sm text-blue-700">₹${Number(q.rate || 0).toFixed(2)}</strong></div>
+                    <div><span class="text-slate-500 block">MRP (UOM):</span><strong class="text-emerald-700">₹${Number(q.mrp || 0).toFixed(2)}</strong> <span class="text-slate-400">(${q.unit || 'Nos'})</span></div>
+                  </div>
+                  ${q.doc ? `
+                    <div class="pt-2 mt-2 border-t border-blue-50">
+                      <button type="button" onclick="CMS_APP.viewDocument('${q.doc}', 'Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${q.quotationValidTill}' })" class="text-[10px] text-blue-800 bg-blue-50 border border-blue-200 px-2 py-1 rounded font-bold hover:bg-blue-100 transition flex items-center gap-1.5 inline-flex">
+                        <i data-lucide="eye" class="w-3 h-3"></i> Inspect ${q.doc}
+                      </button>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('') : `
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                  <div><span class="text-slate-500 text-[10px] block">Quote Ref / No.</span><strong>${v.quotationNo || 'Direct Order'}</strong></div>
+                  <div><span class="text-slate-500 text-[10px] block">Quotation Date</span><strong class="font-mono">${window.CMS_STORE.formatDate(v.quotationDate)}</strong></div>
+                  <div>
+                    <span class="text-slate-500 text-[10px] block">Valid Till</span>
+                    <strong class="font-mono ${v.quotationValidTill && new Date(v.quotationValidTill) < new Date() ? 'text-red-700' : 'text-emerald-700'}">
+                      ${window.CMS_STORE.formatDate(v.quotationValidTill)}
+                      ${v.quotationValidTill && new Date(v.quotationValidTill) < new Date() ? ' (Expired)' : ''}
+                    </strong>
+                  </div>
+                </div>
+                ${v.quotationDoc ? `
+                  <div class="pt-2">
+                    <button type="button" onclick="CMS_APP.viewDocument('${v.quotationDoc}', 'Approved Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${v.quotationValidTill}' })" class="text-[11px] text-blue-800 bg-white border border-blue-300 px-3 py-1 rounded font-bold hover:bg-blue-50 transition flex items-center gap-1.5">
+                      <i data-lucide="eye" class="w-3.5 h-3.5"></i> Inspect Uploaded Quotation Copy (${v.quotationDoc})
+                    </button>
+                  </div>
+                ` : '<div class="text-[10px] text-slate-400 italic pt-1">No quotation copy uploaded</div>'}
+              `}
             </div>
           </div>
-          ${v.quotationDoc ? `
-            <div class="pt-2">
-              <button type="button" onclick="CMS_APP.viewDocument('${v.quotationDoc}', 'Approved Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${v.quotationValidTill}' })" class="text-[11px] text-blue-800 bg-white border border-blue-300 px-3 py-1 rounded font-bold hover:bg-blue-50 transition flex items-center gap-1.5">
-                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Inspect Uploaded Quotation Copy (${v.quotationDoc})
-              </button>
-            </div>
-          ` : '<div class="text-[10px] text-slate-400 italic pt-1">No quotation copy uploaded</div>'}
-        </div>
 
-        <!-- Regulatory & Compliance Certificates -->
+          <!-- Regulatory & Compliance Certificates -->
         <div class="p-3.5 bg-blue-50/60 border border-blue-200 rounded-md space-y-2">
           <span class="text-blue-900 font-bold uppercase text-[10px] tracking-wider">Statutory Compliance Certificates (${(v.certificates || []).length})</span>
           <div class="space-y-2">
@@ -589,19 +630,99 @@ window.CMS_MASTERS = {
   },
 
   onStateChange(stateName) {
-    const info = this.getStateInfo(stateName);
-    const badgeEl = document.getElementById('v-state-code-badge');
-    if (badgeEl) {
-      if (info.code) {
-        badgeEl.innerHTML = `<span class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300 font-bold text-[10px]">State Code: ${info.code}</span> <span class="px-2 py-0.5 rounded ${info.taxMode === 'IGST' ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'} font-bold text-[10px]">${info.taxMode === 'IGST' ? 'Inter-State (IGST Applicable)' : 'Intra-State (CGST + SGST Applicable)'}</span>`;
-      } else {
-        badgeEl.innerHTML = '';
-      }
-    }
+    // Badges removed by request. Tax logic is still processed in background.
+  },
+
+  onCountryChange(countryName) {
+    const ccInput = document.getElementById('v-country-code');
+    if (!ccInput) return;
+    const c = this.countries.find(x => x.name === countryName);
+    if (c) ccInput.value = c.code;
+    else ccInput.value = '';
   },
 
   // Sequence strictly arranged:
   // 1. Regulatory Agency -> 2. Form/Standard No. -> 3. License/Certificate No. -> 4. Validity/Expiry -> 5. Upload Copy
+  
+  addVendorQuotationRow(qData = null) {
+    const container = document.getElementById('v-quotations-container');
+    if (!container) return;
+    const rowId = 'quote_row_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    
+    const no = qData ? (qData.quotationNo || '') : '';
+    const dt = qData ? (qData.quotationDate || '') : '';
+    const exp = qData ? (qData.quotationValidTill || '') : '';
+    const eff = qData ? (qData.effectiveFrom || '') : '';
+    const matId = qData ? (qData.materialId || '') : '';
+    const matName = qData ? (qData.materialName || '') : '';
+    const rate = qData ? (qData.rate || '') : '';
+    const mrp = qData ? (qData.mrp || '') : '';
+    const unit = qData ? (qData.unit || 'Nos') : 'Nos';
+    const hsn = qData ? (qData.hsn || '8472') : '8472';
+    const doc = qData ? (qData.doc || '') : '';
+    
+    const row = document.createElement('div');
+    row.className = 'quote-row p-3 bg-white border border-blue-200 rounded-md space-y-2.5 relative shadow-sm';
+    row.innerHTML = `
+      <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-600 transition" title="Remove row"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pr-6">
+        <div>
+          <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Ref No</label>
+          <input type="text" class="q-no w-full font-mono uppercase font-bold text-blue-900 px-2.5 py-1.5 border border-blue-300 rounded text-xs bg-white" value="${no}" placeholder="e.g. QT-101" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Date</label>
+          <input type="date" class="q-date w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${dt}" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-800 mb-1 text-[10px]">Effective From</label>
+          <input type="date" class="q-eff w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${qData ? (qData.effectiveFrom || '') : ''}" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-800 mb-1 text-[10px]">Valid Till / Expiry</label>
+          <input type="date" class="q-exp w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${exp}" />
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+        <div class="sm:col-span-6">
+          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Select Existing Material (Optional)</label>
+          <select class="q-mat-id w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white" onchange="const o=this.options[this.selectedIndex]; if(!o.value)return; const r=this.closest('.quote-row'); r.querySelector('.q-mat-name').value=o.dataset.name; r.querySelector('.q-rate').value=o.dataset.rate; r.querySelector('.q-mrp').value=o.dataset.mrp; r.querySelector('.q-unit').value=o.dataset.unit; r.querySelector('.q-hsn').value=o.dataset.hsn;">
+            <option value="">-- Choose Existing Material --</option>
+            ${(window.CMS_STORE.data.consumables || []).map(m => `<option value="${m.id}" data-name="${m.materialName}" data-rate="${m.quotationRate || m.vendor1Rate || 0}" data-mrp="${m.mrpBooked || ''}" data-unit="${m.unit || 'Nos'}" data-hsn="${m.hsnCode || ''}" ${matId === m.id ? 'selected' : ''}>[${m.inventoryType || 'Consumer'}] ${m.materialName} - Code: ${m.id}</option>`).join('')}
+          </select>
+        </div>
+        <div class="sm:col-span-6 flex flex-col justify-end">
+          <input type="hidden" class="q-mat-name" value="${matName}" />
+          <button type="button" onclick="CMS_MASTERS.openConsumableModal(null)" class="w-full px-2.5 py-1.5 bg-blue-50 border border-blue-300 rounded text-xs text-blue-700 font-bold hover:bg-blue-100 transition flex items-center justify-center gap-1.5">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add New Material
+          </button>
+        </div>
+        <div class="sm:col-span-3">
+          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Approved Rate</label>
+          <input type="number" step="0.01" class="q-rate w-full font-mono font-bold text-blue-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${rate}" placeholder="0.00" />
+        </div>
+        <div class="sm:col-span-3">
+          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">MRP</label>
+          <input type="number" step="0.01" class="q-mrp w-full font-mono font-bold text-emerald-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${mrp}" placeholder="0.00" />
+        </div>
+        <div class="sm:col-span-3">
+          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">UOM</label>
+          <input type="text" class="q-unit w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${unit}" placeholder="Nos, Rim, Box" />
+        </div>
+        <div class="sm:col-span-3">
+          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">HSN / SAC</label>
+          <input type="text" class="q-hsn w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${hsn}" placeholder="e.g. 4802" />
+        </div>
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1 text-[10px]">Upload Quotation Copy (PDF / Image)</label>
+        <input type="file" class="q-file text-xs" accept=".pdf,image/*" />
+        ${doc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${doc}</span>` : ''}
+      </div>
+    `;
+    container.appendChild(row);
+    if (window.lucide) window.lucide.createIcons();
+  },
   addCertificateRow(certData = null) {
     const container = document.getElementById('v-cert-container');
     if (!container) return;
@@ -1047,13 +1168,7 @@ window.CMS_MASTERS = {
                 <option value="">-- Choose State / UT --</option>
                 ${this.indianStates.map(s => `<option value="${s.name}" ${(vendor.addressState || 'Delhi') === s.name ? 'selected' : ''}>${s.code} - ${s.name}</option>`).join('')}
               </select>
-              <div id="v-state-code-badge" class="mt-1 flex items-center gap-1.5">
-                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300 font-bold text-[10px]">State Code: ${initialInfo.code || '07'}</span>
-                <span class="px-2 py-0.5 rounded ${initialInfo.taxMode === 'IGST' ? 'bg-purple-100 text-purple-900 border border-purple-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'} font-bold text-[10px]">
-                  ${initialInfo.taxMode === 'IGST' ? 'Inter-State (IGST Applicable)' : 'Intra-State (CGST + SGST Applicable)'}
-                </span>
               </div>
-            </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">Country <span class="text-rose-600 font-bold">*</span></label>
               <input id="v-country" required value="${vendor.addressCountry || 'India'}" class="w-full px-3 py-2 border border-slate-300 rounded-md" />
@@ -1160,85 +1275,23 @@ window.CMS_MASTERS = {
           </div>
         </div>
 
-        <!-- 4. Commercial Quotation & Quoted Material (Auto-Sync with Operations) -->
-        <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg space-y-3.5 shadow-xs">
-          <div class="flex items-center justify-between pb-2 border-b border-blue-200">
-            <div class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-700"></i>
-              <span>Commercial Quotation & Quoted Material</span>
+        <!-- 4. Commercial Quotations & Approved Materials (Auto-Sync with Operations) -->
+          <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg space-y-3.5 shadow-xs">
+            <div class="flex items-center justify-between pb-2 border-b border-blue-200">
+              <div class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-700"></i>
+                <span>Commercial Quotations & Approved Materials</span>
+              </div>
+              <button type="button" onclick="CMS_MASTERS.addVendorQuotationRow()" class="px-2.5 py-1 text-[10px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition flex items-center gap-1">
+                <i data-lucide="plus" class="w-3 h-3"></i> Add Quotation
+              </button>
             </div>
-            <span class="text-[10px] font-semibold text-blue-800 bg-blue-100 px-2.5 py-0.5 rounded-full border border-blue-300">
-              Auto-fills Goods Inward Store Operations
-            </span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label class="block font-bold text-slate-800 mb-1 text-xs">
-                Quotation Number / Ref
-              </label>
-              <input type="text" id="v-quote-no" value="${vendor.quotationNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onVendorQuoteNoInput(this.value);" class="w-full font-mono uppercase font-bold text-blue-900 px-3 py-2 border-2 border-blue-400 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. QT-2026-881 (Optional)" />
-              <span class="block text-[10px] text-slate-500 mt-0.5">Commercial reference used during goods receiving.</span>
-            </div>
-            <div>
-              <label class="block font-bold text-slate-800 mb-1 text-xs">Quotation Date</label>
-              <input type="date" id="v-quote-date" value="${vendor.quotationDate || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-800 mb-1 text-xs">Quotation Valid Till / Expiry Date</label>
-              <input type="date" id="v-quote-valid-till" min="${today}" value="${vendor.quotationValidTill || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" />
+            <div id="v-quotations-container" class="space-y-3">
+              <!-- Rendered via JS -->
             </div>
           </div>
 
-          <!-- Quoted Material / Item Details Section -->
-          <div class="p-3 bg-white border border-blue-200 rounded-md space-y-2.5">
-            <div class="text-[11px] font-bold text-slate-800 uppercase flex items-center justify-between">
-              <span class="flex items-center gap-1.5">
-                <i data-lucide="package" class="w-3.5 h-3.5 text-blue-600"></i>
-                <span>Item / Material Related to this Quotation Number</span>
-              </span>
-              <span class="text-[10px] text-slate-500 font-normal">Link to existing item or specify new material</span>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-              <div class="sm:col-span-6">
-                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">Select Existing Material (or leave empty for new)</label>
-                <select id="v-quote-mat-select" onchange="CMS_MASTERS.onVendorQuotedMaterialChange(this.value)" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white">
-                  <option value="">-- Choose Existing Material --</option>
-                  ${(window.CMS_STORE.data.consumables || []).map(m => `<option value="${m.id}" data-name="${m.materialName}" data-rate="${m.quotationRate || m.vendor1Rate || 0}" data-unit="${m.unit || 'Nos'}" data-hsn="${m.hsnCode || ''}" ${(vendor.quotedMaterialId === m.id || m.quotationNo === vendor.quotationNo) ? 'selected' : ''}>[${m.inventoryType || 'Consumer'}] ${m.materialName} - Code: ${m.id}</option>`).join('')}
-                </select>
-              </div>
-
-              <div class="sm:col-span-6">
-                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">Item / Material Description</label>
-                <input type="text" id="v-quote-mat-name" value="${vendor.quotedMaterialName || ''}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white" placeholder="e.g. A4 Copier Paper (75 GSM) or Floor Cleaner" />
-              </div>
-
-              <div class="sm:col-span-4">
-                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">Quoted Rate (₹ Excl. Tax)</label>
-                <input type="number" step="0.01" id="v-quote-rate" value="${vendor.quotedMaterialRate || ''}" class="w-full font-mono font-bold text-blue-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white" placeholder="0.00" />
-              </div>
-
-              <div class="sm:col-span-4">
-                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">Unit of Measurement</label>
-                <input type="text" id="v-quote-unit" value="${vendor.quotedMaterialUnit || 'Nos'}" class="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white" placeholder="Nos, Rim, Box, Set, Can" />
-              </div>
-
-              <div class="sm:col-span-4">
-                <label class="block font-semibold text-slate-700 mb-1 text-[11px]">HSN / SAC Code</label>
-                <input type="text" id="v-quote-hsn" value="${vendor.quotedMaterialHsn || '8472'}" class="w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white" placeholder="e.g. 4802" />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Approved Commercial Quotation Copy (PDF / Image)</label>
-            <input type="file" id="v-quote-file" accept=".pdf,image/*" class="text-xs" />
-            ${vendor.quotationDoc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${vendor.quotationDoc}</span>` : ''}
-          </div>
-        </div>
-
-        <!-- 5. Dynamic Regulatory Certificates Builder -->
+          <!-- 5. Dynamic Regulatory Certificates Builder -->
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-3">
           <div class="flex items-center justify-between">
             <div>
@@ -1246,7 +1299,7 @@ window.CMS_MASTERS = {
                 <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
                 <span>5. Regulatory / Certification Agencies</span>
               </div>
-              <p class="text-[11px] text-slate-500 mt-0.5">Standard sequence: 1. Agency -> 2. Form No -> 3. License No -> 4. Validity/Expiry -> 5. Upload File Copy.</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Standard sequence: 1. Agency -> 2. Document Title -> 3. Form No -> 4. License No -> 5. Validity/Expiry -> 6. Upload File Copy.</p>
             </div>
             <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-800 border border-blue-300 rounded-md font-bold text-xs transition">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -1273,7 +1326,7 @@ window.CMS_MASTERS = {
             <div>
               <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-slate-800">
                 <input type="checkbox" id="v-limited" ${vendor.approvedForLimitedPeriod ? 'checked' : ''} onchange="document.getElementById('v-limited-date-box').classList.toggle('hidden', !this.checked)" class="text-blue-600 rounded" />
-                <span>Is vendor approved for limited period? (Yes/No)</span>
+                <span>Vendor is approved for limited period.</span>
               </label>
               <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2">
                 <label class="block text-[11px] font-bold text-slate-700 mb-1">Approval Valid Till / Expiry Date * (No past dates)</label>
@@ -1281,16 +1334,17 @@ window.CMS_MASTERS = {
               </div>
             </div>
 
-            <div>
-              <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-rose-800">
-                <input type="checkbox" id="v-blocked" ${vendor.isBlocked ? 'checked' : ''} onchange="document.getElementById('v-block-reason-box').classList.toggle('hidden', !this.checked)" class="text-rose-600 rounded" />
-                <span>Blacklist / Block this Vendor</span>
-              </label>
-              <div id="v-block-reason-box" class="${vendor.isBlocked ? '' : 'hidden'} mt-2">
-                <label class="block text-[11px] font-bold text-rose-900 mb-1">Block / Blacklist Reason *</label>
-                <input type="text" id="v-block-reason" value="${vendor.blockReason || ''}" class="w-full px-3 py-1.5 border border-rose-300 rounded-md text-xs" placeholder="e.g. Non-compliant delivery / Audit violation" />
-              </div>
-            </div>
+              ${(vendor.id && (vendor.status === 'Approved' || vendor.status === 'Blocked')) ? `
+              <div>
+                <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-rose-800">
+                  <input type="checkbox" id="v-blocked" ${vendor.isBlocked ? 'checked' : ''} onchange="document.getElementById('v-block-reason-box').classList.toggle('hidden', !this.checked)" class="text-rose-600 rounded" />
+                  <span>Blacklist / Block this Vendor</span>
+                </label>
+                <div id="v-block-reason-box" class="${vendor.isBlocked ? '' : 'hidden'} mt-2">
+                  <label class="block text-[11px] font-bold text-rose-900 mb-1">Block / Blacklist Reason *</label>
+                  <input type="text" id="v-block-reason" value="${vendor.blockReason || ''}" class="w-full px-3 py-1.5 border border-rose-300 rounded-md text-xs" placeholder="e.g. Non-compliant delivery / Audit violation" />
+                </div>
+              </div>` : '<div></div>'}
           </div>
         </div>
 
@@ -1309,10 +1363,34 @@ window.CMS_MASTERS = {
     window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-3xl');
 
     // Populate dynamic certificates if present
-    const certList = vendor.certificates || [];
-    if (certList.length > 0) {
-      certList.forEach(c => this.addCertificateRow(c));
-    }
+    
+      const certList = vendor.certificates || [];
+      if (certList.length > 0) {
+        certList.forEach(c => this.addCertificateRow(c));
+      }
+
+      setTimeout(() => {
+        const qList = vendor.quotedItems || [];
+        if (qList.length === 0 && (vendor.quotedMaterialId || vendor.quotedMaterialName || vendor.quotationNo)) {
+          CMS_MASTERS.addVendorQuotationRow({
+            quotationNo: vendor.quotationNo,
+            quotationDate: vendor.quotationDate,
+            quotationValidTill: vendor.quotationValidTill,
+            materialId: vendor.quotedMaterialId,
+            materialName: vendor.quotedMaterialName,
+            rate: vendor.quotedMaterialRate,
+            mrp: vendor.quotedMaterialMrp,
+            unit: vendor.quotedMaterialUnit,
+            hsn: vendor.quotedMaterialHsn,
+            doc: vendor.quotationDoc
+          });
+        } else if (qList.length > 0) {
+          qList.forEach(q => CMS_MASTERS.addVendorQuotationRow(q));
+        } else {
+          CMS_MASTERS.addVendorQuotationRow();
+        }
+      }, 0);
+
   },
 
   toggleGstApplicable(isNotApplicable) {
@@ -1385,20 +1463,48 @@ window.CMS_MASTERS = {
     const ifscCode = document.getElementById('v-ifsc')?.value.trim().toUpperCase() || '';
     const branchName = document.getElementById('v-branch-name')?.value.trim() || '';
 
-    // Quotation Details & Quoted Material
-    const quotationNo = document.getElementById('v-quote-no')?.value.trim() || '';
-    const quotationDate = document.getElementById('v-quote-date')?.value || '';
-    const quotationValidTill = document.getElementById('v-quote-valid-till')?.value || '';
-    const quoteFileInput = document.getElementById('v-quote-file');
-    let quotationDoc = (quoteFileInput && quoteFileInput.files[0]) ? quoteFileInput.files[0].name : (existingVendor?.quotationDoc || '');
-    if (quotationNo && !quotationDoc) {
-      quotationDoc = `${quotationNo}_Commercial_Quote.pdf`;
+    const quoteRows = document.querySelectorAll('#v-quotations-container .quote-row');
+    const quotedItems = [];
+    for (const row of quoteRows) {
+      const qno = row.querySelector('.q-no')?.value.trim() || '';
+      const matName = row.querySelector('.q-mat-name')?.value.trim() || '';
+      if (!qno && !matName) continue;
+      
+      const fileInput = row.querySelector('.q-file');
+      let docName = (fileInput && fileInput.files[0]) ? fileInput.files[0].name : '';
+      if (!docName) {
+          const span = row.querySelector('span.text-emerald-700');
+          if (span && span.innerText.includes('Attached on record: ')) {
+              docName = span.innerText.split('Attached on record: ')[1].trim();
+          }
+      }
+      
+      quotedItems.push({
+        quotationNo: qno,
+        quotationDate: row.querySelector('.q-date')?.value || '',
+        effectiveFrom: row.querySelector('.q-eff')?.value || '',
+        quotationValidTill: row.querySelector('.q-exp')?.value || '',
+        materialId: row.querySelector('.q-mat-id')?.value || '',
+        materialName: matName,
+        rate: parseFloat(row.querySelector('.q-rate')?.value) || 0,
+        mrp: parseFloat(row.querySelector('.q-mrp')?.value) || 0,
+        unit: row.querySelector('.q-unit')?.value.trim() || 'Nos',
+        hsn: row.querySelector('.q-hsn')?.value.trim() || '8472',
+        doc: docName
+      });
     }
-    const quotedMaterialId = document.getElementById('v-quote-mat-select')?.value || '';
-    const quotedMaterialName = document.getElementById('v-quote-mat-name')?.value.trim() || '';
-    const quotedMaterialRate = parseFloat(document.getElementById('v-quote-rate')?.value) || 0;
-    const quotedMaterialUnit = document.getElementById('v-quote-unit')?.value.trim() || 'Nos';
-    const quotedMaterialHsn = document.getElementById('v-quote-hsn')?.value.trim() || '8472';
+    
+    const quotationNo = quotedItems.length > 0 ? quotedItems[0].quotationNo : '';
+    const quotationDate = quotedItems.length > 0 ? quotedItems[0].quotationDate : '';
+    const quotationValidTill = quotedItems.length > 0 ? quotedItems[0].quotationValidTill : '';
+    const quotationDoc = quotedItems.length > 0 ? quotedItems[0].doc : '';
+    const quotedMaterialId = quotedItems.length > 0 ? quotedItems[0].materialId : '';
+    const quotedMaterialName = quotedItems.length > 0 ? quotedItems[0].materialName : '';
+    const quotedMaterialRate = quotedItems.length > 0 ? quotedItems[0].rate : 0;
+    const quotedMaterialMrp = quotedItems.length > 0 ? quotedItems[0].mrp : 0;
+    const quotedMaterialUnit = quotedItems.length > 0 ? quotedItems[0].unit : 'Nos';
+    const quotedMaterialHsn = quotedItems.length > 0 ? quotedItems[0].hsn : '8472';
+
 
     // Limited period & Blocked
     const approvedForLimitedPeriod = document.getElementById('v-limited')?.checked || false;
@@ -1522,7 +1628,7 @@ window.CMS_MASTERS = {
       if (idx !== -1) {
         store.data.vendors[idx] = {
           ...store.data.vendors[idx],
-          name, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
+          name, constitution, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
           stateCode: stateInfo.code,
           applicableTaxType: stateInfo.taxMode,
           contactNo, email,
@@ -1530,10 +1636,10 @@ window.CMS_MASTERS = {
           gstNo, panNo,
           gstCertificateFile, panCardFile,
           bankName, accountName, accountNo, ifscCode, branchName,
-          quotationNo, quotationDate, quotationValidTill, quotationDoc,
+          quotationNo, quotationDate, quotationValidTill, quotationDoc, supportingDoc,
           quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
           approvedForLimitedPeriod, approvalValidTill,
-          isBlocked, blockReason,
+          isBlocked, blockReason, quotedItems,
           certificates,
           status: directSubmit ? 'Pending Approval' : store.data.vendors[idx].status,
           updatedAt: new Date().toISOString(),
@@ -1564,7 +1670,7 @@ window.CMS_MASTERS = {
         quotationNo, quotationDate, quotationValidTill, quotationDoc,
         quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
         approvedForLimitedPeriod, approvalValidTill,
-        isBlocked, blockReason,
+        isBlocked, blockReason, quotedItems,
         certificates,
         status: directSubmit ? 'Pending Approval' : 'Draft',
         createdAt: new Date().toISOString(),
@@ -1574,76 +1680,81 @@ window.CMS_MASTERS = {
     }
 
     // Automatically synchronize quotation and quoted material with catalog
-    const targetVendorId = isEdit ? vendorId : store.data.vendors[store.data.vendors.length - 1].id;
-    if (quotationNo) {
-      if (quotedMaterialId) {
-        const mat = store.data.consumables.find(m => m.id === quotedMaterialId);
-        if (mat) {
-          mat.quotationNo = quotationNo;
-          if (quotationDate) mat.quotationDate = quotationDate;
-          if (quotedMaterialRate > 0) {
-            mat.quotationRate = quotedMaterialRate;
-            mat.vendor1Rate = quotedMaterialRate;
+    
+      const targetVendorId = isEdit ? vendorId : store.data.vendors[store.data.vendors.length - 1].id;
+      
+      for (const q of quotedItems) {
+        if (!q.quotationNo && !q.materialName) continue;
+        
+        if (q.materialId) {
+          const mat = store.data.consumables.find(m => m.id === q.materialId);
+          if (mat) {
+            if (q.quotationNo) mat.quotationNo = q.quotationNo;
+            if (q.quotationDate) mat.quotationDate = q.quotationDate;
+            if (q.rate > 0) {
+              mat.quotationRate = q.rate;
+              mat.vendor1Rate = q.rate;
+            }
+            if (q.mrp > 0) mat.mrpBooked = q.mrp;
+            mat.vendor1Id = targetVendorId;
+            mat.vendor1Name = name;
+            if (q.hsn) mat.hsnCode = q.hsn;
+            if (q.unit) mat.unit = q.unit;
           }
-          mat.vendor1Id = targetVendorId;
-          mat.vendor1Name = name;
-          if (quotedMaterialHsn) mat.hsnCode = quotedMaterialHsn;
-          if (quotedMaterialUnit) mat.unit = quotedMaterialUnit;
-        }
-      } else if (quotedMaterialName && quotedMaterialRate > 0) {
-        const existingMat = store.data.consumables.find(m => m.materialName.toLowerCase() === quotedMaterialName.toLowerCase());
-        if (existingMat) {
-          existingMat.quotationNo = quotationNo;
-          if (quotationDate) existingMat.quotationDate = quotationDate;
-          existingMat.quotationRate = quotedMaterialRate;
-          existingMat.vendor1Id = targetVendorId;
-          existingMat.vendor1Name = name;
-          existingMat.vendor1Rate = quotedMaterialRate;
-          if (quotedMaterialHsn) existingMat.hsnCode = quotedMaterialHsn;
-          if (quotedMaterialUnit) existingMat.unit = quotedMaterialUnit;
-        } else {
-          const newCount = store.data.consumables.length + 1;
-          const newMatId = `MAT-CON-${String(newCount).padStart(3, '0')}`;
-          store.data.consumables.push({
-            id: newMatId,
-            inventoryType: 'Consumer',
-            categoryId: 'CAT-001',
-            categoryName: 'General',
-            materialName: quotedMaterialName,
-            unit: quotedMaterialUnit || 'Nos',
-            brand: name,
-            supplierProductCode: `SKU-${newMatId}`,
-            hsnCode: quotedMaterialHsn || '8472',
-            sgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
-            cgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
-            igst: stateInfo.taxMode === 'IGST' ? 18 : 0,
-            quotationNo,
-            quotationDate: quotationDate || today,
-            quotationRate: quotedMaterialRate,
-            mrpBooked: Number((quotedMaterialRate * 1.25).toFixed(2)),
-            hasWarranty: false,
-            warrantyPeriod: '',
-            warrantyValidTill: '',
-            hasPm: false,
-            pmFrequency: '',
-            vendor1Id: targetVendorId,
-            vendor1Name: name,
-            vendor1Rate: quotedMaterialRate,
-            vendor1RateEffectiveFrom: quotationDate || today,
-            consumerConfirmed: true,
-            confirmedBy: currentUser.name,
-            confirmationDate: today,
-            confirmationRemarks: `Auto-Cataloged via Vendor Commercial Quotation [${quotationNo}]`,
-            avgMonthlyConsumption: 10,
-            initialStock: 0,
-            status: 'Approved',
-            createdAt: new Date().toISOString()
-          });
+        } else if (q.materialName && q.rate > 0) {
+          const existingMat = store.data.consumables.find(m => m.materialName.toLowerCase() === q.materialName.toLowerCase());
+          if (existingMat) {
+            if (q.quotationNo) existingMat.quotationNo = q.quotationNo;
+            if (q.quotationDate) existingMat.quotationDate = q.quotationDate;
+            existingMat.quotationRate = q.rate;
+            existingMat.vendor1Id = targetVendorId;
+            existingMat.vendor1Name = name;
+            existingMat.vendor1Rate = q.rate;
+            if (q.hsn) existingMat.hsnCode = q.hsn;
+            if (q.unit) existingMat.unit = q.unit;
+          } else {
+            const newCount = store.data.consumables.length + 1;
+            const newMatId = `MAT-CON-${String(newCount).padStart(3, '0')}`;
+            store.data.consumables.push({
+              id: newMatId,
+              inventoryType: 'Consumer',
+              categoryId: 'CAT-001',
+              categoryName: 'General',
+              materialName: q.materialName,
+              unit: q.unit || 'Nos',
+              brand: name,
+              supplierProductCode: `SKU-${newMatId}`,
+              hsnCode: q.hsn || '8472',
+              sgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
+              cgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
+              igst: stateInfo.taxMode === 'IGST' ? 18 : 0,
+              quotationNo: q.quotationNo,
+              quotationDate: q.quotationDate || today,
+              quotationRate: q.rate,
+              mrpBooked: q.mrp > 0 ? q.mrp : Number((q.rate * 1.25).toFixed(2)),
+              hasWarranty: false,
+              warrantyPeriod: '',
+              warrantyValidTill: '',
+              hasPm: false,
+              pmFrequency: '',
+              vendor1Id: targetVendorId,
+              vendor1Name: name,
+              vendor1Rate: q.rate,
+              vendor1RateEffectiveFrom: q.effectiveFrom || q.quotationDate || today,
+              consumerConfirmed: true,
+              confirmedBy: currentUser.name,
+              confirmationDate: today,
+              confirmationRemarks: `Auto-Cataloged via Vendor Quotation [${q.quotationNo}]`,
+              avgMonthlyConsumption: 10,
+              initialStock: 0,
+              status: 'Approved',
+              createdAt: new Date().toISOString()
+            });
+          }
         }
       }
-    }
 
-    store.save();
+      store.save();
     window.CMS_APP.closeModal();
     window.CMS_APP.toast(directSubmit ? 'Vendor credentials and statutory certificates submitted for Admin approval!' : 'Vendor saved successfully!', 'success');
     window.CMS_APP.refreshView();
@@ -2968,6 +3079,26 @@ window.CMS_MASTERS = {
     store.save();
     window.CMS_APP.closeModal();
     window.CMS_APP.toast(directSubmit ? 'Material saved and submitted for approval!' : 'Material saved successfully!');
+    
+    const dropdowns = document.querySelectorAll('.q-mat-id');
+    if (dropdowns.length > 0) {
+      const mats = store.data.consumables;
+      const latest = mats[mats.length - 1];
+      dropdowns.forEach(dd => {
+         const opt = document.createElement('option');
+         opt.value = latest.id;
+         opt.dataset.name = latest.materialName;
+         opt.dataset.rate = latest.quotationRate || latest.vendor1Rate || 0;
+         opt.dataset.mrp = latest.mrpBooked || '';
+         opt.dataset.unit = latest.unit || 'Nos';
+         opt.dataset.hsn = latest.hsnCode || '';
+         opt.text = `[${latest.inventoryType || 'Consumer'}] ${latest.materialName} - Code: ${latest.id}`;
+         dd.appendChild(opt);
+         dd.value = latest.id;
+         dd.dispatchEvent(new Event('change'));
+      });
+    }
+
     window.CMS_APP.refreshView();
   },
 
@@ -3260,4 +3391,27 @@ window.CMS_MASTERS = {
     }
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

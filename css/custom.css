@@ -924,3 +924,45 @@ th {
     -webkit-print-color-adjust: exact;
   }
 }
+
+/* Global UI Simplification: Remove pastel/multi-color combinations from main view */
+#main-content .bg-slate-50,
+#main-content .bg-blue-50,
+#main-content .bg-emerald-50,
+#main-content .bg-purple-50,
+#main-content .bg-red-50,
+#main-content .bg-amber-50,
+#main-content .bg-indigo-50 {
+  background-color: transparent !important;
+}
+
+#main-content .stat-card,
+#main-content .p-5.bg-white {
+  border: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important; 
+  box-shadow: none !important;
+}
+
+#main-content .shadow-sm,
+#main-content .shadow-md,
+#main-content .shadow,
+#main-content .shadow-xl {
+  box-shadow: none !important;
+}
+
+#main-content .border-blue-200,
+#main-content .border-emerald-200,
+#main-content .border-purple-200,
+#main-content .border-red-200,
+#main-content .border-amber-200 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Ensure secondary buttons don't have pastel backgrounds */
+#main-content button.bg-blue-50,
+#main-content button.bg-emerald-50,
+#main-content button.bg-red-50 {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}

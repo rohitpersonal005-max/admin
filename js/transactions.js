@@ -218,7 +218,7 @@ window.CMS_TRANSACTIONS = {
               <span>Commercial Quotation Number (Auto-Fill Operation)</span>
             </span>
             <span class="text-[10px] text-blue-800 font-semibold bg-blue-100 px-2 py-0.5 rounded border border-blue-200">
-              Auto-populates Vendor, Quoted Item & Approved Rate
+              Auto-populates Vendor, Approved Item & Approved Rate
             </span>
           </div>
 
@@ -579,7 +579,7 @@ window.CMS_TRANSACTIONS = {
           this.onReceiptMaterialChange(false);
         }
       }
-      this.showQuotationAlert(vendor.quotationNo, vendor.name, vendor.quotedMaterialName || 'Quoted Goods', vendor.quotedMaterialRate || 0);
+      this.showQuotationAlert(vendor.quotationNo, vendor.name, vendor.quotedMaterialName || 'Approved Goods', vendor.quotedMaterialRate || 0);
     }
   },
 
@@ -2106,3 +2106,4 @@ window.CMS_TRANSACTIONS = {
     }
   }
 };
+

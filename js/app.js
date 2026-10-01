@@ -36,6 +36,46 @@ window.CMS_APP = {
   },
 
   bindEvents() {
+        // Global realtime validation for important fields
+    document.addEventListener('input', (e) => {
+      const el = e.target;
+      if (el && el.tagName === 'INPUT') {
+        const id = (el.id || '').toLowerCase();
+        
+        const isPin = id.includes('pin') && !id.includes('file');
+        const isContact = id.includes('contact') && !id.includes('file');
+        const isEmail = el.type === 'email' || id.includes('email');
+        const isGst = id.includes('gst') && !id.includes('file');
+        const isPan = id.includes('pan') && !id.includes('file');
+
+        if (isPin || isContact || isEmail || isGst || isPan) {
+          let isValid = false;
+          let val = el.value.trim();
+          
+          if (isPin) isValid = val.length === 6 && /^\d{6}$/.test(val);
+          if (isContact) isValid = val.length === 10 && /^\d{10}$/.test(val);
+          if (isEmail) isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+          if (isGst) isValid = val.length === 15;
+          if (isPan) isValid = val.length === 10;
+
+          if (val.length > 0) {
+            if (isValid) {
+              el.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-900', 'border-slate-200', 'border-slate-300');
+              el.classList.add('border-emerald-500', 'bg-emerald-50/50', 'text-emerald-900', 'ring-1', 'ring-emerald-500');
+              el.classList.remove('ring-rose-500');
+            } else {
+              el.classList.remove('border-emerald-500', 'bg-emerald-50/50', 'text-emerald-900', 'border-slate-200', 'border-slate-300');
+              el.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900', 'ring-1', 'ring-rose-500');
+              el.classList.remove('ring-emerald-500');
+            }
+          } else {
+             el.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-900', 'border-emerald-500', 'bg-emerald-50/50', 'text-emerald-900', 'ring-1', 'ring-rose-500', 'ring-emerald-500');
+             el.classList.add(id.includes('home') ? 'border-slate-200' : 'border-slate-300');
+          }
+        }
+      }
+    });
+
     window.addEventListener('hashchange', () => {
       const role = window.CMS_STORE.getRole();
       let r = this.getHashRoute();
@@ -711,6 +751,34 @@ window.CMS_APP = {
   // Modal Dialogues
   openModal(title, contentHtml, maxWidthClass = 'max-w-2xl') {
     const container = document.getElementById('modal-container');
+    if (container && !container.classList.contains('hidden')) {
+      let stacked = document.getElementById('stacked-modal-container');
+      if (!stacked) {
+        stacked = document.createElement('div');
+        stacked.id = 'stacked-modal-container';
+        stacked.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4 overflow-y-auto';
+        stacked.innerHTML = `
+          <div id="stacked-modal-card" class="relative w-full bg-white rounded-md shadow-xl overflow-hidden transform transition-all my-8">
+            <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between sticky top-0 z-10">
+              <h3 id="stacked-modal-title" class="font-bold text-slate-800 text-sm"></h3>
+              <button type="button" onclick="CMS_APP.closeStackedModal()" class="text-slate-400 hover:text-slate-600 transition p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+            <div id="stacked-modal-body" class="p-5 max-h-[80vh] overflow-y-auto bg-slate-50"></div>
+          </div>
+        `;
+        document.body.appendChild(stacked);
+      }
+      document.getElementById('stacked-modal-title').innerText = title;
+      document.getElementById('stacked-modal-body').innerHTML = contentHtml;
+      document.getElementById('stacked-modal-card').className = `relative w-full ${maxWidthClass} bg-white rounded-md border border-slate-300 shadow-xl overflow-hidden transform transition-all my-8`;
+      stacked.classList.remove('hidden');
+      stacked.classList.add('flex');
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
     const titleEl = document.getElementById('modal-title');
     const bodyEl = document.getElementById('modal-body');
     const cardEl = document.getElementById('modal-card');
@@ -732,7 +800,20 @@ window.CMS_APP = {
     }
   },
 
+  closeStackedModal() {
+    const stacked = document.getElementById('stacked-modal-container');
+    if (stacked) {
+      stacked.classList.add('hidden');
+      stacked.classList.remove('flex');
+    }
+  },
+
   closeModal() {
+    const stacked = document.getElementById('stacked-modal-container');
+    if (stacked && !stacked.classList.contains('hidden')) {
+      this.closeStackedModal();
+      return;
+    }
     const container = document.getElementById('modal-container');
     if (!container) return;
     container.classList.add('hidden');
@@ -862,11 +943,12 @@ window.CMS_APP = {
       return this.toast('No file data exists to download (this might be a mock document).', 'error');
     }
     const a = document.createElement('a');
-    a.href = data;
+    a.href = this.createBlobUrl(data);
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 100);
     this.toast('Download started for ' + fileName, 'success');
   },
 
@@ -1134,3 +1216,9 @@ if (!window.CMS_AUTH) {
     window.CMS_APP.init();
   }
 }
+
+
+
+
+
+

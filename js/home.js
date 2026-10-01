@@ -57,6 +57,12 @@ window.CMS_HOME = {
     }
   },
 
+  onCountryChange(countryName) {
+    const codes = { 'India': '+91', 'United States': '+1', 'United Kingdom': '+44', 'United Arab Emirates': '+971', 'Singapore': '+65', 'Australia': '+61', 'Canada': '+1', 'Germany': '+49', 'Japan': '+81' };
+    const ccInput = document.getElementById('home-comp-country-code');
+    if (ccInput) ccInput.value = codes[countryName] || '+91';
+  },
+
   onStateChange(stateName) {
     if (window.CMS_MASTERS) {
       const stateObj = window.CMS_MASTERS.indianStates.find(s => s.name === stateName);
@@ -67,6 +73,12 @@ window.CMS_HOME = {
         }
       }
     }
+  },
+
+  onCountryChange(countryName) {
+    const codes = { 'India': '+91', 'United States': '+1', 'United Kingdom': '+44', 'United Arab Emirates': '+971', 'Singapore': '+65', 'Australia': '+61', 'Canada': '+1', 'Germany': '+49', 'Japan': '+81' };
+    const ccInput = document.getElementById('home-comp-country-code');
+    if (ccInput) ccInput.value = codes[countryName] || '+91';
   },
 
   onStateChange(stateName) {
@@ -395,5 +407,9 @@ window.CMS_HOME = {
     }
   }
 };
+
+
+
+
 
 
