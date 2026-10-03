@@ -1094,7 +1094,7 @@ window.CMS_APP = {
         <!-- Mandatory Final Checkbox -->
         <div class="p-3 bg-amber-50/70 border border-amber-300 rounded-sm">
           <label class="flex items-start gap-2.5 cursor-pointer">
-            <input type="checkbox" id="sanction-final-checkbox" onchange="document.getElementById('sanction-confirm-btn').disabled = !this.checked; document.getElementById('sanction-confirm-btn').classList.toggle('opacity-50', !this.checked);" class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
+            <input type="checkbox" id="sanction-final-checkbox" onchange="" class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
             <span class="text-slate-800 font-bold leading-relaxed text-[11px]">
               I confirm that I have verified all uploaded statutory documents, certificates, validity dates, bank remittance details, and commercial terms. Approved for official release.
             </span>
@@ -1105,7 +1105,7 @@ window.CMS_APP = {
           <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
             Cancel
           </button>
-          <button type="button" id="sanction-confirm-btn" disabled onclick="CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs opacity-50 flex items-center gap-1.5">
+          <button type="button" id="sanction-confirm-btn" onclick="const cb = document.getElementById('sanction-final-checkbox'); if(cb && !cb.checked) { return CMS_APP.toast('Please check the confirmation box above to proceed.', 'error'); } CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5">
             <i data-lucide="check-circle" class="w-4 h-4"></i>
             <span>Confirm Sanction & Approve</span>
           </button>
@@ -1216,6 +1216,7 @@ if (!window.CMS_AUTH) {
     window.CMS_APP.init();
   }
 }
+
 
 
 
