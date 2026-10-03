@@ -135,7 +135,33 @@ window.CMS_HOME = {
             <i data-lucide="user" class="w-5 h-5 text-blue-600"></i>
             <h3 class="font-bold text-slate-800 text-base">My Admin Profile</h3>
           </div>
-          <form onsubmit="event.preventDefault(); CMS_HOME.saveProfile();" class="space-y-4">
+          
+          <div id="profile-view-mode" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Employee ID</span>
+                <div class="font-mono text-slate-800 text-sm font-semibold">${currentUser.id || '-'}</div>
+              </div>
+              <div>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Gmail / Email</span>
+                <div class="text-slate-800 text-sm font-medium">${currentUser.email || '-'}</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Full Name</span>
+                <div class="text-slate-800 text-sm font-semibold">${currentUser.name || '-'}</div>
+              </div>
+              <div>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Username</span>
+                <div class="text-slate-800 text-sm font-medium">${currentUser.username || '-'}</div>
+              </div>
+            </div>
+            <div class="pt-2">
+              <button type="button" onclick="document.getElementById('profile-view-mode').classList.add('hidden'); document.getElementById('profile-edit-mode').classList.remove('hidden');" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold py-2.5 rounded-md text-sm transition">Update Profile Information</button>
+            </div>
+          </div>
+<form id="profile-edit-mode" onsubmit="event.preventDefault(); CMS_HOME.saveProfile();" class="hidden space-y-4 border border-blue-100 p-4 rounded-lg bg-blue-50/30">
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Employee ID</label>
@@ -169,7 +195,8 @@ window.CMS_HOME = {
                 </div>
               </div>
             <div class="pt-2">
-              <button type="submit" class="w-full bg-slate-900 hover:bg-slate-900 text-white font-bold py-2 rounded-md text-sm transition shadow">Update Profile</button>
+              <div class="flex gap-2"><button type="button" onclick="document.getElementById('profile-edit-mode').classList.add('hidden'); document.getElementById('profile-view-mode').classList.remove('hidden');" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-md text-sm transition">Cancel</button>
+<button type="submit" class="w-2/3 bg-slate-900 hover:bg-slate-900 text-white font-bold py-2 rounded-md text-sm transition shadow">Save Profile</button></div>
             </div>
           </form>
         </div>
@@ -180,7 +207,41 @@ window.CMS_HOME = {
             <i data-lucide="building-2" class="w-5 h-5 text-blue-600"></i>
             <h3 class="font-bold text-slate-800 text-base">Company Information</h3>
           </div>
-          <form onsubmit="event.preventDefault(); CMS_HOME.saveCompany();" class="space-y-4">
+          
+          <div id="company-view-mode" class="space-y-4">
+            <div>
+              <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Company Name</span>
+              <div class="text-slate-800 text-base font-bold">${this.companyInfo.name || '-'}</div>
+            </div>
+            <div>
+              <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Registered Address</span>
+              <div class="text-slate-800 text-sm font-medium">${[this.companyInfo.address, this.companyInfo.taluka, this.companyInfo.district, this.companyInfo.state, this.companyInfo.pin, this.companyInfo.country].filter(Boolean).join(', ') || '-'}</div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Contact No</span>
+                <div class="text-slate-800 text-sm font-mono font-medium">${this.companyInfo.contact || '-'}</div>
+              </div>
+              <div>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Company Email</span>
+                <div class="text-slate-800 text-sm font-medium">${this.companyInfo.email || '-'}</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">GSTIN</span>
+                <div class="text-slate-800 text-sm font-mono font-bold">${this.companyInfo.gstin || '-'}</div>
+              </div>
+              <div>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">PAN</span>
+                <div class="text-slate-800 text-sm font-mono font-bold">${this.companyInfo.pan || '-'}</div>
+              </div>
+            </div>
+            <div class="pt-2">
+              <button type="button" onclick="document.getElementById('company-view-mode').classList.add('hidden'); document.getElementById('company-edit-mode').classList.remove('hidden');" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold py-2.5 rounded-md text-sm transition">Update Company Information</button>
+            </div>
+          </div>
+<form id="company-edit-mode" onsubmit="event.preventDefault(); CMS_HOME.saveCompany();" class="hidden space-y-4 border border-blue-100 p-4 rounded-lg bg-blue-50/30">
             <div>
               <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Company Name <span class="text-rose-600">*</span></label>
               <input type="text" id="home-comp-name" value="${this.companyInfo.name || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-md" required placeholder="e.g. Adminutes Enterprises" />
@@ -286,7 +347,8 @@ window.CMS_HOME = {
               <input type="file" id="home-upload-doc" accept="image/*,application/pdf" class="hidden" onchange="window.CMS_HOME.uploadDocument(event)" />
             </div>
             <div class="pt-2">
-              <button type="submit" class="w-full bg-slate-900 hover:bg-slate-900 text-white font-bold py-2 rounded-md text-sm transition shadow">Save Details</button>
+              <div class="flex gap-2"><button type="button" onclick="document.getElementById('company-edit-mode').classList.add('hidden'); document.getElementById('company-view-mode').classList.remove('hidden');" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-md text-sm transition">Cancel</button>
+<button type="submit" class="w-2/3 bg-slate-900 hover:bg-slate-900 text-white font-bold py-2 rounded-md text-sm transition shadow">Save Details</button>
             </div>
           </form>
         </div>
@@ -400,6 +462,7 @@ window.CMS_HOME = {
     };
     localStorage.setItem('CMS_COMPANY_INFO', JSON.stringify(this.companyInfo));
     window.CMS_APP.toast('Company profile saved successfully! This info will be used in transactions.', 'success');
+      this.render();
   },
 
   async saveUserSettings(userId) {
