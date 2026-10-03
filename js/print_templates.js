@@ -421,7 +421,7 @@ window.CMS_PRINT = {
         <!-- Certification Badge -->
         <div class="p-3 mb-8 bg-emerald-50 border border-emerald-200 rounded flex items-center justify-between text-xs">
           <div class="flex items-center gap-2">
-            <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold">Approved</span>
+            <span class="w-6 h-6 rounded-sm bg-emerald-600 text-white flex items-center justify-center font-bold">Approved</span>
             <div>
               <div class="font-bold text-emerald-900">CERTIFICATE OF FITNESS ISSUED</div>
               <div class="text-[11px] text-emerald-700">The above equipment has undergone preventive inspection and is certified operational within safety thresholds.</div>

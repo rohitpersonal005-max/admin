@@ -298,7 +298,7 @@ window.CMS_APP = {
     const content = `
       <div class="space-y-5 text-xs text-slate-700">
         <!-- Summary Banner -->
-        <div class="p-4 bg-slate-900 text-white rounded-md shadow-sm border border-slate-800">
+        <div class="p-4 bg-slate-900 text-white rounded-sm shadow-sm border border-slate-800">
           <div class="flex items-center justify-between mb-1.5">
             <div class="flex items-center gap-2">
               <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-bold uppercase font-mono tracking-wider">ERP Architecture</span>
@@ -312,7 +312,7 @@ window.CMS_APP = {
         </div>
 
         <!-- Visual Workflow Pipeline Diagram -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md">
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm">
           <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <i data-lucide="git-merge" class="w-3.5 h-3.5 text-blue-600"></i>
             <span>End-to-End Material Flow: Setup -> Movement -> Balances -> Audit</span>
@@ -344,7 +344,7 @@ window.CMS_APP = {
         <!-- Distinct guidance only; Inventory and Setup are already visible in the sidebar. -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <!-- Card 1: Store Operations & Movement -->
-          <div class="p-3.5 border-2 border-amber-400 bg-amber-50/40 rounded-md space-y-2">
+          <div class="p-3.5 border-2 border-amber-400 bg-amber-50/40 rounded-sm space-y-2">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5 font-bold text-amber-950 text-xs uppercase tracking-wide">
                 <i data-lucide="sliders" class="w-4 h-4 text-amber-600"></i>
@@ -368,7 +368,7 @@ window.CMS_APP = {
           </div>
 
           <!-- Card 2: Governance & Approval Hub -->
-          <div class="p-3.5 border-2 border-purple-400 bg-purple-50/40 rounded-md space-y-2">
+          <div class="p-3.5 border-2 border-purple-400 bg-purple-50/40 rounded-sm space-y-2">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5 font-bold text-purple-950 text-xs uppercase tracking-wide">
                 <i data-lucide="shield" class="w-4 h-4 text-purple-600"></i>
@@ -393,7 +393,7 @@ window.CMS_APP = {
         </div>
 
         <div class="pt-3 border-t border-slate-200 flex justify-end">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-md transition text-xs shadow-sm">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-sm transition text-xs shadow-sm">
             Got It, Close Guide
           </button>
         </div>
@@ -441,7 +441,7 @@ window.CMS_APP = {
 
     if (dAvatar) {
       dAvatar.innerText = user.avatarText;
-      dAvatar.className = `w-9 h-9 rounded-full ${user.avatarBg} text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm`;
+      dAvatar.className = `w-9 h-9 rounded-sm ${user.avatarBg} text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm`;
     }
     if (dName) dName.innerText = user.name;
     if (dDept) dDept.innerText = user.department;
@@ -509,7 +509,7 @@ window.CMS_APP = {
     this.toggleUserDropdown();
     const content = `
       <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_APP.createMaker();">
-        <div class="p-3 bg-cyan-50 border border-cyan-200 rounded-md text-cyan-950 flex items-start gap-2">
+        <div class="p-3 bg-cyan-50 border border-cyan-200 rounded-sm text-cyan-950 flex items-start gap-2">
           <i data-lucide="shield-check" class="w-4 h-4 text-cyan-700 shrink-0"></i>
           <span>Only the Store Admin can create User accounts. Users can access shared approved data but cannot approve records or view other User profiles.</span>
         </div>
@@ -535,10 +535,10 @@ window.CMS_APP = {
             <input id="new-maker-email" type="email" class="w-full" placeholder="Optional" />
           </div>
         </div>
-        <div id="new-maker-error" class="hidden p-2.5 bg-red-50 border border-red-200 text-red-800 rounded-md font-medium"></div>
+        <div id="new-maker-error" class="hidden p-2.5 bg-red-50 border border-red-200 text-red-800 rounded-sm font-medium"></div>
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-3.5 py-2 bg-slate-100 text-slate-700 font-semibold rounded-md">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold rounded-md">Create User</button>
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-3.5 py-2 bg-slate-100 text-slate-700 font-semibold rounded-sm">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold rounded-sm">Create User</button>
         </div>
       </form>
     `;
@@ -601,7 +601,7 @@ window.CMS_APP = {
     const isChecker = user.role === 'Admin';
     const content = `
       <div class="space-y-4 text-xs">
-        <div class="p-4 bg-slate-50 rounded-md border border-slate-200 flex items-center gap-3">
+        <div class="p-4 bg-slate-50 rounded-sm border border-slate-200 flex items-center gap-3">
           <div class="w-12 h-12 rounded-full ${user.avatarBg} text-white font-bold text-base flex items-center justify-center shadow-sm shrink-0">
             ${user.avatarText}
           </div>
@@ -617,19 +617,19 @@ window.CMS_APP = {
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
+          <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm">
             <span class="text-slate-400 font-bold uppercase text-[10px]">Department</span>
             <div class="font-semibold text-slate-800 mt-0.5">${user.department || 'Central Warehouse & Logistics'}</div>
           </div>
-          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
+          <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm">
             <span class="text-slate-400 font-bold uppercase text-[10px]">Email Address</span>
             <div class="font-mono text-slate-800 mt-0.5">${user.email || 'Not specified'}</div>
           </div>
-          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
+          <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm">
             <span class="text-slate-400 font-bold uppercase text-[10px]">System Designation</span>
             <div class="font-semibold text-slate-800 mt-0.5">${user.roleTitle || user.role}</div>
           </div>
-          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
+          <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm">
             <span class="text-slate-400 font-bold uppercase text-[10px]">SoD Authorization Level</span>
             <div class="font-semibold ${isChecker ? 'text-blue-600' : 'text-blue-600'} mt-0.5">
               ${isChecker ? 'Approving Authority (Sanction / Reject / Audit)' : 'User level (Data Entry & Requisitions Only)'}
@@ -637,7 +637,7 @@ window.CMS_APP = {
           </div>
         </div>
 
-        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-1 text-slate-600">
+        <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-1 text-slate-600">
           <span class="text-slate-700 font-bold uppercase text-[10px]">Role Governance & Scope</span>
           <p class="text-[11px] leading-relaxed">
             ${isChecker
@@ -647,7 +647,7 @@ window.CMS_APP = {
         </div>
 
         <div class="pt-3 border-t border-slate-200 flex justify-end">
-          <button onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
+          <button onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
             Close
           </button>
         </div>
@@ -758,7 +758,7 @@ window.CMS_APP = {
         stacked.id = 'stacked-modal-container';
         stacked.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4 overflow-y-auto';
         stacked.innerHTML = `
-          <div id="stacked-modal-card" class="relative w-full bg-white rounded-md shadow-sm overflow-hidden transform transition-all my-8">
+          <div id="stacked-modal-card" class="relative w-full bg-white rounded-sm shadow-sm overflow-hidden transform transition-all my-8">
             <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between sticky top-0 z-10">
               <h3 id="stacked-modal-title" class="font-bold text-slate-800 text-sm"></h3>
               <button type="button" onclick="CMS_APP.closeStackedModal()" class="text-slate-400 hover:text-slate-600 transition p-1">
@@ -772,7 +772,7 @@ window.CMS_APP = {
       }
       document.getElementById('stacked-modal-title').innerText = title;
       document.getElementById('stacked-modal-body').innerHTML = contentHtml;
-      document.getElementById('stacked-modal-card').className = `relative w-full ${maxWidthClass} bg-white rounded-md border border-slate-300 shadow-sm overflow-hidden transform transition-all my-8`;
+      document.getElementById('stacked-modal-card').className = `relative w-full ${maxWidthClass} bg-white rounded-sm border border-slate-300 shadow-sm overflow-hidden transform transition-all my-8`;
       stacked.classList.remove('hidden');
       stacked.classList.add('flex');
       if (window.lucide) window.lucide.createIcons();
@@ -788,7 +788,7 @@ window.CMS_APP = {
     titleEl.innerText = title;
     bodyEl.innerHTML = contentHtml;
 
-    cardEl.className = `relative w-full ${maxWidthClass} bg-white rounded-md border border-slate-300 shadow-sm overflow-hidden transform transition-all my-8`;
+    cardEl.className = `relative w-full ${maxWidthClass} bg-white rounded-sm border border-slate-300 shadow-sm overflow-hidden transform transition-all my-8`;
 
     container.classList.remove('hidden');
     container.classList.add('flex');
@@ -829,7 +829,7 @@ window.CMS_APP = {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 z-[90] bg-slate-900/60 flex items-center justify-center p-4 backdrop-blur-sm';
     modal.innerHTML = `
-      <div class="bg-white rounded-md shadow-sm w-full max-w-2xl flex flex-col overflow-hidden max-h-[90vh]">
+      <div class="bg-white rounded-sm shadow-sm w-full max-w-2xl flex flex-col overflow-hidden max-h-[90vh]">
         <div class="bg-slate-900 p-5 text-white flex justify-between items-start">
           <div>
             <h2 class="text-xl font-bold flex items-center gap-2">
@@ -868,7 +868,7 @@ window.CMS_APP = {
           <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-1.5"><i data-lucide="files" class="w-4 h-4 text-slate-500"></i> Uploaded Documents</h3>
           <div class="flex flex-col gap-2">
             ${docs.length > 0 ? docs.map((doc, i) => `
-              <div class="flex items-center justify-between p-3 border border-slate-200 rounded-md bg-white hover:bg-slate-50 transition">
+              <div class="flex items-center justify-between p-3 border border-slate-200 rounded-sm bg-white hover:bg-slate-50 transition">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded bg-slate-100 text-blue-600 flex items-center justify-center shrink-0">
                     <i data-lucide="${doc.type.includes('pdf') ? 'file-text' : 'image'}" class="w-4 h-4"></i>
@@ -882,11 +882,11 @@ window.CMS_APP = {
                   <i data-lucide="eye" class="w-3.5 h-3.5"></i> View Document
                 </button>
               </div>
-            `).join('') : '<div class="text-sm text-slate-500 italic p-4 text-center border border-dashed border-slate-300 rounded-md">No documents published yet.</div>'}
+            `).join('') : '<div class="text-sm text-slate-500 italic p-4 text-center border border-dashed border-slate-300 rounded-sm">No documents published yet.</div>'}
           </div>
         </div>
         <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-          <button class="bg-slate-800 text-white px-5 py-2 rounded-md font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close</button>
+          <button class="bg-slate-800 text-white px-5 py-2 rounded-sm font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close</button>
         </div>
       </div>
     `;
@@ -909,7 +909,7 @@ window.CMS_APP = {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 z-[100] bg-slate-900/80 flex items-center justify-center p-4 backdrop-blur-sm';
     modal.innerHTML = `
-      <div class="bg-white rounded-md shadow-sm w-full max-w-4xl flex flex-col max-h-[90vh]">
+      <div class="bg-white rounded-sm shadow-sm w-full max-w-4xl flex flex-col max-h-[90vh]">
         <div class="flex items-center justify-between p-4 border-b border-slate-100">
           <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
             <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
@@ -925,10 +925,10 @@ window.CMS_APP = {
         <div class="p-4 border-t border-slate-100 flex justify-between items-center text-sm">
           <span class="text-slate-500">Uploaded: ${new Date(doc.uploadedAt).toLocaleString()}</span>
           <div class="flex gap-2">
-            <button class="text-blue-600 hover:text-blue-600 bg-slate-50 px-4 py-2 rounded-md font-bold transition flex items-center gap-1.5" onclick="CMS_APP.downloadDocument('${doc.name}', JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS'))[${index}].data)">
+            <button class="text-blue-600 hover:text-blue-600 bg-slate-50 px-4 py-2 rounded-sm font-bold transition flex items-center gap-1.5" onclick="CMS_APP.downloadDocument('${doc.name}', JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS'))[${index}].data)">
               <i data-lucide="download" class="w-4 h-4"></i> Download
             </button>
-            <button class="bg-slate-800 text-white px-4 py-2 rounded-md font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close Viewer</button>
+            <button class="bg-slate-800 text-white px-4 py-2 rounded-sm font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close Viewer</button>
           </div>
         </div>
       </div>
@@ -960,9 +960,9 @@ window.CMS_APP = {
     const toastEl = document.createElement('div');
     const bgColor = type === 'success' ? 'bg-slate-900 border border-emerald-500/40 text-emerald-400' : type === 'error' ? 'bg-red-600 text-white' : 'bg-slate-900 border border-slate-700 text-slate-200';
 
-    toastEl.className = `${bgColor} px-4 py-3 rounded-md shadow-sm text-xs font-bold flex items-center gap-2.5 transform transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto backdrop-blur-md`;
+    toastEl.className = `${bgColor} px-4 py-3 rounded-sm shadow-sm text-xs font-bold flex items-center gap-2.5 transform transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto backdrop-blur-md`;
     toastEl.innerHTML = `
-      <span class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-400' : 'bg-blue-400'}"></span>
+      <span class="w-2 h-2 rounded-sm ${type === 'success' ? 'bg-emerald-400' : 'bg-blue-400'}"></span>
       <span>${message}</span>
     `;
 
@@ -989,7 +989,7 @@ window.CMS_APP = {
     const isPdf = cleanFileName.toLowerCase().endsWith('.pdf');
     const content = `
       <div class="space-y-4 text-xs">
-        <div class="p-3.5 bg-slate-900 text-white rounded-md flex items-center justify-between">
+        <div class="p-3.5 bg-slate-900 text-white rounded-sm flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded bg-slate-900/30 border border-blue-400/40 text-blue-300 flex items-center justify-center text-sm font-bold">
               <i data-lucide="${isPdf ? 'file-text' : 'image'}" class="w-5 h-5"></i>
@@ -1004,7 +1004,7 @@ window.CMS_APP = {
           </span>
         </div>
 
-        <div class="border border-slate-200 rounded-md bg-slate-50 flex flex-col items-center justify-center min-h-[400px] max-h-[600px] overflow-auto text-center relative shadow-inner">
+        <div class="border border-slate-200 rounded-sm bg-slate-50 flex flex-col items-center justify-center min-h-[400px] max-h-[600px] overflow-auto text-center relative shadow-inner">
           ${(function() {
             const fileData = localStorage.getItem('CMS_FILE_' + cleanFileName);
             if (fileData) {
@@ -1016,9 +1016,9 @@ window.CMS_APP = {
             } else {
               // Dummy visual for mock data
               if (isPdf) {
-                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-slate-100 text-blue-600 rounded-md flex items-center justify-center shadow-sm mb-4 border border-slate-200"><i data-lucide="file-check-2" class="w-12 h-12"></i></div><h4 class="font-bold text-slate-800 text-lg mb-1">' + docType + '</h4><p class="text-slate-500 font-mono text-sm">' + cleanFileName + '</p><div class="mt-6 inline-block text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-full font-bold shadow-sm">Verified System Generated Document copy</div></div>';
+                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-slate-100 text-blue-600 rounded-sm flex items-center justify-center shadow-sm mb-4 border border-slate-200"><i data-lucide="file-check-2" class="w-12 h-12"></i></div><h4 class="font-bold text-slate-800 text-lg mb-1">' + docType + '</h4><p class="text-slate-500 font-mono text-sm">' + cleanFileName + '</p><div class="mt-6 inline-block text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-sm font-bold shadow-sm">Verified System Generated Document copy</div></div>';
               } else {
-                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-slate-200 text-slate-400 rounded-md flex items-center justify-center shadow-inner mb-4"><i data-lucide="image" class="w-12 h-12"></i></div><p class="text-slate-500 text-sm italic">Image data not found on local disk.</p></div>';
+                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-slate-200 text-slate-400 rounded-sm flex items-center justify-center shadow-inner mb-4"><i data-lucide="image" class="w-12 h-12"></i></div><p class="text-slate-500 text-sm italic">Image data not found on local disk.</p></div>';
               }
             }
           })()}
@@ -1029,10 +1029,10 @@ window.CMS_APP = {
             Audit Trail: Viewed by ${window.CMS_STORE.getCurrentUser().name} (${window.CMS_STORE.getCurrentUser().id})
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
+            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
               Close Preview
             </button>
-            <button type="button" onclick="CMS_APP.downloadDocument('${cleanFileName}')" class="px-4 py-2 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs flex items-center gap-1.5">
+            <button type="button" onclick="CMS_APP.downloadDocument('${cleanFileName}')" class="px-4 py-2 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5">
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
               <span>Download Copy</span>
             </button>
@@ -1053,7 +1053,7 @@ window.CMS_APP = {
     const docItems = (documents || []).filter(d => Boolean(d && d.fileName));
     const content = `
       <div class="space-y-4 text-xs">
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-900 flex items-start gap-2.5">
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-900 flex items-start gap-2.5">
           <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700 shrink-0 mt-0.5"></i>
           <div>
             <strong>User-Admin Statutory Audit & Verification</strong>
@@ -1061,12 +1061,12 @@ window.CMS_APP = {
           </div>
         </div>
 
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md">
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm">
           ${summaryHtml || `<div class="font-bold text-slate-800">${title} (${id})</div>`}
         </div>
 
         <!-- Document Inspection Section -->
-        <div class="p-3.5 bg-white border border-slate-200 rounded-md space-y-2">
+        <div class="p-3.5 bg-white border border-slate-200 rounded-sm space-y-2">
           <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
             <span class="flex items-center gap-1.5"><i data-lucide="file-check" class="w-3.5 h-3.5 text-blue-600"></i> Submitted Statutory Documents (${docItems.length})</span>
             <span class="text-[10px] text-slate-400 font-normal">Click eye to inspect</span>
@@ -1092,7 +1092,7 @@ window.CMS_APP = {
         </div>
 
         <!-- Mandatory Final Checkbox -->
-        <div class="p-3 bg-amber-50/70 border border-amber-300 rounded-md">
+        <div class="p-3 bg-amber-50/70 border border-amber-300 rounded-sm">
           <label class="flex items-start gap-2.5 cursor-pointer">
             <input type="checkbox" id="sanction-final-checkbox" onchange="document.getElementById('sanction-confirm-btn').disabled = !this.checked; document.getElementById('sanction-confirm-btn').classList.toggle('opacity-50', !this.checked);" class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
             <span class="text-slate-800 font-bold leading-relaxed text-[11px]">
@@ -1102,10 +1102,10 @@ window.CMS_APP = {
         </div>
 
         <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
             Cancel
           </button>
-          <button type="button" id="sanction-confirm-btn" disabled onclick="CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-md shadow transition text-xs opacity-50 flex items-center gap-1.5">
+          <button type="button" id="sanction-confirm-btn" disabled onclick="CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs opacity-50 flex items-center gap-1.5">
             <i data-lucide="check-circle" class="w-4 h-4"></i>
             <span>Confirm Sanction & Approve</span>
           </button>
@@ -1124,7 +1124,7 @@ window.CMS_APP = {
 
     const content = `
       <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); const r = document.getElementById('rejection-remark-input').value.trim(); if (!r) { CMS_APP.toast('Please provide a specific mistake or revision instruction.', 'error'); return; } CMS_APP.closeModal(); (${onReject})(r);">
-        <div class="p-3 bg-rose-50 border border-rose-200 rounded-md text-rose-950 flex items-start gap-2.5">
+        <div class="p-3 bg-rose-50 border border-rose-200 rounded-sm text-rose-950 flex items-start gap-2.5">
           <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 shrink-0 mt-0.5"></i>
           <div>
             <strong>Return Submission to Operation Manager (Rajesh Kumar)</strong>
@@ -1132,7 +1132,7 @@ window.CMS_APP = {
           </div>
         </div>
 
-        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md font-medium text-slate-800">
+        <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm font-medium text-slate-800">
           Target Record: <span class="font-bold text-blue-600">${title}</span> <span class="text-slate-500 font-mono">(${id})</span>
         </div>
 
@@ -1140,7 +1140,7 @@ window.CMS_APP = {
           <label class="block font-bold text-slate-800 mb-1.5">
             Identified Mistake / Reason for Revision *
           </label>
-          <textarea id="rejection-remark-input" required rows="3" class="w-full px-3 py-2 border border-rose-300 rounded-md focus:ring-2 focus:ring-rose-500 focus:outline-none text-xs" placeholder="e.g. GST Certificate is illegible / Expired ISO certificate / Rate mismatch with quotation copy. Please re-upload verified document."></textarea>
+          <textarea id="rejection-remark-input" required rows="3" class="w-full px-3 py-2 border border-rose-300 rounded-sm focus:ring-2 focus:ring-rose-500 focus:outline-none text-xs" placeholder="e.g. GST Certificate is illegible / Expired ISO certificate / Rate mismatch with quotation copy. Please re-upload verified document."></textarea>
           <div class="flex flex-wrap gap-1.5 mt-2">
             <button type="button" onclick="document.getElementById('rejection-remark-input').value = 'GST certificate copy is missing or unreadable. Please upload clear copy.';" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[10px]">Missing GST Doc</button>
             <button type="button" onclick="document.getElementById('rejection-remark-input').value = 'Compliance certificate has expired. Please provide latest renewed certificate.';" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[10px]">Expired Certificate</button>
@@ -1150,10 +1150,10 @@ window.CMS_APP = {
         </div>
 
         <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
             Cancel
           </button>
-          <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-md shadow transition text-xs flex items-center gap-1.5">
+          <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5">
             <i data-lucide="send" class="w-3.5 h-3.5"></i>
             <span>Revert & Report Mistake to Operation</span>
           </button>

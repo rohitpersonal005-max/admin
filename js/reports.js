@@ -79,22 +79,22 @@ window.CMS_REPORTS = {
       <div class="space-y-6">
         <!-- 4 Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm hover-lift">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm hover-lift">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Materials</span>
             <div class="text-2xl font-semibold font-mono text-slate-900 mt-1">${store.consumables.length}</div>
             <div class="text-xs text-slate-400 mt-1">Cataloged SKUs</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm hover-lift">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm hover-lift">
             <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Total Stock Value</span>
             <div class="text-2xl font-semibold font-mono text-emerald-700 mt-1">₹${totalValuation.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
             <div class="text-xs text-slate-400 mt-1">At Vendor Approved Rates</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm hover-lift">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm hover-lift">
             <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Low Buffer Warnings</span>
             <div class="text-2xl font-semibold font-mono text-amber-700 mt-1">${lowStockCount}</div>
             <div class="text-xs text-amber-600 font-medium mt-1">Below safety buffer</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm hover-lift">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm hover-lift">
             <span class="text-xs font-bold uppercase tracking-wider text-red-600">Out of Stock</span>
             <div class="text-2xl font-semibold font-mono text-red-700 mt-1">${outOfStockCount}</div>
             <div class="text-xs text-red-600 font-medium mt-1">Action required</div>
@@ -102,7 +102,7 @@ window.CMS_REPORTS = {
         </div>
 
         <!-- Table Header & Controls -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
               <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -113,11 +113,11 @@ window.CMS_REPORTS = {
             <p class="text-xs text-slate-500 mt-1">Real-time store inventory levels, monthly safety buffer threshold, stock valuation, and health indicators.</p>
           </div>
           <div class="flex gap-2">
-            <button onclick="CMS_REPORTS.exportStockCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md text-xs transition flex items-center gap-1.5 shadow-sm">
+            <button onclick="CMS_REPORTS.exportStockCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs transition flex items-center gap-1.5 shadow-sm">
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
               <span>Export CSV</span>
             </button>
-            <button onclick="window.print()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold rounded-md text-xs transition flex items-center gap-1.5 shadow-sm">
+            <button onclick="window.print()" class="px-3.5 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold rounded-sm text-xs transition flex items-center gap-1.5 shadow-sm">
               <i data-lucide="printer" class="w-3.5 h-3.5"></i>
               <span>Print Report</span>
             </button>
@@ -125,13 +125,13 @@ window.CMS_REPORTS = {
         </div>
 
         <!-- Table Toolbar -->
-        <div class="bg-white p-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
           <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-72">
               <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-              <input type="text" value="${this.stockReportSearch}" oninput="CMS_REPORTS.onStockReportSearch(this.value)" placeholder="Search material name, brand, HSN..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+              <input type="text" value="${this.stockReportSearch}" oninput="CMS_REPORTS.onStockReportSearch(this.value)" placeholder="Search material name, brand, HSN..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs focus:bg-white focus:outline-none" />
             </div>
-            <select onchange="CMS_REPORTS.onStockReportCategoryFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
+            <select onchange="CMS_REPORTS.onStockReportCategoryFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
               <option value="">-- All Categories --</option>
               ${categories.map(c => `<option value="${c.id}" ${this.stockReportCategoryFilter === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
             </select>
@@ -141,7 +141,7 @@ window.CMS_REPORTS = {
           </div>
         </div>
 
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
@@ -302,7 +302,7 @@ window.CMS_REPORTS = {
 
     return `
       <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
               <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -312,13 +312,13 @@ window.CMS_REPORTS = {
             </h2>
             <p class="text-xs text-slate-500 mt-1">Complete immutable audit trail of all receipts, issuances, returns, adjustments, and reconciliations.</p>
           </div>
-          <button onclick="CMS_REPORTS.exportLedgerCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md text-xs transition flex items-center gap-1.5 shadow-sm">
+          <button onclick="CMS_REPORTS.exportLedgerCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs transition flex items-center gap-1.5 shadow-sm">
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
             <span>Export Ledger CSV</span>
           </button>
         </div>
 
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
@@ -340,7 +340,7 @@ window.CMS_REPORTS = {
                   <tr class="hover:bg-slate-50/80 transition">
                     <td class="p-4 text-xs font-mono text-slate-600 whitespace-nowrap">${t.date}</td>
                     <td class="p-4">
-                      <span class="inline-block text-xs font-bold px-2.5 py-1 rounded-md ${
+                      <span class="inline-block text-xs font-bold px-2.5 py-1 rounded-sm ${
                         t.qtyIn > 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200'
                       }">
                         ${t.type}
@@ -373,7 +373,7 @@ window.CMS_REPORTS = {
     const currentUser = window.CMS_STORE.getCurrentUser();
     return `
       <div class="max-w-xl mx-auto mt-8">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-8 text-center">
+        <div class="bg-white border border-slate-200 rounded-md shadow-sm p-8 text-center">
           <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center mx-auto mb-4">
             <i data-lucide="shield-off" class="w-6 h-6"></i>
           </div>
@@ -386,7 +386,7 @@ window.CMS_REPORTS = {
           <p class="text-[11px] text-slate-500 mt-3">
             Please sign in with the authorized approver account (Col. Anita Sharma) to review and sanction records.
           </p>
-          <button onclick="CMS_APP.navigateTo('dashboard')" class="mt-5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-full transition">
+          <button onclick="CMS_APP.navigateTo('dashboard')" class="mt-5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-sm transition">
             Return to Executive Dashboard
           </button>
         </div>
@@ -518,7 +518,7 @@ window.CMS_REPORTS = {
       <div class="space-y-4">
         
         <!-- Security & Governance Header -->
-        <div class="bg-white p-5 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="bg-white p-5 rounded-sm border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h2 class="text-base font-bold text-slate-900 flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center">
@@ -546,7 +546,7 @@ window.CMS_REPORTS = {
 
             <!-- Security & SoD Info Banner -->
             ${isChecker ? `
-              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-900 text-xs flex items-center justify-between">
+              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-900 text-xs flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700 shrink-0"></i>
                   <span><strong>Authorized Sanctioning Session:</strong> You are logged in as Store In-Charge. Sanctioned records update live stock balances immediately.</span>
@@ -554,7 +554,7 @@ window.CMS_REPORTS = {
                 <span class="text-[11px] font-mono bg-white px-2 py-0.5 rounded border border-emerald-300 font-semibold">SOD VERIFIED</span>
               </div>
             ` : `
-              <div class="p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-900 text-xs flex items-center justify-between gap-2">
+              <div class="p-3 bg-amber-50 border border-amber-200 rounded-sm text-amber-900 text-xs flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <i data-lucide="shield-alert" class="w-4 h-4 text-amber-700 shrink-0"></i>
                   <span><strong>Operational Staff View:</strong> Logged in as Store Staff. To prevent self-approval tampering, sanctioning transactions requires Col. Anita Sharma (Admin).</span>
@@ -563,7 +563,7 @@ window.CMS_REPORTS = {
             `}
 
             ${pending.length === 0 ? `
-              <div class="p-16 text-center bg-white border border-slate-200 rounded-md shadow-sm">
+              <div class="p-16 text-center bg-white border border-slate-200 rounded-sm shadow-sm">
                 <div class="w-12 h-12 rounded bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-3">
                   <i data-lucide="check" class="w-6 h-6"></i>
                 </div>
@@ -573,7 +573,7 @@ window.CMS_REPORTS = {
             ` : `
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 ${pending.map(item => `
-                  <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm flex flex-col justify-between interactive-card">
+                  <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm flex flex-col justify-between interactive-card">
                     <div>
                       <div class="flex justify-between items-start mb-2">
                         <span class="text-[10.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">${item.module}</span>
@@ -700,7 +700,7 @@ window.CMS_REPORTS = {
     return `
       <div class="space-y-6">
         <!-- Header -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
               <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -711,12 +711,12 @@ window.CMS_REPORTS = {
             <p class="text-xs text-slate-500 mt-1">High-turnover consumable supplies, monthly safety buffer gauges, vendor quotations, and warranty terms.</p>
           </div>
           <div class="flex flex-wrap gap-2.5">
-            <button onclick="CMS_REPORTS.exportStockCSV()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md border border-slate-300 transition text-xs">
+            <button onclick="CMS_REPORTS.exportStockCSV()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm border border-slate-300 transition text-xs">
               <i data-lucide="download" class="w-4 h-4"></i>
               <span>Export CSV</span>
             </button>
             ${role === 'User' ? `
-              <button onclick="CMS_MASTERS.openConsumableModal(null, 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+              <button onclick="CMS_MASTERS.openConsumableModal(null, 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition text-xs">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                 <span>+ Add Consumable Item</span>
               </button>
@@ -726,22 +726,22 @@ window.CMS_REPORTS = {
 
         <!-- Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-emerald">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm card-accent-emerald">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Consumable Items</span>
             <div class="text-2xl font-bold font-mono text-slate-900 mt-1">${list.length}</div>
             <div class="text-xs text-slate-500 mt-0.5">Active SKU lines</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-blue">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm card-accent-blue">
             <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Stock Valuation</span>
             <div class="text-2xl font-bold font-mono text-blue-700 mt-1">₹${totalValuation.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
             <div class="text-xs text-slate-500 mt-0.5">At approved quotation rates</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-amber">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm card-accent-amber">
             <span class="text-xs font-bold uppercase tracking-wider text-amber-600">Buffer Warnings</span>
             <div class="text-2xl font-bold font-mono text-amber-700 mt-1">${lowBufferCount}</div>
             <div class="text-xs text-amber-600 font-medium mt-0.5">Below 50% monthly target</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-purple">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm card-accent-purple">
             <span class="text-xs font-bold uppercase tracking-wider text-purple-600">Warranty Covered Items</span>
             <div class="text-2xl font-bold font-mono text-purple-700 mt-1">${warrantedCount}</div>
             <div class="text-xs text-purple-600 font-medium mt-0.5">Active warranty policies</div>
@@ -749,13 +749,13 @@ window.CMS_REPORTS = {
         </div>
 
         <!-- Toolbar -->
-        <div class="bg-white p-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
           <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-72">
               <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-              <input type="text" value="${this.consumerSearchQuery}" oninput="CMS_REPORTS.onConsumerSearch(this.value)" placeholder="Search consumable supplies, brand, quote..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+              <input type="text" value="${this.consumerSearchQuery}" oninput="CMS_REPORTS.onConsumerSearch(this.value)" placeholder="Search consumable supplies, brand, quote..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs focus:bg-white focus:outline-none" />
             </div>
-            <select onchange="CMS_REPORTS.onConsumerCategoryFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
+            <select onchange="CMS_REPORTS.onConsumerCategoryFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
               <option value="">-- All Categories (${categories.length}) --</option>
               ${categories.map(c => `<option value="${c.id}" ${this.consumerCategoryFilter === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
             </select>
@@ -766,7 +766,7 @@ window.CMS_REPORTS = {
         </div>
 
         <!-- Table -->
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
@@ -911,7 +911,7 @@ window.CMS_REPORTS = {
     return `
       <div class="space-y-6">
         <!-- Header -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
               <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -923,7 +923,7 @@ window.CMS_REPORTS = {
           </div>
           <div class="flex flex-wrap gap-2.5">
             ${role === 'User' ? `
-              <button onclick="CMS_MASTERS.openConsumableModal(null, 'Fixed')" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md shadow transition text-xs">
+              <button onclick="CMS_MASTERS.openConsumableModal(null, 'Fixed')" class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-sm shadow transition text-xs">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                 <span>+ Register Capital Asset</span>
               </button>
@@ -933,22 +933,22 @@ window.CMS_REPORTS = {
 
         <!-- 4 Metric Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-purple">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm card-accent-purple">
             <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">Fixed Assets Registered</span>
             <div class="text-2xl font-bold font-mono text-slate-900 mt-1">${list.length}</div>
             <div class="text-xs text-slate-500 mt-0.5">IT, HVAC, Heavy Equipment</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-blue">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm card-accent-blue">
             <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Total Booked Asset Value</span>
             <div class="text-2xl font-bold font-mono text-blue-700 mt-1">₹${totalAssetValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
             <div class="text-xs text-slate-500 mt-0.5">Capital gross booked cost</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-emerald">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm card-accent-emerald">
             <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Assets Under Warranty</span>
             <div class="text-2xl font-bold font-mono text-emerald-700 mt-1">${warrantedAssets} / ${list.length}</div>
             <div class="text-xs text-emerald-600 font-medium mt-0.5">With active OEM coverage</div>
           </div>
-          <div class="p-5 bg-white border border-slate-200 rounded-md shadow-sm card-accent-amber">
+          <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm card-accent-amber">
             <span class="text-xs font-bold uppercase tracking-wider text-amber-600">PM Service Due</span>
             <div class="text-2xl font-bold font-mono text-amber-700 mt-1">${pmDueCount}</div>
             <div class="text-xs text-amber-600 font-medium mt-0.5">Action required within 30 days</div>
@@ -956,13 +956,13 @@ window.CMS_REPORTS = {
         </div>
 
         <!-- Toolbar -->
-        <div class="bg-white p-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
           <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-72">
               <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-              <input type="text" value="${this.fixedSearchQuery}" oninput="CMS_REPORTS.onFixedSearch(this.value)" placeholder="Search tag, serial #, equipment, tech..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+              <input type="text" value="${this.fixedSearchQuery}" oninput="CMS_REPORTS.onFixedSearch(this.value)" placeholder="Search tag, serial #, equipment, tech..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs focus:bg-white focus:outline-none" />
             </div>
-            <select onchange="CMS_REPORTS.onFixedCategoryFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
+            <select onchange="CMS_REPORTS.onFixedCategoryFilter(this.value)" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs font-semibold text-slate-700 focus:bg-white focus:outline-none">
               <option value="">-- All Asset Categories --</option>
               ${categories.map(c => `<option value="${c.id}" ${this.fixedCategoryFilter === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
             </select>
@@ -975,7 +975,7 @@ window.CMS_REPORTS = {
         <!-- Asset Grid / Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           ${list.length === 0 ? `
-            <div class="col-span-2 p-12 text-center bg-white border border-slate-200 rounded-md text-slate-400 font-medium">
+            <div class="col-span-2 p-12 text-center bg-white border border-slate-200 rounded-sm text-slate-400 font-medium">
               <i data-lucide="cpu" class="w-8 h-8 mx-auto mb-2 opacity-40"></i>
               <div>No fixed capital assets found matching your criteria.</div>
             </div>
@@ -985,7 +985,7 @@ window.CMS_REPORTS = {
             const isOverdue = m.nextPmDate && new Date(m.nextPmDate).getTime() < now;
 
             return `
-              <div class="bg-white p-5 rounded-md border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover-lift">
+              <div class="bg-white p-5 rounded-sm border border-slate-200 shadow-sm flex flex-col justify-between space-y-4 hover-lift">
                 <div>
                   <div class="flex items-start justify-between gap-3">
                     <div>
@@ -1111,7 +1111,7 @@ window.CMS_REPORTS = {
 
     const content = `
       <form id="pm-service-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_REPORTS.savePmService('${m.id}');">
-        <div class="p-4 bg-purple-50 border border-purple-200 rounded-md text-purple-900 space-y-1">
+        <div class="p-4 bg-purple-50 border border-purple-200 rounded-sm text-purple-900 space-y-1">
           <div class="font-bold text-sm">Preventive Maintenance (PM) Log for:</div>
           <div class="text-xs font-semibold text-purple-950">${m.materialName}</div>
           <div class="text-[11px] font-mono text-purple-800">Tag: ${m.assetTag || 'N/A'} | S/N: ${m.serialNo || 'N/A'} | Frequency: ${m.pmFrequency || 'Quarterly'}</div>
@@ -1120,48 +1120,48 @@ window.CMS_REPORTS = {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Service Completion Date *</label>
-            <input type="date" id="pm-date" required value="${today}" onchange="CMS_REPORTS.onPmServiceDateChange('${m.pmFrequency}')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md font-mono" />
+            <input type="date" id="pm-date" required value="${today}" onchange="CMS_REPORTS.onPmServiceDateChange('${m.pmFrequency}')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm font-mono" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Job Card / Service Slip No. *</label>
-            <input type="text" id="pm-jobcard" required value="JC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-md" />
+            <input type="text" id="pm-jobcard" required value="JC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-sm" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Technician / Repairman *</label>
-            <input type="text" id="pm-tech" required value="${m.repairmanName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="e.g. Sanjay Rawat" />
+            <input type="text" id="pm-tech" required value="${m.repairmanName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-sm" placeholder="e.g. Sanjay Rawat" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Technician Phone</label>
-            <input type="text" id="pm-contact" value="${m.repairmanContact || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md" placeholder="+91 98..." />
+            <input type="text" id="pm-contact" value="${m.repairmanContact || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-sm" placeholder="+91 98..." />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Service Agency</label>
-            <input type="text" id="pm-agency" value="${m.repairmanAgency || m.pmVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="e.g. Kent Commercial Care" />
+            <input type="text" id="pm-agency" value="${m.repairmanAgency || m.pmVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-sm" placeholder="e.g. Kent Commercial Care" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Maintenance Cost (₹)</label>
-            <input type="number" step="0.01" id="pm-cost" value="0.00" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-md" />
+            <input type="number" step="0.01" id="pm-cost" value="0.00" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-sm" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Next Scheduled PM Date (Auto-Calculated) *</label>
-            <input type="date" id="pm-next-date" required value="${defaultNextDate}" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-md font-bold text-purple-900 bg-purple-50/50" />
+            <input type="date" id="pm-next-date" required value="${defaultNextDate}" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-sm font-bold text-purple-900 bg-purple-50/50" />
           </div>
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Work Done / Parts Replaced / Calibration Remarks *</label>
-          <textarea id="pm-notes" required rows="3" class="w-full px-3.5 py-2 border border-slate-300 rounded-md" placeholder="e.g. Filters sanitized and membrane replaced. Chemical purity test passed. Certified operational."></textarea>
+          <textarea id="pm-notes" required rows="3" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm" placeholder="e.g. Filters sanitized and membrane replaced. Chemical purity test passed. Certified operational."></textarea>
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
             <i data-lucide="check-circle" class="w-4 h-4"></i>
             <span>Log Service & Advance Schedule</span>
           </button>

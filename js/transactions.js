@@ -32,10 +32,10 @@ window.CMS_TRANSACTIONS = {
     return `
       <div class="space-y-6">
         <!-- Header -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-md bg-slate-50 text-blue-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-full bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="package-check" class="w-4 h-4"></i>
               </div>
               <span>Goods Inward Receipts</span>
@@ -43,11 +43,11 @@ window.CMS_TRANSACTIONS = {
             <p class="text-xs text-slate-500 mt-1">Record incoming consignments by Delivery Challan or Tax Invoice. Approving restocks warehouse inventory.</p>
           </div>
           <div class="flex flex-wrap gap-2.5">
-            <button onclick="CMS_TRANSACTIONS.openReceiptModal('Challan')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-md shadow transition text-xs">
+            <button onclick="CMS_TRANSACTIONS.openReceiptModal('Challan')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition text-xs">
               <i data-lucide="truck" class="w-4 h-4"></i>
               <span>Receipt by Challan</span>
             </button>
-            <button onclick="CMS_TRANSACTIONS.openReceiptModal('Invoice')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs">
+            <button onclick="CMS_TRANSACTIONS.openReceiptModal('Invoice')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition text-xs">
               <i data-lucide="receipt" class="w-4 h-4"></i>
               <span>Receipt by Invoice</span>
             </button>
@@ -55,10 +55,10 @@ window.CMS_TRANSACTIONS = {
         </div>
 
         <!-- Table Toolbar: Search -->
-        <div class="bg-white p-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
           <div class="relative w-full sm:w-80">
             <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" value="${this.receiptSearchQuery}" oninput="CMS_TRANSACTIONS.onReceiptSearch(this.value)" placeholder="Search receipt, vendor, doc no., item..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+            <input type="text" value="${this.receiptSearchQuery}" oninput="CMS_TRANSACTIONS.onReceiptSearch(this.value)" placeholder="Search receipt, vendor, doc no., item..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs focus:bg-white focus:outline-none" />
           </div>
           <div class="text-xs text-slate-500 font-medium">
             Showing <strong class="text-slate-800">${list.length}</strong> of ${store.receipts.length} receipts
@@ -66,7 +66,7 @@ window.CMS_TRANSACTIONS = {
         </div>
 
         <!-- Receipts Table -->
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
@@ -127,20 +127,20 @@ window.CMS_TRANSACTIONS = {
                       </span>
                     </td>
                     <td class="p-4 text-right space-x-1">
-                      <button onclick="CMS_TRANSACTIONS.openReceiptModal('${r.type}', '${r.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition" title="Modify Receipt">
+                      <button onclick="CMS_TRANSACTIONS.openReceiptModal('${r.type}', '${r.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-sm transition" title="Modify Receipt">
                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                       </button>
                       ${r.status === 'Pending Approval' && role === 'Admin' ? `
-                        <button onclick="CMS_TRANSACTIONS.approveReceipt('${r.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-md transition" title="Approve Receipt & Restock Inventory">
+                        <button onclick="CMS_TRANSACTIONS.approveReceipt('${r.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-sm transition" title="Approve Receipt & Restock Inventory">
                           Approve
                         </button>
                       ` : ''}
                       ${r.type === 'Challan' && !r.isConvertedToInvoice && r.status === 'Approved' ? `
-                        <button onclick="CMS_TRANSACTIONS.openChallanConversionModal('${r.id}')" class="px-2.5 py-1 text-xs font-semibold text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-md transition" title="Convert to Invoice">
+                        <button onclick="CMS_TRANSACTIONS.openChallanConversionModal('${r.id}')" class="px-2.5 py-1 text-xs font-semibold text-purple-700 bg-purple-100 hover:bg-purple-200 rounded-sm transition" title="Convert to Invoice">
                           Convert
                         </button>
                       ` : ''}
-                      <button onclick="CMS_TRANSACTIONS.deleteReceipt('${r.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition" title="Delete Receipt">
+                      <button onclick="CMS_TRANSACTIONS.deleteReceipt('${r.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-sm transition" title="Delete Receipt">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                       </button>
                     </td>
@@ -202,7 +202,7 @@ window.CMS_TRANSACTIONS = {
       <form id="receipt-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_TRANSACTIONS.saveReceipt('${receiptId || ''}', false);">
         <input type="hidden" id="r-type" value="${r.type}" />
         
-        <div class="p-3.5 rounded-md ${r.type === 'Challan' ? 'bg-amber-50 border border-amber-200 text-amber-900' : 'bg-slate-50 border border-slate-200 text-blue-600'} font-medium flex items-center justify-between">
+        <div class="p-3.5 rounded-sm ${r.type === 'Challan' ? 'bg-amber-50 border border-amber-200 text-amber-900' : 'bg-slate-50 border border-slate-200 text-blue-600'} font-medium flex items-center justify-between">
           <span class="flex items-center gap-1.5">
             <i data-lucide="${r.type === 'Challan' ? 'truck' : 'receipt'}" class="w-4 h-4"></i>
             <span>Receiving Consignment via <strong>${r.type === 'Challan' ? 'Delivery Challan' : 'Tax Invoice'}</strong></span>
@@ -211,7 +211,7 @@ window.CMS_TRANSACTIONS = {
         </div>
 
         <!-- COMMERCIAL QUOTATION NUMBER AUTO-FILL OPERATION BOX -->
-        <div class="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-md space-y-2.5 shadow-sm">
+        <div class="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-sm space-y-2.5 shadow-sm">
           <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
             <span class="font-bold text-blue-600 text-xs flex items-center gap-1.5 uppercase tracking-wide">
               <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-600"></i>
@@ -228,7 +228,7 @@ window.CMS_TRANSACTIONS = {
                 Enter or Choose Quotation Number
               </label>
               <div class="relative">
-                <input type="text" id="r-quote-lookup" list="quotation-datalist" value="${r.quotationNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_TRANSACTIONS.onQuotationLookup(this.value);" placeholder="Type or select Quotation No. (e.g. QT-2026-881)..." class="w-full pl-8 pr-3 py-2 border-2 border-blue-400 rounded-md font-mono text-xs font-bold text-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 bg-white" />
+                <input type="text" id="r-quote-lookup" list="quotation-datalist" value="${r.quotationNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_TRANSACTIONS.onQuotationLookup(this.value);" placeholder="Type or select Quotation No. (e.g. QT-2026-881)..." class="w-full pl-8 pr-3 py-2 border-2 border-blue-400 rounded-sm font-mono text-xs font-bold text-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-500 bg-white" />
                 <i data-lucide="search" class="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
                 <datalist id="quotation-datalist">
                   ${allQuotes.map(q => `<option value="${q.quotationNo}">${q.quotationNo} | ${q.vendorName} • ${q.materialName} (₹${Number(q.rate).toFixed(2)})</option>`).join('')}
@@ -237,11 +237,11 @@ window.CMS_TRANSACTIONS = {
             </div>
 
             <div class="sm:col-span-4 flex items-center gap-2">
-              <button type="button" onclick="CMS_TRANSACTIONS.applyQuotationLookup()" class="w-full px-3 py-2 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+              <button type="button" onclick="CMS_TRANSACTIONS.applyQuotationLookup()" class="w-full px-3 py-2 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                 <span>Auto-Fill Form</span>
               </button>
-              <button type="button" onclick="CMS_TRANSACTIONS.clearQuotationLookup()" class="px-2.5 py-2 text-slate-500 hover:text-slate-800 bg-white border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs" title="Clear Auto-Fill">
+              <button type="button" onclick="CMS_TRANSACTIONS.clearQuotationLookup()" class="px-2.5 py-2 text-slate-500 hover:text-slate-800 bg-white border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs" title="Clear Auto-Fill">
                 <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
               </button>
             </div>
@@ -260,7 +260,7 @@ window.CMS_TRANSACTIONS = {
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Select Vendor *</label>
-            <select id="r-vendor" required onchange="CMS_TRANSACTIONS.updateReceiptTaxMode(this.value)" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
+            <select id="r-vendor" required onchange="CMS_TRANSACTIONS.updateReceiptTaxMode(this.value)" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
               <option value="">-- Choose Vendor --</option>
               ${vendors.map(v => `<option value="${v.id}" ${r.vendorId === v.id ? 'selected' : ''}>${v.name}</option>`).join('')}
             </select>
@@ -268,16 +268,16 @@ window.CMS_TRANSACTIONS = {
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Type ${r.type === 'Challan' ? 'Delivery Challan No.' : 'Tax Invoice No.'} *</label>
-            <input type="text" id="r-docno" required value="${r.docNo || ''}" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="${r.type === 'Challan' ? 'e.g. DC/2026/102' : 'e.g. INV/2026/501'}" />
+            <input type="text" id="r-docno" required value="${r.docNo || ''}" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="${r.type === 'Challan' ? 'e.g. DC/2026/102' : 'e.g. INV/2026/501'}" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Receipt Date *</label>
-            <input type="date" id="r-date" required value="${r.docDate || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" />
+            <input type="date" id="r-date" required value="${r.docDate || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" />
           </div>
         </div>
 
         <!-- Material Selection Mode: Existing Material vs Auto Material Filing -->
-        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-3">
+        <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-3">
           <div class="flex items-center justify-between pb-2 border-b border-slate-200">
             <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
               <i data-lucide="database" class="w-4 h-4 text-blue-600"></i>
@@ -294,14 +294,14 @@ window.CMS_TRANSACTIONS = {
           <!-- OPTION A: EXISTING MASTER SAVED ITEM -->
           <div id="r-existing-mat-sec">
             <label class="block font-bold text-slate-700 mb-1">Select Existing Material (Consumable or Fixed Asset) *</label>
-            <select id="r-mat" onchange="CMS_TRANSACTIONS.onReceiptMaterialChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
+            <select id="r-mat" onchange="CMS_TRANSACTIONS.onReceiptMaterialChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
               <option value="">-- Choose Material --</option>
               ${consumables.map(m => `<option value="${m.id}" data-brand="${m.brand || ''}" data-unit="${m.unit}" data-rate="${m.quotationRate || m.vendor1Rate || 0}" ${r.materialId === m.id ? 'selected' : ''}>[${m.inventoryType || 'Consumer'}] ${m.materialName} (${m.brand || 'No Brand'}) - Code: ${m.id}</option>`).join('')}
             </select>
           </div>
 
           <!-- OPTION B: AUTO MATERIAL FILING (NEW ITEM REGISTRATION DIRECTLY FROM RECEIPT) -->
-          <div id="r-auto-master-sec" class="hidden space-y-3 p-3.5 bg-slate-50/70 border border-slate-200 rounded-md">
+          <div id="r-auto-master-sec" class="hidden space-y-3 p-3.5 bg-slate-50/70 border border-slate-200 rounded-sm">
             <div class="text-[11px] font-bold text-blue-600 uppercase tracking-wide flex items-center gap-1.5">
               <i data-lucide="sparkles" class="w-3.5 h-3.5 text-blue-600"></i>
               <span>Auto Material Filing: Enter details to simultaneously register in Material Catalog</span>
@@ -398,7 +398,7 @@ window.CMS_TRANSACTIONS = {
 
         
         <!-- Dedicated Warranty Section (Relocated from Material Master as requested) -->
-        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-3">
+        <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-3">
           <div class="flex items-center justify-between">
             <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
               <i data-lucide="shield" class="w-4 h-4 text-emerald-600"></i>
@@ -413,7 +413,7 @@ window.CMS_TRANSACTIONS = {
           <div id="r-warranty-container" class="hidden space-y-3 pt-2 border-t border-slate-200">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <!-- Part 1: Replacement Warranty -->
-              <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-2">
+              <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-2">
                 <span class="font-bold text-blue-600 text-[11px] block">1. Replacement Warranty</span>
                 <div class="grid grid-cols-2 gap-2">
                   <div>
@@ -428,7 +428,7 @@ window.CMS_TRANSACTIONS = {
               </div>
 
               <!-- Part 2: Repair Warranty -->
-              <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-2">
+              <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-2">
                 <span class="font-bold text-purple-900 text-[11px] block">2. Repair / Service Warranty</span>
                 <div class="grid grid-cols-2 gap-2">
                   <div>
@@ -456,30 +456,30 @@ window.CMS_TRANSACTIONS = {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-white border border-slate-200 rounded-md rounded-md">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-white border border-slate-200 rounded-sm rounded-sm">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Received Quantity *</label>
-            <input type="number" step="0.01" id="r-qty" required value="${r.qty || ''}" oninput="CMS_TRANSACTIONS.recalcReceiptTotal()" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono font-semibold text-sm" placeholder="0" />
+            <input type="number" step="0.01" id="r-qty" required value="${r.qty || ''}" oninput="CMS_TRANSACTIONS.recalcReceiptTotal()" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono font-semibold text-sm" placeholder="0" />
             <span id="r-unit-label" class="text-[10px] text-slate-500 mt-1 block">Unit: -</span>
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Unit Rate (₹) *</label>
-            <input type="number" step="0.01" id="r-rate" required value="${r.rate || ''}" oninput="CMS_TRANSACTIONS.recalcReceiptTotal()" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono font-bold text-blue-600" placeholder="0.00" />
+            <input type="number" step="0.01" id="r-rate" required value="${r.rate || ''}" oninput="CMS_TRANSACTIONS.recalcReceiptTotal()" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono font-bold text-blue-600" placeholder="0.00" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Calculated Total (₹)</label>
-            <input type="text" id="r-total" readonly value="${r.totalAmount || '0.00'}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-100 font-mono font-semibold text-blue-600" />
+            <input type="text" id="r-total" readonly value="${r.totalAmount || '0.00'}" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-slate-100 font-mono font-semibold text-blue-600" />
           </div>
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Remarks / Quality Inspection Notes</label>
-          <input type="text" id="r-remarks" value="${r.remarks || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="Inspection passed, batch details, etc." />
+          <input type="text" id="r-remarks" value="${r.remarks || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="Inspection passed, batch details, etc." />
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Submit for Approval</span>
           </button>
@@ -814,10 +814,10 @@ window.CMS_TRANSACTIONS = {
 
     return `
       <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-md bg-purple-50 text-purple-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
               </div>
               <span>Delivery Challan to Invoice Conversion</span>
@@ -826,7 +826,7 @@ window.CMS_TRANSACTIONS = {
           </div>
         </div>
 
-        <div class="p-3.5 bg-cyan-50 border border-cyan-200 rounded-md text-cyan-950 text-xs flex items-start gap-2.5">
+        <div class="p-3.5 bg-cyan-50 border border-cyan-200 rounded-sm text-cyan-950 text-xs flex items-start gap-2.5">
           <i data-lucide="info" class="w-4 h-4 text-cyan-700 shrink-0 mt-0.5"></i>
           <div>
             <strong>Conversion direction:</strong> Delivery Challan can be finalized as an Invoice when vendor billing arrives.
@@ -834,7 +834,7 @@ window.CMS_TRANSACTIONS = {
           </div>
         </div>
 
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
               <tr>
@@ -865,19 +865,19 @@ window.CMS_TRANSACTIONS = {
                   </td>
                   <td class="p-4">
                     ${c.isConvertedToInvoice ? `
-                      <span class="inline-flex items-center gap-1 text-emerald-800 font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-200 text-xs">
+                      <span class="inline-flex items-center gap-1 text-emerald-800 font-bold bg-emerald-50 px-2 py-1 rounded-sm border border-emerald-200 text-xs">
                         <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i> Invoiced: #${c.linkedInvoiceNo}
                       </span>
                       <div class="text-[10px] text-slate-500 mt-1">Dated: ${c.linkedInvoiceDate}</div>
                     ` : `
-                      <span class="inline-flex items-center gap-1 text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 text-xs">
+                      <span class="inline-flex items-center gap-1 text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded-sm border border-amber-200 text-xs">
                         <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i> Pending Invoice
                       </span>
                     `}
                   </td>
                   <td class="p-4 text-right">
                     ${!c.isConvertedToInvoice ? `
-                      <button onclick="CMS_TRANSACTIONS.openChallanConversionModal('${c.id}')" class="px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-md transition flex items-center gap-1 ml-auto">
+                      <button onclick="CMS_TRANSACTIONS.openChallanConversionModal('${c.id}')" class="px-3 py-1.5 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-sm transition flex items-center gap-1 ml-auto">
                         <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
                         <span>Convert to Invoice</span>
                       </button>
@@ -901,7 +901,7 @@ window.CMS_TRANSACTIONS = {
 
     const content = `
       <form id="conv-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_TRANSACTIONS.executeChallanConversion('${c.id}');">
-        <div class="p-4 bg-purple-50 border border-purple-200 rounded-md text-purple-900 space-y-1">
+        <div class="p-4 bg-purple-50 border border-purple-200 rounded-sm text-purple-900 space-y-1">
           <strong>Convert Delivery Challan to Official Tax Invoice:</strong>
           <div class="mt-1">Challan No: <span class="font-mono font-bold">${c.docNo}</span> | Vendor: <span class="font-semibold">${c.vendorName}</span></div>
           <div>Material: <strong>${c.materialName}</strong> (${c.qty} ${c.unit})</div>
@@ -910,27 +910,27 @@ window.CMS_TRANSACTIONS = {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Vendor Tax Invoice Number *</label>
-            <input type="text" id="conv-inv-no" required class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="e.g. INV/2026/099" />
+            <input type="text" id="conv-inv-no" required class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="e.g. INV/2026/099" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Tax Invoice Date *</label>
-            <input type="date" id="conv-inv-date" required value="${new Date().toISOString().split('T')[0]}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+            <input type="date" id="conv-inv-date" required value="${new Date().toISOString().split('T')[0]}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:outline-none" />
           </div>
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Final Invoiced Value (₹) *</label>
-          <input type="number" step="0.01" id="conv-inv-amt" required value="${c.totalAmount || 0}" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+          <input type="number" step="0.01" id="conv-inv-amt" required value="${c.totalAmount || 0}" class="w-full font-mono px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Conversion Remarks / Billing Verification</label>
-          <input type="text" id="conv-remarks" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Rates verified against PO and physical challan" />
+          <input type="text" id="conv-remarks" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Rates verified against PO and physical challan" />
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
             <i data-lucide="check" class="w-4 h-4"></i>
             <span>Finalize Conversion</span>
           </button>
@@ -990,34 +990,34 @@ window.CMS_TRANSACTIONS = {
 
     return `
       <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-md bg-slate-50 text-blue-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-full bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="git-pull-request" class="w-4 h-4"></i>
               </div>
               <span>Department Material Requests (Push & Pull)</span>
             </h2>
             <p class="text-xs text-slate-500 mt-1">Inter-departmental material logistics supporting <strong>PULL</strong> (store requisitions) and <strong>PUSH</strong> (inter-departmental allocations).</p>
           </div>
-          <button onclick="CMS_TRANSACTIONS.openRequestModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs">
+          <button onclick="CMS_TRANSACTIONS.openRequestModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition text-xs">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>Raise Push / Pull Request</span>
           </button>
         </div>
 
         <!-- Toolbar -->
-        <div class="bg-white p-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
           <div class="relative w-full sm:w-80">
             <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" value="${this.requestSearchQuery}" oninput="CMS_TRANSACTIONS.onRequestSearch(this.value)" placeholder="Search req no, push/pull, item, dept..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+            <input type="text" value="${this.requestSearchQuery}" oninput="CMS_TRANSACTIONS.onRequestSearch(this.value)" placeholder="Search req no, push/pull, item, dept..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs focus:bg-white focus:outline-none" />
           </div>
           <div class="text-xs text-slate-500 font-medium">
             Showing <strong class="text-slate-800">${list.length}</strong> of ${store.requests.length} requests
           </div>
         </div>
 
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
               <tr>
@@ -1073,15 +1073,15 @@ window.CMS_TRANSACTIONS = {
                     </td>
                     <td class="p-4 text-right space-x-1">
                       ${isPending ? `
-                        <button onclick="CMS_TRANSACTIONS.openIssuanceModal('${req.id}')" class="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md transition inline-flex items-center gap-1 shadow-sm" title="Issue Material from Store">
+                        <button onclick="CMS_TRANSACTIONS.openIssuanceModal('${req.id}')" class="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-sm transition inline-flex items-center gap-1 shadow-sm" title="Issue Material from Store">
                           <i data-lucide="file-output" class="w-3.5 h-3.5"></i>
                           <span>Issue Slip</span>
                         </button>
                       ` : ''}
-                      <button onclick="CMS_TRANSACTIONS.openRequestModal('${req.id}')" class="px-2 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition">
+                      <button onclick="CMS_TRANSACTIONS.openRequestModal('${req.id}')" class="px-2 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-sm transition">
                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                       </button>
-                      <button onclick="CMS_TRANSACTIONS.deleteRequest('${req.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition">
+                      <button onclick="CMS_TRANSACTIONS.deleteRequest('${req.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-sm transition">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                       </button>
                     </td>
@@ -1122,10 +1122,10 @@ window.CMS_TRANSACTIONS = {
       <form id="req-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_TRANSACTIONS.saveRequest('${reqId || ''}');">
         
         <!-- PUSH vs PULL MODE SELECTION -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md space-y-2">
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-2">
           <label class="block font-bold text-slate-800 text-xs">Select Inter-Departmental Transfer Mode *</label>
           <div class="grid grid-cols-2 gap-3">
-            <label class="flex items-start gap-2.5 p-3 rounded-md border-2 border-blue-300 bg-slate-50/70 cursor-pointer">
+            <label class="flex items-start gap-2.5 p-3 rounded-sm border-2 border-blue-300 bg-slate-50/70 cursor-pointer">
               <input type="radio" name="req-mode" value="PULL" ${r.transferMode !== 'PUSH' ? 'checked' : ''} onchange="CMS_TRANSACTIONS.onTransferModeChange('PULL')" class="mt-0.5 text-blue-600 focus:ring-slate-500" />
               <div>
                 <div class="font-bold text-blue-600 text-xs flex items-center gap-1">
@@ -1135,7 +1135,7 @@ window.CMS_TRANSACTIONS = {
               </div>
             </label>
 
-            <label class="flex items-start gap-2.5 p-3 rounded-md border-2 border-purple-300 bg-purple-50/70 cursor-pointer">
+            <label class="flex items-start gap-2.5 p-3 rounded-sm border-2 border-purple-300 bg-purple-50/70 cursor-pointer">
               <input type="radio" name="req-mode" value="PUSH" ${r.transferMode === 'PUSH' ? 'checked' : ''} onchange="CMS_TRANSACTIONS.onTransferModeChange('PUSH')" class="mt-0.5 text-purple-600 focus:ring-purple-500" />
               <div>
                 <div class="font-bold text-purple-900 text-xs flex items-center gap-1">
@@ -1148,7 +1148,7 @@ window.CMS_TRANSACTIONS = {
         </div>
 
         <!-- ROUTING: SOURCE & DESTINATION DEPARTMENTS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-white border border-slate-200 rounded-md rounded-md">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-white border border-slate-200 rounded-sm rounded-sm">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Source Location / Department *</label>
             <input type="text" id="rq-src" list="dept-list" required value="${r.sourceDept || 'Central Stores'}" class="w-full px-3 py-2 border border-slate-300 rounded bg-white font-medium" placeholder="Source Dept (e.g. Central Stores)" />
@@ -1164,7 +1164,7 @@ window.CMS_TRANSACTIONS = {
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Select Consumable / Equipment *</label>
-          <select id="rq-mat" required onchange="CMS_TRANSACTIONS.onRequestMaterialChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
+          <select id="rq-mat" required onchange="CMS_TRANSACTIONS.onRequestMaterialChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
             <option value="">-- Choose Consumable or Asset --</option>
             ${consumables.map(m => {
               const liveStock = window.CMS_STORE.getStock(m.id);
@@ -1177,33 +1177,33 @@ window.CMS_TRANSACTIONS = {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Type Required Quantity *</label>
-            <input type="number" step="0.01" id="rq-qty" required value="${r.qty || 1}" class="w-full font-mono font-bold px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="1" />
+            <input type="number" step="0.01" id="rq-qty" required value="${r.qty || 1}" class="w-full font-mono font-bold px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="1" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Priority</label>
-            <select id="rq-prio" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+            <select id="rq-prio" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
               <option value="Routine" ${r.priority === 'Routine' ? 'selected' : ''}>Routine</option>
               <option value="Urgent" ${r.priority === 'Urgent' ? 'selected' : ''}>Urgent</option>
             </select>
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Requested / Authorizing Person *</label>
-            <input type="text" id="rq-person" required value="${r.requestedBy || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Ramesh Chandra / Officer In-Charge" />
+            <input type="text" id="rq-person" required value="${r.requestedBy || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Ramesh Chandra / Officer In-Charge" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Needed By Date *</label>
-            <input type="date" id="rq-date" required value="${r.requiredDate || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+            <input type="date" id="rq-date" required value="${r.requiredDate || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
           </div>
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Remarks / Purpose of Requisition / Push Allocation</label>
-          <input type="text" id="rq-remarks" value="${r.remarks || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Reason for requirement or inter-dept push allocation" />
+          <input type="text" id="rq-remarks" value="${r.remarks || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Reason for requirement or inter-dept push allocation" />
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Submit Request</span>
           </button>
@@ -1325,34 +1325,34 @@ window.CMS_TRANSACTIONS = {
 
     return `
       <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <i data-lucide="file-output" class="w-4 h-4"></i>
               </div>
               <span>Material Store Issuance</span>
             </h2>
             <p class="text-xs text-slate-500 mt-1">Issue requested consumables from central store. Available stock is shown against each request with printable issue slips.</p>
           </div>
-          <button onclick="CMS_TRANSACTIONS.openIssuanceModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-md shadow transition text-xs">
+          <button onclick="CMS_TRANSACTIONS.openIssuanceModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>New Store Issuance</span>
           </button>
         </div>
 
         <!-- Toolbar -->
-        <div class="bg-white p-4 rounded-md border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="bg-white p-4 rounded-sm border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-3">
           <div class="relative w-full sm:w-80">
             <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" value="${this.issuanceSearchQuery}" oninput="CMS_TRANSACTIONS.onIssuanceSearch(this.value)" placeholder="Search issue slip, item, recipient..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs focus:bg-white focus:outline-none" />
+            <input type="text" value="${this.issuanceSearchQuery}" oninput="CMS_TRANSACTIONS.onIssuanceSearch(this.value)" placeholder="Search issue slip, item, recipient..." class="table-search-input w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-sm text-xs focus:bg-white focus:outline-none" />
           </div>
           <div class="text-xs text-slate-500 font-medium">
             Showing <strong class="text-slate-800">${list.length}</strong> of ${store.issuances.length} issuances
           </div>
         </div>
 
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
               <tr>
@@ -1396,11 +1396,11 @@ window.CMS_TRANSACTIONS = {
                     ${window.CMS_STORE.formatDate(iss.issuedAt)}
                   </td>
                   <td class="p-4 text-right space-x-1">
-                    <button onclick="CMS_PRINT.printIssueSlip(${JSON.stringify(iss).replace(/"/g, '&quot;')})" class="px-3 py-1.5 text-xs font-bold text-blue-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-md transition inline-flex items-center gap-1 shadow-sm" title="Print Official Issue Slip">
+                    <button onclick="CMS_PRINT.printIssueSlip(${JSON.stringify(iss).replace(/"/g, '&quot;')})" class="px-3 py-1.5 text-xs font-bold text-blue-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-sm transition inline-flex items-center gap-1 shadow-sm" title="Print Official Issue Slip">
                       <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                       <span>Print Slip</span>
                     </button>
-                    <button onclick="CMS_TRANSACTIONS.deleteIssuance('${iss.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition">
+                    <button onclick="CMS_TRANSACTIONS.deleteIssuance('${iss.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-sm transition">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                   </td>
@@ -1428,14 +1428,14 @@ window.CMS_TRANSACTIONS = {
 
     const content = `
       <form id="issue-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_TRANSACTIONS.executeIssuance();">
-        <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-md text-emerald-950 font-medium flex items-center gap-2">
+        <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-950 font-medium flex items-center gap-2">
           <i data-lucide="info" class="w-4 h-4 text-emerald-600 shrink-0"></i>
           <span>Available stock is dynamically shown against each request. You may modify the issued quantity as required.</span>
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Select Pending Request * (Available stock shown)</label>
-          <select id="iss-req" required onchange="CMS_TRANSACTIONS.onIssuanceRequestChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+          <select id="iss-req" required onchange="CMS_TRANSACTIONS.onIssuanceRequestChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
             <option value="">-- Choose Approved Requisition --</option>
             ${pendingReqs.map(r => {
               const liveStock = window.CMS_STORE.getStock(r.materialId);
@@ -1458,7 +1458,7 @@ window.CMS_TRANSACTIONS = {
         </div>
 
         <!-- Dynamic Request Info & Live Stock Callout -->
-        <div id="iss-detail-panel" class="hidden p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-3">
+        <div id="iss-detail-panel" class="hidden p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-3">
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div>
               <span class="text-slate-400 block text-[10px] uppercase font-bold">Material:</span>
@@ -1481,19 +1481,19 @@ window.CMS_TRANSACTIONS = {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-200">
             <div>
               <label class="block font-bold text-slate-700 mb-1">Modify Qty if Required (Qty to Issue) *</label>
-              <input type="number" step="0.01" id="iss-qty" required class="w-full font-mono font-semibold text-sm px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <input type="number" step="0.01" id="iss-qty" required class="w-full font-mono font-semibold text-sm px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
               <span id="iss-stock-warning" class="text-xs text-red-600 font-bold hidden mt-1 block">Issue quantity exceeds available warehouse stock!</span>
             </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">Issue Remarks / Purpose</label>
-              <input type="text" id="iss-remarks" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Issued for monthly audit work" />
+              <input type="text" id="iss-remarks" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Issued for monthly audit work" />
             </div>
           </div>
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
             <i data-lucide="printer" class="w-4 h-4"></i>
             <span>Issue & Print Slip</span>
           </button>
@@ -1635,23 +1635,23 @@ window.CMS_TRANSACTIONS = {
 
     return `
       <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-md bg-slate-50 text-blue-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-full bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
               </div>
               <span>Return to Store</span>
             </h2>
             <p class="text-xs text-slate-500 mt-1">Record unused or excess consumables returned back to store. Approval replenishes available inventory.</p>
           </div>
-          <button onclick="CMS_TRANSACTIONS.openReturnModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs">
+          <button onclick="CMS_TRANSACTIONS.openReturnModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition text-xs">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>Record Return</span>
           </button>
         </div>
 
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
               <tr>
@@ -1687,11 +1687,11 @@ window.CMS_TRANSACTIONS = {
                   </td>
                   <td class="p-4 text-right space-x-1">
                     ${ret.status === 'Pending Approval' && role === 'Admin' ? `
-                      <button onclick="CMS_TRANSACTIONS.approveReturn('${ret.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-md transition">
+                      <button onclick="CMS_TRANSACTIONS.approveReturn('${ret.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-sm transition">
                         Approve
                       </button>
                     ` : ''}
-                    <button onclick="CMS_TRANSACTIONS.deleteReturn('${ret.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition">
+                    <button onclick="CMS_TRANSACTIONS.deleteReturn('${ret.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-sm transition">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                   </td>
@@ -1712,7 +1712,7 @@ window.CMS_TRANSACTIONS = {
       <form id="ret-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_TRANSACTIONS.saveReturn();">
         <div>
           <label class="block font-bold text-slate-700 mb-1">Select Consumable Material *</label>
-          <select id="rt-mat" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
+          <select id="rt-mat" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
             <option value="">-- Choose Consumable --</option>
             ${consumables.map(m => `<option value="${m.id}">${m.materialName} (${m.brand || 'Standard'})</option>`).join('')}
           </select>
@@ -1721,11 +1721,11 @@ window.CMS_TRANSACTIONS = {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Type Returned Quantity *</label>
-            <input type="number" step="0.01" id="rt-qty" required class="w-full font-mono font-bold px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="1" />
+            <input type="number" step="0.01" id="rt-qty" required class="w-full font-mono font-bold px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="1" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Condition of Returned Goods</label>
-            <select id="rt-cond" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+            <select id="rt-cond" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
               <option value="Good Condition (Direct Restock)">Good Condition (Direct Restock)</option>
               <option value="Partially Used / Usable">Partially Used / Usable</option>
               <option value="Under Repair / Service Due">Under Repair / Service Due</option>
@@ -1735,22 +1735,22 @@ window.CMS_TRANSACTIONS = {
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Returned By (Person Name) *</label>
-            <input type="text" id="rt-person" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Amitabh Sen" />
+            <input type="text" id="rt-person" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Amitabh Sen" />
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Department *</label>
-            <input type="text" id="rt-dept" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Accounts & Finance" />
+            <input type="text" id="rt-dept" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Accounts & Finance" />
           </div>
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Remarks / Reason for Return</label>
-          <input type="text" id="rt-remarks" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Excess quantity unconsumed" />
+          <input type="text" id="rt-remarks" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Excess quantity unconsumed" />
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Submit Return for Approval</span>
           </button>
@@ -1834,23 +1834,23 @@ window.CMS_TRANSACTIONS = {
 
     return `
       <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-md bg-slate-50 text-blue-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-full bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="scale" class="w-4 h-4"></i>
               </div>
               <span>Stock Adjustment (+ / -)</span>
             </h2>
             <p class="text-xs text-slate-500 mt-1">Directly increase (+) or decrease (-) material quantities for damaged goods, expired stock, or count corrections.</p>
           </div>
-          <button onclick="CMS_TRANSACTIONS.openStockAdjustmentModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs">
+          <button onclick="CMS_TRANSACTIONS.openStockAdjustmentModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition text-xs">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>New Stock Adjustment</span>
           </button>
         </div>
 
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
               <tr>
@@ -1875,13 +1875,13 @@ window.CMS_TRANSACTIONS = {
                   </td>
                   <td class="p-4 text-center font-mono font-bold text-sm">
                     ${adj.type === 'ADD' ? `
-                      <span class="text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">+${adj.qty} ${adj.unit}</span>
+                      <span class="text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-sm border border-emerald-200">+${adj.qty} ${adj.unit}</span>
                     ` : `
-                      <span class="text-red-800 bg-red-50 px-2.5 py-1 rounded-md border border-red-200">-${adj.qty} ${adj.unit}</span>
+                      <span class="text-red-800 bg-red-50 px-2.5 py-1 rounded-sm border border-red-200">-${adj.qty} ${adj.unit}</span>
                     `}
                   </td>
                   <td class="p-4">
-                    <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-100 text-slate-800">
+                    <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-sm bg-slate-100 text-slate-800">
                       ${adj.reason}
                     </span>
                   </td>
@@ -1893,11 +1893,11 @@ window.CMS_TRANSACTIONS = {
                   </td>
                   <td class="p-4 text-right space-x-1">
                     ${adj.status === 'Pending Approval' && role === 'Admin' ? `
-                      <button onclick="CMS_TRANSACTIONS.approveStockAdjustment('${adj.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-md transition">
+                      <button onclick="CMS_TRANSACTIONS.approveStockAdjustment('${adj.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-sm transition">
                         Approve
                       </button>
                     ` : ''}
-                    <button onclick="CMS_TRANSACTIONS.deleteStockAdjustment('${adj.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition">
+                    <button onclick="CMS_TRANSACTIONS.deleteStockAdjustment('${adj.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-sm transition">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                   </td>
@@ -1916,14 +1916,14 @@ window.CMS_TRANSACTIONS = {
 
     const content = `
       <form id="adj-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_TRANSACTIONS.saveStockAdjustment();">
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-md text-indigo-950 font-medium flex items-center gap-2">
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm text-indigo-950 font-medium flex items-center gap-2">
           <i data-lucide="scale" class="w-4 h-4 text-blue-600 shrink-0"></i>
           <span>Direct Manual Stock Adjustment allows calibrating physical inventory with an audit trail and User-Admin approval.</span>
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 mb-1">Select Material *</label>
-          <select id="adj-mat" required onchange="CMS_TRANSACTIONS.onAdjustmentMaterialChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
+          <select id="adj-mat" required onchange="CMS_TRANSACTIONS.onAdjustmentMaterialChange()" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none bg-white">
             <option value="">-- Choose Material to Adjust --</option>
             ${consumables.map(m => {
               const liveStock = window.CMS_STORE.getStock(m.id);
@@ -1937,11 +1937,11 @@ window.CMS_TRANSACTIONS = {
           <div>
             <label class="block font-bold text-slate-700 mb-1">Adjustment Operation *</label>
             <div class="grid grid-cols-2 gap-2">
-              <label class="flex items-center gap-2 p-3 border-2 border-emerald-300 rounded-md bg-emerald-50/70 cursor-pointer">
+              <label class="flex items-center gap-2 p-3 border-2 border-emerald-300 rounded-sm bg-emerald-50/70 cursor-pointer">
                 <input type="radio" name="adj-type" value="ADD" onchange="CMS_TRANSACTIONS.recalcAdjustedStockPreview()" checked class="text-emerald-600 focus:ring-emerald-500" />
                 <span class="font-bold text-emerald-900 text-xs">Add (+) Stock</span>
               </label>
-              <label class="flex items-center gap-2 p-3 border-2 border-red-300 rounded-md bg-red-50/70 cursor-pointer">
+              <label class="flex items-center gap-2 p-3 border-2 border-red-300 rounded-sm bg-red-50/70 cursor-pointer">
                 <input type="radio" name="adj-type" value="DEDUCT" onchange="CMS_TRANSACTIONS.recalcAdjustedStockPreview()" class="text-red-600 focus:ring-red-500" />
                 <span class="font-bold text-red-900 text-xs">Deduct (-) Stock</span>
               </label>
@@ -1950,12 +1950,12 @@ window.CMS_TRANSACTIONS = {
 
           <div>
             <label class="block font-bold text-slate-700 mb-1">Adjustment Quantity *</label>
-            <input type="number" step="0.01" id="adj-qty" required oninput="CMS_TRANSACTIONS.recalcAdjustedStockPreview()" class="w-full font-mono font-semibold text-sm px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="0" />
+            <input type="number" step="0.01" id="adj-qty" required oninput="CMS_TRANSACTIONS.recalcAdjustedStockPreview()" class="w-full font-mono font-semibold text-sm px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="0" />
           </div>
         </div>
 
         <!-- Live Calculation Preview -->
-        <div class="p-3.5 bg-slate-100 border border-slate-200 rounded-md flex justify-between items-center text-xs">
+        <div class="p-3.5 bg-slate-100 border border-slate-200 rounded-sm flex justify-between items-center text-xs">
           <div>Current Store Balance: <strong id="adj-prev-curr" class="font-mono text-slate-800">0</strong></div>
           <div>Resulting New Stock: <strong id="adj-prev-new" class="font-mono text-blue-600 text-sm">0</strong></div>
         </div>
@@ -1963,7 +1963,7 @@ window.CMS_TRANSACTIONS = {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="block font-bold text-slate-700 mb-1">Reason Category *</label>
-            <select id="adj-reason" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+            <select id="adj-reason" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
               <option value="Damaged Goods">Damaged Goods / Spoilage</option>
               <option value="Expired / Shelf-life End">Expired / Shelf-life End</option>
               <option value="Found Unrecorded Stock">Found Unrecorded Stock</option>
@@ -1975,13 +1975,13 @@ window.CMS_TRANSACTIONS = {
           </div>
           <div>
             <label class="block font-bold text-slate-700 mb-1">Remarks / Justification *</label>
-            <input type="text" id="adj-remarks" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="e.g. Liquid leakage found during bin inspection" />
+            <input type="text" id="adj-remarks" required class="w-full px-3.5 py-2.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="e.g. Liquid leakage found during bin inspection" />
           </div>
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Submit for Approval</span>
           </button>

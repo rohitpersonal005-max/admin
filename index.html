@@ -41,7 +41,7 @@
   
       
   <!-- Custom Stylesheet -->
-  <link rel="stylesheet" href="css/custom.css??v=1791028528445" />
+  <link rel="stylesheet" href="css/custom.css" />`n  <link rel="stylesheet" href="css/enterprise.css" />
   
   
 
@@ -60,16 +60,16 @@
   <div class="flex h-screen overflow-hidden">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0 -translate-x-full">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white text-slate-600 border-r border-slate-200 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0 -translate-x-full">
       <!-- Brand Logo Header -->
-      <div class="px-5 py-4 flex items-center justify-center border-b border-slate-800 bg-slate-950/80 shrink-0">
-        <img src="assets/adminutes_logo.jpg??v=1791028528445" alt="Adminutes" class="w-full max-w-[190px] h-auto object-contain transition-all" />
+      <div class="px-5 py-4 flex items-center justify-center border-b border-slate-200 bg-white shrink-0">
+        <img src="assets/adminutes_logo.jpg??v=1791030680562" alt="Adminutes" class="w-full max-w-[190px] h-auto object-contain transition-all" />
       </div>
 
       
       <!-- Mobile Close (hidden on desktop) -->
-      <div class="md:hidden p-3 flex justify-end border-b border-slate-800">
-        <button onclick="CMS_APP.toggleMobileSidebar()" class="text-slate-400 hover:text-white p-1">
+      <div class="md:hidden p-3 flex justify-end border-b border-slate-200">
+        <button onclick="CMS_APP.toggleMobileSidebar()" class="text-slate-500 hover:text-white p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
@@ -79,18 +79,18 @@
         
                 <!-- 0. ADMIN HOME -->
         <div id="nav-admin-home" class="hidden mb-2">
-          <a href="#home" data-route="home" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:text-white transition font-bold bg-indigo-900/30 border border-indigo-800/50">
-            <i data-lucide="home" class="w-4 h-4 text-indigo-400"></i>
-            <span class="text-indigo-100">Admin Home</span>
+          <a href="#home" data-route="home" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-bold bg-blue-50 border border-blue-200">
+            <i data-lucide="home" class="w-4 h-4 text-blue-600"></i>
+            <span class="text-blue-800">Admin Home</span>
           </a>
         </div>
         <!-- 1. DASHBOARD -->
         <div>
-          <a href="#dashboard" data-route="dashboard" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
-            <i data-lucide="layout-grid" class="w-4 h-4 text-slate-400"></i>
+          <a href="#dashboard" data-route="dashboard" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+            <i data-lucide="layout-grid" class="w-4 h-4 text-slate-500"></i>
             <span>Executive Dashboard</span>
           </a>
-          <a href="#draft-workspace" data-route="draft-workspace" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:text-white transition font-medium mt-0.5">
+          <a href="#draft-workspace" data-route="draft-workspace" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium mt-0.5">
             <i data-lucide="file-clock" class="w-4 h-4 text-amber-400"></i>
             <span>Draft Workspace</span>
           </a>
@@ -105,20 +105,20 @@
             <i id="icon-inventory" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-inventory" class="space-y-0.5 pl-1.5 ml-2 transition-all">
-            <a href="#consumer-inventory" data-route="consumer-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#consumer-inventory" data-route="consumer-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="package" class="w-4 h-4 text-emerald-400"></i>
               <span>Consumable Materials</span>
             </a>
-            <a href="#fixed-inventory" data-route="fixed-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#fixed-inventory" data-route="fixed-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
               <span>Fixed Assets & PM</span>
             </a>
-            <a href="#stock-status" data-route="stock-status" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#stock-status" data-route="stock-status" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-400"></i>
               <span>Stock Status & Buffers</span>
             </a>
-            <a href="#stock-ledger" data-route="stock-ledger" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
-              <i data-lucide="list" class="w-4 h-4 text-slate-400"></i>
+            <a href="#stock-ledger" data-route="stock-ledger" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="list" class="w-4 h-4 text-slate-500"></i>
               <span>Stock Ledger Trail</span>
             </a>
           </div>
@@ -133,20 +133,20 @@
             <i id="icon-transactions" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-transactions" class="space-y-0.5 pl-1.5 ml-2 transition-all">
-            <a href="#vendors" data-route="vendors" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
-              <i data-lucide="building" class="w-4 h-4 text-slate-400"></i>
+            <a href="#vendors" data-route="vendors" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="building" class="w-4 h-4 text-slate-500"></i>
               <span>Vendor</span>
             </a>
-            <a href="#categories" data-route="categories" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
-              <i data-lucide="folder" class="w-4 h-4 text-slate-400"></i>
+            <a href="#categories" data-route="categories" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="folder" class="w-4 h-4 text-slate-500"></i>
               <span>Consumable Category</span>
             </a>
-            <a href="#consumables" data-route="consumables" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
-              <i data-lucide="box" class="w-4 h-4 text-slate-400"></i>
+            <a href="#consumables" data-route="consumables" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="box" class="w-4 h-4 text-slate-500"></i>
               <span>Material</span>
             </a>
-            <a href="#gst-slabs" data-route="gst-slabs" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
-              <i data-lucide="percent" class="w-4 h-4 text-slate-400"></i>
+            <a href="#gst-slabs" data-route="gst-slabs" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="percent" class="w-4 h-4 text-slate-500"></i>
               <span>GST / IGST Slabs</span>
             </a>
           </div>
@@ -161,36 +161,36 @@
             <i id="icon-reports" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-reports" class="space-y-0.5 pl-1.5 ml-2 transition-all">
-            <a href="#receipts" data-route="receipts" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#receipts" data-route="receipts" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="arrow-down-left" class="w-4 h-4 text-amber-400"></i>
               <span>Goods Inward (Auto Material)</span>
             </a>
-            <a href="#requests" data-route="requests" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#requests" data-route="requests" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="git-pull-request" class="w-4 h-4 text-sky-400"></i>
               <span>Dept Push / Pull Requests</span>
             </a>
-            <a href="#issuances" data-route="issuances" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#issuances" data-route="issuances" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
               <span>Store Issuance Slip</span>
             </a>
-            <a href="#returns" data-route="returns" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#returns" data-route="returns" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="rotate-ccw" class="w-4 h-4 text-rose-400"></i>
               <span>Return to Store</span>
             </a>
-            <a href="#stock-adjustments" data-route="stock-adjustments" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#stock-adjustments" data-route="stock-adjustments" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="sliders" class="w-4 h-4 text-purple-400"></i>
               <span>Stock Adjustment (+/-)</span>
             </a>
-            <a href="#challan-conversion" data-route="challan-conversion" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#challan-conversion" data-route="challan-conversion" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="refresh-cw" class="w-4 h-4 text-cyan-400"></i>
               <span>Challan to Invoice</span>
             </a>
-            <a href="#po-generation" data-route="po-generation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
-              <i data-lucide="shopping-cart" class="w-4 h-4 text-indigo-400"></i>
+            <a href="#po-generation" data-route="po-generation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="shopping-cart" class="w-4 h-4 text-blue-600"></i>
               <span>Purchase Order (PO)</span>
             </a>
-            <a href="#reconciliation" data-route="reconciliation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
-              <i data-lucide="clipboard" class="w-4 h-4 text-slate-400"></i>
+            <a href="#reconciliation" data-route="reconciliation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="clipboard" class="w-4 h-4 text-slate-500"></i>
               <span>Stock Reconciliation</span>
             </a>
           </div>
@@ -204,7 +204,7 @@
             </span>
           </div>
           <div class="space-y-0.5 pl-1.5 ml-2">
-            <a href="#pending-approvals" data-route="pending-approvals" class="nav-link flex items-center justify-between px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
+            <a href="#pending-approvals" data-route="pending-approvals" class="nav-link flex items-center justify-between px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <div class="flex items-center gap-2.5">
                 <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
                 <span>Approval Hub</span>
@@ -224,87 +224,93 @@
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
 
       <!-- Top Header -->
-      <header class="bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between shrink-0 no-print">
-        <div class="flex items-center gap-3">
-          <button onclick="CMS_APP.toggleMobileSidebar()" class="md:hidden p-1 text-slate-600 hover:text-white rounded hover:bg-slate-100">
-            <i data-lucide="menu" class="w-5 h-5"></i>
-          </button>
-          <div class="flex items-center gap-2 text-xs">
-            <span id="header-breadcrumb" class="text-slate-500 flex items-center gap-1.5">
-              <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-bold text-[10px] uppercase">Dashboard</span>
-              <span class="font-semibold text-slate-800">Executive Cockpit</span>
-            </span>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <!-- Pending Approvals Quick Pill -->
-          <a href="#pending-approvals" id="header-pending-badge" class="hidden px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-300 font-semibold text-[11px] rounded hover:bg-amber-100 transition flex items-center gap-1.5">
-            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-700"></i>
-            <span id="header-pending-badge-text">0 Pending</span>
-          </a>
-
-          <!-- User Profile Circle Avatar (Click to reveal user details) -->
-          <div class="relative">
-            <button onclick="CMS_APP.toggleUserDropdown()" id="user-profile-trigger" class="w-8 h-8 rounded-full p-0 flex items-center justify-center transition-all hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 cursor-pointer shadow-xs focus:outline-none" title="Click to view user profile">
-              <div id="header-avatar" class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shadow-xs">
-                RK
-              </div>
+      
+        <!-- Top Header -->
+        <header class="bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between shrink-0 no-print">
+          <div class="flex items-center gap-4">
+            <button onclick="CMS_APP.toggleMobileSidebar()" class="md:hidden p-1 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-100">
+              <i data-lucide="menu" class="w-5 h-5"></i>
             </button>
-
-            <!-- User Profile Dropdown -->
-            <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-xl border border-slate-200 shadow-xl z-50 p-3 text-xs divide-y divide-slate-100">
-              <div class="p-3 bg-slate-50 rounded-lg mb-2 border border-slate-100">
-                <div class="flex items-center gap-2.5 mb-2">
-                  <div id="dropdown-user-avatar" class="w-9 h-9 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                    RK
-                  </div>
-                  <div class="min-w-0">
-                    <div class="font-bold text-slate-900 text-sm truncate" id="dropdown-user-name">Rajesh Kumar</div>
-                    <div class="text-[10px] text-slate-400 font-mono" id="dropdown-user-id">EMP-2041</div>
-                  </div>
-                </div>
-                <div class="text-[11px] text-slate-500 mb-2" id="dropdown-user-dept">Central Warehouse & Logistics</div>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200" id="dropdown-user-role-badge">Store Staff (User)</span>
-                </div>
-                <button type="button" onclick="CMS_APP.viewMyProfile()" class="mt-2.5 w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded bg-white hover:bg-slate-100 text-slate-700 font-semibold border border-slate-200 transition text-[11px]">
-                  <i data-lucide="user" class="w-3 h-3 text-slate-500"></i>
-                  <span>View My Profile</span>
-                </button>
+            <div class="hidden sm:flex items-center gap-2 text-xs">
+              <span id="header-breadcrumb" class="text-slate-500 flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-bold text-[10px] uppercase">Dashboard</span>
+                <span class="font-semibold text-slate-800">Executive Cockpit</span>
+              </span>
+            </div>
+            <!-- Sleek Search Bar -->
+            <div class="hidden md:flex relative ml-4">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+              <input type="text" placeholder="Search orders, clients, POs..." class="w-72 bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-sm pl-8 pr-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white transition" />
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                <span class="text-[9px] font-mono font-bold bg-white border border-slate-200 text-slate-500 px-1 rounded shadow-sm">Ctrl</span>
+                <span class="text-[9px] font-mono font-bold bg-white border border-slate-200 text-slate-500 px-1 rounded shadow-sm">K</span>
               </div>
-
-              <!-- Staff Profiles Directory: Visible ONLY to STORE IN-CHARGE / ADMIN -->
-              <div class="py-2" id="checker-directory-section">
-                <div class="text-[10px] uppercase font-bold text-slate-400 px-1 mb-1.5 tracking-wider flex items-center justify-between">
-                  <span>Staff Profiles (Read-Only)</span>
-                  <span class="text-[9px] text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded font-semibold">Admin Only</span>
-                </div>
-                <div id="user-accounts-list" class="space-y-1">
-                  <!-- Dynamically populated by CMS_APP for Checker only -->
-                </div>
-                <button type="button" id="add-maker-button" onclick="CMS_APP.openAddMakerModal()" class="hidden mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-900 border border-indigo-200 hover:bg-indigo-100 transition font-bold text-xs">
-                  <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-                  <span>Add User</span>
-                </button>
-              </div>
-
-              <div class="pt-2 px-1 text-[10.5px] text-slate-400 flex items-center justify-between">
-                <span class="flex items-center gap-1"><i data-lucide="shield-check" class="w-3 h-3 text-emerald-600"></i> Four-Eyes SoD</span>
-                <span class="font-mono text-[10px]">Active Session</span>
-              </div>
-              <button type="button" onclick="CMS_APP.showCompanyProfile()" class="w-full flex items-center gap-2.5 px-2 py-2 rounded text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition font-bold mb-1 mt-1 text-left">
-                <i data-lucide="building-2" class="w-4 h-4 text-indigo-500"></i>
-                Company Profile & Docs
-              </button>
-              <button type="button" onclick="CMS_AUTH.logout()" class="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 rounded bg-slate-900 text-white hover:bg-slate-700 transition font-semibold">
-                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                Sign out
-              </button>
             </div>
           </div>
-        </div>
-      </header>
+  
+          <div class="flex items-center gap-3.5">
+            <!-- Professional Icons -->
+            <button class="text-slate-500 hover:text-slate-700 transition relative">
+              <i data-lucide="help-circle" class="w-4 h-4"></i>
+            </button>
+            <button class="text-slate-500 hover:text-slate-700 transition relative">
+              <i data-lucide="bell" class="w-4 h-4"></i>
+              <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
+            </button>
+            <button class="text-slate-500 hover:text-slate-700 transition relative mr-2">
+              <i data-lucide="settings" class="w-4 h-4"></i>
+            </button>
+
+            <!-- Pending Approvals Quick Pill -->
+            <a href="#pending-approvals" id="header-pending-badge" class="hidden px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-300 font-semibold text-[11px] rounded-sm hover:bg-amber-100 transition flex items-center gap-1.5">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-700"></i>
+              <span id="header-pending-badge-text">0 Pending</span>
+            </a>
+  
+            <!-- User Profile Avatar & Dropdown -->
+            <div class="relative flex items-center gap-2 cursor-pointer border-l border-slate-200 pl-4" onclick="CMS_APP.toggleUserDropdown()" id="user-profile-trigger">
+              <div id="header-avatar" class="w-7 h-7 rounded-sm bg-slate-800 text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                RK
+              </div>
+              <div class="hidden sm:block pr-1">
+                <div class="text-xs font-bold text-slate-800 leading-tight">Admin User</div>
+                <div class="text-[9px] text-slate-500 font-medium">Chief Operations</div>
+              </div>
+              <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-500"></i>
+
+              <!-- User Profile Dropdown -->
+              <div id="user-dropdown-menu" class="hidden absolute right-0 top-full mt-3 w-72 bg-white rounded-sm border border-slate-200 shadow-xl z-50 p-3 text-xs divide-y divide-slate-100">
+                <div class="p-3 bg-slate-50 rounded-sm mb-2 border border-slate-100">
+                  <div class="flex items-center gap-2.5 mb-2">
+                    <div id="dropdown-user-avatar" class="w-9 h-9 rounded-sm bg-slate-800 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm">
+                      RK
+                    </div>
+                    <div class="min-w-0">
+                      <div class="font-bold text-slate-900 text-sm truncate" id="dropdown-user-name">Rajesh Kumar</div>
+                      <div class="text-[10px] text-slate-500 font-mono" id="dropdown-user-id">EMP-2041</div>
+                    </div>
+                  </div>
+                  <div class="text-[11px] text-slate-500 mb-2" id="dropdown-user-dept">Central Warehouse & Logistics</div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] px-2 py-0.5 rounded-sm font-semibold uppercase tracking-wider bg-slate-200 text-slate-800 border border-slate-300" id="dropdown-user-role-badge">Store Staff (User)</span>
+                  </div>
+                  <button type="button" onclick="CMS_APP.viewMyProfile()" class="mt-2.5 w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-sm bg-white hover:bg-slate-100 text-slate-700 font-semibold border border-slate-200 transition text-[11px]">
+                    <i data-lucide="user" class="w-3 h-3 text-slate-500"></i>
+                    <span>View My Profile</span>
+                  </button>
+                </div>
+                <button type="button" onclick="CMS_APP.viewCompanyProfile()" class="w-full flex items-center gap-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium mt-1">
+                  <i data-lucide="building-2" class="w-4 h-4 text-slate-500"></i>
+                  Company Profile & Docs
+                </button>
+                <button type="button" onclick="CMS_AUTH.logout()" class="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-sm bg-slate-900 text-white hover:bg-slate-700 transition font-semibold">
+                  <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                  Sign out
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
 
       <!-- Main Body View Container -->
       <main class="flex-1 overflow-y-auto p-6" id="main-content">
@@ -326,7 +332,7 @@
           </div>
           <div>
             <div class="font-bold tracking-tight text-lg">Adminutes</div>
-            <div class="text-[10px] uppercase tracking-[0.18em] text-slate-400">Consumable ERP</div>
+            <div class="text-[10px] uppercase tracking-[0.18em] text-slate-500">Consumable ERP</div>
           </div>
         </div>
         <h1 class="text-2xl font-bold tracking-tight">Sign in to continue</h1>
@@ -343,19 +349,19 @@
         </div>
         <div id="auth-error" class="hidden rounded border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700"></div>
         <button id="auth-submit" type="submit" class="w-full rounded bg-blue-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60 transition">Sign in</button>
-        <p class="text-center text-[11px] text-slate-400">Authentication is managed by the application server.</p>
+        <p class="text-center text-[11px] text-slate-500">Authentication is managed by the application server.</p>
       </form>
     </div>
   </div>
 
   <!-- Reusable Modal Container -->
   <div id="modal-container" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-backdrop overflow-y-auto">
-    <div id="modal-card" class="relative w-full max-w-2xl bg-white rounded-md shadow-sm overflow-hidden transform transition-all my-8 border border-slate-300">
+    <div id="modal-card" class="relative w-full max-w-2xl bg-white rounded-sm shadow-sm overflow-hidden transform transition-all my-8 border border-slate-300">
       
       <!-- Modal Header -->
       <div class="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
         <h3 id="modal-title" class="font-semibold text-slate-900 text-sm">Modal Title</h3>
-        <button onclick="CMS_APP.closeModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-800/50 transition">
+        <button onclick="CMS_APP.closeModal()" class="text-slate-500 hover:text-slate-700 p-1 rounded hover:bg-slate-800/50 transition">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
@@ -369,7 +375,7 @@
 
   <!-- Dedicated Manager PIN Verification Modal -->
   <div id="pin-modal-container" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-backdrop">
-    <div class="relative w-full max-w-sm bg-white rounded-md border border-slate-300 shadow-2xl overflow-hidden p-6 text-center">
+    <div class="relative w-full max-w-sm bg-white rounded-sm border border-slate-300 shadow-2xl overflow-hidden p-6 text-center">
       <div class="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-3">
         <i data-lucide="shield-alert" class="w-6 h-6"></i>
       </div>
@@ -407,18 +413,18 @@
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- JavaScript Modules -->
-  <script src="js/store.js??v=1791028528445"></script>
-  <script src="js/auth.js??v=1791028528445"></script>
-  <script src="js/print_templates.js??v=1791028528445"></script>
-  <script src="js/masters.js??v=1791028528445"></script>
-  <script src="js/transactions.js??v=1791028528445"></script>
-  <script src="js/po_generator.js??v=1791028528445"></script>
-  <script src="js/reconciliation.js??v=1791028528445"></script>
-  <script src="js/reports.js??v=1791028528445"></script>
-  <script src="js/dashboard.js??v=1791028528445"></script>
-  <script src="js/drafts.js??v=1791028528445"></script>
-    <script src="js/home.js??v=1791028528445"></script>
-  <script src="js/app.js??v=1791028528445"></script>
+  <script src="js/store.js??v=1791030680562"></script>
+  <script src="js/auth.js??v=1791030680562"></script>
+  <script src="js/print_templates.js??v=1791030680562"></script>
+  <script src="js/masters.js??v=1791030680562"></script>
+  <script src="js/transactions.js??v=1791030680562"></script>
+  <script src="js/po_generator.js??v=1791030680562"></script>
+  <script src="js/reconciliation.js??v=1791030680562"></script>
+  <script src="js/reports.js??v=1791030680562"></script>
+  <script src="js/dashboard.js??v=1791030680562"></script>
+  <script src="js/drafts.js??v=1791030680562"></script>
+    <script src="js/home.js??v=1791030680562"></script>
+  <script src="js/app.js??v=1791030680562"></script>
 </body>
 </html>
 

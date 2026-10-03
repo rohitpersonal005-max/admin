@@ -13,7 +13,7 @@ window.CMS_PO = {
 
     return `
       <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
                Purchase Order Generation
@@ -25,7 +25,7 @@ window.CMS_PO = {
           </button>
         </div>
 
-        <div class="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-sm border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-sm">
               <thead class="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold text-xs uppercase tracking-wider">
@@ -119,7 +119,7 @@ window.CMS_PO = {
         </div>
 
         <!-- Material Consumption & Stock Analysis Panel -->
-        <div id="po-analysis-panel" class="hidden p-4 bg-blue-50/70 border border-blue-200 rounded-md space-y-3">
+        <div id="po-analysis-panel" class="hidden p-4 bg-blue-50/70 border border-blue-200 rounded-sm space-y-3">
           <div class="grid grid-cols-3 gap-3 text-xs">
             <div>
               <span class="text-blue-800 block">Monthly Consumption (with Buffer):</span>
@@ -137,7 +137,7 @@ window.CMS_PO = {
         </div>
 
         <!-- Replenishment Period Selection -->
-        <div class="p-4 bg-slate-50 border border-slate-200 rounded-md space-y-3">
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
           <label class="block font-semibold text-slate-800">Select Order to be Generated for Period *</label>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <label class="flex items-center gap-2 p-2.5 bg-white border border-slate-300 rounded-lg cursor-pointer hover:border-blue-500 transition">
@@ -172,7 +172,7 @@ window.CMS_PO = {
         </div>
 
         <!-- Approved Vendor Rate Selection -->
-        <div class="p-4 bg-amber-50/50 border border-amber-200 rounded-md space-y-3">
+        <div class="p-4 bg-amber-50/50 border border-amber-200 rounded-sm space-y-3">
           <h4 class="font-bold text-amber-950 text-xs uppercase tracking-wider">
             Approved Vendor Rate & Effective Date *
           </h4>
@@ -198,7 +198,7 @@ window.CMS_PO = {
         </div>
 
         <!-- Cost & Tax Summary Box -->
-        <div class="p-3 bg-slate-900 text-white rounded-md flex justify-between items-center text-xs">
+        <div class="p-3 bg-slate-900 text-white rounded-sm flex justify-between items-center text-xs">
           <div>
             <span>Unit Rate: <strong id="po-disp-rate" class="font-mono">₹0.00</strong></span> | 
             <span>Tax Amount: <strong id="po-disp-tax" class="font-mono">₹0.00</strong></span>
@@ -254,7 +254,7 @@ window.CMS_PO = {
 
     // Render the single approved vendor option.
     vContainer.innerHTML = `
-      <label class="flex flex-col p-3 border-2 border-blue-300 bg-blue-50/50 rounded-md cursor-pointer hover:border-blue-600 transition">
+      <label class="flex flex-col p-3 border-2 border-blue-300 bg-blue-50/50 rounded-sm cursor-pointer hover:border-blue-600 transition">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <input type="radio" name="po-vendor-sel" value="V1" checked onchange="CMS_PO.onVendorSelectionChange()" class="text-blue-600 focus:ring-blue-500" />

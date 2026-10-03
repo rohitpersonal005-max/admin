@@ -2,7 +2,7 @@
  * Adminutes - Pinterest Style Store Operations Dashboard
  * Features:
  * - Masonry Pin Grid (columns-1 to columns-4 responsive layout)
- * - Pinterest Rounded-Full Search & Topic Filter Pills Bar
+ * - Pinterest rounded-sm Search & Topic Filter Pills Bar
  * - Interactive Idea Pins for Reorder Alerts, Fixed Assets Care, Inward Receipts & Requisitions
  * - Red Pinterest Action Buttons & Tactile Card Hover Transitions
  */
@@ -101,7 +101,7 @@ window.CMS_DASHBOARD = {
     if (alerts.length === 0) return '';
 
     return `
-      <section class="dashboard-priority mb-5 border-2 border-red-200 bg-red-50/80 rounded-xl p-4 shadow-sm" aria-live="assertive">
+      <section class="dashboard-priority mb-5 border-2 border-red-200 bg-red-50/80 rounded-md p-4 shadow-sm" aria-live="assertive">
         <div class="flex items-center justify-between gap-3 mb-3">
           <div class="flex items-center gap-2 text-red-900">
             <i data-lucide="siren" class="w-5 h-5 text-red-600"></i>
@@ -142,12 +142,12 @@ window.CMS_DASHBOARD = {
 
     const content = `
       <div class="space-y-3 text-xs">
-        <div class="p-3 bg-red-50 border border-red-200 rounded-md text-red-950 flex items-start gap-2">
+        <div class="p-3 bg-red-50 border border-red-200 rounded-sm text-red-950 flex items-start gap-2">
           <i data-lucide="siren" class="w-5 h-5 text-red-600 shrink-0"></i>
           <div><strong>Immediate attention required.</strong><br />These alerts remain on the dashboard until the underlying action is completed.</div>
         </div>
         ${alerts.map(alert => `
-          <div class="p-3 bg-white border border-slate-200 rounded-md flex items-start gap-3">
+          <div class="p-3 bg-white border border-slate-200 rounded-sm flex items-start gap-3">
             <i data-lucide="${alert.icon}" class="w-4 h-4 text-${alert.tone}-600 shrink-0 mt-0.5"></i>
             <div class="flex-1">
               <div class="font-bold text-slate-900">${alert.title}</div>
@@ -301,7 +301,7 @@ window.CMS_DASHBOARD = {
       pins.push(`
         <div class="dashboard-approval-card pinterest-pin p-5 bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
           <div class="flex items-center justify-between mb-2">
-            <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold uppercase font-mono">
+            <span class="px-2.5 py-0.5 rounded-sm bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-bold uppercase font-mono">
               Four-Eyes SoD
             </span>
             <span class="text-[11px] font-mono text-amber-800 font-bold">PIN 4321</span>
@@ -312,12 +312,12 @@ window.CMS_DASHBOARD = {
             Statutory store approvals awaiting Store In-Charge (Col. Anita Sharma) verification.
           </p>
 
-          <div class="my-3 p-3 bg-white/80 rounded-xl border border-amber-200/80 flex items-center justify-between">
+          <div class="my-3 p-3 bg-white/80 rounded-md border border-amber-200/80 flex items-center justify-between">
             <span class="text-xs font-semibold text-slate-700">Waiting Sanction:</span>
             <span class="text-lg font-bold font-mono text-amber-900">${pendingCount} Entries</span>
           </div>
 
-          <button onclick="CMS_APP.navigateTo('pending-approvals')" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-full transition shadow-xs">
+          <button onclick="CMS_APP.navigateTo('pending-approvals')" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-sm transition shadow-xs">
             Review Approval Queue →
           </button>
         </div>
@@ -326,7 +326,7 @@ window.CMS_DASHBOARD = {
 
     // The dashboard is intentionally limited to unresolved alerts and approvals.
     return pins.length > 0 ? pins.join('') : `
-      <div class="p-8 text-center bg-white rounded-xl border border-slate-200">
+      <div class="p-8 text-center bg-white rounded-md border border-slate-200">
         <i data-lucide="check-circle-2" class="w-8 h-8 mx-auto text-emerald-500 mb-2"></i>
         <div class="text-sm font-bold text-slate-700">No pending approvals</div>
         <p class="text-xs text-slate-500 mt-1">The dashboard will show new action items here.</p>
@@ -352,7 +352,7 @@ window.CMS_DASHBOARD = {
               
               <!-- Pin Card Header -->
               <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono ${isDepleted ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
+                <span class="px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase font-mono ${isDepleted ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
                   ${isDepleted ? 'Out of Stock' : 'Low Buffer'}
                 </span>
                 <span class="text-[10px] font-mono text-slate-500 font-semibold">${item.inventoryType === 'Fixed' ? 'Fixed Asset' : 'Consumable Material'}</span>
@@ -363,7 +363,7 @@ window.CMS_DASHBOARD = {
               <div class="text-[11px] text-slate-500 mt-0.5">Brand: ${item.brand || 'Standard'} • Cat: ${item.categoryName || 'Supplies'}</div>
 
               <!-- Stock Visual Meter -->
-              <div class="my-3 p-3 bg-white rounded-xl border border-slate-200/80 space-y-2">
+              <div class="my-3 p-3 bg-white rounded-md border border-slate-200/80 space-y-2">
                 <div class="flex justify-between items-center text-xs">
                   <span class="text-slate-500">Stock Balance:</span>
                   <span class="font-bold font-mono ${isDepleted ? 'text-red-700' : 'text-amber-700'}">${stock} ${item.unit}</span>
@@ -372,8 +372,8 @@ window.CMS_DASHBOARD = {
                   <span class="text-slate-500">Monthly Buffer:</span>
                   <span class="font-mono text-slate-700">${buffer} ${item.unit}</span>
                 </div>
-                <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                  <div class="${isDepleted ? 'bg-red-500' : 'bg-amber-500'} h-full rounded-full" style="width: ${pct}%"></div>
+                <div class="w-full bg-slate-100 h-2 rounded-sm overflow-hidden">
+                  <div class="${isDepleted ? 'bg-red-500' : 'bg-amber-500'} h-full rounded-sm" style="width: ${pct}%"></div>
                 </div>
                 <div class="flex justify-between text-[10px] font-mono text-slate-400">
                   <span>Shortfall: -${deficit} ${item.unit}</span>
@@ -413,7 +413,7 @@ window.CMS_DASHBOARD = {
               
               <!-- Tag & Category Badge -->
               <div class="flex items-center justify-between mb-2">
-                <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-200 text-[10px] font-bold font-mono">
+                <span class="px-2 py-0.5 rounded-sm bg-purple-100 text-purple-900 border border-purple-200 text-[10px] font-bold font-mono">
                   Fixed Asset
                 </span>
                 <span class="text-[10px] font-mono text-slate-400">${item.assetTag || 'TAG-PENDING'}</span>
@@ -423,7 +423,7 @@ window.CMS_DASHBOARD = {
               <div class="text-[11px] text-slate-500 mt-0.5">S/N: ${item.serialNo || 'N/A'} • Dept: ${item.custodianDept || 'Central Pool'}</div>
 
               <!-- Asset Care Detail Box -->
-              <div class="my-3 p-3 bg-purple-50/40 rounded-xl border border-purple-100 space-y-2 text-xs">
+              <div class="my-3 p-3 bg-purple-50/40 rounded-md border border-purple-100 space-y-2 text-xs">
                 <div class="flex justify-between items-center">
                   <span class="text-slate-500">Warranty Validity:</span>
                   <span class="font-mono font-bold text-purple-950 text-[11px]">${item.warrantyValidTill || 'Active'}</span>
@@ -447,7 +447,7 @@ window.CMS_DASHBOARD = {
                   <div class="text-xs font-semibold text-slate-800 truncate max-w-[130px]">${item.repairmanName || 'Sanjay Verma'}</div>
                   <div class="text-[10px] text-slate-500 font-mono">${item.repairmanContact || '+91 98110 44219'}</div>
                 </div>
-                <button onclick="CMS_REPORTS.openLogPmModal('${item.id}')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-full transition shadow-xs">
+                <button onclick="CMS_REPORTS.openLogPmModal('${item.id}')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-sm transition shadow-xs">
                   Log PM
                 </button>
               </div>
@@ -470,7 +470,7 @@ window.CMS_DASHBOARD = {
             <div class="pinterest-pin p-4 bg-white border-slate-200">
               
               <div class="flex items-center justify-between mb-2">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase font-mono ${isPush ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-blue-100 text-blue-900 border border-blue-200'}">
+                <span class="px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase font-mono ${isPush ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-blue-100 text-blue-900 border border-blue-200'}">
                   ${isPush ? 'PUSH Transfer' : 'PULL Demand'}
                 </span>
                 <span class="text-[10px] font-mono text-slate-400">${req.requestNo}</span>
@@ -479,17 +479,17 @@ window.CMS_DASHBOARD = {
               <h4 class="font-bold text-slate-900 text-sm leading-snug">${req.materialName}</h4>
               <div class="text-[11px] text-slate-500 mt-0.5">Quantity: <strong class="font-mono text-slate-900">${req.qty} ${req.unit}</strong></div>
 
-              <div class="my-3 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs space-y-1">
+              <div class="my-3 p-3 bg-slate-50 rounded-md border border-slate-200/80 text-xs space-y-1">
                 <div class="text-slate-500 text-[10px] uppercase font-semibold">Routing:</div>
                 <div class="font-semibold text-slate-800 text-[11px]">${req.sourceDept} -> ${req.destDept}</div>
                 <div class="text-[10px] text-slate-400 pt-1">Raised by: ${req.requestedBy || 'Dept Staff'}</div>
               </div>
 
               <div class="flex items-center justify-between pt-1">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                <span class="px-2 py-0.5 rounded-sm text-[10px] font-bold ${req.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
                   ${req.status}
                 </span>
-                <button onclick="CMS_TRANSACTIONS.openIssuanceModal('${req.materialId || ''}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-full transition shadow-xs">
+                <button onclick="CMS_TRANSACTIONS.openIssuanceModal('${req.materialId || ''}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-sm transition shadow-xs">
                   Issue Slip
                 </button>
               </div>
@@ -510,7 +510,7 @@ window.CMS_DASHBOARD = {
             <div class="pinterest-pin p-4 bg-white border-slate-200">
               
               <div class="flex items-center justify-between mb-2">
-                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200 text-[10px] font-bold font-mono">
+                <span class="px-2 py-0.5 rounded-sm bg-emerald-100 text-emerald-900 border border-emerald-200 text-[10px] font-bold font-mono">
                   Goods Inward (${rec.type})
                 </span>
                 <span class="text-[10px] font-mono text-slate-400">${rec.receiptNo}</span>
@@ -519,7 +519,7 @@ window.CMS_DASHBOARD = {
               <h4 class="font-bold text-slate-900 text-sm leading-snug">${rec.materialName}</h4>
               <div class="text-[11px] text-slate-500 mt-0.5">Supplier: ${rec.vendorName}</div>
 
-              <div class="my-3 p-3 bg-emerald-50/40 rounded-xl border border-emerald-100 text-xs space-y-1">
+              <div class="my-3 p-3 bg-emerald-50/40 rounded-md border border-emerald-100 text-xs space-y-1">
                 <div class="flex justify-between items-center">
                   <span class="text-slate-500">Quantity Received:</span>
                   <span class="font-bold font-mono text-emerald-800">+${rec.qty} ${rec.unit}</span>
@@ -561,7 +561,7 @@ window.CMS_DASHBOARD = {
             <div class="pinterest-pin p-4 bg-slate-50 border-slate-200">
               
               <div class="flex items-center justify-between mb-2">
-                <span class="px-2 py-0.5 rounded-full bg-white text-slate-700 border border-slate-200 text-[10px] font-bold font-mono">
+                <span class="px-2 py-0.5 rounded-sm bg-white text-slate-700 border border-slate-200 text-[10px] font-bold font-mono">
                   Category Board
                 </span>
                 <span class="text-[10px] font-mono text-slate-400">${catItems.length} SKUs</span>
@@ -570,12 +570,12 @@ window.CMS_DASHBOARD = {
               <h4 class="font-bold text-slate-900 text-sm leading-snug">${cat.name}</h4>
               <p class="text-[11px] text-slate-500 mt-1 line-clamp-2">${cat.description || 'Standard consumable supply category.'}</p>
 
-              <div class="my-3 p-3 bg-white rounded-xl border border-slate-200 text-xs">
+              <div class="my-3 p-3 bg-white rounded-md border border-slate-200 text-xs">
                 <div class="text-[10px] text-slate-400 uppercase font-semibold">Board Valuation</div>
                 <div class="text-lg font-bold font-mono text-slate-900 mt-0.5">₹${catVal.toLocaleString('en-IN')}</div>
               </div>
 
-              <button onclick="CMS_APP.navigateTo('consumables')" class="w-full py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-full transition">
+              <button onclick="CMS_APP.navigateTo('consumables')" class="w-full py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs rounded-sm transition">
                 Open Board →
               </button>
 

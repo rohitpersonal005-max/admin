@@ -24,10 +24,10 @@ window.CMS_DRAFTS = {
 
     return `
       <div class="space-y-6 max-w-7xl mx-auto pb-10">
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-sm border border-slate-200 shadow-sm">
           <div>
             <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 rounded-md bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center">
+              <div class="w-9 h-9 rounded-sm bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center">
                 <i data-lucide="file-clock" class="w-5 h-5"></i>
               </div>
               <div>
@@ -38,11 +38,11 @@ window.CMS_DRAFTS = {
           </div>
           <div class="flex flex-wrap gap-2">
             ${role === 'User' ? `
-              <button onclick="CMS_MASTERS.openConsumableModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md text-xs transition">
+              <button onclick="CMS_MASTERS.openConsumableModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm text-xs transition">
                 <i data-lucide="file-plus-2" class="w-3.5 h-3.5"></i>
                 New Quotation
               </button>
-              <button onclick="CMS_TRANSACTIONS.openReceiptModal('Invoice')" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-md text-xs transition">
+              <button onclick="CMS_TRANSACTIONS.openReceiptModal('Invoice')" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm text-xs transition">
                 <i data-lucide="receipt" class="w-3.5 h-3.5"></i>
                 New Invoice Draft
               </button>
@@ -51,17 +51,17 @@ window.CMS_DRAFTS = {
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="p-4 bg-white border border-slate-200 rounded-md shadow-sm">
+          <div class="p-4 bg-white border border-slate-200 rounded-sm shadow-sm">
             <div class="text-[10px] uppercase tracking-wider font-bold text-blue-600">Quotation Drafts</div>
             <div class="text-2xl font-bold font-mono text-slate-900 mt-1">${quotations.length}</div>
             <div class="text-xs text-slate-500 mt-1">Unapproved consumable or workstation quotes</div>
           </div>
-          <div class="p-4 bg-white border border-slate-200 rounded-md shadow-sm">
+          <div class="p-4 bg-white border border-slate-200 rounded-sm shadow-sm">
             <div class="text-[10px] uppercase tracking-wider font-bold text-emerald-600">Invoice Drafts</div>
             <div class="text-2xl font-bold font-mono text-slate-900 mt-1">${invoices.length}</div>
             <div class="text-xs text-slate-500 mt-1">Invoice receipts not yet approved</div>
           </div>
-          <div class="p-4 bg-white border border-slate-200 rounded-md shadow-sm">
+          <div class="p-4 bg-white border border-slate-200 rounded-sm shadow-sm">
             <div class="text-[10px] uppercase tracking-wider font-bold text-amber-600">Awaiting Approval</div>
             <div class="text-2xl font-bold font-mono text-slate-900 mt-1">${pendingCount}</div>
             <div class="text-xs text-slate-500 mt-1">Submitted for Admin review</div>
@@ -78,7 +78,7 @@ window.CMS_DRAFTS = {
 
   renderQuotationPanel(items) {
     return `
-      <section class="bg-white border border-slate-200 rounded-md shadow-sm overflow-hidden">
+      <section class="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
           <div>
             <h3 class="font-bold text-slate-900 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>Quotation Drafts</h3>
@@ -114,7 +114,7 @@ window.CMS_DRAFTS = {
 
   renderInvoicePanel(items) {
     return `
-      <section class="bg-white border border-slate-200 rounded-md shadow-sm overflow-hidden">
+      <section class="bg-white border border-slate-200 rounded-sm shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
           <div>
             <h3 class="font-bold text-slate-900 flex items-center gap-2"><i data-lucide="receipt" class="w-4 h-4 text-emerald-600"></i>Invoice Drafts</h3>
