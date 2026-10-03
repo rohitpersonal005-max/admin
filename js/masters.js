@@ -116,10 +116,10 @@ window.CMS_MASTERS = {
       const stateInfo = this.getStateInfo(v.addressState);
 
       return `
-        <tr class="hover:bg-slate-50/80 transition ${isBlocked ? 'bg-rose-50/40' : isRevision ? 'bg-amber-50/40' : isPending ? 'bg-blue-50/30' : ''}">
+        <tr class="hover:bg-slate-50/80 transition ${isBlocked ? 'bg-rose-50/40' : isRevision ? 'bg-amber-50/40' : isPending ? 'bg-slate-50/30' : ''}">
           <td class="p-4">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-slate-900 text-sm hover:text-blue-600 cursor-pointer" onclick="CMS_MASTERS.viewVendorProfile('${v.id}')">${v.name}</span>
+              <span class="font-bold text-blue-600 text-sm hover:text-blue-600 cursor-pointer" onclick="CMS_MASTERS.viewVendorProfile('${v.id}')">${v.name}</span>
               ${isBlocked ? '<span class="px-1.5 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold text-[9px] uppercase tracking-wide">BLOCKED</span>' : ''}
               ${isRevision ? '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-bold text-[9px] uppercase tracking-wide">REVISION REQUIRED</span>' : ''}
             </div>
@@ -160,10 +160,10 @@ window.CMS_MASTERS = {
                 const isExpiring = valDate && new Date(valDate) < new Date(Date.now() + 30 * 86400000);
                 const isExpired = valDate && new Date(valDate) < new Date();
                 return `
-                  <div class="inline-flex items-center gap-1.5 text-[10px] bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded font-medium shadow-xs">
+                  <div class="inline-flex items-center gap-1.5 text-[10px] bg-slate-50 text-blue-600 border border-slate-200 px-2 py-0.5 rounded font-medium shadow-sm">
                     <span>${cName}${formNo}</span>
                     ${hasVal && valDate ? `
-                      <span class="px-1 py-0.2 rounded font-mono font-bold text-[9px] ${isExpired ? 'bg-red-100 text-red-800 border border-red-300' : isExpiring ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-blue-100 text-blue-700'}" title="Valid Till: ${formattedDate}">
+                      <span class="px-1 py-0.2 rounded font-mono font-bold text-[9px] ${isExpired ? 'bg-red-100 text-red-800 border border-red-300' : isExpiring ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-blue-600'}" title="Valid Till: ${formattedDate}">
                         Exp: ${formattedDate}
                       </span>
                     ` : ''}
@@ -171,7 +171,7 @@ window.CMS_MASTERS = {
                 `;
               }).join('')}
               ${v.quotationNo ? `
-                <div class="w-full text-[10px] text-blue-900 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded font-medium mt-0.5 flex items-center justify-between">
+                <div class="w-full text-[10px] text-blue-600 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded font-medium mt-0.5 flex items-center justify-between">
                   <span>Quote: ${v.quotationNo}</span>
                   ${v.quotationValidTill ? `<span class="font-mono text-slate-500">Exp: ${window.CMS_STORE.formatDate(v.quotationValidTill)}</span>` : ''}
                 </div>
@@ -193,30 +193,30 @@ window.CMS_MASTERS = {
           </td>
           <td class="p-4 text-right space-x-1 whitespace-nowrap">
             <!-- Eye View Button (Available to both User and Admin) -->
-            <button onclick="CMS_MASTERS.viewVendorProfile('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Inspect Profile & Documents">
+            <button onclick="CMS_MASTERS.viewVendorProfile('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-md transition" title="Inspect Profile & Documents">
               <i data-lucide="eye" class="w-3.5 h-3.5"></i>
             </button>
 
             <!-- Maker Edit Button (Only User can edit) -->
             ${role === 'User' ? `
-              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Vendor">
+              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition" title="Modify Vendor">
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
               </button>
             ` : ''}
 
             <!-- Checker Governance Actions: Sanction or Reject with Mistake Remark -->
             ${(isPending || isRevision) && role === 'Admin' ? `
-              <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition shadow-xs" title="Sanction Vendor">
+              <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition shadow-sm" title="Sanction Vendor">
                 Approve
               </button>
-              <button onclick="CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-lg transition" title="Reject / Return for Revision">
+              <button onclick="CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-md transition" title="Reject / Return for Revision">
                 Reject
               </button>
             ` : ''}
 
             <!-- Ban / Blacklist with confirmation prompt (Checker only) -->
             ${role === 'Admin' ? `
-              <button onclick="CMS_MASTERS.promptBlockVendor('${v.id}', ${!isBlocked})" class="px-2 py-1 text-xs font-semibold ${isBlocked ? 'text-emerald-700 bg-emerald-100 hover:bg-emerald-200' : 'text-amber-700 bg-amber-100 hover:bg-amber-200'} rounded-lg transition" title="${isBlocked ? 'Unblock Vendor' : 'Blacklist / Block Vendor'}">
+              <button onclick="CMS_MASTERS.promptBlockVendor('${v.id}', ${!isBlocked})" class="px-2 py-1 text-xs font-semibold ${isBlocked ? 'text-emerald-700 bg-emerald-100 hover:bg-emerald-200' : 'text-amber-700 bg-amber-100 hover:bg-amber-200'} rounded-md transition" title="${isBlocked ? 'Unblock Vendor' : 'Blacklist / Block Vendor'}">
                 <i data-lucide="${isBlocked ? 'check-circle' : 'ban'}" class="w-3.5 h-3.5"></i>
               </button>
             ` : ''}
@@ -237,7 +237,7 @@ window.CMS_MASTERS = {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-md bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="building-2" class="w-4 h-4"></i>
               </div>
               <span>Vendor Master</span>
@@ -246,13 +246,13 @@ window.CMS_MASTERS = {
           </div>
           <div class="flex flex-wrap items-center gap-2.5">
             ${role !== 'Admin' ? `
-              <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+              <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs">
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                 <span>Register New Vendor</span>
               </button>
             ` : `
-              <div class="text-xs text-indigo-800 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-md font-semibold flex items-center gap-2 shadow-xs">
-                <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
+              <div class="text-xs text-indigo-800 bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-md font-semibold flex items-center gap-2 shadow-sm">
+                <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
                 <span>Store In-Charge Governance: Col. Anita Sharma (Review, Approve & View Only)</span>
               </div>
             `}
@@ -405,7 +405,7 @@ window.CMS_MASTERS = {
         <div class="p-4 bg-slate-50 rounded-md border border-slate-200 flex items-start justify-between">
           <div>
             <div class="flex items-center gap-2">
-              <h3 class="text-base font-bold text-slate-900">${v.name}</h3>
+              <h3 class="text-base font-bold text-blue-600">${v.name}</h3>
               ${v.isBlocked ? '<span class="px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold text-[10px] uppercase">BLOCKED</span>' : ''}
               ${v.status === 'Revision Required' ? '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-bold text-[10px] uppercase">REVISION REQUIRED</span>' : ''}
             </div>
@@ -426,38 +426,38 @@ window.CMS_MASTERS = {
         ` : ''}
 
         <div class="grid grid-cols-2 gap-3">
-          <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
+          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-1">
             <span class="text-slate-400 font-bold uppercase text-[10px]">GSTIN Number</span>
             <div class="font-mono font-bold text-sm text-slate-800">${v.gstNotApplicable ? 'Exempt / Not Applicable' : (v.gstNo || 'Not Registered')}</div>
             ${v.gstCertificateFile ? `
-              <button type="button" onclick="CMS_APP.viewDocument('${v.gstCertificateFile}', 'GST Registration Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-medium flex items-center gap-1 mt-1 hover:bg-blue-100 transition">
+              <button type="button" onclick="CMS_APP.viewDocument('${v.gstCertificateFile}', 'GST Registration Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[10px] text-blue-600 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded font-medium flex items-center gap-1 mt-1 hover:bg-slate-100 transition">
                 <i data-lucide="eye" class="w-3 h-3"></i> View GST Certificate Copy
               </button>
             ` : '<span class="text-[10px] text-slate-400 italic block mt-1">No certificate attached</span>'}
           </div>
-          <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
+          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-1">
             <span class="text-slate-400 font-bold uppercase text-[10px]">PAN Card Number</span>
-            <div class="font-mono font-bold text-sm text-blue-700">${v.panNotApplicable ? 'Not Applicable' : (v.panNo || 'Not Recorded')}</div>
+            <div class="font-mono font-bold text-sm text-blue-600">${v.panNotApplicable ? 'Not Applicable' : (v.panNo || 'Not Recorded')}</div>
             ${v.panCardFile ? `
-              <button type="button" onclick="CMS_APP.viewDocument('${v.panCardFile}', 'Permanent Account Number (PAN) Card', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[10px] text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-medium flex items-center gap-1 mt-1 hover:bg-blue-100 transition">
+              <button type="button" onclick="CMS_APP.viewDocument('${v.panCardFile}', 'Permanent Account Number (PAN) Card', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[10px] text-blue-600 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded font-medium flex items-center gap-1 mt-1 hover:bg-slate-100 transition">
                 <i data-lucide="eye" class="w-3 h-3"></i> View PAN Card Copy
               </button>
             ` : '<span class="text-[10px] text-slate-400 italic block mt-1">No PAN copy attached</span>'}
           </div>
-          <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
+          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-1">
             <span class="text-slate-400 font-bold uppercase text-[10px]">Contact Phone</span>
             <div class="font-bold text-slate-800">${v.contactNo || '-'}</div>
           </div>
-          <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
+          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-1">
             <span class="text-slate-400 font-bold uppercase text-[10px]">Email Address</span>
             <div class="font-bold text-slate-800 truncate">${v.email || '-'}</div>
           </div>
         </div>
 
-        <div class="p-3 bg-white border border-slate-200 rounded-md space-y-1">
+        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-1">
           <span class="text-slate-400 font-bold uppercase text-[10px]">Registered Business Address</span>
           <p class="text-slate-700 font-medium">${[v.address, v.addressTaluka, v.addressDistrict, v.addressState, v.addressCountry, v.addressPinCode].filter(Boolean).join(', ')}</p>
-          <div class="text-[11px] text-blue-800 font-medium mt-1">
+          <div class="text-[11px] text-blue-600 font-medium mt-1">
             State Code: <strong>${stateInfo.code || '--'}</strong> • Applicable Statutory Tax: <strong>${stateInfo.taxMode === 'IGST' ? 'Inter-State (IGST)' : 'Intra-State (CGST + SGST)'}</strong>
           </div>
         </div>
@@ -474,19 +474,26 @@ window.CMS_MASTERS = {
             <div><span class="text-slate-400 text-[10px] block">IFSC Code</span><strong class="font-mono">${v.ifscCode || 'Not Provided'}</strong></div>
             <div><span class="text-slate-400 text-[10px] block">Branch</span><strong>${v.branchName || 'Not Provided'}</strong></div>
           </div>
+          ${v.bankDoc ? `
+            <div class="pt-2">
+              <button type="button" onclick="CMS_APP.viewDocument('${v.bankDoc}', 'Vendor Bank Supporting Document', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[11px] text-blue-600 bg-white border border-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-50 transition flex items-center gap-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Inspect Bank Document (${v.bankDoc})
+              </button>
+            </div>
+          ` : ''}
         </div>
 
         <!-- Approved Quotation Record -->
-        <div class="p-3.5 bg-blue-50/50 border border-blue-200 rounded-md space-y-1.5">
-          <span class="text-blue-900 font-bold uppercase text-[10px] tracking-wider flex items-center ga
+        <div class="p-3.5 bg-slate-50/50 border border-slate-200 rounded-md space-y-1.5">
+          <span class="text-blue-600 font-bold uppercase text-[10px] tracking-wider flex items-center ga
               <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-600"></i> Approved Commercial Quotations & Materials
             </span>
             <div class="space-y-3">
               ${(v.quotedItems && v.quotedItems.length > 0) ? v.quotedItems.map(q => `
-                <div class="border border-blue-200 bg-white rounded p-2 text-xs">
-                  <div class="flex items-center justify-between mb-1.5 pb-1.5 border-b border-blue-100">
+                <div class="border border-slate-200 bg-white rounded p-2 text-xs">
+                  <div class="flex items-center justify-between mb-1.5 pb-1.5 border-b border-slate-100">
                     <div>
-                      <span class="text-slate-500 text-[10px]">Quote Ref:</span> <strong class="text-blue-900">${q.quotationNo || 'Direct'}</strong>
+                      <span class="text-slate-500 text-[10px]">Quote Ref:</span> <strong class="text-blue-600">${q.quotationNo || 'Direct'}</strong>
                       <span class="text-slate-500 text-[10px] ml-3">Date:</span> <strong class="font-mono">${window.CMS_STORE.formatDate(q.quotationDate)}</strong>
                       <span class="text-slate-500 text-[10px] ml-3">Effective:</span> <strong class="font-mono">\${window.CMS_STORE.formatDate(q.effectiveFrom) || '-'}</strong>
                       <span class="text-slate-500 text-[10px] ml-3">Valid Till:</span> 
@@ -497,12 +504,12 @@ window.CMS_MASTERS = {
                   </div>
                   <div class="grid grid-cols-4 gap-2 text-[10px]">
                     <div class="col-span-2"><span class="text-slate-500 block">Item / Material:</span><strong class="text-sm">${q.materialName || q.materialId || '-'}</strong></div>
-                    <div><span class="text-slate-500 block">Approved Rate:</span><strong class="text-sm text-blue-700">₹${Number(q.rate || 0).toFixed(2)}</strong></div>
+                    <div><span class="text-slate-500 block">Approved Rate:</span><strong class="text-sm text-blue-600">₹${Number(q.rate || 0).toFixed(2)}</strong></div>
                     <div><span class="text-slate-500 block">MRP (UOM):</span><strong class="text-emerald-700">₹${Number(q.mrp || 0).toFixed(2)}</strong> <span class="text-slate-400">(${q.unit || 'Nos'})</span></div>
                   </div>
                   ${q.doc ? `
-                    <div class="pt-2 mt-2 border-t border-blue-50">
-                      <button type="button" onclick="CMS_APP.viewDocument('${q.doc}', 'Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${q.quotationValidTill}' })" class="text-[10px] text-blue-800 bg-blue-50 border border-blue-200 px-2 py-1 rounded font-bold hover:bg-blue-100 transition flex items-center gap-1.5 inline-flex">
+                    <div class="pt-2 mt-2 border-t border-slate-50">
+                      <button type="button" onclick="CMS_APP.viewDocument('${q.doc}', 'Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${q.quotationValidTill}' })" class="text-[10px] text-blue-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition flex items-center gap-1.5 inline-flex">
                         <i data-lucide="eye" class="w-3 h-3"></i> Inspect ${q.doc}
                       </button>
                     </div>
@@ -522,7 +529,7 @@ window.CMS_MASTERS = {
                 </div>
                 ${v.quotationDoc ? `
                   <div class="pt-2">
-                    <button type="button" onclick="CMS_APP.viewDocument('${v.quotationDoc}', 'Approved Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${v.quotationValidTill}' })" class="text-[11px] text-blue-800 bg-white border border-blue-300 px-3 py-1 rounded font-bold hover:bg-blue-50 transition flex items-center gap-1.5">
+                    <button type="button" onclick="CMS_APP.viewDocument('${v.quotationDoc}', 'Approved Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${v.quotationValidTill}' })" class="text-[11px] text-blue-600 bg-white border border-blue-300 px-3 py-1 rounded font-bold hover:bg-slate-50 transition flex items-center gap-1.5">
                       <i data-lucide="eye" class="w-3.5 h-3.5"></i> Inspect Uploaded Quotation Copy (${v.quotationDoc})
                     </button>
                   </div>
@@ -532,8 +539,8 @@ window.CMS_MASTERS = {
           </div>
 
           <!-- Regulatory & Compliance Certificates -->
-        <div class="p-3.5 bg-blue-50/60 border border-blue-200 rounded-md space-y-2">
-          <span class="text-blue-900 font-bold uppercase text-[10px] tracking-wider">Statutory Compliance Certificates (${(v.certificates || []).length})</span>
+        <div class="p-3.5 bg-slate-50/60 border border-slate-200 rounded-md space-y-2">
+          <span class="text-blue-600 font-bold uppercase text-[10px] tracking-wider">Statutory Compliance Certificates (${(v.certificates || []).length})</span>
           <div class="space-y-2">
             ${(!v.certificates || v.certificates.length === 0) ? '<span class="text-slate-400 italic">No certificates recorded</span>' : (v.certificates || []).map(c => {
               const reg = typeof c === 'string' ? c : (c.regulator || c.name || 'Certificate');
@@ -544,7 +551,7 @@ window.CMS_MASTERS = {
               const file = typeof c === 'object' ? c.fileName : '';
               const isExpired = valDate && new Date(valDate) < new Date();
               return `
-                <div class="p-2.5 bg-white border border-blue-200 text-blue-900 rounded-md text-xs shadow-xs flex items-center justify-between gap-3">
+                <div class="p-2.5 bg-white border border-slate-200 text-blue-600 rounded-md text-xs shadow-sm flex items-center justify-between gap-3">
                   <div>
                     <div class="font-bold flex items-center gap-1.5">
                       <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
@@ -552,11 +559,11 @@ window.CMS_MASTERS = {
                     </div>
                     <div class="text-[11px] text-slate-600 mt-0.5 space-x-2">
                       ${certNo ? `<span class="font-mono font-medium">${certNo}</span>` : ''}
-                      ${hasVal && valDate ? `<span class="font-mono font-bold ${isExpired ? 'text-red-700' : 'text-blue-700'}">Expiry: ${window.CMS_STORE.formatDate(valDate)}${isExpired ? ' (Expired)' : ''}</span>` : '<span class="text-slate-400">Permanent Validity</span>'}
+                      ${hasVal && valDate ? `<span class="font-mono font-bold ${isExpired ? 'text-red-700' : 'text-blue-600'}">Expiry: ${window.CMS_STORE.formatDate(valDate)}${isExpired ? ' (Expired)' : ''}</span>` : '<span class="text-slate-400">Permanent Validity</span>'}
                     </div>
                   </div>
                   ${file ? `
-                    <button type="button" onclick="CMS_APP.viewDocument('${file}', '${reg} Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${valDate}' })" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 rounded text-[10px] font-bold flex items-center gap-1 transition">
+                    <button type="button" onclick="CMS_APP.viewDocument('${file}', '${reg} Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${valDate}' })" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-blue-600 border border-slate-200 rounded text-[10px] font-bold flex items-center gap-1 transition">
                       <i data-lucide="eye" class="w-3 h-3"></i> View Certificate
                     </button>
                   ` : '<span class="text-[10px] text-slate-400 italic">No copy attached</span>'}
@@ -662,13 +669,13 @@ window.CMS_MASTERS = {
     const doc = qData ? (qData.doc || '') : '';
     
     const row = document.createElement('div');
-    row.className = 'quote-row p-3 bg-white border border-blue-200 rounded-md space-y-2.5 relative shadow-sm';
+    row.className = 'quote-row p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-2.5 relative shadow-sm';
     row.innerHTML = `
       <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-600 transition" title="Remove row"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pr-6">
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Ref No</label>
-          <input type="text" class="q-no w-full font-mono uppercase font-bold text-blue-900 px-2.5 py-1.5 border border-blue-300 rounded text-xs bg-white" value="${no}" placeholder="e.g. QT-101" />
+          <input type="text" class="q-no w-full font-mono uppercase font-bold text-blue-600 px-2.5 py-1.5 border border-blue-300 rounded text-xs bg-white" value="${no}" placeholder="e.g. QT-101" />
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Date</label>
@@ -685,7 +692,7 @@ window.CMS_MASTERS = {
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
         <div class="sm:col-span-6">
-          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Select Existing Material (Optional)</label>
+          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Select Existing Material</label>
           <select class="q-mat-id w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white" onchange="const o=this.options[this.selectedIndex]; if(!o.value)return; const r=this.closest('.quote-row'); r.querySelector('.q-mat-name').value=o.dataset.name; r.querySelector('.q-rate').value=o.dataset.rate; r.querySelector('.q-mrp').value=o.dataset.mrp; r.querySelector('.q-unit').value=o.dataset.unit; r.querySelector('.q-hsn').value=o.dataset.hsn;">
             <option value="">-- Choose Existing Material --</option>
             ${(window.CMS_STORE.data.consumables || []).map(m => `<option value="${m.id}" data-name="${m.materialName}" data-rate="${m.quotationRate || m.vendor1Rate || 0}" data-mrp="${m.mrpBooked || ''}" data-unit="${m.unit || 'Nos'}" data-hsn="${m.hsnCode || ''}" ${matId === m.id ? 'selected' : ''}>[${m.inventoryType || 'Consumer'}] ${m.materialName} - Code: ${m.id}</option>`).join('')}
@@ -693,13 +700,13 @@ window.CMS_MASTERS = {
         </div>
         <div class="sm:col-span-6 flex flex-col justify-end">
           <input type="hidden" class="q-mat-name" value="${matName}" />
-          <button type="button" onclick="CMS_MASTERS.openConsumableModal(null)" class="w-full px-2.5 py-1.5 bg-blue-50 border border-blue-300 rounded text-xs text-blue-700 font-bold hover:bg-blue-100 transition flex items-center justify-center gap-1.5">
+          <button type="button" onclick="CMS_MASTERS.openConsumableModal(null)" class="w-full px-2.5 py-1.5 bg-slate-50 border border-blue-300 rounded text-xs text-blue-600 font-bold hover:bg-slate-100 transition flex items-center justify-center gap-1.5">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add New Material
           </button>
         </div>
         <div class="sm:col-span-3">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Approved Rate</label>
-          <input type="number" step="0.01" class="q-rate w-full font-mono font-bold text-blue-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${rate}" placeholder="0.00" />
+          <input type="number" step="0.01" class="q-rate w-full font-mono font-bold text-blue-600 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${rate}" placeholder="0.00" />
         </div>
         <div class="sm:col-span-3">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">MRP</label>
@@ -748,22 +755,28 @@ window.CMS_MASTERS = {
             <label class="block text-[11px] font-bold text-slate-700 mb-1">
               1. Regulator / Agency
             </label>
-            <select class="cert-regulator-select w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 font-medium" onchange="CMS_MASTERS.onRegulatorChange('${rowId}', this.value)">
-              <option value="">-- Choose Agency --</option>
-              ${regulators.map(r => `<option value="${r}" ${regulator === r ? 'selected' : ''}>${r}</option>`).join('')}
-            </select>
+            ${(() => {
+                const isCustom = regulator && !regulators.includes(regulator);
+                return `
+                  <select class="cert-regulator-select w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-medium" onchange="CMS_MASTERS.onRegulatorChange('${rowId}', this.value)">
+                    <option value="">-- Choose Agency --</option>
+                    ${regulators.map(r => `<option value="${r}" ${regulator === r || (isCustom && r === 'Other') ? 'selected' : ''}>${r}</option>`).join('')}
+                  </select>
+                  <input type="text" class="cert-regulator-other-input ${isCustom ? '' : 'hidden'} mt-2 w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs" value="${isCustom ? regulator : ''}" placeholder="Specify Agency Name" />
+                `;
+              })()}
           </div>
           <!-- 2. Form No -->
           <div>
             <label class="block text-[11px] font-bold text-slate-700 mb-1">2. Form / Standard No.</label>
-            <input type="text" list="iso-suggestions" class="cert-form-input w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" value="${formNo}" placeholder="e.g. 9001:2015" />
+            <input type="text" list="iso-suggestions" class="cert-form-input w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" value="${formNo}" placeholder="e.g. 9001:2015" />
           </div>
           <!-- 3. License No -->
           <div>
             <label class="block text-[11px] font-bold text-slate-700 mb-1">
               3. License / Certificate No.
             </label>
-            <input type="text" class="cert-number-input w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" value="${certificateNo}" placeholder="e.g. LIC-2026-981" />
+            <input type="text" class="cert-number-input w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" value="${certificateNo}" placeholder="e.g. LIC-2026-981" />
           </div>
         </div>
         <button type="button" onclick="CMS_MASTERS.removeCertificateRow('${rowId}')" class="mt-5 p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition" title="Remove Certificate">
@@ -789,8 +802,8 @@ window.CMS_MASTERS = {
             </div>
           </div>
           <div id="expiry_box_${rowId}" class="cert-expiry-box ${hasValidity ? '' : 'hidden'}">
-            <div class="flex items-center gap-2 bg-blue-50/70 border border-blue-200 p-1.5 rounded-md">
-              <label class="text-[11px] font-bold text-blue-900 shrink-0">Expiry Date *:</label>
+            <div class="flex items-center gap-2 bg-slate-50/70 border border-slate-200 p-1.5 rounded-md">
+              <label class="text-[11px] font-bold text-blue-600 shrink-0">Expiry Date *:</label>
               <input type="date" min="${today}" class="cert-expiry-input w-full px-2 py-1 border border-blue-300 rounded bg-white text-xs font-mono" value="${validTill}" />
             </div>
           </div>
@@ -815,6 +828,15 @@ window.CMS_MASTERS = {
   onRegulatorChange(rowId, val) {
     const row = document.getElementById(rowId);
     if (!row) return;
+    const otherInput = row.querySelector('.cert-regulator-other-input');
+    if (otherInput) {
+      if (val === 'Other') {
+        otherInput.classList.remove('hidden');
+        otherInput.focus();
+      } else {
+        otherInput.classList.add('hidden');
+      }
+    }
     const formInput = row.querySelector('.cert-form-input');
     if (formInput && val === 'ISO' && !formInput.value) {
       formInput.value = '9001:2015';
@@ -929,18 +951,18 @@ window.CMS_MASTERS = {
 
     const row = document.createElement('div');
     row.id = rowId;
-    row.className = `mat-vendor-row p-3.5 bg-slate-50 border ${isPrimary ? 'border-blue-300 bg-blue-50/30' : 'border-slate-200'} rounded-md space-y-2.5 transition`;
+    row.className = `mat-vendor-row p-3.5 bg-slate-50 border ${isPrimary ? 'border-blue-300 bg-slate-50/30' : 'border-slate-200'} rounded-md space-y-2.5 transition`;
     row.innerHTML = `
       <div class="flex items-center justify-between pb-2 border-b border-slate-200">
         <div class="flex items-center gap-2">
-          <span class="mat-v-num w-5 h-5 rounded-full ${isPrimary ? 'bg-blue-600 text-white' : 'bg-slate-300 text-slate-700'} font-bold text-[10px] flex items-center justify-center">
+          <span class="mat-v-num w-5 h-5 rounded-full ${isPrimary ? 'bg-slate-900 text-white' : 'bg-slate-300 text-slate-700'} font-bold text-[10px] flex items-center justify-center">
             ${rowNumber}
           </span>
           <span class="mat-v-title font-bold text-slate-800 text-xs">
             ${isPrimary ? `Vendor ${rowNumber} (Primary Approved Vendor)` : `Vendor ${rowNumber} (Alternate Source)`}
           </span>
           <div class="mat-v-badge-container inline-block">
-            ${isPrimary ? '<span class="text-[9.5px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">PRIMARY SOURCE</span>' : ''}
+            ${isPrimary ? '<span class="text-[9.5px] font-bold text-blue-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">PRIMARY SOURCE</span>' : ''}
           </div>
         </div>
         <div>
@@ -955,7 +977,7 @@ window.CMS_MASTERS = {
           <label class="block font-semibold text-slate-700 mb-1">
             Vendor / Supplier <span class="text-rose-500">*</span>
           </label>
-          <select class="mat-v-select w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium" onchange="CMS_MASTERS.onMaterialRowVendorChange('${rowId}', this.value)" required>
+          <select class="mat-v-select w-full px-3 py-2 text-xs border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white focus:ring-2 focus:ring-slate-500 focus:outline-none font-medium" onchange="CMS_MASTERS.onMaterialRowVendorChange('${rowId}', this.value)" required>
             <option value="">-- Choose Vendor --</option>
             ${vendors.map(v => `<option value="${v.id}" ${vendorId === v.id ? 'selected' : ''}>${v.name}</option>`).join('')}
           </select>
@@ -965,29 +987,29 @@ window.CMS_MASTERS = {
           <label class="block font-semibold text-slate-700 mb-1">
             Quotation Number <span class="text-rose-500">*</span>
           </label>
-          <input type="text" class="mat-v-quote-no w-full font-mono uppercase font-bold text-blue-900 px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" value="${quotationNo}" placeholder="e.g. QT-2026-881" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onMaterialRowQuoteNoInput('${rowId}', this.value);" required />
+          <input type="text" class="mat-v-quote-no w-full font-mono uppercase font-bold text-blue-600 px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" value="${quotationNo}" placeholder="e.g. QT-2026-881" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onMaterialRowQuoteNoInput('${rowId}', this.value);" required />
         </div>
 
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Quotation Date</label>
-          <input type="date" class="mat-v-quote-date w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" value="${quotationDate}" />
+          <input type="date" class="mat-v-quote-date w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" value="${quotationDate}" />
         </div>
 
         <div>
           <label class="block font-semibold text-slate-700 mb-1">
             Quotation Rate (₹) <span class="text-rose-500">*</span>
           </label>
-          <input type="number" step="0.01" class="mat-v-rate w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-md bg-white text-blue-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" value="${rate}" placeholder="0.00" required />
+          <input type="number" step="0.01" class="mat-v-rate w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-blue-600 text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" value="${rate}" placeholder="0.00" required />
         </div>
 
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Rate Effective From Date</label>
-          <input type="date" class="mat-v-eff-date w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white font-mono" value="${effectiveFrom}" />
+          <input type="date" class="mat-v-eff-date w-full px-3 py-2 text-xs border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-mono" value="${effectiveFrom}" />
         </div>
 
         <div class="flex items-end pb-1">
           <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-medium text-slate-700">
-            <input type="radio" name="mat-primary-vendor-radio" value="${rowId}" ${isPrimary ? 'checked' : ''} onchange="CMS_MASTERS.setPrimaryMaterialVendor('${rowId}')" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
+            <input type="radio" name="mat-primary-vendor-radio" value="${rowId}" ${isPrimary ? 'checked' : ''} onchange="CMS_MASTERS.setPrimaryMaterialVendor('${rowId}')" class="w-4 h-4 text-blue-600 focus:ring-slate-500" />
             <span>Mark as Preferred Source</span>
           </label>
         </div>
@@ -1047,19 +1069,19 @@ window.CMS_MASTERS = {
 
       if (numBadge) {
         numBadge.innerText = String(num);
-        numBadge.className = `mat-v-num w-5 h-5 rounded-full ${isPrimary ? 'bg-blue-600 text-white' : 'bg-slate-300 text-slate-700'} font-bold text-[10px] flex items-center justify-center`;
+        numBadge.className = `mat-v-num w-5 h-5 rounded-full ${isPrimary ? 'bg-slate-900 text-white' : 'bg-slate-300 text-slate-700'} font-bold text-[10px] flex items-center justify-center`;
       }
       if (title) {
         title.innerText = isPrimary ? `Vendor ${num} (Primary Approved Vendor)` : `Vendor ${num} (Alternate Source)`;
       }
       if (badgeContainer) {
-        badgeContainer.innerHTML = isPrimary ? '<span class="text-[9.5px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded border border-blue-200">PRIMARY SOURCE</span>' : '';
+        badgeContainer.innerHTML = isPrimary ? '<span class="text-[9.5px] font-bold text-blue-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">PRIMARY SOURCE</span>' : '';
       }
       if (isPrimary) {
-        r.classList.add('border-blue-300', 'bg-blue-50/30');
+        r.classList.add('border-blue-300', 'bg-slate-50/30');
         r.classList.remove('border-slate-200');
       } else {
-        r.classList.remove('border-blue-300', 'bg-blue-50/30');
+        r.classList.remove('border-blue-300', 'bg-slate-50/30');
         r.classList.add('border-slate-200');
       }
     });
@@ -1133,8 +1155,8 @@ window.CMS_MASTERS = {
     const content = `
       <form id="vendor-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveVendor('${vendorId || ''}');">
         
-        <div class="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-900 font-medium flex items-center gap-2">
-          <i data-lucide="info" class="w-4 h-4 shrink-0 text-blue-700"></i>
+        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md text-blue-600 font-medium flex items-center gap-2">
+          <i data-lucide="info" class="w-4 h-4 shrink-0 text-blue-600"></i>
           <span>Enter supplier credentials, GSTIN, PAN, bank details, and compliance certificates for statutory auditing.</span>
         </div>
 
@@ -1146,47 +1168,66 @@ window.CMS_MASTERS = {
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="md:col-span-2">
-              <label class="block font-bold text-slate-700 mb-1">Vendor / Supplier Company Name <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-name" required value="${vendor.name || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Apex Office Supplies Pvt Ltd" />
-            </div>
+            <div class="md:col-span-1">
+                <label class="block font-bold text-slate-700 mb-1">Constitution Type <span class="text-rose-600 font-bold">*</span></label>
+                <select id="v-constitution" required class="w-full px-3.5 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium text-sm">
+                  <option value="">-- Select Constitution --</option>
+                  ${['Proprietorship', 'Partnership', 'Limited Liability Partnership (LLP)', 'Private Limited Company', 'Public Limited Company', 'HUF', 'Trust / Society / NGO', 'Government Entity', 'Others'].map(c => `<option value="${c}" ${vendor.constitution === c ? 'selected' : ''}>${c}</option>`).join('')}
+                </select>
+              </div>
+              <div class="md:col-span-1">
+                <label class="block font-bold text-slate-700 mb-1">Vendor / Supplier Company Name <span class="text-rose-600 font-bold">*</span></label>
+                <input type="text" id="v-name" required value="${vendor.name || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" placeholder="e.g. Apex Office Supplies Pvt Ltd" />
+              </div>
             <div class="md:col-span-2">
               <label class="block font-bold text-slate-700 mb-1">Street / Building Address <span class="text-rose-600 font-bold">*</span></label>
-              <input id="v-address" required value="${vendor.address || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-md" placeholder="Plot / Flat / Street / Area" />
+              <input id="v-address" required value="${vendor.address || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Plot / Flat / Street / Area" />
             </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">Taluka / Tehsil</label>
-              <input id="v-taluka" value="${vendor.addressTaluka || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="Taluka name" />
+              <input id="v-taluka" value="${vendor.addressTaluka || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Taluka name" />
             </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">District <span class="text-rose-600 font-bold">*</span></label>
-              <input id="v-district" required value="${vendor.addressDistrict || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="District name" />
+              <input id="v-district" required value="${vendor.addressDistrict || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="District name" />
             </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">State <span class="text-rose-600 font-bold">*</span></label>
-              <select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white font-medium">
+              <select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium">
                 <option value="">-- Choose State / UT --</option>
                 ${this.indianStates.map(s => `<option value="${s.name}" ${(vendor.addressState || 'Delhi') === s.name ? 'selected' : ''}>${s.code} - ${s.name}</option>`).join('')}
               </select>
               </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">Country <span class="text-rose-600 font-bold">*</span></label>
-              <input id="v-country" required value="${vendor.addressCountry || 'India'}" class="w-full px-3 py-2 border border-slate-300 rounded-md" />
+              <input id="v-country" list="country-options" onchange="CMS_MASTERS.onCountryChange(this.value)" required value="${vendor.addressCountry || 'India'}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
             </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">PIN Code (6 Digits) <span class="text-rose-600 font-bold">*</span></label>
-              <input id="v-pin" required maxlength="6" pattern="[0-9]{6}" value="${vendor.addressPinCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md" placeholder="e.g. 110020" />
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Phone Number <span class="text-rose-600 font-bold">*</span></label>
-                <input type="tel" id="v-contact" required value="${vendor.contactNo || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md font-mono" placeholder="10-digit number" />
+                          <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-10 gap-3">
+                <div class="md:col-span-2">
+                  <label class="block font-bold text-slate-700 mb-1">PIN Code (6 Digits) <span class="text-rose-600 font-bold">*</span></label>
+                  <input id="v-pin" required maxlength="6" pattern="[0-9]{6}" value="${vendor.addressPinCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="110020" />
+                </div>
+                <div class="md:col-span-4">
+                  <label class="block font-bold text-slate-700 mb-1">Phone Number <span class="text-rose-600 font-bold">*</span></label>
+                  <div class="flex items-stretch border border-slate-300 rounded-md overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 shadow-sm w-full bg-white">
+                    <select id="v-country-code" class="w-[90px] px-2 py-2 bg-slate-50 border-r border-slate-300 text-slate-700 font-mono text-xs focus:outline-none cursor-pointer">
+                      <option value="+91">IN (+91)</option>
+                      <option value="+1">US (+1)</option>
+                      <option value="+44">UK (+44)</option>
+                      <option value="+971">AE (+971)</option>
+                      <option value="+65">SG (+65)</option>
+                      <option value="+61">AU (+61)</option>
+                      <option value="+49">DE (+49)</option>
+                      <option value="+81">JP (+81)</option>
+                    </select>
+                    <input type="tel" id="v-contact" required maxlength="10" pattern="[0-9]{10}" value="${vendor.contactNo || ''}" class="flex-1 min-w-0 px-3 py-2 font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent" placeholder="10-digit number" />
+                  </div>
+                </div>
+                <div class="md:col-span-4">
+                  <label class="block font-bold text-slate-700 mb-1">Email Address <span class="text-rose-600 font-bold">*</span></label>
+                  <input type="email" id="v-email" required value="${vendor.email || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="vendor@..." />
+                </div>
               </div>
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Email Address <span class="text-rose-600 font-bold">*</span></label>
-                <input type="email" id="v-email" required value="${vendor.email || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="vendor@..." />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -1202,12 +1243,12 @@ window.CMS_MASTERS = {
               <label class="block font-bold text-slate-700 mb-1">
                 GSTIN Number (15 Characters) <span class="text-rose-600 font-bold">*</span>
               </label>
-              <input type="text" id="v-gst" ${vendor.gstNotApplicable ? 'disabled' : ''} maxlength="15" value="${vendor.gstNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstInput(this.value);" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-blue-900" placeholder="15-digit GSTIN (e.g. 07AABCA1234F1Z5)" />
+              <input type="text" id="v-gst" ${vendor.gstNotApplicable ? 'disabled' : ''} maxlength="15" value="${vendor.gstNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstInput(this.value);" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-bold text-blue-600" placeholder="15-digit GSTIN (e.g. 07AABCA1234F1Z5)" />
               
               <!-- Blue Box for GST Exemption -->
               <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
                 <input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.toggleGstApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
-                <span class="font-semibold text-blue-900">GST registration is not applicable for this vendor (Exempt)</span>
+                <span class="font-semibold text-blue-600">GST registration is not applicable for this vendor (Exempt)</span>
               </label>
 
               <!-- Starred GST Certificate File Box -->
@@ -1224,12 +1265,12 @@ window.CMS_MASTERS = {
               <label class="block font-bold text-slate-700 mb-1">
                 PAN Card Number (10 Characters) <span class="text-rose-600 font-bold">*</span>
               </label>
-              <input type="text" id="v-pan" ${vendor.panNotApplicable ? 'disabled' : ''} maxlength="10" value="${initialPan}" oninput="this.value = this.value.toUpperCase(); this.dataset.autoFilled = 'false';" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-md text-xs font-bold text-indigo-900" placeholder="10-character PAN (e.g. AABCA1234F)" />
+              <input type="text" id="v-pan" ${vendor.panNotApplicable ? 'disabled' : ''} maxlength="10" value="${initialPan}" oninput="this.value = this.value.toUpperCase(); this.dataset.autoFilled = 'false';" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-bold text-indigo-900" placeholder="10-character PAN (e.g. AABCA1234F)" />
               
               <!-- Blue Box for PAN Exemption -->
               <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
                 <input type="checkbox" id="v-pan-na" ${vendor.panNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.togglePanApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
-                <span class="font-semibold text-blue-900">PAN card is not applicable for this vendor</span>
+                <span class="font-semibold text-blue-600">PAN card is not applicable for this vendor</span>
               </label>
 
               <!-- Starred PAN Card File Box -->
@@ -1254,35 +1295,40 @@ window.CMS_MASTERS = {
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
             <div>
               <label class="block font-bold text-slate-700 mb-1">Bank Name <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-bank-name" required value="${vendor.bankName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md" placeholder="e.g. HDFC Bank, SBI" />
+              <input type="text" id="v-bank-name" required value="${vendor.bankName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC Bank, SBI" />
             </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">Account Name <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-account-name" required value="${vendor.accountName || vendor.name || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md" placeholder="Beneficiary Name" />
+              <input type="text" id="v-account-name" required oninput="this.value = this.value.replace(/[^a-zA-Z\s\.\-\&]/g, '')" value="${vendor.accountName || vendor.name || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Beneficiary Name" />
             </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">Account No. <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-account-no" required minlength="9" maxlength="18" value="${vendor.accountNo || ''}" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-md" placeholder="9-18 digit account" />
+              <input type="text" id="v-account-no" required minlength="5" maxlength="22" value="${vendor.accountNo || ''}" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Account Number" />
             </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">IFSC Code (11 Chars) <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-ifsc" required maxlength="11" value="${vendor.ifscCode || ''}" oninput="this.value = this.value.toUpperCase();" class="w-full font-mono uppercase px-3 py-1.5 border border-slate-300 rounded-md" placeholder="e.g. HDFC0001234" />
+              <input type="text" id="v-ifsc" required maxlength="11" value="${vendor.ifscCode || ''}" oninput="this.value = this.value.toUpperCase();" class="w-full font-mono uppercase px-3 py-1.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC0001234" />
             </div>
             <div>
               <label class="block font-bold text-slate-700 mb-1">Branch Name</label>
-              <input type="text" id="v-branch-name" value="${vendor.branchName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md" placeholder="Branch Name" />
+              <input type="text" id="v-branch-name" value="${vendor.branchName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Branch Name" />
             </div>
+          </div>
+          <div class="mt-2 pt-2 border-t border-slate-200">
+            <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document (Cancelled Cheque, Passbook, or Bank Mandate)</label>
+            <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs" />
+            ${vendor.bankDoc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${vendor.bankDoc}</span>` : ''}
           </div>
         </div>
 
         <!-- 4. Commercial Quotations & Approved Materials (Auto-Sync with Operations) -->
-          <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg space-y-3.5 shadow-xs">
-            <div class="flex items-center justify-between pb-2 border-b border-blue-200">
-              <div class="text-xs font-bold text-blue-900 uppercase tracking-wider flex items-center gap-2">
-                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-700"></i>
+          <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-md space-y-3.5 shadow-sm">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+              <div class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-600"></i>
                 <span>Commercial Quotations & Approved Materials</span>
               </div>
-              <button type="button" onclick="CMS_MASTERS.addVendorQuotationRow()" class="px-2.5 py-1 text-[10px] font-bold bg-blue-600 hover:bg-blue-700 text-white rounded shadow transition flex items-center gap-1">
+              <button type="button" onclick="CMS_MASTERS.addVendorQuotationRow()" class="px-2.5 py-1 text-[10px] font-bold bg-slate-900 hover:bg-slate-900 text-white rounded shadow transition flex items-center gap-1">
                 <i data-lucide="plus" class="w-3 h-3"></i> Add Quotation
               </button>
             </div>
@@ -1301,7 +1347,7 @@ window.CMS_MASTERS = {
               </div>
               <p class="text-[11px] text-slate-500 mt-0.5">Standard sequence: 1. Agency -> 2. Document Title -> 3. Form No -> 4. License No -> 5. Validity/Expiry -> 6. Upload File Copy.</p>
             </div>
-            <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-800 border border-blue-300 rounded-md font-bold text-xs transition">
+            <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-blue-600 border border-blue-300 rounded-md font-bold text-xs transition">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i>
               <span>+ Add Certificate</span>
             </button>
@@ -1330,7 +1376,7 @@ window.CMS_MASTERS = {
               </label>
               <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2">
                 <label class="block text-[11px] font-bold text-slate-700 mb-1">Approval Valid Till / Expiry Date * (No past dates)</label>
-                <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md text-xs font-mono" />
+                <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-mono" />
               </div>
             </div>
 
@@ -1352,7 +1398,7 @@ window.CMS_MASTERS = {
           <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">
             Cancel
           </button>
-          <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
+          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition flex items-center gap-1.5">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Submit for Admin Approval</span>
           </button>
@@ -1429,7 +1475,8 @@ window.CMS_MASTERS = {
 
     const name = document.getElementById('v-name')?.value.trim() || '';
     const address = document.getElementById('v-address')?.value.trim() || '';
-    const addressTaluka = document.getElementById('v-taluka')?.value.trim() || '';
+    const constitution = document.getElementById('v-constitution')?.value || '';
+      const addressTaluka = document.getElementById('v-taluka')?.value.trim() || '';
     const addressDistrict = document.getElementById('v-district')?.value.trim() || '';
     const addressState = document.getElementById('v-state')?.value || '';
     const addressCountry = document.getElementById('v-country')?.value.trim() || 'India';
@@ -1462,6 +1509,12 @@ window.CMS_MASTERS = {
     const accountNo = document.getElementById('v-account-no')?.value.trim() || '';
     const ifscCode = document.getElementById('v-ifsc')?.value.trim().toUpperCase() || '';
     const branchName = document.getElementById('v-branch-name')?.value.trim() || '';
+    
+    const bankFileInput = document.getElementById('v-bank-file');
+    let bankDoc = (bankFileInput && bankFileInput.files[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
+    if (accountNo && !bankDoc) {
+      bankDoc = `${accountNo}_Bank_Mandate.pdf`; // Mock auto-attachment if none uploaded
+    }
 
     const quoteRows = document.querySelectorAll('#v-quotations-container .quote-row');
     const quotedItems = [];
@@ -1564,8 +1617,11 @@ window.CMS_MASTERS = {
 
     // Bank Validation
     if (!bankName) return window.CMS_APP.toast('Bank Name is mandatory.', 'error');
-    if (!accountNo || accountNo.length < 9 || accountNo.length > 18) {
-      return window.CMS_APP.toast(`Bank Account Number must be between 9 and 18 digits (currently ${accountNo.length} digits).`, 'error');
+    if (/[^a-zA-Z\s\.\-\&]/.test(accountName)) {
+        return window.CMS_APP.toast('Bank Account Name cannot contain numbers or special symbols.', 'error');
+      }
+      if (!accountNo || accountNo.length < 5 || accountNo.length > 22) {
+      return window.CMS_APP.toast(`Bank Account Number must be between 5 and 22 digits (currently ${accountNo.length} digits).`, 'error');
     }
     if (!ifscCode || ifscCode.length < 8 || ifscCode.length > 11) {
       return window.CMS_APP.toast(`Bank IFSC Code must be valid (e.g. HDFC0001234). Currently: "${ifscCode}".`, 'error');
@@ -1590,7 +1646,12 @@ window.CMS_MASTERS = {
     const certRows = document.querySelectorAll('#v-cert-container .cert-row');
     const certificates = [];
     for (const row of certRows) {
-      const reg = row.querySelector('.cert-regulator-select')?.value || '';
+      let reg = row.querySelector('.cert-regulator-select')?.value || '';
+      if (reg === 'Other') {
+        const otherVal = row.querySelector('.cert-regulator-other-input')?.value.trim();
+        if (otherVal) reg = otherVal;
+        else return window.CMS_APP.toast('Please specify the agency name for "Other".', 'error');
+      }
       const formNo = row.querySelector('.cert-form-input')?.value.trim() || '';
       const certNo = row.querySelector('.cert-number-input')?.value.trim() || '';
       const hasVal = row.querySelector('input[type="radio"]:checked')?.value === 'yes';
@@ -1635,7 +1696,7 @@ window.CMS_MASTERS = {
           gstNotApplicable, panNotApplicable,
           gstNo, panNo,
           gstCertificateFile, panCardFile,
-          bankName, accountName, accountNo, ifscCode, branchName,
+          bankName, accountName, accountNo, ifscCode, branchName, bankDoc,
           quotationNo, quotationDate, quotationValidTill, quotationDoc, supportingDoc,
           quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
           approvedForLimitedPeriod, approvalValidTill,
@@ -1659,14 +1720,14 @@ window.CMS_MASTERS = {
 
       store.data.vendors.push({
         id: newId,
-        name, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
+        name, constitution, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
         stateCode: stateInfo.code,
         applicableTaxType: stateInfo.taxMode,
         contactNo, email,
         gstNotApplicable, panNotApplicable,
         gstNo, panNo,
         gstCertificateFile, panCardFile,
-        bankName, accountName, accountNo, ifscCode, branchName,
+        bankName, accountName, accountNo, ifscCode, branchName, bankDoc,
         quotationNo, quotationDate, quotationValidTill, quotationDoc,
         quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
         approvedForLimitedPeriod, approvalValidTill,
@@ -1767,6 +1828,7 @@ window.CMS_MASTERS = {
     const docs = [];
     if (v.gstCertificateFile) docs.push({ label: 'GST Registration Certificate', fileName: v.gstCertificateFile, partyName: v.name });
     if (v.panCardFile) docs.push({ label: 'Permanent Account Number (PAN) Card', fileName: v.panCardFile, partyName: v.name });
+    if (v.bankDoc) docs.push({ label: 'Bank Supporting Document', fileName: v.bankDoc, partyName: v.name });
     if (v.quotationDoc) docs.push({ label: 'Approved Commercial Quotation', fileName: v.quotationDoc, partyName: v.name, validTill: v.quotationValidTill });
     (v.certificates || []).forEach(c => {
       const reg = typeof c === 'string' ? c : (c.regulator || c.name || 'Certificate');
@@ -1779,7 +1841,7 @@ window.CMS_MASTERS = {
     const summaryHtml = `
       <div class="space-y-2">
         <div class="flex items-center justify-between">
-          <span class="font-bold text-slate-900 text-sm">${v.name}</span>
+          <span class="font-bold text-blue-600 text-sm">${v.name}</span>
           <span class="font-mono text-slate-500 font-bold">${v.id}</span>
         </div>
         <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
@@ -1788,7 +1850,7 @@ window.CMS_MASTERS = {
           <div>Bank: <strong class="text-slate-800">${v.bankName || '-'} (${v.accountNo || '-'})</strong></div>
           <div>State: <strong class="text-slate-800">${v.addressState || '-'} (Code: ${v.stateCode || '-'})</strong></div>
         </div>
-        ${v.quotationNo ? `<div class="text-[11px] text-blue-900 bg-blue-50/80 p-1.5 rounded border border-blue-200">Quote Ref: <strong>${v.quotationNo}</strong> | Valid Till: <strong>${window.CMS_STORE.formatDate(v.quotationValidTill)}</strong></div>` : ''}
+        ${v.quotationNo ? `<div class="text-[11px] text-blue-600 bg-slate-50/80 p-1.5 rounded border border-slate-200">Quote Ref: <strong>${v.quotationNo}</strong> | Valid Till: <strong>${window.CMS_STORE.formatDate(v.quotationValidTill)}</strong></div>` : ''}
       </div>
     `;
 
@@ -1892,7 +1954,7 @@ window.CMS_MASTERS = {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-md bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="tag" class="w-4 h-4"></i>
               </div>
               <span>Consumable Category</span>
@@ -1900,7 +1962,7 @@ window.CMS_MASTERS = {
             <p class="text-xs text-slate-500 mt-1">Define classification types: Stationery, Housekeeping, Packing Material, PPE, Electrical, etc.</p>
           </div>
           ${role === 'User' ? `
-            <button onclick="CMS_MASTERS.openCategoryModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+            <button onclick="CMS_MASTERS.openCategoryModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs">
               <i data-lucide="plus-circle" class="w-4 h-4"></i>
               <span>Add Category</span>
             </button>
@@ -1924,7 +1986,7 @@ window.CMS_MASTERS = {
               ` : list.map(c => `
                 <tr class="hover:bg-slate-50/80 transition">
                   <td class="p-4 font-mono text-xs font-semibold text-slate-500">${c.id}</td>
-                  <td class="p-4 font-bold text-slate-900 text-sm">${c.name}</td>
+                  <td class="p-4 font-bold text-blue-600 text-sm">${c.name}</td>
                   <td class="p-4 text-slate-600 max-w-md">${c.description || '-'}</td>
                   <td class="p-4">
                     <span class="badge ${c.status === 'Approved' ? 'badge-approved' : c.status === 'Pending Approval' ? 'badge-pending' : 'badge-draft'}">
@@ -1933,16 +1995,16 @@ window.CMS_MASTERS = {
                   </td>
                   <td class="p-4 text-right space-x-1">
                     ${role === 'User' ? `
-                      <button onclick="CMS_MASTERS.openCategoryModal('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Category">
+                      <button onclick="CMS_MASTERS.openCategoryModal('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition" title="Modify Category">
                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                       </button>
                     ` : ''}
                     ${c.status === 'Pending Approval' && role === 'Admin' ? `
-                      <button onclick="CMS_MASTERS.approveCategory('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition">
+                      <button onclick="CMS_MASTERS.approveCategory('${c.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-md transition">
                         Approve
                       </button>
                     ` : ''}
-                    ${role === 'Admin' ? `<button onclick="CMS_MASTERS.deleteCategory('${c.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition" title="Delete Category"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+                    ${role === 'Admin' ? `<button onclick="CMS_MASTERS.deleteCategory('${c.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition" title="Delete Category"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
                   </td>
                 </tr>
               `).join('')}
@@ -1965,15 +2027,15 @@ window.CMS_MASTERS = {
       <form id="cat-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveCategory('${catId || ''}', true);">
         <div>
           <label class="block font-bold text-slate-700 mb-1">Category Type / Name *</label>
-          <input type="text" id="cat-name" required value="${cat.name || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Stationery, Housekeeping, Packing Material" />
+          <input type="text" id="cat-name" required value="${cat.name || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="e.g. Stationery, Housekeeping, Packing Material" />
         </div>
         <div>
           <label class="block font-bold text-slate-700 mb-1">Description / Notes</label>
-          <textarea id="cat-desc" rows="3" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Scope of items falling under this category">${cat.description || ''}</textarea>
+          <textarea id="cat-desc" rows="3" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="Scope of items falling under this category">${cat.description || ''}</textarea>
         </div>
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
           <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition">Submit for Approval</button>
+          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition">Submit for Approval</button>
         </div>
       </form>
     `;
@@ -2091,7 +2153,7 @@ window.CMS_MASTERS = {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-md bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="package" class="w-4 h-4"></i>
               </div>
               <span>Material Catalog (Consumable Materials & Fixed Assets)</span>
@@ -2099,13 +2161,13 @@ window.CMS_MASTERS = {
             <p class="text-xs text-slate-500 mt-1">Unified material catalog supporting vendor quotations, booked MRP, statutory units, warranty periods, and preventive maintenance tracking.</p>
           </div>
           ${role === 'User' ? `
-      <button onclick="CMS_MASTERS.openConsumableModal(null, CMS_MASTERS.consumableTypeFilter || 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+      <button onclick="CMS_MASTERS.openConsumableModal(null, CMS_MASTERS.consumableTypeFilter || 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
         <span>Add Material</span>
       </button>
     ` : `
-      <div class="text-xs text-indigo-700 bg-indigo-50 border border-indigo-200 px-3.5 py-2 rounded-md font-semibold flex items-center gap-1.5 shadow-xs">
-        <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
+      <div class="text-xs text-blue-600 bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-md font-semibold flex items-center gap-1.5 shadow-sm">
+        <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
         <span>Store In-Charge Governance: Sanction or Revert Consumables</span>
       </div>
     `}
@@ -2165,32 +2227,32 @@ window.CMS_MASTERS = {
                   return `
                     <tr class="hover:bg-slate-50/80 transition">
                       <td class="p-4">
-                        <div class="font-bold text-slate-900 text-sm hover:text-blue-600 cursor-pointer" onclick="CMS_MASTERS.viewMaterial360('${m.id}')">${m.materialName}</div>
+                        <div class="font-bold text-blue-600 text-sm hover:text-blue-600 cursor-pointer" onclick="CMS_MASTERS.viewMaterial360('${m.id}')">${m.materialName}</div>
                         <div class="text-[11px] text-slate-500 font-mono mt-0.5">Code: ${m.id} | Brand: <span class="font-bold text-slate-700">${m.brand || '-'}</span></div>
-                        ${isFixed && m.assetTag ? `<div class="text-[10px] text-blue-700 font-mono mt-0.5 font-bold">Tag: ${m.assetTag} | S/N: ${m.serialNo || '-'}</div>` : ''}
+                        ${isFixed && m.assetTag ? `<div class="text-[10px] text-blue-600 font-mono mt-0.5 font-bold">Tag: ${m.assetTag} | S/N: ${m.serialNo || '-'}</div>` : ''}
                       </td>
                       <td class="p-4">
-                        <span class="inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded border ${isFixed ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}">
+                        <span class="inline-flex items-center gap-1 text-[10.5px] font-bold px-2 py-0.5 rounded border ${isFixed ? 'bg-slate-50 text-blue-600 border-slate-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}">
                           ${isFixed ? 'Fixed' : 'Consumer'}
                         </span>
                       </td>
                       <td class="p-4">
-                        <div class="text-slate-900 font-medium">Quote: <span class="font-mono font-bold text-blue-700">₹${Number(m.quotationRate || m.vendor1Rate || 0).toFixed(2)}</span></div>
+                        <div class="text-blue-600 font-medium">Quote: <span class="font-mono font-bold text-blue-600">₹${Number(m.quotationRate || m.vendor1Rate || 0).toFixed(2)}</span></div>
                         <div class="text-[10px] text-slate-500 font-mono">Ref: ${m.quotationNo || 'Direct'} (${m.quotationDate || '-'})</div>
-                        <div class="text-[11px] text-slate-800 font-semibold mt-0.5">MRP: <span class="font-mono text-slate-900">₹${Number(m.mrpBooked || 0).toFixed(2)}</span></div>
+                        <div class="text-[11px] text-slate-800 font-semibold mt-0.5">MRP: <span class="font-mono text-blue-600">₹${Number(m.mrpBooked || 0).toFixed(2)}</span></div>
                       </td>
                       <td class="p-4">
                         <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 font-bold text-[11px] rounded-md">${m.categoryName || 'General'}</span>
                         <div class="text-slate-500 mt-1">Unit: <span class="font-bold text-slate-800 font-mono">${m.unit}</span></div>
                       </td>
                       <td class="p-4">
-                        <div class="font-mono text-xs"><strong class="text-slate-900">₹${Number(m.vendor1Rate || 0).toFixed(2)}</strong></div>
+                        <div class="font-mono text-xs"><strong class="text-blue-600">₹${Number(m.vendor1Rate || 0).toFixed(2)}</strong></div>
                         <div class="text-[10px] text-slate-500 line-clamp-1">${m.vendor1Name || 'Approved Vendor'}</div>
                       </td>
                       <td class="p-4">
                         <div class="space-y-1">
                           ${m.hasWarranty ? `
-                            <span class="inline-flex items-center gap-1 text-[10px] bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-semibold" title="Valid till: ${m.warrantyValidTill || 'N/A'}">
+                            <span class="inline-flex items-center gap-1 text-[10px] bg-slate-50 text-blue-600 border border-slate-200 px-1.5 py-0.5 rounded font-semibold" title="Valid till: ${m.warrantyValidTill || 'N/A'}">
                                ${m.warrantyPeriod || 'Warranted'}
                             </span>
                           ` : `
@@ -2218,19 +2280,19 @@ window.CMS_MASTERS = {
                         </span>
                       </td>
                       <td class="p-4 text-right space-x-1">
-                        <button onclick="CMS_MASTERS.viewMaterial360('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Inspect 360° Material Details">
+                        <button onclick="CMS_MASTERS.viewMaterial360('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-md transition" title="Inspect 360° Material Details">
                           <i data-lucide="scan" class="w-3.5 h-3.5"></i>
                         </button>
                         ${role === 'User' ? `
-      <button onclick="CMS_MASTERS.openConsumableModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition" title="Modify Item Master">
+      <button onclick="CMS_MASTERS.openConsumableModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition" title="Modify Item Master">
         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
       </button>
     ` : ''}
                         ${(m.status === 'Pending Approval' || m.status === 'Revision Required') && role === 'Admin' ? `
-      <button onclick="CMS_MASTERS.openConsumableSanctionModal('${m.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition shadow-xs" title="Sanction Material">
+      <button onclick="CMS_MASTERS.openConsumableSanctionModal('${m.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition shadow-sm" title="Sanction Material">
         Approve
       </button>
-      <button onclick="CMS_MASTERS.openConsumableRejectModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-lg transition" title="Reject / Request Revision">
+      <button onclick="CMS_MASTERS.openConsumableRejectModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-md transition" title="Reject / Request Revision">
         Reject
       </button>
     ` : ''}
@@ -2310,20 +2372,20 @@ window.CMS_MASTERS = {
         <div class="p-5 bg-slate-900 border border-slate-800 text-white rounded-md flex justify-between items-start">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="px-2 py-0.5 bg-blue-500/30 border border-blue-400/40 text-blue-200 rounded text-[10px] font-bold uppercase tracking-wider">${m.categoryName}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isFixed ? 'bg-indigo-500/40 text-indigo-200 border border-indigo-400/40' : 'bg-emerald-500/40 text-emerald-200 border border-emerald-400/40'}">
+              <span class="px-2 py-0.5 bg-slate-500/30 border border-blue-400/40 text-slate-200 rounded text-[10px] font-bold uppercase tracking-wider">${m.categoryName}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${isFixed ? 'bg-slate-500/40 text-slate-200 border border-indigo-400/40' : 'bg-emerald-500/40 text-emerald-200 border border-emerald-400/40'}">
                 ${isFixed ? 'Fixed Capital Asset' : 'Consumable Material'}
               </span>
             </div>
             <h3 class="text-lg font-bold text-white mt-1">${m.materialName}</h3>
-            <p class="text-blue-200 text-xs font-mono">Code: ${m.id} | Brand: <strong>${m.brand || '-'}</strong> | SKU: ${m.supplierProductCode || '-'}</p>
+            <p class="text-slate-200 text-xs font-mono">Code: ${m.id} | Brand: <strong>${m.brand || '-'}</strong> | SKU: ${m.supplierProductCode || '-'}</p>
             ${isFixed && m.assetTag ? `<p class="text-indigo-300 text-xs font-mono font-bold mt-1">Asset Tag: ${m.assetTag} | S/N: ${m.serialNo || '-'} | Dept: ${m.custodianDept || 'General'}</p>` : ''}
           </div>
           <span class="badge ${m.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${m.status}</span>
         </div>
 
         <!-- Live Stock & Monthly Buffer Meter -->
-        <div class="p-4 bg-slate-50 border border-slate-200 rounded-md">
+        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
           <div class="flex justify-between items-center mb-2">
             <span class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
               <i data-lucide="gauge" class="w-4 h-4 text-blue-600"></i>
@@ -2339,15 +2401,15 @@ window.CMS_MASTERS = {
         </div>
 
         <!-- Vendor Quotation & Booked MRP Details -->
-        <div class="p-4 bg-slate-50 border border-slate-200 rounded-md space-y-3">
-          <h4 class="font-bold text-slate-900 text-xs uppercase flex items-center gap-1.5 text-blue-800">
+        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-3">
+          <h4 class="font-bold text-blue-600 text-xs uppercase flex items-center gap-1.5 text-blue-600">
             <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-600"></i>
             <span>Vendor Quotation & MRP Pricing Record</span>
           </h4>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3 border border-slate-200 rounded">
             <div>
               <span class="text-slate-400 block text-[10px] uppercase font-bold">Quotation No:</span>
-              <strong class="font-mono text-blue-800 text-xs">${m.quotationNo || 'Direct Tender'}</strong>
+              <strong class="font-mono text-blue-600 text-xs">${m.quotationNo || 'Direct Tender'}</strong>
             </div>
             <div>
               <span class="text-slate-400 block text-[10px] uppercase font-bold">Quotation Date:</span>
@@ -2359,7 +2421,7 @@ window.CMS_MASTERS = {
             </div>
             <div>
               <span class="text-slate-400 block text-[10px] uppercase font-bold">Booked MRP:</span>
-              <strong class="font-mono text-slate-900 text-sm">₹${Number(m.mrpBooked || 0).toFixed(2)}</strong>
+              <strong class="font-mono text-blue-600 text-sm">₹${Number(m.mrpBooked || 0).toFixed(2)}</strong>
             </div>
           </div>
         </div>
@@ -2367,7 +2429,7 @@ window.CMS_MASTERS = {
         <!-- Approved Vendor Pricing (Multiple Vendors) -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
-            <h4 class="font-bold text-slate-900 text-xs uppercase flex items-center gap-1.5 text-blue-800">
+            <h4 class="font-bold text-blue-600 text-xs uppercase flex items-center gap-1.5 text-blue-600">
               <i data-lucide="store" class="w-4 h-4 text-blue-600"></i>
               <span>Approved Supplier Quotations & Rates (${(m.vendors && m.vendors.length > 0) ? m.vendors.length : (m.vendor1Id ? (m.vendor2Id ? 2 : 1) : 0)})</span>
             </h4>
@@ -2377,17 +2439,17 @@ window.CMS_MASTERS = {
               ...(m.vendor1Id ? [{ vendorId: m.vendor1Id, vendorName: m.vendor1Name, rate: m.vendor1Rate, quotationNo: m.quotationNo, effectiveFrom: m.vendor1RateEffectiveFrom, isPrimary: true }] : []),
               ...(m.vendor2Id ? [{ vendorId: m.vendor2Id, vendorName: m.vendor2Name, rate: m.vendor2Rate, quotationNo: '', effectiveFrom: m.vendor2RateEffectiveFrom, isPrimary: false }] : [])
             ]).map((v, i) => `
-              <div class="p-3.5 border-2 ${v.isPrimary ? 'border-blue-300 bg-blue-50/50' : 'border-slate-200 bg-slate-50'} rounded-md space-y-1.5">
+              <div class="p-3.5 border-2 ${v.isPrimary ? 'border-blue-300 bg-slate-50/50' : 'border-slate-200 bg-slate-50'} rounded-md space-y-1.5">
                 <div class="flex items-center justify-between">
-                  <span class="font-bold text-xs uppercase flex items-center gap-1 ${v.isPrimary ? 'text-blue-900' : 'text-slate-700'}">
+                  <span class="font-bold text-xs uppercase flex items-center gap-1 ${v.isPrimary ? 'text-blue-600' : 'text-slate-700'}">
                     <i data-lucide="${v.isPrimary ? 'award' : 'building'}" class="w-3.5 h-3.5 ${v.isPrimary ? 'text-blue-600' : 'text-slate-500'}"></i>
                     ${v.isPrimary ? 'Vendor-1 (Primary Source)' : `Vendor-${i + 1} (Alternate Source)`}
                   </span>
-                  <span class="font-mono font-bold text-slate-900 text-sm">₹${Number(v.rate || 0).toFixed(2)}</span>
+                  <span class="font-mono font-bold text-blue-600 text-sm">₹${Number(v.rate || 0).toFixed(2)}</span>
                 </div>
-                <p class="font-bold text-slate-900 text-xs truncate">${v.vendorName || v.vendorId || 'Approved Vendor'}</p>
+                <p class="font-bold text-blue-600 text-xs truncate">${v.vendorName || v.vendorId || 'Approved Vendor'}</p>
                 <div class="text-[11px] text-slate-600 flex items-center justify-between pt-1 border-t border-slate-200/60">
-                  <span>Quote: <strong class="font-mono text-blue-800">${v.quotationNo || 'N/A'}</strong></span>
+                  <span>Quote: <strong class="font-mono text-blue-600">${v.quotationNo || 'N/A'}</strong></span>
                   <span>Effective: <strong class="font-mono">${v.effectiveFrom || 'Current'}</strong></span>
                 </div>
               </div>
@@ -2399,20 +2461,20 @@ window.CMS_MASTERS = {
         ${isFixed ? `
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <!-- Warranty Card -->
-            <div class="p-4 border border-blue-200 bg-blue-50/40 rounded-md space-y-2">
+            <div class="p-4 border border-slate-200 bg-slate-50/40 rounded-md space-y-2">
               <div class="flex items-center justify-between">
                 <h4 class="font-bold text-blue-950 text-xs uppercase flex items-center gap-1.5">
-                  <i data-lucide="shield" class="w-4 h-4 text-blue-700"></i>
+                  <i data-lucide="shield" class="w-4 h-4 text-blue-600"></i>
                   <span>Warranty Coverage</span>
                 </h4>
-                <span class="text-xs font-bold ${m.hasWarranty ? 'text-blue-800' : 'text-slate-400'}">
+                <span class="text-xs font-bold ${m.hasWarranty ? 'text-blue-600' : 'text-slate-400'}">
                   ${m.hasWarranty ? 'Active Policy' : 'No Coverage'}
                 </span>
               </div>
               ${m.hasWarranty ? `
                 <div class="space-y-1 pt-1 text-slate-700">
                   <div><strong>Period:</strong> <span class="font-medium">${m.warrantyPeriod || '1 Year'}</span></div>
-                  <div><strong>Valid Till:</strong> <span class="font-mono font-bold text-blue-900">${m.warrantyValidTill || 'N/A'}</span></div>
+                  <div><strong>Valid Till:</strong> <span class="font-mono font-bold text-blue-600">${m.warrantyValidTill || 'N/A'}</span></div>
                   <div><strong>Authorized Vendor:</strong> <span>${m.warrantyVendor || m.vendor1Name || 'Supplier'}</span></div>
                 </div>
               ` : `
@@ -2433,7 +2495,7 @@ window.CMS_MASTERS = {
               </div>
               ${m.hasPm ? `
                 <div class="space-y-1 pt-1 text-slate-700">
-                  <div><strong>Technician:</strong> <span class="font-bold text-slate-900">${m.repairmanName || 'General Tech'}</span></div>
+                  <div><strong>Technician:</strong> <span class="font-bold text-blue-600">${m.repairmanName || 'General Tech'}</span></div>
                   <div><strong>Contact Phone:</strong> <span class="font-mono text-purple-900 font-semibold">${m.repairmanContact || '-'}</span></div>
                   <div><strong>Agency:</strong> <span>${m.repairmanAgency || m.pmVendor || 'Authorized Care'}</span></div>
                   <div><strong>Next PM Scheduled:</strong> <span class="font-mono font-bold text-purple-900">${m.nextPmDate || 'Upcoming'}</span></div>
@@ -2445,20 +2507,20 @@ window.CMS_MASTERS = {
           </div>
         ` : `
           <!-- Warranty Card for Consumable Material (No PM) -->
-          <div class="p-4 border border-blue-200 bg-blue-50/40 rounded-md space-y-2">
+          <div class="p-4 border border-slate-200 bg-slate-50/40 rounded-md space-y-2">
             <div class="flex items-center justify-between">
               <h4 class="font-bold text-blue-950 text-xs uppercase flex items-center gap-1.5">
-                <i data-lucide="shield" class="w-4 h-4 text-blue-700"></i>
+                <i data-lucide="shield" class="w-4 h-4 text-blue-600"></i>
                 <span>Warranty Coverage</span>
               </h4>
-              <span class="text-xs font-bold ${m.hasWarranty ? 'text-blue-800' : 'text-slate-400'}">
+              <span class="text-xs font-bold ${m.hasWarranty ? 'text-blue-600' : 'text-slate-400'}">
                 ${m.hasWarranty ? 'Active Policy' : 'No Coverage'}
               </span>
             </div>
             ${m.hasWarranty ? `
               <div class="space-y-1 pt-1 text-slate-700">
                 <div><strong>Period:</strong> <span class="font-medium">${m.warrantyPeriod || '1 Year'}</span></div>
-                <div><strong>Valid Till:</strong> <span class="font-mono font-bold text-blue-900">${m.warrantyValidTill || 'N/A'}</span></div>
+                <div><strong>Valid Till:</strong> <span class="font-mono font-bold text-blue-600">${m.warrantyValidTill || 'N/A'}</span></div>
                 <div><strong>Authorized Vendor:</strong> <span>${m.warrantyVendor || m.vendor1Name || 'Supplier'}</span></div>
               </div>
             ` : `
@@ -2481,14 +2543,14 @@ window.CMS_MASTERS = {
           <div class="grid grid-cols-2 gap-3 text-slate-700 pt-1">
             <div>
               <span class="text-slate-400 block text-[10px] uppercase font-bold">Authorized Signatory / Dept Head:</span>
-              <span class="font-bold text-slate-900">${m.confirmedBy || '-'}</span>
+              <span class="font-bold text-blue-600">${m.confirmedBy || '-'}</span>
             </div>
             <div>
               <span class="text-slate-400 block text-[10px] uppercase font-bold">Confirmation Date:</span>
-              <span class="font-mono text-slate-900 font-semibold">${m.confirmationDate || '-'}</span>
+              <span class="font-mono text-blue-600 font-semibold">${m.confirmationDate || '-'}</span>
             </div>
           </div>
-          <div class="text-[11px] text-slate-600 bg-white p-2.5 rounded-lg border border-emerald-100">
+          <div class="text-[11px] text-slate-600 bg-white p-2.5 rounded-md border border-emerald-100">
             <strong>Tender / Contract Reference:</strong> ${m.confirmationRemarks || 'Standard rates verified under rate contract.'}
           </div>
         </div>
@@ -2496,7 +2558,7 @@ window.CMS_MASTERS = {
         <!-- Modal Footer -->
         <div class="pt-3 border-t border-slate-200 flex justify-between items-center">
           <div class="flex gap-2">
-            <button onclick="CMS_PO.openPOModal(); CMS_APP.closeModal();" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md text-xs flex items-center gap-1.5 shadow">
+            <button onclick="CMS_PO.openPOModal(); CMS_APP.closeModal();" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md text-xs flex items-center gap-1.5 shadow">
               <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
               <span>Generate PO</span>
             </button>
@@ -2590,13 +2652,13 @@ window.CMS_MASTERS = {
         <!-- Header / Scope Bar (Single Unified Form) -->
         <div class="flex items-center justify-between pb-3 border-b border-slate-200">
           <div>
-            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <i data-lucide="${isFixed ? 'cpu' : 'package'}" class="w-4 h-4 ${isFixed ? 'text-indigo-600' : 'text-blue-600'}"></i>
+            <h3 class="font-bold text-blue-600 text-sm flex items-center gap-2">
+              <i data-lucide="${isFixed ? 'cpu' : 'package'}" class="w-4 h-4 ${isFixed ? 'text-blue-600' : 'text-blue-600'}"></i>
               <span>${isEdit ? (isFixed ? 'Edit Fixed Capital Asset' : 'Edit Consumable Material') : (isFixed ? 'New Fixed Capital Asset' : 'New Consumable Material')}</span>
             </h3>
             <p class="text-slate-500 text-[11px] mt-0.5">${isFixed ? 'Specify capital equipment details, statutory tax, pricing, and warranty schedule.' : 'Specify consumable specifications, statutory tax, quotation pricing, and consumption buffer.'}</p>
           </div>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isFixed ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isFixed ? 'bg-slate-50 text-blue-600 border border-slate-200' : 'bg-slate-50 text-blue-600 border border-slate-200'}">
             ${isFixed ? 'Fixed Capital Asset' : 'Consumable Material'}
           </span>
         </div>
@@ -2609,34 +2671,34 @@ window.CMS_MASTERS = {
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Product Category <span class="text-rose-500">*</span></label>
-              <select id="m-cat" required class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <select id="m-cat" required class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none">
                 <option value="">-- Select Category --</option>
                 ${categories.map(c => `<option value="${c.id}" ${m.categoryId === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}
               </select>
             </div>
             <div class="md:col-span-2">
               <label class="block font-semibold text-slate-700 mb-1">${isFixed ? 'Fixed Capital Asset Name' : 'Consumable Material Name'} <span class="text-rose-500">*</span></label>
-              <input type="text" id="m-name" required value="${m.materialName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="${isFixed ? 'e.g. HP LaserJet Enterprise Multi-Function Printer' : 'e.g. A4 Copier Paper (75 GSM) / Disinfectant Liquid'}" />
+              <input type="text" id="m-name" required value="${m.materialName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="${isFixed ? 'e.g. HP LaserJet Enterprise Multi-Function Printer' : 'e.g. A4 Copier Paper (75 GSM) / Disinfectant Liquid'}" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Unit of Measurement <span class="text-rose-500">*</span></label>
-              <input type="text" id="m-unit" required value="${m.unit || 'Nos'}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Nos, Box, Rim, Kg, Litre, Roll, Set" />
+              <input type="text" id="m-unit" required value="${m.unit || 'Nos'}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="Nos, Box, Rim, Kg, Litre, Roll, Set" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Brand Name <span class="text-rose-500">*</span></label>
-              <input type="text" id="m-brand" required value="${m.brand || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. JK Copier, 3M, Lizol, HP, Daikin" />
+              <input type="text" id="m-brand" required value="${m.brand || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="e.g. JK Copier, 3M, Lizol, HP, Daikin" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Supplier Part / SKU Code</label>
-              <input type="text" id="m-sku" value="${m.supplierProductCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="SKU-8910" />
+              <input type="text" id="m-sku" value="${m.supplierProductCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="SKU-8910" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">HSN / SAC Code <span class="text-rose-500">*</span></label>
-              <input type="text" id="m-hsn" required value="${m.hsnCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. 4802 or 8443" />
+              <input type="text" id="m-hsn" required value="${m.hsnCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="e.g. 4802 or 8443" />
             </div>
             <div class="md:col-span-2">
               <label class="block font-semibold text-slate-700 mb-1">Statutory GST / IGST Slab <span class="text-rose-500">*</span></label>
-              <select id="m-gst-slab" onchange="CMS_MASTERS.onMaterialGstSelect(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <select id="m-gst-slab" onchange="CMS_MASTERS.onMaterialGstSelect(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none">
                 <option value="">-- Select Configured GST Slab --</option>
                 ${(store.gstSlabs || []).filter(g => g.status === 'Approved').map(g => `
                   <option value="${g.id}" ${(m.gstSlabId === g.id || m.taxMode === g.taxMode) ? 'selected' : ''}>
@@ -2644,7 +2706,7 @@ window.CMS_MASTERS = {
                   </option>
                 `).join('')}
               </select>
-              <div id="m-tax-summary" class="text-[11px] font-semibold text-blue-700 mt-1">
+              <div id="m-tax-summary" class="text-[11px] font-semibold text-blue-600 mt-1">
                 ${m.taxMode ? window.CMS_STORE.getTaxLabel(m) : 'Selected tax rate will automatically apply to purchase orders and goods inward.'}
               </div>
             </div>
@@ -2655,15 +2717,15 @@ window.CMS_MASTERS = {
             <div id="m-fixed-fields" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">Asset Tag Number <span class="text-rose-500">*</span></label>
-                <input type="text" id="m-asset-tag" required value="${m.assetTag || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. AST-PRN-001" />
+                <input type="text" id="m-asset-tag" required value="${m.assetTag || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-bold text-blue-600 focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="e.g. AST-PRN-001" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">Serial Number (S/N)</label>
-                <input type="text" id="m-serial-no" value="${m.serialNo || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. VNC3K92104" />
+                <input type="text" id="m-serial-no" value="${m.serialNo || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="e.g. VNC3K92104" />
               </div>
               <div>
                 <label class="block font-semibold text-slate-700 mb-1">Custodian Department</label>
-                <input type="text" id="m-custodian-dept" value="${m.custodianDept || 'Central Stores'}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. Accounts, Facility" />
+                <input type="text" id="m-custodian-dept" value="${m.custodianDept || 'Central Stores'}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="e.g. Accounts, Facility" />
               </div>
             </div>
           ` : `
@@ -2685,17 +2747,17 @@ window.CMS_MASTERS = {
               </div>
               <p class="text-[11px] text-slate-500 mt-0.5">Attach multiple approved vendors, quotation references, and contractual rates.</p>
             </div>
-            <button type="button" onclick="CMS_MASTERS.addMaterialVendorRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md transition text-xs shadow">
+            <button type="button" onclick="CMS_MASTERS.addMaterialVendorRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md transition text-xs shadow">
               <i data-lucide="plus-circle" class="w-4 h-4"></i>
               <span>+ Add Vendor</span>
             </button>
           </div>
 
           <!-- Product Level MRP -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-md items-center">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-white border border-slate-200 rounded-md rounded-md items-center">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Booked MRP (₹) <span class="text-rose-500">*</span></label>
-              <input type="number" step="0.01" id="m-mrp" required value="${m.mrpBooked || ''}" class="w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="0.00" />
+              <input type="number" step="0.01" id="m-mrp" required value="${m.mrpBooked || ''}" class="w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-blue-600 text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="0.00" />
             </div>
             <div class="sm:col-span-2 text-[11px] text-slate-500">
               Maximum Retail Price benchmark for statutory audit and procurement saving computation.
@@ -2708,7 +2770,7 @@ window.CMS_MASTERS = {
           </div>
 
           <div class="flex justify-start pt-1">
-            <button type="button" onclick="CMS_MASTERS.addMaterialVendorRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 font-bold rounded-md transition text-xs shadow-xs">
+            <button type="button" onclick="CMS_MASTERS.addMaterialVendorRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-blue-600 border border-blue-300 font-bold rounded-md transition text-xs shadow-sm">
               <i data-lucide="plus" class="w-3.5 h-3.5 text-blue-600"></i>
               <span>Add Another Vendor</span>
             </button>
@@ -2723,12 +2785,12 @@ window.CMS_MASTERS = {
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Average Monthly Consumption (Buffer Target) <span class="text-rose-500">*</span></label>
-              <input type="number" id="m-monthly" required value="${m.avgMonthlyConsumption || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="100" />
+              <input type="number" id="m-monthly" required value="${m.avgMonthlyConsumption || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="100" />
               <p class="text-[10px] text-slate-500 mt-0.5">Used by Purchase Order assistant to calculate reorder quotas.</p>
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Initial Opening Stock Balance</label>
-              <input type="number" id="m-init-stock" value="${m.initialStock || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" ${isEdit ? 'disabled title="Stock is adjusted via Inward Receipts and Stock Adjustments."' : ''} />
+              <input type="number" id="m-init-stock" value="${m.initialStock || 0}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" ${isEdit ? 'disabled title="Stock is adjusted via Inward Receipts and Stock Adjustments."' : ''} />
             </div>
           </div>
         </div>
@@ -2739,7 +2801,7 @@ window.CMS_MASTERS = {
             <span class="font-bold text-slate-800 text-xs">${isFixed ? 'Warranty & Maintenance' : 'Warranty Coverage'}</span>
             <div class="flex items-center gap-4">
               <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-700">
-                <input type="checkbox" id="m-has-warranty" ${m.hasWarranty ? 'checked' : ''} onchange="CMS_MASTERS.toggleWarrantyFields(this.checked)" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
+                <input type="checkbox" id="m-has-warranty" ${m.hasWarranty ? 'checked' : ''} onchange="CMS_MASTERS.toggleWarrantyFields(this.checked)" class="w-4 h-4 text-blue-600 rounded focus:ring-slate-500" />
                 <span>Warranty Applicable</span>
               </label>
               ${isFixed ? `
@@ -2751,27 +2813,27 @@ window.CMS_MASTERS = {
             </div>
           </div>
 
-          <div id="m-warranty-fields" class="${m.hasWarranty ? '' : 'hidden'} grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-md">
+          <div id="m-warranty-fields" class="${m.hasWarranty ? '' : 'hidden'} grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-white border border-slate-200 rounded-md rounded-md">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Warranty Period</label>
-              <input type="text" id="m-warranty-period" value="${m.warrantyPeriod || '1 Year Comprehensive'}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. 1 Year, 3 Years" />
+              <input type="text" id="m-warranty-period" value="${m.warrantyPeriod || '1 Year Comprehensive'}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs" placeholder="e.g. 1 Year, 3 Years" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Warranty Valid Till</label>
-              <input type="date" id="m-warranty-till" value="${m.warrantyValidTill || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" />
+              <input type="date" id="m-warranty-till" value="${m.warrantyValidTill || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Warranty Partner / Vendor</label>
-              <input type="text" id="m-warranty-vendor" value="${m.warrantyVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. HP Authorised Care" />
+              <input type="text" id="m-warranty-vendor" value="${m.warrantyVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs" placeholder="e.g. HP Authorised Care" />
             </div>
           </div>
 
           ${isFixed ? `
-            <div id="m-pm-fields" class="${m.hasPm ? '' : 'hidden'} space-y-2.5 p-3 bg-slate-50 border border-slate-200 rounded-md">
+            <div id="m-pm-fields" class="${m.hasPm ? '' : 'hidden'} space-y-2.5 p-4 bg-white border border-slate-200 rounded-md rounded-md">
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label class="block font-semibold text-slate-700 mb-1">PM Frequency</label>
-                  <select id="m-pm-freq" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs">
+                  <select id="m-pm-freq" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs">
                     <option value="Monthly" ${m.pmFrequency === 'Monthly' ? 'selected' : ''}>Monthly (Every 30 Days)</option>
                     <option value="Bi-Monthly" ${m.pmFrequency === 'Bi-Monthly' ? 'selected' : ''}>Bi-Monthly (Every 60 Days)</option>
                     <option value="Quarterly" ${m.pmFrequency === 'Quarterly' ? 'selected' : ''}>Quarterly (Every 90 Days)</option>
@@ -2781,25 +2843,25 @@ window.CMS_MASTERS = {
                 </div>
                 <div>
                   <label class="block font-semibold text-slate-700 mb-1">Designated Technician</label>
-                  <input type="text" id="m-pm-repairman-name" value="${m.repairmanName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. Sanjay Rawat" />
+                  <input type="text" id="m-pm-repairman-name" value="${m.repairmanName || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs" placeholder="e.g. Sanjay Rawat" />
                 </div>
                 <div>
                   <label class="block font-semibold text-slate-700 mb-1">Technician Contact Phone</label>
-                  <input type="text" id="m-pm-repairman-contact" value="${m.repairmanContact || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" placeholder="+91 98114 99012" />
+                  <input type="text" id="m-pm-repairman-contact" value="${m.repairmanContact || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" placeholder="+91 98114 99012" />
                 </div>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label class="block font-semibold text-slate-700 mb-1">Technician Agency</label>
-                  <input type="text" id="m-pm-repairman-agency" value="${m.repairmanAgency || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. Kent Service Care" />
+                  <input type="text" id="m-pm-repairman-agency" value="${m.repairmanAgency || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs" placeholder="e.g. Kent Service Care" />
                 </div>
                 <div>
                   <label class="block font-semibold text-slate-700 mb-1">PM Authorized Vendor</label>
-                  <input type="text" id="m-pm-vendor" value="${m.pmVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs" placeholder="e.g. GreenClean Corp" />
+                  <input type="text" id="m-pm-vendor" value="${m.pmVendor || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs" placeholder="e.g. GreenClean Corp" />
                 </div>
                 <div>
                   <label class="block font-semibold text-slate-700 mb-1">Next Scheduled PM Date</label>
-                  <input type="date" id="m-pm-next-date" value="${m.nextPmDate || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-xs font-mono" />
+                  <input type="date" id="m-pm-next-date" value="${m.nextPmDate || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" />
                 </div>
               </div>
             </div>
@@ -2828,15 +2890,15 @@ window.CMS_MASTERS = {
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Admin Name / Post</label>
-              <input type="text" id="m-conf-by" value="${m.confirmedBy || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white focus:outline-none" placeholder="e.g. Col. Anita Sharma (Store Admin)" />
+              <input type="text" id="m-conf-by" value="${m.confirmedBy || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white focus:outline-none" placeholder="e.g. Col. Anita Sharma (Store Admin)" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Confirmation Date</label>
-              <input type="date" id="m-conf-date" value="${m.confirmationDate || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white" />
+              <input type="date" id="m-conf-date" value="${m.confirmationDate || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white" />
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Tender / Rate Contract Ref</label>
-              <input type="text" id="m-conf-remarks" value="${m.confirmationRemarks || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md bg-white" placeholder="e.g. Annual Rate Contract Q3 Ref #77" />
+              <input type="text" id="m-conf-remarks" value="${m.confirmationRemarks || ''}" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white" placeholder="e.g. Annual Rate Contract Q3 Ref #77" />
             </div>
           </div>
         </div>
@@ -2844,7 +2906,7 @@ window.CMS_MASTERS = {
         <!-- Form Actions -->
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
           <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition flex items-center gap-1.5 text-xs">
+          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition flex items-center gap-1.5 text-xs">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Save to Master & Submit</span>
           </button>
@@ -3113,7 +3175,7 @@ window.CMS_MASTERS = {
     const summaryHtml = `
       <div class="space-y-2">
         <div class="flex items-center justify-between">
-          <span class="font-bold text-slate-900 text-sm">${m.materialName}</span>
+          <span class="font-bold text-blue-600 text-sm">${m.materialName}</span>
           <span class="font-mono text-slate-500 font-bold">${m.id}</span>
         </div>
         <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
@@ -3188,14 +3250,14 @@ window.CMS_MASTERS = {
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-md border border-slate-200 shadow-sm">
           <div>
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-md bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="percent" class="w-4 h-4"></i>
               </div>
               <span>GST / IGST Slab Master</span>
             </h2>
             <p class="text-xs text-slate-500 mt-1">Configure statutory tax slabs for CGST + SGST or IGST, with optional statutory notes.</p>
           </div>
-          <button onclick="CMS_MASTERS.openGstModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs">
+          <button onclick="CMS_MASTERS.openGstModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             <span>Add GST Slab</span>
           </button>
@@ -3220,9 +3282,9 @@ window.CMS_MASTERS = {
               ` : list.map(g => `
                 <tr class="hover:bg-slate-50/80 transition">
                   <td class="p-4 font-mono font-semibold text-slate-500">${g.id}</td>
-                  <td class="p-4 font-bold text-slate-900 text-sm">${g.name}</td>
+                  <td class="p-4 font-bold text-blue-600 text-sm">${g.name}</td>
                   <td class="p-4 font-semibold">${window.CMS_STORE.getTaxMode(g) === 'IGST' ? 'IGST (Inter-state)' : 'CGST + SGST (Intra-state)'}</td>
-                  <td class="p-4 font-mono font-bold text-blue-700">${window.CMS_STORE.getTaxLabel(g)}</td>
+                  <td class="p-4 font-mono font-bold text-blue-600">${window.CMS_STORE.getTaxLabel(g)}</td>
                   <td class="p-4 text-slate-600">${g.remarks || '-'}</td>
                   <td class="p-4">
                     <span class="badge ${g.status === 'Approved' ? 'badge-approved' : g.status === 'Pending Approval' ? 'badge-pending' : 'badge-draft'}">
@@ -3230,15 +3292,15 @@ window.CMS_MASTERS = {
                     </span>
                   </td>
                   <td class="p-4 text-right space-x-1">
-                    <button onclick="CMS_MASTERS.openGstModal('${g.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+                    <button onclick="CMS_MASTERS.openGstModal('${g.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition">
                       <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                     </button>
                     ${g.status === 'Pending Approval' && role === 'Admin' ? `
-                      <button onclick="CMS_MASTERS.approveGst('${g.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition">
+                      <button onclick="CMS_MASTERS.approveGst('${g.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-md transition">
                         Approve
                       </button>
                     ` : ''}
-                    <button onclick="CMS_MASTERS.deleteGst('${g.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                    <button onclick="CMS_MASTERS.deleteGst('${g.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition">
                       <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                   </td>
@@ -3286,7 +3348,7 @@ window.CMS_MASTERS = {
       <form id="gst-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveGst('${gstId || ''}', true);">
         <div>
           <label class="block font-bold text-slate-700 mb-1">Slab Name *</label>
-          <input type="text" id="g-name" required value="${slab.name || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. GST 18%, GST 5%, Exempted" />
+          <input type="text" id="g-name" required value="${slab.name || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="e.g. GST 18%, GST 5%, Exempted" />
         </div>
         <div class="p-3 border border-slate-200 rounded-md bg-white">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -3304,23 +3366,23 @@ window.CMS_MASTERS = {
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div id="g-cgst-sgst-fields" class="sm:col-span-2 grid grid-cols-2 gap-1.5 ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'tax-fields-disabled' : ''}">
-              <input type="number" step="0.01" id="g-sgst" value="${slab.sgst ?? 9}" ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('sgst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="SGST %" />
-              <input type="number" step="0.01" id="g-cgst" value="${slab.cgst ?? 9}" ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('cgst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="CGST %" />
+              <input type="number" step="0.01" id="g-sgst" value="${slab.sgst ?? 9}" ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('sgst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="SGST %" />
+              <input type="number" step="0.01" id="g-cgst" value="${slab.cgst ?? 9}" ${window.CMS_STORE.getTaxMode(slab) === 'IGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('cgst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="CGST %" />
             </div>
             <div id="g-igst-field" class="${window.CMS_STORE.getTaxMode(slab) === 'CGST_SGST' ? 'tax-fields-disabled' : ''}">
-              <input type="number" step="0.01" id="g-igst" value="${slab.igst ?? 18}" ${window.CMS_STORE.getTaxMode(slab) === 'CGST_SGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('igst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="IGST %" />
+              <input type="number" step="0.01" id="g-igst" value="${slab.igst ?? 18}" ${window.CMS_STORE.getTaxMode(slab) === 'CGST_SGST' ? 'disabled' : ''} oninput="CMS_MASTERS.syncGstRate('igst')" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="IGST %" />
             </div>
           </div>
-          <div id="g-tax-summary" class="mt-2 text-[11px] font-bold text-blue-800">${window.CMS_STORE.getTaxLabel(slab)}</div>
+          <div id="g-tax-summary" class="mt-2 text-[11px] font-bold text-blue-600">${window.CMS_STORE.getTaxLabel(slab)}</div>
           <p class="text-[10px] text-slate-500 mt-2">Only the selected tax type is active for this slab.</p>
         </div>
         <div>
           <label class="block font-bold text-slate-700 mb-1">Custom Notes / Statutory Scope</label>
-          <input type="text" id="g-remarks" value="${slab.remarks || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md" placeholder="Applicable commodity scope or special statutory rules" />
+          <input type="text" id="g-remarks" value="${slab.remarks || ''}" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Applicable commodity scope or special statutory rules" />
         </div>
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
           <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition">Submit for Approval</button>
+          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition">Submit for Approval</button>
         </div>
       </form>
     `;

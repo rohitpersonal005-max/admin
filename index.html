@@ -6,19 +6,15 @@
   <title>Adminutes - Consumable Management ERP</title>
   
   <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Lucide Icons via CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Fonts -->
   
   <!-- Google Fonts: Roboto & IBM Plex Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <!-- Custom Stylesheet -->
-  <link rel="stylesheet" href="css/custom.css?v=20261001" />
-  
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -28,36 +24,35 @@
             mono: ['IBM Plex Mono', 'Consolas', 'monospace'],
           },
           colors: {
-            slate: {
-              800: '#1e2235',
-              900: '#141724',
-              950: '#0c0f18'
-            },
-            blue: {
-              50: '#f0f5ff',
-              100: '#e5edff',
-              500: '#2563eb',
-              600: '#1159eb',
-              700: '#0f4bc6',
-            },
-            green: {
-              400: '#5ac973',
-              500: '#48c263',
-              600: '#3bab53'
-            },
-            brand: {
-              50: '#f0f4fe',
-              100: '#dbe4fc',
-              600: '#1d4ed8',
-              700: '#1e40af',
-              800: '#1e3a8a',
-              900: '#172554',
-            }
+            slate: { 800: '#1e2235', 900: '#141724', 950: '#0c0f18' },
+            blue: { 50: '#f0f5ff', 100: '#e5edff', 500: '#2563eb', 600: '#1159eb', 700: '#0f4bc6' },
+            green: { 400: '#5ac973', 500: '#48c263', 600: '#3bab53' },
           }
         }
       }
     }
   </script>
+
+
+  
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  
+      
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/custom.css??v=1790931183577" />
+  
+  
+
+  
+
+
+  
+
+
+  
+
 </head>
 <body class="bg-white text-slate-900 antialiased min-h-screen flex flex-col font-sans app-shell">
 
@@ -65,10 +60,10 @@
   <div class="flex h-screen overflow-hidden">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-60 bg-slate-900 text-slate-300 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0 -translate-x-full border-r border-slate-800">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-slate-300 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0 -translate-x-full">
       <!-- Brand Logo Header -->
       <div class="px-5 py-4 flex items-center justify-center border-b border-slate-800 bg-slate-950/80 shrink-0">
-        <img src="assets/adminutes_logo.jpg?v=20260930" alt="Adminutes" class="w-full max-w-[190px] h-auto object-contain transition-all" />
+        <img src="assets/adminutes_logo.jpg??v=1790931183577" alt="Adminutes" class="w-full max-w-[190px] h-auto object-contain transition-all" />
       </div>
 
       
@@ -84,18 +79,18 @@
         
                 <!-- 0. ADMIN HOME -->
         <div id="nav-admin-home" class="hidden mb-2">
-          <a href="#home" data-route="home" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-bold bg-indigo-900/30 border border-indigo-800/50">
+          <a href="#home" data-route="home" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:text-white transition font-bold bg-indigo-900/30 border border-indigo-800/50">
             <i data-lucide="home" class="w-4 h-4 text-indigo-400"></i>
             <span class="text-indigo-100">Admin Home</span>
           </a>
         </div>
         <!-- 1. DASHBOARD -->
         <div>
-          <a href="#dashboard" data-route="dashboard" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+          <a href="#dashboard" data-route="dashboard" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
             <i data-lucide="layout-grid" class="w-4 h-4 text-slate-400"></i>
             <span>Executive Dashboard</span>
           </a>
-          <a href="#draft-workspace" data-route="draft-workspace" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium mt-0.5">
+          <a href="#draft-workspace" data-route="draft-workspace" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-300 hover:text-white transition font-medium mt-0.5">
             <i data-lucide="file-clock" class="w-4 h-4 text-amber-400"></i>
             <span>Draft Workspace</span>
           </a>
@@ -103,26 +98,26 @@
 
         <!-- 2. STOCK & ASSET CARE (2ND IN LIST) -->
         <div class="pt-0.5">
-          <button type="button" onclick="document.getElementById('menu-inventory').classList.toggle('hidden'); document.getElementById('icon-inventory').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800/50 py-1.5 rounded cursor-pointer transition outline-none">
+          <button type="button" onclick="document.getElementById('menu-inventory').classList.toggle('hidden'); document.getElementById('icon-inventory').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
             <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1 pointer-events-none">
               <i data-lucide="package" class="w-3 h-3 text-emerald-400"></i> Inventory
             </span>
             <i id="icon-inventory" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-inventory" class="space-y-0.5 pl-1.5 ml-2 transition-all">
-            <a href="#consumer-inventory" data-route="consumer-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#consumer-inventory" data-route="consumer-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="package" class="w-4 h-4 text-emerald-400"></i>
               <span>Consumable Materials</span>
             </a>
-            <a href="#fixed-inventory" data-route="fixed-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#fixed-inventory" data-route="fixed-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
               <span>Fixed Assets & PM</span>
             </a>
-            <a href="#stock-status" data-route="stock-status" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#stock-status" data-route="stock-status" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-400"></i>
               <span>Stock Status & Buffers</span>
             </a>
-            <a href="#stock-ledger" data-route="stock-ledger" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#stock-ledger" data-route="stock-ledger" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="list" class="w-4 h-4 text-slate-400"></i>
               <span>Stock Ledger Trail</span>
             </a>
@@ -131,26 +126,26 @@
 
         <!-- 3. SETUP & CATALOG (3RD) -->
         <div class="pt-0.5">
-          <button type="button" onclick="document.getElementById('menu-transactions').classList.toggle('hidden'); document.getElementById('icon-transactions').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800/50 py-1.5 rounded cursor-pointer transition outline-none">
+          <button type="button" onclick="document.getElementById('menu-transactions').classList.toggle('hidden'); document.getElementById('icon-transactions').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
             <span class="text-[10px] uppercase font-bold text-blue-400 tracking-wider flex items-center gap-1 pointer-events-none">
-              <i data-lucide="folder" class="w-3 h-3 text-blue-400"></i> Transactions
+              <i data-lucide="folder" class="w-3 h-3 text-blue-400"></i> Setup
             </span>
             <i id="icon-transactions" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-transactions" class="space-y-0.5 pl-1.5 ml-2 transition-all">
-            <a href="#vendors" data-route="vendors" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#vendors" data-route="vendors" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="building" class="w-4 h-4 text-slate-400"></i>
               <span>Vendor</span>
             </a>
-            <a href="#categories" data-route="categories" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#categories" data-route="categories" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="folder" class="w-4 h-4 text-slate-400"></i>
               <span>Consumable Category</span>
             </a>
-            <a href="#consumables" data-route="consumables" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#consumables" data-route="consumables" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="box" class="w-4 h-4 text-slate-400"></i>
               <span>Material</span>
             </a>
-            <a href="#gst-slabs" data-route="gst-slabs" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#gst-slabs" data-route="gst-slabs" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="percent" class="w-4 h-4 text-slate-400"></i>
               <span>GST / IGST Slabs</span>
             </a>
@@ -159,42 +154,42 @@
 
         <!-- 4. STORE OPERATIONS & MOVEMENT (4TH - MOVED BELOW) -->
         <div class="pt-0.5">
-          <button type="button" onclick="document.getElementById('menu-reports').classList.toggle('hidden'); document.getElementById('icon-reports').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800/50 py-1.5 rounded cursor-pointer transition outline-none">
+          <button type="button" onclick="document.getElementById('menu-reports').classList.toggle('hidden'); document.getElementById('icon-reports').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
             <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center gap-1 pointer-events-none">
               <i data-lucide="sliders" class="w-3 h-3 text-amber-400"></i> Reports
             </span>
             <i id="icon-reports" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-reports" class="space-y-0.5 pl-1.5 ml-2 transition-all">
-            <a href="#receipts" data-route="receipts" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#receipts" data-route="receipts" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="arrow-down-left" class="w-4 h-4 text-amber-400"></i>
               <span>Goods Inward (Auto Material)</span>
             </a>
-            <a href="#requests" data-route="requests" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#requests" data-route="requests" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="git-pull-request" class="w-4 h-4 text-sky-400"></i>
               <span>Dept Push / Pull Requests</span>
             </a>
-            <a href="#issuances" data-route="issuances" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#issuances" data-route="issuances" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
               <span>Store Issuance Slip</span>
             </a>
-            <a href="#returns" data-route="returns" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#returns" data-route="returns" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="rotate-ccw" class="w-4 h-4 text-rose-400"></i>
               <span>Return to Store</span>
             </a>
-            <a href="#stock-adjustments" data-route="stock-adjustments" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#stock-adjustments" data-route="stock-adjustments" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="sliders" class="w-4 h-4 text-purple-400"></i>
               <span>Stock Adjustment (+/-)</span>
             </a>
-            <a href="#challan-conversion" data-route="challan-conversion" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#challan-conversion" data-route="challan-conversion" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="refresh-cw" class="w-4 h-4 text-cyan-400"></i>
               <span>Challan to Invoice</span>
             </a>
-            <a href="#po-generation" data-route="po-generation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#po-generation" data-route="po-generation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="shopping-cart" class="w-4 h-4 text-indigo-400"></i>
               <span>Purchase Order (PO)</span>
             </a>
-            <a href="#reconciliation" data-route="reconciliation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#reconciliation" data-route="reconciliation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <i data-lucide="clipboard" class="w-4 h-4 text-slate-400"></i>
               <span>Stock Reconciliation</span>
             </a>
@@ -209,7 +204,7 @@
             </span>
           </div>
           <div class="space-y-0.5 pl-1.5 ml-2">
-            <a href="#pending-approvals" data-route="pending-approvals" class="nav-link flex items-center justify-between px-2 py-1.5 rounded text-slate-300 hover:bg-slate-800 hover:text-white transition font-medium">
+            <a href="#pending-approvals" data-route="pending-approvals" class="nav-link flex items-center justify-between px-2 py-1.5 rounded text-slate-300 hover:text-white transition font-medium">
               <div class="flex items-center gap-2.5">
                 <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
                 <span>Approval Hub</span>
@@ -231,7 +226,7 @@
       <!-- Top Header -->
       <header class="bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between shrink-0 no-print">
         <div class="flex items-center gap-3">
-          <button onclick="CMS_APP.toggleMobileSidebar()" class="md:hidden p-1 text-slate-600 hover:text-slate-900 rounded hover:bg-slate-100">
+          <button onclick="CMS_APP.toggleMobileSidebar()" class="md:hidden p-1 text-slate-600 hover:text-white rounded hover:bg-slate-100">
             <i data-lucide="menu" class="w-5 h-5"></i>
           </button>
           <div class="flex items-center gap-2 text-xs">
@@ -322,7 +317,7 @@
   </div>
 
   <!-- Authentication gate shown until the server confirms a session. -->
-  <div id="auth-gate" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950 px-5 py-8">
+  <div id="auth-gate" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-50 px-5 py-8">
     <div class="auth-panel w-full max-w-md bg-white border border-slate-200 shadow-2xl rounded-lg overflow-hidden">
       <div class="bg-slate-900 px-7 py-6 text-white">
         <div class="flex items-center gap-3 mb-5">
@@ -360,7 +355,7 @@
       <!-- Modal Header -->
       <div class="px-5 py-3.5 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
         <h3 id="modal-title" class="font-semibold text-slate-900 text-sm">Modal Title</h3>
-        <button onclick="CMS_APP.closeModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-200 transition">
+        <button onclick="CMS_APP.closeModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-800/50 transition">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
@@ -397,7 +392,7 @@
       </div>
 
       <div class="flex gap-2 justify-end">
-        <button onclick="CMS_APP.closePinModal()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded text-xs transition">
+        <button onclick="CMS_APP.closePinModal()" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-800/50 text-slate-700 font-medium rounded text-xs transition">
           Cancel
         </button>
         <button onclick="CMS_APP.submitManagerPin()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded text-xs transition shadow-sm flex items-center gap-1.5">
@@ -412,20 +407,27 @@
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- JavaScript Modules -->
-  <script src="js/store.js?v=20260930_2"></script>
-  <script src="js/auth.js?v=20260930"></script>
-  <script src="js/print_templates.js?v=20260930"></script>
-  <script src="js/masters.js?v=20261001_14"></script>
-  <script src="js/transactions.js?v=20261001"></script>
-  <script src="js/po_generator.js?v=20260930"></script>
-  <script src="js/reconciliation.js?v=20260930"></script>
-  <script src="js/reports.js?v=20260930"></script>
-  <script src="js/dashboard.js?v=20260930"></script>
-  <script src="js/drafts.js?v=20260930"></script>
-    <script src="js/home.js?v=20261001_4"></script>
-  <script src="js/app.js?v=20261001_3"></script>
+  <script src="js/store.js??v=1790931183577"></script>
+  <script src="js/auth.js??v=1790931183577"></script>
+  <script src="js/print_templates.js??v=1790931183577"></script>
+  <script src="js/masters.js??v=1790931183577"></script>
+  <script src="js/transactions.js??v=1790931183577"></script>
+  <script src="js/po_generator.js??v=1790931183577"></script>
+  <script src="js/reconciliation.js??v=1790931183577"></script>
+  <script src="js/reports.js??v=1790931183577"></script>
+  <script src="js/dashboard.js??v=1790931183577"></script>
+  <script src="js/drafts.js??v=1790931183577"></script>
+    <script src="js/home.js??v=1790931183577"></script>
+  <script src="js/app.js??v=1790931183577"></script>
 </body>
 </html>
+
+
+
+
+
+
+
 
 
 

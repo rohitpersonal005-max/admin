@@ -33,7 +33,7 @@ let ENTERPRISE_USERS = [
     badgeLabel: 'STORE CLERK / USER',
     department: 'Central Warehouse & Logistics',
     avatarText: 'RK',
-    avatarBg: 'bg-blue-600',
+    avatarBg: 'bg-slate-900',
     avatarTextCol: 'text-white',
     pin: null, // No PIN required for staff
     description: 'Operational store staff. Drafts receipts, issues stock, raises indents, and records stock adjustments.'
@@ -48,7 +48,7 @@ let ENTERPRISE_USERS = [
     badgeLabel: 'STORE IN-CHARGE / ADMIN',
     department: 'Materials & Directorate of Supplies',
     avatarText: 'AS',
-    avatarBg: 'bg-indigo-600',
+    avatarBg: 'bg-slate-900',
     avatarTextCol: 'text-white',
     pin: '4321', // Secure Manager Authorization PIN
     description: 'Statutory approving authority. Audits vendor certifications, consumer rate vetting, physical variances, and sanctions transactions.'
@@ -1122,7 +1122,7 @@ class Store {
         roleTitle: user.role === 'Admin' ? 'Store In-Charge (Admin)' : 'Store Staff (User)',
         badgeLabel: user.role === 'Admin' ? 'STORE IN-CHARGE / ADMIN' : 'STORE CLERK / USER',
         avatarText: (user.name || 'User').split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase(),
-        avatarBg: user.role === 'Admin' ? 'bg-indigo-600' : 'bg-blue-600',
+        avatarBg: user.role === 'Admin' ? 'bg-slate-900' : 'bg-slate-900',
         avatarTextCol: 'text-white',
         pin: existing ? existing.pin : null,
         description: user.role === 'Admin' ? 'Store approval authority.' : 'Operational store maker.'

@@ -111,6 +111,18 @@ window.CMS_HOME = {
     }
 
     let html = `
+  <datalist id="home-country-options">
+    <option value="India"></option>
+    <option value="United States"></option>
+    <option value="United Kingdom"></option>
+    <option value="United Arab Emirates"></option>
+    <option value="Singapore"></option>
+    <option value="Australia"></option>
+    <option value="Canada"></option>
+    <option value="Germany"></option>
+    <option value="Japan"></option>
+  </datalist>
+
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Admin Headquarters</h2>
         <p class="text-slate-500 mt-1">Manage your profile, company settings, custom roles, and user module access.</p>
@@ -118,7 +130,7 @@ window.CMS_HOME = {
 
       <div class="flex flex-col gap-6">
         <!-- Profile Section -->
-        <div class="stat-card p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
+        <div class="stat-card p-4 bg-white border border-slate-200 rounded-md rounded-md shadow-sm">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
             <i data-lucide="user" class="w-5 h-5 text-blue-600"></i>
             <h3 class="font-bold text-slate-800 text-base">My Admin Profile</h3>
@@ -149,15 +161,15 @@ window.CMS_HOME = {
               <input type="password" id="home-prof-password" class="w-full border border-slate-200 px-3 py-2 rounded-md" placeholder="Enter new password" />
             </div>
             <div class="pt-2">
-              <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-sm transition shadow">Update Profile</button>
+              <button type="submit" class="w-full bg-slate-900 hover:bg-slate-900 text-white font-bold py-2 rounded-md text-sm transition shadow">Update Profile</button>
             </div>
           </form>
         </div>
 
         <!-- Company Section -->
-        <div class="stat-card p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
+        <div class="stat-card p-4 bg-white border border-slate-200 rounded-md rounded-md shadow-sm">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-            <i data-lucide="building-2" class="w-5 h-5 text-indigo-600"></i>
+            <i data-lucide="building-2" class="w-5 h-5 text-blue-600"></i>
             <h3 class="font-bold text-slate-800 text-base">Company Information</h3>
           </div>
           <form onsubmit="event.preventDefault(); CMS_HOME.saveCompany();" class="space-y-4">
@@ -202,7 +214,21 @@ window.CMS_HOME = {
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Contact No</label>
-                <input type="text" id="home-comp-contact" value="${this.companyInfo.contact || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-md" placeholder="Contact number" />
+                
+<div class="flex items-stretch border border-slate-200 rounded-md overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 w-full bg-white">
+  <select id="home-comp-country-code" class="w-[90px] px-2 py-2 bg-slate-50 border-r border-slate-200 text-slate-700 font-mono text-xs focus:outline-none cursor-pointer">
+    <option value="+91">IN (+91)</option>
+    <option value="+1">US (+1)</option>
+    <option value="+44">UK (+44)</option>
+    <option value="+971">AE (+971)</option>
+    <option value="+65">SG (+65)</option>
+    <option value="+61">AU (+61)</option>
+    <option value="+49">DE (+49)</option>
+    <option value="+81">JP (+81)</option>
+  </select>
+  <input type="tel" id="home-comp-contact" maxlength="10" pattern="[0-9]{10}" value="${this.companyInfo.contact || ''}" class="flex-1 min-w-0 px-3 py-2 font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent" placeholder="10-digit number" />
+</div>
+
               </div>
               <div>
                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Company Email</label>
@@ -236,8 +262,8 @@ window.CMS_HOME = {
               <label class="block text-[11px] font-bold text-slate-500 uppercase mb-2">Company Documents & Certificates</label>
               <div class="flex gap-2 items-center mb-3 flex-wrap" id="company-docs-container">
                 ${(this.companyDocs || []).map((doc, i) => `
-                  <div class="group relative flex items-center gap-1.5 text-xs bg-white border border-slate-300 px-2 py-1.5 rounded shadow-sm text-slate-700 cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition" onclick="CMS_APP.previewDocument('${i}')">
-                    <i data-lucide="${doc.type.includes('pdf') ? 'file-text' : 'image'}" class="w-3.5 h-3.5 text-blue-500"></i> 
+                  <div class="group relative flex items-center gap-1.5 text-xs bg-white border border-slate-300 px-2 py-1.5 rounded shadow-sm text-slate-700 cursor-pointer hover:bg-slate-50 hover:border-blue-300 transition" onclick="CMS_APP.previewDocument('${i}')">
+                    <i data-lucide="${doc.type.includes('pdf') ? 'file-text' : 'image'}" class="w-3.5 h-3.5 text-slate-500"></i> 
                     <span class="font-medium truncate max-w-[150px]">${doc.name}</span>
                     <button type="button" class="ml-1 text-slate-400 hover:text-red-600 transition" onclick="event.stopPropagation(); window.CMS_HOME.deleteDocument(${i});" title="Delete Document">
                       <i data-lucide="x" class="w-3 h-3"></i>
@@ -246,20 +272,20 @@ window.CMS_HOME = {
                 `).join('')}
                 ${(this.companyDocs || []).length === 0 ? '<span class="text-xs text-slate-400 italic">No documents uploaded yet.</span>' : ''}
               </div>
-              <button type="button" class="text-xs bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:text-blue-800 font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition" onclick="document.getElementById('home-upload-doc').click()">
+              <button type="button" class="text-xs bg-slate-50 text-blue-600 border border-slate-200 hover:bg-slate-100 hover:text-blue-600 font-bold px-3 py-1.5 rounded flex items-center gap-1.5 transition" onclick="document.getElementById('home-upload-doc').click()">
                 <i data-lucide="upload" class="w-3.5 h-3.5"></i> Upload Document
               </button>
               <input type="file" id="home-upload-doc" accept="image/*,application/pdf" class="hidden" onchange="window.CMS_HOME.uploadDocument(event)" />
             </div>
             <div class="pt-2">
-              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg text-sm transition shadow">Save Details</button>
+              <button type="submit" class="w-full bg-slate-900 hover:bg-slate-900 text-white font-bold py-2 rounded-md text-sm transition shadow">Save Details</button>
             </div>
           </form>
         </div>
       </div>
 
       <!-- User & Module Management -->
-      <div class="mt-6 stat-card p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
+      <div class="mt-6 stat-card p-4 bg-white border border-slate-200 rounded-md rounded-md shadow-sm">
         <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
           <div class="flex items-center gap-2">
             <i data-lucide="users-2" class="w-5 h-5 text-emerald-600"></i>
@@ -269,7 +295,7 @@ window.CMS_HOME = {
             <i data-lucide="plus" class="w-3.5 h-3.5"></i> New Custom Role
           </button>
         </div>
-        <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <div class="overflow-x-auto rounded-md border border-slate-200">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr>
@@ -290,7 +316,7 @@ window.CMS_HOME = {
                     </div>
                   </td>
                   <td class='py-3 px-3'>
-                    <select class="role-sel-${u.id} border border-slate-300 rounded px-2 py-1 text-xs font-bold ${u.role === 'Admin' ? 'text-purple-700 bg-purple-50' : 'text-blue-700 bg-blue-50'}" ${u.id === currentUser.id ? 'disabled' : ''}>
+                    <select class="role-sel-${u.id} border border-slate-300 rounded px-2 py-1 text-xs font-bold ${u.role === 'Admin' ? 'text-purple-700 bg-purple-50' : 'text-blue-600 bg-slate-50'}" ${u.id === currentUser.id ? 'disabled' : ''}>
                       ${roles.map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r}</option>`).join('')}
                     </select>
                   </td>

@@ -144,10 +144,10 @@ window.CMS_APP = {
     document.querySelectorAll('.nav-link').forEach(link => {
       const target = link.getAttribute('data-route');
       if (target === route) {
-        link.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+        link.classList.add('bg-slate-900', 'text-white', 'shadow-sm');
         link.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
       } else {
-        link.classList.remove('bg-blue-600', 'text-white', 'shadow-md');
+        link.classList.remove('bg-slate-900', 'text-white', 'shadow-sm');
         link.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
       }
     });
@@ -245,7 +245,7 @@ window.CMS_APP = {
       } else if (['receipts', 'requests', 'issuances', 'returns', 'stock-adjustments', 'challan-conversion', 'po-generation', 'reconciliation'].includes(route)) {
         modBadge = '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Store Operations</span>';
       } else if (['vendors', 'categories', 'consumables', 'gst-slabs'].includes(route)) {
-        modBadge = '<span class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Setup</span>';
+        modBadge = '<span class="px-2 py-0.5 rounded bg-slate-100 text-blue-600 border border-blue-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Setup</span>';
       } else if (route === 'draft-workspace') {
         modBadge = '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Workspaces</span>';
       } else if (route === 'pending-approvals') {
@@ -253,7 +253,7 @@ window.CMS_APP = {
       } else if (route === 'dashboard') {
         modBadge = '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 border border-amber-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Dashboard</span>';
       } else {
-        modBadge = '<span class="px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Operations Cockpit</span>';
+        modBadge = '<span class="px-2 py-0.5 rounded bg-slate-50 text-blue-600 border border-slate-200 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Operations Cockpit</span>';
       }
 
       const titles = {
@@ -301,7 +301,7 @@ window.CMS_APP = {
         <div class="p-4 bg-slate-900 text-white rounded-md shadow-sm border border-slate-800">
           <div class="flex items-center justify-between mb-1.5">
             <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded bg-blue-600 text-white text-[10px] font-bold uppercase font-mono tracking-wider">ERP Architecture</span>
+              <span class="px-2 py-0.5 rounded bg-slate-900 text-white text-[10px] font-bold uppercase font-mono tracking-wider">ERP Architecture</span>
               <h3 class="text-sm font-bold text-white">How Adminutes Modules Differ & Connect</h3>
             </div>
             <span class="text-slate-400 text-[11px]">4 Functional Tiers</span>
@@ -318,24 +318,24 @@ window.CMS_APP = {
             <span>End-to-End Material Flow: Setup -> Movement -> Balances -> Audit</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-center">
-            <div class="p-2.5 bg-white border border-blue-200 rounded text-left">
-              <span class="inline-block px-1.5 py-0.5 bg-blue-50 text-blue-800 font-bold rounded text-[10px] uppercase font-mono">1. Setup</span>
-              <div class="font-bold text-slate-900 text-xs mt-1">Contracts & Rates</div>
+            <div class="p-2.5 bg-white border border-slate-200 rounded text-left">
+              <span class="inline-block px-1.5 py-0.5 bg-slate-50 text-blue-600 font-bold rounded text-[10px] uppercase font-mono">1. Setup</span>
+              <div class="font-bold text-blue-600 text-xs mt-1">Contracts & Rates</div>
               <p class="text-[10px] text-slate-500 mt-0.5">Vendor quotes, booked MRP, UoM & categories</p>
             </div>
             <div class="p-2.5 bg-white border border-amber-200 rounded text-left">
               <span class="inline-block px-1.5 py-0.5 bg-amber-50 text-amber-800 font-bold rounded text-[10px] uppercase font-mono">2. Store Operations</span>
-              <div class="font-bold text-slate-900 text-xs mt-1">Daily In/Out Flow</div>
+              <div class="font-bold text-blue-600 text-xs mt-1">Daily In/Out Flow</div>
               <p class="text-[10px] text-slate-500 mt-0.5">Receipts, Push/Pull indents, issues & returns</p>
             </div>
             <div class="p-2.5 bg-white border border-emerald-200 rounded text-left">
               <span class="inline-block px-1.5 py-0.5 bg-emerald-50 text-emerald-800 font-bold rounded text-[10px] uppercase font-mono">3. Stock & Care</span>
-              <div class="font-bold text-slate-900 text-xs mt-1">Live Stock & Assets</div>
+              <div class="font-bold text-blue-600 text-xs mt-1">Live Stock & Assets</div>
               <p class="text-[10px] text-slate-500 mt-0.5">Consumable buffers, fixed asset tags & PM cycles</p>
             </div>
             <div class="p-2.5 bg-white border border-purple-200 rounded text-left">
               <span class="inline-block px-1.5 py-0.5 bg-purple-50 text-purple-800 font-bold rounded text-[10px] uppercase font-mono">4. Governance</span>
-              <div class="font-bold text-slate-900 text-xs mt-1">Statutory Sanctions</div>
+              <div class="font-bold text-blue-600 text-xs mt-1">Statutory Sanctions</div>
               <p class="text-[10px] text-slate-500 mt-0.5">Admin PIN 4321 & anti-self-approval</p>
             </div>
           </div>
@@ -419,7 +419,7 @@ window.CMS_APP = {
 
     if (avatar) {
       avatar.innerText = user.avatarText;
-      avatar.className = `w-8 h-8 rounded-full ${user.avatarBg} text-white font-bold text-xs flex items-center justify-center shadow-xs`;
+      avatar.className = `w-8 h-8 rounded-full ${user.avatarBg} text-white font-bold text-xs flex items-center justify-center shadow-sm`;
     }
     if (userName) userName.innerText = user.name;
     if (empId) empId.innerText = user.id;
@@ -428,7 +428,7 @@ window.CMS_APP = {
       if (user.role === 'Admin') {
         rolePill.className = 'text-[9.5px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-300';
       } else {
-        rolePill.className = 'text-[9.5px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300';
+        rolePill.className = 'text-[9.5px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-100 text-blue-600 border border-blue-300';
       }
     }
 
@@ -441,7 +441,7 @@ window.CMS_APP = {
 
     if (dAvatar) {
       dAvatar.innerText = user.avatarText;
-      dAvatar.className = `w-9 h-9 rounded-full ${user.avatarBg} text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs`;
+      dAvatar.className = `w-9 h-9 rounded-full ${user.avatarBg} text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-sm`;
     }
     if (dName) dName.innerText = user.name;
     if (dDept) dDept.innerText = user.department;
@@ -450,7 +450,7 @@ window.CMS_APP = {
       dBadge.innerText = user.roleTitle;
       dBadge.className = user.role === 'Admin'
         ? 'text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wider bg-purple-100 text-purple-800 border border-purple-200'
-        : 'text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200';
+        : 'text-[10px] px-2 py-0.5 rounded font-semibold uppercase tracking-wider bg-slate-100 text-blue-600 border border-slate-200';
     }
 
     // Checker-only staff directory section: hidden for Operation Person (User)
@@ -485,7 +485,7 @@ window.CMS_APP = {
                   <div class="text-[10px] text-slate-400 font-mono truncate">${u.id} • ${u.department || 'Store'}</div>
                 </div>
               </div>
-              <button type="button" class="px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition shrink-0" title="View Profile">
+              <button type="button" class="px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 transition shrink-0" title="View Profile">
                 View
               </button>
             </div>
@@ -509,7 +509,7 @@ window.CMS_APP = {
     this.toggleUserDropdown();
     const content = `
       <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_APP.createMaker();">
-        <div class="p-3 bg-cyan-50 border border-cyan-200 rounded-lg text-cyan-950 flex items-start gap-2">
+        <div class="p-3 bg-cyan-50 border border-cyan-200 rounded-md text-cyan-950 flex items-start gap-2">
           <i data-lucide="shield-check" class="w-4 h-4 text-cyan-700 shrink-0"></i>
           <span>Only the Store Admin can create User accounts. Users can access shared approved data but cannot approve records or view other User profiles.</span>
         </div>
@@ -535,10 +535,10 @@ window.CMS_APP = {
             <input id="new-maker-email" type="email" class="w-full" placeholder="Optional" />
           </div>
         </div>
-        <div id="new-maker-error" class="hidden p-2.5 bg-red-50 border border-red-200 text-red-800 rounded-lg font-medium"></div>
+        <div id="new-maker-error" class="hidden p-2.5 bg-red-50 border border-red-200 text-red-800 rounded-md font-medium"></div>
         <div class="flex justify-end gap-2 pt-2">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-3.5 py-2 bg-slate-100 text-slate-700 font-semibold rounded-lg">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold rounded-lg">Create User</button>
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-3.5 py-2 bg-slate-100 text-slate-700 font-semibold rounded-md">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold rounded-md">Create User</button>
         </div>
       </form>
     `;
@@ -601,14 +601,14 @@ window.CMS_APP = {
     const isChecker = user.role === 'Admin';
     const content = `
       <div class="space-y-4 text-xs">
-        <div class="p-4 bg-slate-50 rounded-lg border border-slate-200 flex items-center gap-3">
+        <div class="p-4 bg-slate-50 rounded-md border border-slate-200 flex items-center gap-3">
           <div class="w-12 h-12 rounded-full ${user.avatarBg} text-white font-bold text-base flex items-center justify-center shadow-sm shrink-0">
             ${user.avatarText}
           </div>
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <h3 class="text-base font-bold text-slate-900">${user.name}</h3>
-              <span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${isChecker ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+              <h3 class="text-base font-bold text-blue-600">${user.name}</h3>
+              <span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider ${isChecker ? 'bg-purple-100 text-purple-800 border border-purple-200' : 'bg-slate-100 text-blue-600 border border-slate-200'}">
                 ${user.role}
               </span>
             </div>
@@ -617,27 +617,27 @@ window.CMS_APP = {
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="p-3 bg-white border border-slate-200 rounded-md">
+          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
             <span class="text-slate-400 font-bold uppercase text-[10px]">Department</span>
             <div class="font-semibold text-slate-800 mt-0.5">${user.department || 'Central Warehouse & Logistics'}</div>
           </div>
-          <div class="p-3 bg-white border border-slate-200 rounded-md">
+          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
             <span class="text-slate-400 font-bold uppercase text-[10px]">Email Address</span>
             <div class="font-mono text-slate-800 mt-0.5">${user.email || 'Not specified'}</div>
           </div>
-          <div class="p-3 bg-white border border-slate-200 rounded-md">
+          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
             <span class="text-slate-400 font-bold uppercase text-[10px]">System Designation</span>
             <div class="font-semibold text-slate-800 mt-0.5">${user.roleTitle || user.role}</div>
           </div>
-          <div class="p-3 bg-white border border-slate-200 rounded-md">
+          <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md">
             <span class="text-slate-400 font-bold uppercase text-[10px]">SoD Authorization Level</span>
-            <div class="font-semibold ${isChecker ? 'text-indigo-700' : 'text-blue-700'} mt-0.5">
+            <div class="font-semibold ${isChecker ? 'text-blue-600' : 'text-blue-600'} mt-0.5">
               ${isChecker ? 'Approving Authority (Sanction / Reject / Audit)' : 'User level (Data Entry & Requisitions Only)'}
             </div>
           </div>
         </div>
 
-        <div class="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-1 text-slate-600">
+        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md space-y-1 text-slate-600">
           <span class="text-slate-700 font-bold uppercase text-[10px]">Role Governance & Scope</span>
           <p class="text-[11px] leading-relaxed">
             ${isChecker
@@ -758,7 +758,7 @@ window.CMS_APP = {
         stacked.id = 'stacked-modal-container';
         stacked.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden items-center justify-center p-4 overflow-y-auto';
         stacked.innerHTML = `
-          <div id="stacked-modal-card" class="relative w-full bg-white rounded-md shadow-xl overflow-hidden transform transition-all my-8">
+          <div id="stacked-modal-card" class="relative w-full bg-white rounded-md shadow-sm overflow-hidden transform transition-all my-8">
             <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between sticky top-0 z-10">
               <h3 id="stacked-modal-title" class="font-bold text-slate-800 text-sm"></h3>
               <button type="button" onclick="CMS_APP.closeStackedModal()" class="text-slate-400 hover:text-slate-600 transition p-1">
@@ -772,7 +772,7 @@ window.CMS_APP = {
       }
       document.getElementById('stacked-modal-title').innerText = title;
       document.getElementById('stacked-modal-body').innerHTML = contentHtml;
-      document.getElementById('stacked-modal-card').className = `relative w-full ${maxWidthClass} bg-white rounded-md border border-slate-300 shadow-xl overflow-hidden transform transition-all my-8`;
+      document.getElementById('stacked-modal-card').className = `relative w-full ${maxWidthClass} bg-white rounded-md border border-slate-300 shadow-sm overflow-hidden transform transition-all my-8`;
       stacked.classList.remove('hidden');
       stacked.classList.add('flex');
       if (window.lucide) window.lucide.createIcons();
@@ -788,7 +788,7 @@ window.CMS_APP = {
     titleEl.innerText = title;
     bodyEl.innerHTML = contentHtml;
 
-    cardEl.className = `relative w-full ${maxWidthClass} bg-white rounded-md border border-slate-300 shadow-xl overflow-hidden transform transition-all my-8`;
+    cardEl.className = `relative w-full ${maxWidthClass} bg-white rounded-md border border-slate-300 shadow-sm overflow-hidden transform transition-all my-8`;
 
     container.classList.remove('hidden');
     container.classList.add('flex');
@@ -829,8 +829,8 @@ window.CMS_APP = {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 z-[90] bg-slate-900/60 flex items-center justify-center p-4 backdrop-blur-sm';
     modal.innerHTML = `
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden max-h-[90vh]">
-        <div class="bg-indigo-600 p-5 text-white flex justify-between items-start">
+      <div class="bg-white rounded-md shadow-sm w-full max-w-2xl flex flex-col overflow-hidden max-h-[90vh]">
+        <div class="bg-slate-900 p-5 text-white flex justify-between items-start">
           <div>
             <h2 class="text-xl font-bold flex items-center gap-2">
               <i data-lucide="building-2" class="w-6 h-6"></i>
@@ -838,7 +838,7 @@ window.CMS_APP = {
             </h2>
             <p class="text-indigo-100 text-sm mt-1">Official Company Details & Statutory Documents</p>
           </div>
-          <button class="text-indigo-200 hover:text-white transition" onclick="this.closest('.fixed').remove()">
+          <button class="text-slate-200 hover:text-white transition" onclick="this.closest('.fixed').remove()">
             <i data-lucide="x" class="w-6 h-6"></i>
           </button>
         </div>
@@ -865,12 +865,12 @@ window.CMS_APP = {
               <div class="text-sm font-medium text-slate-700">${[info.address, info.taluka, info.district, info.state, info.pin].filter(Boolean).join(', ') || '-'}</div>
             </div>
           </div>
-          <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-1.5"><i data-lucide="files" class="w-4 h-4 text-blue-500"></i> Uploaded Documents</h3>
+          <h3 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-1.5"><i data-lucide="files" class="w-4 h-4 text-slate-500"></i> Uploaded Documents</h3>
           <div class="flex flex-col gap-2">
             ${docs.length > 0 ? docs.map((doc, i) => `
-              <div class="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition">
+              <div class="flex items-center justify-between p-3 border border-slate-200 rounded-md bg-white hover:bg-slate-50 transition">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                  <div class="w-8 h-8 rounded bg-slate-100 text-blue-600 flex items-center justify-center shrink-0">
                     <i data-lucide="${doc.type.includes('pdf') ? 'file-text' : 'image'}" class="w-4 h-4"></i>
                   </div>
                   <div>
@@ -882,11 +882,11 @@ window.CMS_APP = {
                   <i data-lucide="eye" class="w-3.5 h-3.5"></i> View Document
                 </button>
               </div>
-            `).join('') : '<div class="text-sm text-slate-500 italic p-4 text-center border border-dashed border-slate-300 rounded-lg">No documents published yet.</div>'}
+            `).join('') : '<div class="text-sm text-slate-500 italic p-4 text-center border border-dashed border-slate-300 rounded-md">No documents published yet.</div>'}
           </div>
         </div>
         <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-          <button class="bg-slate-800 text-white px-5 py-2 rounded-lg font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close</button>
+          <button class="bg-slate-800 text-white px-5 py-2 rounded-md font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close</button>
         </div>
       </div>
     `;
@@ -909,7 +909,7 @@ window.CMS_APP = {
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 z-[100] bg-slate-900/80 flex items-center justify-center p-4 backdrop-blur-sm';
     modal.innerHTML = `
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh]">
+      <div class="bg-white rounded-md shadow-sm w-full max-w-4xl flex flex-col max-h-[90vh]">
         <div class="flex items-center justify-between p-4 border-b border-slate-100">
           <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
             <i data-lucide="file-text" class="w-5 h-5 text-blue-600"></i>
@@ -925,10 +925,10 @@ window.CMS_APP = {
         <div class="p-4 border-t border-slate-100 flex justify-between items-center text-sm">
           <span class="text-slate-500">Uploaded: ${new Date(doc.uploadedAt).toLocaleString()}</span>
           <div class="flex gap-2">
-            <button class="text-blue-600 hover:text-blue-700 bg-blue-50 px-4 py-2 rounded-lg font-bold transition flex items-center gap-1.5" onclick="CMS_APP.downloadDocument('${doc.name}', JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS'))[${index}].data)">
+            <button class="text-blue-600 hover:text-blue-600 bg-slate-50 px-4 py-2 rounded-md font-bold transition flex items-center gap-1.5" onclick="CMS_APP.downloadDocument('${doc.name}', JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS'))[${index}].data)">
               <i data-lucide="download" class="w-4 h-4"></i> Download
             </button>
-            <button class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close Viewer</button>
+            <button class="bg-slate-800 text-white px-4 py-2 rounded-md font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close Viewer</button>
           </div>
         </div>
       </div>
@@ -991,7 +991,7 @@ window.CMS_APP = {
       <div class="space-y-4 text-xs">
         <div class="p-3.5 bg-slate-900 text-white rounded-md flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded bg-blue-600/30 border border-blue-400/40 text-blue-300 flex items-center justify-center text-sm font-bold">
+            <div class="w-9 h-9 rounded bg-slate-900/30 border border-blue-400/40 text-blue-300 flex items-center justify-center text-sm font-bold">
               <i data-lucide="${isPdf ? 'file-text' : 'image'}" class="w-5 h-5"></i>
             </div>
             <div>
@@ -1016,9 +1016,9 @@ window.CMS_APP = {
             } else {
               // Dummy visual for mock data
               if (isPdf) {
-                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shadow-md mb-4 border border-blue-200"><i data-lucide="file-check-2" class="w-12 h-12"></i></div><h4 class="font-bold text-slate-800 text-lg mb-1">' + docType + '</h4><p class="text-slate-500 font-mono text-sm">' + cleanFileName + '</p><div class="mt-6 inline-block text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-full font-bold shadow-sm">Verified System Generated Document copy</div></div>';
+                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-slate-100 text-blue-600 rounded-md flex items-center justify-center shadow-sm mb-4 border border-slate-200"><i data-lucide="file-check-2" class="w-12 h-12"></i></div><h4 class="font-bold text-slate-800 text-lg mb-1">' + docType + '</h4><p class="text-slate-500 font-mono text-sm">' + cleanFileName + '</p><div class="mt-6 inline-block text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-full font-bold shadow-sm">Verified System Generated Document copy</div></div>';
               } else {
-                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-slate-200 text-slate-400 rounded-xl flex items-center justify-center shadow-inner mb-4"><i data-lucide="image" class="w-12 h-12"></i></div><p class="text-slate-500 text-sm italic">Image data not found on local disk.</p></div>';
+                return '<div class="p-8"><div class="w-24 h-24 mx-auto bg-slate-200 text-slate-400 rounded-md flex items-center justify-center shadow-inner mb-4"><i data-lucide="image" class="w-12 h-12"></i></div><p class="text-slate-500 text-sm italic">Image data not found on local disk.</p></div>';
               }
             }
           })()}
@@ -1032,7 +1032,7 @@ window.CMS_APP = {
             <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-md transition text-xs">
               Close Preview
             </button>
-            <button type="button" onclick="CMS_APP.downloadDocument('${cleanFileName}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md shadow transition text-xs flex items-center gap-1.5">
+            <button type="button" onclick="CMS_APP.downloadDocument('${cleanFileName}')" class="px-4 py-2 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-md shadow transition text-xs flex items-center gap-1.5">
               <i data-lucide="download" class="w-3.5 h-3.5"></i>
               <span>Download Copy</span>
             </button>
@@ -1081,7 +1081,7 @@ window.CMS_APP = {
                     <span class="font-bold text-slate-700 block truncate">${d.label || 'Document'}</span>
                     <span class="text-slate-400 font-mono text-[10px] truncate block">${d.fileName}</span>
                   </div>
-                  <button type="button" onclick="CMS_APP.viewDocument('${d.fileName}', '${d.label || 'Document'}', { id: '${id}', partyName: '${(d.partyName || title).replace(/'/g, "\\'")}' })" class="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded flex items-center gap-1 shrink-0 transition" title="Inspect Document">
+                  <button type="button" onclick="CMS_APP.viewDocument('${d.fileName}', '${d.label || 'Document'}', { id: '${id}', partyName: '${(d.partyName || title).replace(/'/g, "\\'")}' })" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-blue-600 font-bold rounded flex items-center gap-1 shrink-0 transition" title="Inspect Document">
                     <i data-lucide="eye" class="w-3 h-3"></i>
                     <span>Inspect</span>
                   </button>
@@ -1132,8 +1132,8 @@ window.CMS_APP = {
           </div>
         </div>
 
-        <div class="p-3 bg-slate-50 border border-slate-200 rounded-md font-medium text-slate-800">
-          Target Record: <span class="font-bold text-slate-900">${title}</span> <span class="text-slate-500 font-mono">(${id})</span>
+        <div class="p-4 bg-white border border-slate-200 rounded-md rounded-md font-medium text-slate-800">
+          Target Record: <span class="font-bold text-blue-600">${title}</span> <span class="text-slate-500 font-mono">(${id})</span>
         </div>
 
         <div>
