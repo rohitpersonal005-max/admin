@@ -292,6 +292,7 @@ window.CMS_APP = {
 
   refreshView() {
     this.navigateTo(this.currentView);
+    if (window.CMS_DASHBOARD) window.CMS_DASHBOARD.getEmergencyAlerts();
   },
 
   openModuleGuideModal() {
@@ -509,10 +510,7 @@ window.CMS_APP = {
     this.toggleUserDropdown();
     const content = `
       <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_APP.createMaker();">
-        <div class="p-3 bg-cyan-50 border border-cyan-200 rounded-sm text-cyan-950 flex items-start gap-2">
-          <i data-lucide="shield-check" class="w-4 h-4 text-cyan-700 shrink-0"></i>
-          <span>Only the Store Admin can create User accounts. Users can access shared approved data but cannot approve records or view other User profiles.</span>
-        </div>
+        
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="sm:col-span-2">
             <label class="block font-bold text-slate-700 mb-1">Full Name *</label>
@@ -1053,13 +1051,7 @@ window.CMS_APP = {
     const docItems = (documents || []).filter(d => Boolean(d && d.fileName));
     const content = `
       <div class="space-y-4 text-xs">
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-900 flex items-start gap-2.5">
-          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700 shrink-0 mt-0.5"></i>
-          <div>
-            <strong>User-Admin Statutory Audit & Verification</strong>
-            <div class="text-[11px] text-emerald-800 mt-0.5">Carefully review all submitted statutory credentials and documents before final sanction.</div>
-          </div>
-        </div>
+        
 
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm">
           ${summaryHtml || `<div class="font-bold text-slate-800">${title} (${id})</div>`}
@@ -1124,13 +1116,7 @@ window.CMS_APP = {
 
     const content = `
       <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); const r = document.getElementById('rejection-remark-input').value.trim(); if (!r) { CMS_APP.toast('Please provide a specific mistake or revision instruction.', 'error'); return; } CMS_APP.closeModal(); (${onReject})(r);">
-        <div class="p-3 bg-rose-50 border border-rose-200 rounded-sm text-rose-950 flex items-start gap-2.5">
-          <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 shrink-0 mt-0.5"></i>
-          <div>
-            <strong>Return Submission to Operation Manager (Rajesh Kumar)</strong>
-            <div class="text-[11px] text-rose-800 mt-0.5">Detail the specific mistake or missing document. This mistake will trigger an Emergency Pop-up on the Executive Dashboard for immediate rectification.</div>
-          </div>
-        </div>
+        
 
         <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm font-medium text-slate-800">
           Target Record: <span class="font-bold text-blue-600">${title}</span> <span class="text-slate-500 font-mono">(${id})</span>

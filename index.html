@@ -101,7 +101,7 @@
         <div class="pt-0.5">
           <button type="button" onclick="document.getElementById('menu-inventory').classList.toggle('hidden'); document.getElementById('icon-inventory').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
             <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1 pointer-events-none">
-              <i data-lucide="package" class="w-3 h-3 text-emerald-400"></i> Inventory
+              <i data-lucide="package" class="w-3 h-3 text-emerald-400"></i> Reports
             </span>
             <i id="icon-inventory" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
           </button>
@@ -157,7 +157,7 @@
         <div class="pt-0.5">
           <button type="button" onclick="document.getElementById('menu-reports').classList.toggle('hidden'); document.getElementById('icon-reports').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
             <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center gap-1 pointer-events-none">
-              <i data-lucide="sliders" class="w-3 h-3 text-amber-400"></i> Reports
+              <i data-lucide="sliders" class="w-3 h-3 text-amber-400"></i> Transaction
             </span>
             <i id="icon-reports" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
           </button>
@@ -254,10 +254,10 @@
             <button class="text-slate-500 hover:text-slate-700 transition relative">
               <i data-lucide="help-circle" class="w-4 h-4"></i>
             </button>
-            <button class="text-slate-500 hover:text-slate-700 transition relative">
-              <i data-lucide="bell" class="w-4 h-4"></i>
-              <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
-            </button>
+            <button onclick="window.CMS_DASHBOARD.showEmergencyAlerts(true)" class="text-slate-500 hover:text-slate-700 transition relative">
+                <i data-lucide="bell" class="w-4 h-4"></i>
+                <span id="bell-indicator" class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
+              </button>
             <button class="text-slate-500 hover:text-slate-700 transition relative mr-2">
               <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
@@ -411,7 +411,7 @@
   </div>
 
   <!-- Toast Notification Container -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <div id="toast-container" class="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- JavaScript Modules -->
   <script src="js/store.js??v=1791031038295"></script>

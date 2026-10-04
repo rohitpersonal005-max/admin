@@ -17,7 +17,7 @@ window.CMS_RECONCILIATION = {
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
                Stock Verification & Reconciliation
             </h2>
-            <p class="text-sm text-slate-500">Perform periodic physical stock counts, calculate variance against system balances, and calibrate inventory upon approval.</p>
+            
           </div>
           <button onclick="CMS_RECONCILIATION.openNewReconModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow transition text-sm">
              Start New Physical Audit
@@ -93,7 +93,7 @@ window.CMS_RECONCILIATION = {
     const content = `
       <div class="space-y-4 text-sm">
         <div class="p-3 bg-purple-50 border border-purple-200 rounded-lg text-xs text-purple-900 font-medium">
-          <strong>Step 1:</strong> Select the audit date and consumable category, then click <strong>"Generate Reconciliation Form"</strong> to pull live system stock balances.
+          
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

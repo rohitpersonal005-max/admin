@@ -125,7 +125,7 @@ window.CMS_HOME = {
 
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Admin Headquarters</h2>
-        <p class="text-slate-500 mt-1">Manage your profile, company settings, custom roles, and user module access.</p>
+        
       </div>
 
       <div class="flex flex-col gap-6">

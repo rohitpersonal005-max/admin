@@ -18,7 +18,7 @@ window.CMS_PO = {
             <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
                Purchase Order Generation
             </h2>
-            <p class="text-sm text-slate-500">Auto-calculate purchase replenishment quotas for 15 days, 1 month, or 3 months based on monthly consumption, buffer, and current stock.</p>
+            
           </div>
           <button onclick="CMS_PO.openPOModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition text-sm">
              Generate New PO

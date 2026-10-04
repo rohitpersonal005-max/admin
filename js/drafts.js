@@ -32,7 +32,7 @@ window.CMS_DRAFTS = {
               </div>
               <div>
                 <h2 class="text-xl font-bold text-slate-900">Draft Workspace</h2>
-                <p class="text-xs text-slate-500 mt-0.5">Keep quotations and invoice receipts here until they are ready for approval.</p>
+                
               </div>
             </div>
           </div>
@@ -82,7 +82,7 @@ window.CMS_DRAFTS = {
         <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
           <div>
             <h3 class="font-bold text-slate-900 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>Quotation Drafts</h3>
-            <p class="text-[11px] text-slate-500 mt-1">Consumable materials and workstations awaiting authorization.</p>
+            
           </div>
           <span class="font-mono text-xs font-bold text-blue-700">${items.length}</span>
         </div>
@@ -118,7 +118,7 @@ window.CMS_DRAFTS = {
         <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
           <div>
             <h3 class="font-bold text-slate-900 flex items-center gap-2"><i data-lucide="receipt" class="w-4 h-4 text-emerald-600"></i>Invoice Drafts</h3>
-            <p class="text-[11px] text-slate-500 mt-1">Tax invoices saved before stock-credit approval.</p>
+            
           </div>
           <span class="font-mono text-xs font-bold text-emerald-700">${items.length}</span>
         </div>

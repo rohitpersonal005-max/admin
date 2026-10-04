@@ -17,7 +17,7 @@ window.CMS_DASHBOARD = {
     const alerts = [];
     const pendingApprovals = window.CMS_STORE.getPendingApprovalsCount();
     const urgentRequests = (store.requests || []).filter(request =>
-      request.priority === 'Urgent' && ['Pending', 'Approved for Issue'].includes(request.status)
+      request.priority === 'Urgent' && ['Pending Approval', 'Approved for Issue'].includes(request.status)
     );
     const outOfStock = (store.consumables || []).filter(item => window.CMS_STORE.getStock(item.id) === 0);
 
@@ -81,6 +81,11 @@ window.CMS_DASHBOARD = {
       });
     }
 
+    const bell = document.getElementById('bell-indicator');
+    if (bell) {
+      if (alerts.length > 0) bell.classList.remove('hidden');
+      else bell.classList.add('hidden');
+    }
     return alerts;
   },
 
@@ -112,7 +117,7 @@ window.CMS_DASHBOARD = {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-2.5">
           ${alerts.map(alert => `
             <div class="dashboard-alert-card bg-white border border-red-100 rounded-lg p-3 flex items-start gap-3">
-              <i data-lucide="${alert.icon}" class="w-4 h-4 text-${alert.tone}-600 shrink-0 mt-0.5"></i>
+              <i data-lucide="${alert.icon}" class="w-4 h-4 text-${alert.tone}-600 shrink-0"></i>
               <div class="min-w-0 flex-1">
                 <div class="text-[10px] font-bold uppercase tracking-wider text-${alert.tone}-700">${alert.label}</div>
                 <div class="text-xs font-bold text-slate-900 mt-0.5">${alert.title}</div>
@@ -128,27 +133,25 @@ window.CMS_DASHBOARD = {
     `;
   },
 
-  showEmergencyAlerts() {
-    if (CMS_APP.currentView !== 'dashboard') return;
-    const alerts = this.getEmergencyAlerts();
-    if (alerts.length === 0) {
-      this.lastEmergencySignature = '';
-      return;
-    }
+  showEmergencyAlerts(forceOpen = false) {
+      if (!forceOpen && window.CMS_APP.currentView !== 'dashboard') return;
+      const alerts = this.getEmergencyAlerts();
+      if (alerts.length === 0) {
+        if (forceOpen) window.CMS_APP.toast('You are all caught up! No pending alerts.', 'success');
+        this.lastEmergencySignature = '';
+        return;
+      }
 
     const signature = alerts.map(alert => alert.id).join('|');
-    if (signature === this.lastEmergencySignature) return;
-    this.lastEmergencySignature = signature;
+      if (!forceOpen && signature === this.lastEmergencySignature) return;
+      if (!forceOpen) this.lastEmergencySignature = signature;
 
     const content = `
       <div class="space-y-3 text-xs">
-        <div class="p-3 bg-red-50 border border-red-200 rounded-sm text-red-950 flex items-start gap-2">
-          <i data-lucide="siren" class="w-5 h-5 text-red-600 shrink-0"></i>
-          <div><strong>Immediate attention required.</strong><br />These alerts remain on the dashboard until the underlying action is completed.</div>
-        </div>
+        
         ${alerts.map(alert => `
           <div class="p-3 bg-white border border-slate-200 rounded-sm flex items-start gap-3">
-            <i data-lucide="${alert.icon}" class="w-4 h-4 text-${alert.tone}-600 shrink-0 mt-0.5"></i>
+            <i data-lucide="${alert.icon}" class="w-4 h-4 text-${alert.tone}-600 shrink-0"></i>
             <div class="flex-1">
               <div class="font-bold text-slate-900">${alert.title}</div>
               <div class="text-slate-600 mt-1">${alert.details}</div>
@@ -184,6 +187,79 @@ window.CMS_DASHBOARD = {
     }
   },
 
+  
+  openTaskModal() {
+    const users = window.CMS_STORE.getUsers ? window.CMS_STORE.getUsers().filter(u => u.role !== 'Admin') : [{name: 'Store User'}];
+    const content = `
+      <form class="space-y-4 text-sm" onsubmit="event.preventDefault(); CMS_DASHBOARD.saveTask();">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1 text-xs">Task Scenario / Title <span class="text-rose-600">*</span></label>
+          <input type="text" id="dt-title" required class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 text-xs font-semibold" placeholder="e.g. Review pending indent for Department X" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1 text-xs">Detailed Instructions</label>
+          <textarea id="dt-message" required rows="4" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 text-xs" placeholder="Describe what the user needs to do..."></textarea>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1 text-xs">Assign To <span class="text-rose-600">*</span></label>
+          <select id="dt-assignee" required class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 text-xs font-semibold bg-white">
+            ${users.map(u => `<option value="${u.name}">${u.name} (${u.role})</option>`).join('')}
+            <option value="All Users">Broadcast to All Users</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 font-bold text-slate-600 hover:bg-slate-100 rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-4 py-2 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-sm shadow-sm transition">Generate Task</button>
+        </div>
+      </form>
+    `;
+    window.CMS_APP.openModal('Generate Communication Task', content, 'max-w-lg');
+  },
+
+  saveTask() {
+    const title = document.getElementById('dt-title').value.trim();
+    const message = document.getElementById('dt-message').value.trim();
+    const assignedTo = document.getElementById('dt-assignee').value;
+    
+    if (!title || !message) return window.CMS_APP.toast('Title and message are required', 'error');
+
+    const task = {
+      id: 'tsk_' + Date.now() + Math.random().toString(36).substring(2,5),
+      title,
+      message,
+      assignedTo,
+      status: 'Pending',
+      createdAt: new Date().toISOString()
+    };
+
+    if (!window.CMS_STORE.data.adminTasks) window.CMS_STORE.data.adminTasks = [];
+    window.CMS_STORE.data.adminTasks.push(task);
+    window.CMS_STORE.save();
+    
+    window.CMS_APP.closeModal();
+    window.CMS_APP.toast('Communication task assigned to ' + assignedTo, 'success');
+    this.setFilter('tasks'); // Switch to tasks tab
+  },
+
+  resolveTask(taskId) {
+    const task = (window.CMS_STORE.data.adminTasks || []).find(t => t.id === taskId);
+    if (task) {
+      task.status = 'Resolved';
+      window.CMS_STORE.save();
+      window.CMS_APP.toast('Task acknowledged successfully.', 'success');
+      this.setFilter(this.activeFilter);
+    }
+  },
+
+  deleteTask(taskId) {
+    if (confirm('Are you sure you want to delete this task?')) {
+      window.CMS_STORE.data.adminTasks = (window.CMS_STORE.data.adminTasks || []).filter(t => t.id !== taskId);
+      window.CMS_STORE.save();
+      window.CMS_APP.toast('Task deleted.', 'info');
+      this.setFilter(this.activeFilter);
+    }
+  },
+
   render() {
     return `
       <div class="dashboard-shell space-y-5 max-w-7xl mx-auto pb-12">
@@ -197,6 +273,10 @@ window.CMS_DASHBOARD = {
         </div>
 
         ${this.renderPriorityPanel()}
+
+        <div id="pinterest-pills-bar" class="mb-5 overflow-x-auto pb-2 scrollbar-hide">
+          ${this.renderPills()}
+        </div>
 
         <div id="pinterest-pins-container">
           ${this.renderPins()}
@@ -230,7 +310,8 @@ window.CMS_DASHBOARD = {
       { id: 'fixed', label: `Fixed Assets & PM (${fixedCount})` },
       { id: 'indents', label: `Department Indents (${indentsCount})` },
       { id: 'inward', label: `Inward Batches (${receiptsCount})` },
-      { id: 'boards', label: 'Consumable Categories' }
+      { id: 'boards', label: 'Consumable Categories' },
+        { id: 'tasks', label: 'Admin Comms & Tasks' }
     ];
 
     return `
@@ -548,6 +629,50 @@ window.CMS_DASHBOARD = {
     // ==========================================
     // PINS 7: Category Inspiration Boards
     // ==========================================
+    
+    const adminTasks = store.adminTasks || [];
+    const role = window.CMS_STORE.getRole();
+
+    if (this.activeFilter === 'tasks' || (this.activeFilter === 'all' && adminTasks.length > 0)) {
+      if (this.activeFilter === 'tasks' && role === 'Admin') {
+         pins.push(`
+            <div class="pinterest-pin p-4 border-2 border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 cursor-pointer text-center py-6 transition" onclick="CMS_DASHBOARD.openTaskModal()">
+              <i data-lucide="message-square-plus" class="w-6 h-6 text-blue-500 mx-auto mb-2"></i>
+              <h4 class="font-bold text-slate-800 text-sm">Generate Communication Task</h4>
+              <p class="text-[11px] text-slate-500 mt-1">Assign an actionable scenario to a user.</p>
+            </div>
+         `);
+      }
+
+      adminTasks.forEach(task => {
+        if (matchesSearch(task.title, task.message, task.assignedTo)) {
+          pins.push(`
+            <div class="pinterest-pin p-4 bg-white border border-slate-200 shadow-sm relative">
+              ${role === 'Admin' ? `<button onclick="CMS_DASHBOARD.deleteTask('${task.id}')" class="absolute top-3 right-3 text-rose-400 hover:text-rose-600 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : ''}
+              
+              <div class="flex items-center justify-between mb-2 pr-6">
+                <span class="px-2 py-0.5 rounded-sm ${task.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-900 border border-amber-300'} text-[9px] font-bold font-mono tracking-wide uppercase">
+                  ${task.status === 'Resolved' ? 'Acknowledged' : 'Action Required'}
+                </span>
+                <span class="text-[10px] font-mono text-slate-400">${window.CMS_STORE.formatDate(task.createdAt)}</span>
+              </div>
+              
+              <h4 class="font-bold text-slate-900 text-sm leading-snug pr-6">${task.title}</h4>
+              <p class="text-[11px] text-slate-600 mt-1.5 whitespace-pre-wrap leading-relaxed">${task.message}</p>
+              
+              <div class="mt-3 p-2 bg-slate-50 border border-slate-200 rounded text-[10px] flex justify-between items-center">
+                 <div class="space-y-0.5">
+                   <div><span class="font-semibold text-slate-500">From: </span><span class="text-slate-800 font-bold">Admin</span></div>
+                   <div><span class="font-semibold text-slate-500">To: </span><span class="text-slate-800 font-bold">${task.assignedTo}</span></div>
+                 </div>
+                 ${role !== 'Admin' && task.status !== 'Resolved' ? `<button onclick="CMS_DASHBOARD.resolveTask('${task.id}')" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-sm font-bold shadow-sm transition">Acknowledge</button>` : ''}
+              </div>
+            </div>
+          `);
+        }
+      });
+    }
+
     if (this.activeFilter === 'all' || this.activeFilter === 'boards') {
       categories.forEach(cat => {
         if (matchesSearch(cat.name, cat.description)) {

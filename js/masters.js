@@ -11,17 +11,202 @@ window.CMS_MASTERS = {
   vendorStateFilter: 'ALL',
   consumableSearchQuery: '',
   countries: [
-    { name: 'India', code: '+91' },
-    { name: 'United States', code: '+1' },
-    { name: 'United Kingdom', code: '+44' },
-    { name: 'United Arab Emirates', code: '+971' },
-    { name: 'Singapore', code: '+65' },
-    { name: 'Australia', code: '+61' },
-    { name: 'Canada', code: '+1' },
-    { name: 'Germany', code: '+49' },
-    { name: 'Japan', code: '+81' }
-  ],
-  consumableCategoryFilter: '',
+      { name: 'Afghanistan', flag: '🇦🇫', code: '+93' },
+      { name: 'Albania', flag: '🇦🇱', code: '+355' },
+      { name: 'Algeria', flag: '🇩🇿', code: '+213' },
+      { name: 'Andorra', flag: '🇦🇩', code: '+376' },
+      { name: 'Angola', flag: '🇦🇴', code: '+244' },
+      { name: 'Antigua and Barbuda', flag: '🇦🇬', code: '+1' },
+      { name: 'Argentina', flag: '🇦🇷', code: '+54' },
+      { name: 'Armenia', flag: '🇦🇲', code: '+374' },
+      { name: 'Australia', flag: '🇦🇺', code: '+61' },
+      { name: 'Austria', flag: '🇦🇹', code: '+43' },
+      { name: 'Azerbaijan', flag: '🇦🇿', code: '+994' },
+      { name: 'Bahamas', flag: '🇧🇸', code: '+1' },
+      { name: 'Bahrain', flag: '🇧🇭', code: '+973' },
+      { name: 'Bangladesh', flag: '🇧🇩', code: '+880' },
+      { name: 'Barbados', flag: '🇧🇧', code: '+1' },
+      { name: 'Belarus', flag: '🇧🇾', code: '+375' },
+      { name: 'Belgium', flag: '🇧🇪', code: '+32' },
+      { name: 'Belize', flag: '🇧🇿', code: '+501' },
+      { name: 'Benin', flag: '🇧🇯', code: '+229' },
+      { name: 'Bhutan', flag: '🇧🇹', code: '+975' },
+      { name: 'Bolivia', flag: '🇧🇴', code: '+591' },
+      { name: 'Bosnia and Herzegovina', flag: '🇧🇦', code: '+387' },
+      { name: 'Botswana', flag: '🇧🇼', code: '+267' },
+      { name: 'Brazil', flag: '🇧🇷', code: '+55' },
+      { name: 'Brunei', flag: '🇧🇳', code: '+673' },
+      { name: 'Bulgaria', flag: '🇧🇬', code: '+359' },
+      { name: 'Burkina Faso', flag: '🇧🇫', code: '+226' },
+      { name: 'Burundi', flag: '🇧🇮', code: '+257' },
+      { name: 'Cabo Verde', flag: '🇨🇻', code: '+238' },
+      { name: 'Cambodia', flag: '🇰🇭', code: '+855' },
+      { name: 'Cameroon', flag: '🇨🇲', code: '+237' },
+      { name: 'Canada', flag: '🇨🇦', code: '+1' },
+      { name: 'Central African Republic', flag: '🇨🇫', code: '+236' },
+      { name: 'Chad', flag: '🇹🇩', code: '+235' },
+      { name: 'Chile', flag: '🇨🇱', code: '+56' },
+      { name: 'China', flag: '🇨🇳', code: '+86' },
+      { name: 'Colombia', flag: '🇨🇴', code: '+57' },
+      { name: 'Comoros', flag: '🇰🇲', code: '+269' },
+      { name: 'Congo', flag: '🇨🇬', code: '+242' },
+      { name: 'Costa Rica', flag: '🇨🇷', code: '+506' },
+      { name: 'Croatia', flag: '🇭🇷', code: '+385' },
+      { name: 'Cuba', flag: '🇨🇺', code: '+53' },
+      { name: 'Cyprus', flag: '🇨🇾', code: '+357' },
+      { name: 'Czechia', flag: '🇨🇿', code: '+420' },
+      { name: 'Denmark', flag: '🇩🇰', code: '+45' },
+      { name: 'Djibouti', flag: '🇩🇯', code: '+253' },
+      { name: 'Dominica', flag: '🇩🇲', code: '+1' },
+      { name: 'Dominican Republic', flag: '🇩🇴', code: '+1' },
+      { name: 'Ecuador', flag: '🇪🇨', code: '+593' },
+      { name: 'Egypt', flag: '🇪🇬', code: '+20' },
+      { name: 'El Salvador', flag: '🇸🇻', code: '+503' },
+      { name: 'Equatorial Guinea', flag: '🇬🇶', code: '+240' },
+      { name: 'Eritrea', flag: '🇪🇷', code: '+291' },
+      { name: 'Estonia', flag: '🇪🇪', code: '+372' },
+      { name: 'Eswatini', flag: '🇸🇿', code: '+268' },
+      { name: 'Ethiopia', flag: '🇪🇹', code: '+251' },
+      { name: 'Fiji', flag: '🇫🇯', code: '+679' },
+      { name: 'Finland', flag: '🇫🇮', code: '+358' },
+      { name: 'France', flag: '🇫🇷', code: '+33' },
+      { name: 'Gabon', flag: '🇬🇦', code: '+241' },
+      { name: 'Gambia', flag: '🇬🇲', code: '+220' },
+      { name: 'Georgia', flag: '🇬🇪', code: '+995' },
+      { name: 'Germany', flag: '🇩🇪', code: '+49' },
+      { name: 'Ghana', flag: '🇬🇭', code: '+233' },
+      { name: 'Greece', flag: '🇬🇷', code: '+30' },
+      { name: 'Grenada', flag: '🇬🇩', code: '+1' },
+      { name: 'Guatemala', flag: '🇬🇹', code: '+502' },
+      { name: 'Guinea', flag: '🇬🇳', code: '+224' },
+      { name: 'Guinea-Bissau', flag: '🇬🇼', code: '+245' },
+      { name: 'Guyana', flag: '🇬🇾', code: '+592' },
+      { name: 'Haiti', flag: '🇭🇹', code: '+509' },
+      { name: 'Honduras', flag: '🇭🇳', code: '+504' },
+      { name: 'Hungary', flag: '🇭🇺', code: '+36' },
+      { name: 'Iceland', flag: '🇮🇸', code: '+354' },
+      { name: 'India', flag: '🇮🇳', code: '+91' },
+      { name: 'Indonesia', flag: '🇮🇩', code: '+62' },
+      { name: 'Iran', flag: '🇮🇷', code: '+98' },
+      { name: 'Iraq', flag: '🇮🇶', code: '+964' },
+      { name: 'Ireland', flag: '🇮🇪', code: '+353' },
+      { name: 'Israel', flag: '🇮🇱', code: '+972' },
+      { name: 'Italy', flag: '🇮🇹', code: '+39' },
+      { name: 'Jamaica', flag: '🇯🇲', code: '+1' },
+      { name: 'Japan', flag: '🇯🇵', code: '+81' },
+      { name: 'Jordan', flag: '🇯🇴', code: '+962' },
+      { name: 'Kazakhstan', flag: '🇰🇿', code: '+7' },
+      { name: 'Kenya', flag: '🇰🇪', code: '+254' },
+      { name: 'Kiribati', flag: '🇰🇮', code: '+686' },
+      { name: 'Kuwait', flag: '🇰🇼', code: '+965' },
+      { name: 'Kyrgyzstan', flag: '🇰🇬', code: '+996' },
+      { name: 'Laos', flag: '🇱🇦', code: '+856' },
+      { name: 'Latvia', flag: '🇱🇻', code: '+371' },
+      { name: 'Lebanon', flag: '🇱🇧', code: '+961' },
+      { name: 'Lesotho', flag: '🇱🇸', code: '+266' },
+      { name: 'Liberia', flag: '🇱🇷', code: '+231' },
+      { name: 'Libya', flag: '🇱🇾', code: '+218' },
+      { name: 'Liechtenstein', flag: '🇱🇮', code: '+423' },
+      { name: 'Lithuania', flag: '🇱🇹', code: '+370' },
+      { name: 'Luxembourg', flag: '🇱🇺', code: '+352' },
+      { name: 'Madagascar', flag: '🇲🇬', code: '+261' },
+      { name: 'Malawi', flag: '🇲🇼', code: '+265' },
+      { name: 'Malaysia', flag: '🇲🇾', code: '+60' },
+      { name: 'Maldives', flag: '🇲🇻', code: '+960' },
+      { name: 'Mali', flag: '🇲🇱', code: '+223' },
+      { name: 'Malta', flag: '🇲🇹', code: '+356' },
+      { name: 'Marshall Islands', flag: '🇲🇭', code: '+692' },
+      { name: 'Mauritania', flag: '🇲🇷', code: '+222' },
+      { name: 'Mauritius', flag: '🇲🇺', code: '+230' },
+      { name: 'Mexico', flag: '🇲🇽', code: '+52' },
+      { name: 'Micronesia', flag: '🇫🇲', code: '+691' },
+      { name: 'Moldova', flag: '🇲🇩', code: '+373' },
+      { name: 'Monaco', flag: '🇲🇨', code: '+377' },
+      { name: 'Mongolia', flag: '🇲🇳', code: '+976' },
+      { name: 'Montenegro', flag: '🇲🇪', code: '+382' },
+      { name: 'Morocco', flag: '🇲🇦', code: '+212' },
+      { name: 'Mozambique', flag: '🇲🇿', code: '+258' },
+      { name: 'Myanmar', flag: '🇲🇲', code: '+95' },
+      { name: 'Namibia', flag: '🇳🇦', code: '+264' },
+      { name: 'Nauru', flag: '🇳🇷', code: '+674' },
+      { name: 'Nepal', flag: '🇳🇵', code: '+977' },
+      { name: 'Netherlands', flag: '🇳🇱', code: '+31' },
+      { name: 'New Zealand', flag: '🇳🇿', code: '+64' },
+      { name: 'Nicaragua', flag: '🇳🇮', code: '+505' },
+      { name: 'Niger', flag: '🇳🇪', code: '+227' },
+      { name: 'Nigeria', flag: '🇳🇬', code: '+234' },
+      { name: 'North Korea', flag: '🇰🇵', code: '+850' },
+      { name: 'North Macedonia', flag: '🇲🇰', code: '+389' },
+      { name: 'Norway', flag: '🇳🇴', code: '+47' },
+      { name: 'Oman', flag: '🇴🇲', code: '+968' },
+      { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
+      { name: 'Palau', flag: '🇵🇼', code: '+680' },
+      { name: 'Palestine', flag: '🇵🇸', code: '+970' },
+      { name: 'Panama', flag: '🇵🇦', code: '+507' },
+      { name: 'Papua New Guinea', flag: '🇵🇬', code: '+675' },
+      { name: 'Paraguay', flag: '🇵🇾', code: '+595' },
+      { name: 'Peru', flag: '🇵🇪', code: '+51' },
+      { name: 'Philippines', flag: '🇵🇭', code: '+63' },
+      { name: 'Poland', flag: '🇵🇱', code: '+48' },
+      { name: 'Portugal', flag: '🇵🇹', code: '+351' },
+      { name: 'Qatar', flag: '🇶🇦', code: '+974' },
+      { name: 'Romania', flag: '🇷🇴', code: '+40' },
+      { name: 'Russia', flag: '🇷🇺', code: '+7' },
+      { name: 'Rwanda', flag: '🇷🇼', code: '+250' },
+      { name: 'Saint Kitts and Nevis', flag: '🇰🇳', code: '+1' },
+      { name: 'Saint Lucia', flag: '🇱🇨', code: '+1' },
+      { name: 'Saint Vincent and the Grenadines', flag: '🇻🇨', code: '+1' },
+      { name: 'Samoa', flag: '🇼🇸', code: '+685' },
+      { name: 'San Marino', flag: '🇸🇲', code: '+378' },
+      { name: 'Sao Tome and Principe', flag: '🇸🇹', code: '+239' },
+      { name: 'Saudi Arabia', flag: '🇸🇦', code: '+966' },
+      { name: 'Senegal', flag: '🇸🇳', code: '+221' },
+      { name: 'Serbia', flag: '🇷🇸', code: '+381' },
+      { name: 'Seychelles', flag: '🇸🇨', code: '+248' },
+      { name: 'Sierra Leone', flag: '🇸🇱', code: '+232' },
+      { name: 'Singapore', flag: '🇸🇬', code: '+65' },
+      { name: 'Slovakia', flag: '🇸🇰', code: '+421' },
+      { name: 'Slovenia', flag: '🇸🇮', code: '+386' },
+      { name: 'Solomon Islands', flag: '🇸🇧', code: '+677' },
+      { name: 'Somalia', flag: '🇸🇴', code: '+252' },
+      { name: 'South Africa', flag: '🇿🇦', code: '+27' },
+      { name: 'South Korea', flag: '🇰🇷', code: '+82' },
+      { name: 'South Sudan', flag: '🇸🇸', code: '+211' },
+      { name: 'Spain', flag: '🇪🇸', code: '+34' },
+      { name: 'Sri Lanka', flag: '🇱🇰', code: '+94' },
+      { name: 'Sudan', flag: '🇸🇩', code: '+249' },
+      { name: 'Suriname', flag: '🇸🇷', code: '+597' },
+      { name: 'Sweden', flag: '🇸🇪', code: '+46' },
+      { name: 'Switzerland', flag: '🇨🇭', code: '+41' },
+      { name: 'Syria', flag: '🇸🇾', code: '+963' },
+      { name: 'Taiwan', flag: '🇹🇼', code: '+886' },
+      { name: 'Tajikistan', flag: '🇹🇯', code: '+992' },
+      { name: 'Tanzania', flag: '🇹🇿', code: '+255' },
+      { name: 'Thailand', flag: '🇹🇭', code: '+66' },
+      { name: 'Timor-Leste', flag: '🇹🇱', code: '+670' },
+      { name: 'Togo', flag: '🇹🇬', code: '+228' },
+      { name: 'Tonga', flag: '🇹🇴', code: '+676' },
+      { name: 'Trinidad and Tobago', flag: '🇹🇹', code: '+1' },
+      { name: 'Tunisia', flag: '🇹🇳', code: '+216' },
+      { name: 'Turkey', flag: '🇹🇷', code: '+90' },
+      { name: 'Turkmenistan', flag: '🇹🇲', code: '+993' },
+      { name: 'Tuvalu', flag: '🇹🇻', code: '+688' },
+      { name: 'Uganda', flag: '🇺🇬', code: '+256' },
+      { name: 'Ukraine', flag: '🇺🇦', code: '+380' },
+      { name: 'United Arab Emirates', flag: '🇦🇪', code: '+971' },
+      { name: 'United Kingdom', flag: '🇬🇧', code: '+44' },
+      { name: 'United States', flag: '🇺🇸', code: '+1' },
+      { name: 'Uruguay', flag: '🇺🇾', code: '+598' },
+      { name: 'Uzbekistan', flag: '🇺🇿', code: '+998' },
+      { name: 'Vanuatu', flag: '🇻🇺', code: '+678' },
+      { name: 'Vatican City', flag: '🇻🇦', code: '+379' },
+      { name: 'Venezuela', flag: '🇻🇪', code: '+58' },
+      { name: 'Vietnam', flag: '🇻🇳', code: '+84' },
+      { name: 'Yemen', flag: '🇾🇪', code: '+967' },
+      { name: 'Zambia', flag: '🇿🇲', code: '+260' },
+      { name: 'Zimbabwe', flag: '🇿🇼', code: '+263' }
+    ],
+    consumableCategoryFilter: '',
   consumableTypeFilter: '',
   consumableStatusFilter: 'ALL',
 
@@ -179,7 +364,7 @@ window.CMS_MASTERS = {
             </div>
           </td>
           <td class="p-4 text-xs space-y-0.5">
-            <div class="text-slate-800 font-medium">Tel: ${v.contactNo || '-'}</div>
+            <div class="text-slate-800 font-medium">Tel: ${(v.countryCode ? v.countryCode + ' ' : '') + (v.contactNo || '-')}</div>
             <div class="text-slate-500">Email: ${v.email || '-'}</div>
             ${v.bankName ? `<div class="text-[10px] text-slate-400 font-mono">Bank: ${v.bankName}</div>` : ''}
           </td>
@@ -242,7 +427,7 @@ window.CMS_MASTERS = {
               </div>
               <span>Vendor Master</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Manage approved suppliers, GSTIN, PAN cards, compliance certificates, bank details, and validity dates.</p>
+            
           </div>
           <div class="flex flex-wrap items-center gap-2.5">
             ${role !== 'Admin' ? `
@@ -250,12 +435,7 @@ window.CMS_MASTERS = {
                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
                 <span>Register New Vendor</span>
               </button>
-            ` : `
-              <div class="text-xs text-indigo-800 bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-sm font-semibold flex items-center gap-2 shadow-sm">
-                <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
-                <span>Store In-Charge Governance: Col. Anita Sharma (Review, Approve & View Only)</span>
-              </div>
-            `}
+            ` : ''}
           </div>
         </div>
 
@@ -400,199 +580,151 @@ window.CMS_MASTERS = {
 
     const role = window.CMS_STORE.getRole();
     const stateInfo = this.getStateInfo(v.addressState);
+
+    // Helper to render inline document preview
+    const renderDocPreview = (filename, title) => {
+      if (!filename) return `<div class="text-[10px] text-slate-400 italic mb-4">No ${title} attached</div>`;
+      // We assume images or pdfs. Base64 encoded.
+      // Usually, CMS_FILE_ + filename contains the base64 Data URL.
+      return `
+        <div class="mt-2 mb-4 border border-slate-200 p-2 bg-slate-50">
+          <div class="text-[10px] font-bold text-slate-600 mb-2">${title}: ${filename}</div>
+          <div class="doc-preview-container" data-filename="${filename}">
+            <div class="text-xs text-slate-400 italic">Loading preview...</div>
+          </div>
+        </div>
+      `;
+    };
+
     const content = `
-      <div class="space-y-4 text-xs">
-        <div class="p-4 bg-slate-50 rounded-sm border border-slate-200 flex items-start justify-between">
-          <div>
-            <div class="flex items-center gap-2">
-              <h3 class="text-base font-bold text-blue-600">${v.name}</h3>
-              ${v.isBlocked ? '<span class="px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold text-[10px] uppercase">BLOCKED</span>' : ''}
-              ${v.status === 'Revision Required' ? '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-bold text-[10px] uppercase">REVISION REQUIRED</span>' : ''}
-            </div>
-            <span class="font-mono text-slate-500 font-medium">${v.id} • Registered State: ${v.addressState || 'Not Specified'} (${stateInfo.code || '--'})</span>
-          </div>
-          <span class="badge ${v.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${v.status}</span>
+      <div id="vendor-paper-form" class="space-y-4 text-xs bg-white p-6 border border-slate-200 shadow-sm print:shadow-none print:border-none print:p-0">
+        
+        <!-- Header -->
+        <div class="text-center mb-6 border-b border-slate-800 pb-4">
+          <h2 class="text-2xl font-bold uppercase tracking-widest text-slate-900">Vendor Registration Form</h2>
+          <div class="text-sm font-mono text-slate-600 mt-1">ID: ${v.id} | Status: ${v.status}</div>
         </div>
 
-        ${v.checkerMistakeRemark ? `
-          <div class="p-3.5 bg-rose-50 border border-rose-300 rounded-sm text-rose-900 space-y-1">
-            <div class="font-bold flex items-center gap-1.5 text-xs text-rose-950">
-              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i>
-              <span>Statutory Admin Mistake Report (${v.rejectedByName || 'Col. Anita Sharma'})</span>
-            </div>
-            <p class="text-[11px] text-rose-800 leading-relaxed font-medium">${v.checkerMistakeRemark}</p>
-            ${v.rejectedAt ? `<div class="text-[10px] text-rose-600 font-mono">Reported On: ${window.CMS_STORE.formatDate(v.rejectedAt)}</div>` : ''}
-          </div>
-        ` : ''}
-
-        <div class="grid grid-cols-2 gap-3">
-          <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-1">
-            <span class="text-slate-400 font-bold uppercase text-[10px]">GSTIN Number</span>
-            <div class="font-mono font-bold text-sm text-slate-800">${v.gstNotApplicable ? 'Exempt / Not Applicable' : (v.gstNo || 'Not Registered')}</div>
-            ${v.gstCertificateFile ? `
-              <button type="button" onclick="CMS_APP.viewDocument('${v.gstCertificateFile}', 'GST Registration Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[10px] text-blue-600 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded font-medium flex items-center gap-1 mt-1 hover:bg-slate-100 transition">
-                <i data-lucide="eye" class="w-3 h-3"></i> View GST Certificate Copy
-              </button>
-            ` : '<span class="text-[10px] text-slate-400 italic block mt-1">No certificate attached</span>'}
-          </div>
-          <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-1">
-            <span class="text-slate-400 font-bold uppercase text-[10px]">PAN Card Number</span>
-            <div class="font-mono font-bold text-sm text-blue-600">${v.panNotApplicable ? 'Not Applicable' : (v.panNo || 'Not Recorded')}</div>
-            ${v.panCardFile ? `
-              <button type="button" onclick="CMS_APP.viewDocument('${v.panCardFile}', 'Permanent Account Number (PAN) Card', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[10px] text-blue-600 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded font-medium flex items-center gap-1 mt-1 hover:bg-slate-100 transition">
-                <i data-lucide="eye" class="w-3 h-3"></i> View PAN Card Copy
-              </button>
-            ` : '<span class="text-[10px] text-slate-400 italic block mt-1">No PAN copy attached</span>'}
-          </div>
-          <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-1">
-            <span class="text-slate-400 font-bold uppercase text-[10px]">Contact Phone</span>
-            <div class="font-bold text-slate-800">${v.contactNo || '-'}</div>
-          </div>
-          <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-1">
-            <span class="text-slate-400 font-bold uppercase text-[10px]">Email Address</span>
-            <div class="font-bold text-slate-800 truncate">${v.email || '-'}</div>
-          </div>
-        </div>
-
-        <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-1">
-          <span class="text-slate-400 font-bold uppercase text-[10px]">Registered Business Address</span>
-          <p class="text-slate-700 font-medium">${[v.address, v.addressTaluka, v.addressDistrict, v.addressState, v.addressCountry, v.addressPinCode].filter(Boolean).join(', ')}</p>
-          <div class="text-[11px] text-blue-600 font-medium mt-1">
-            State Code: <strong>${stateInfo.code || '--'}</strong> • Applicable Statutory Tax: <strong>${stateInfo.taxMode === 'IGST' ? 'Inter-State (IGST)' : 'Intra-State (CGST + SGST)'}</strong>
-          </div>
-        </div>
-
-        <!-- 5 Bank Details -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-2">
-          <span class="text-slate-700 font-bold uppercase text-[10px] tracking-wider flex items-center gap-1">
-            <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-600"></i> Vendor Bank & Remittance Credentials
-          </span>
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
-            <div><span class="text-slate-400 text-[10px] block">Bank Name</span><strong>${v.bankName || 'Not Provided'}</strong></div>
-            <div><span class="text-slate-400 text-[10px] block">Account Name</span><strong>${v.accountName || v.name || 'Not Provided'}</strong></div>
-            <div><span class="text-slate-400 text-[10px] block">Account No.</span><strong class="font-mono">${v.accountNo || 'Not Provided'}</strong></div>
-            <div><span class="text-slate-400 text-[10px] block">IFSC Code</span><strong class="font-mono">${v.ifscCode || 'Not Provided'}</strong></div>
-            <div><span class="text-slate-400 text-[10px] block">Branch</span><strong>${v.branchName || 'Not Provided'}</strong></div>
-          </div>
-          ${v.bankDoc ? `
-            <div class="pt-2">
-              <button type="button" onclick="CMS_APP.viewDocument('${v.bankDoc}', 'Vendor Bank Supporting Document', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })" class="text-[11px] text-blue-600 bg-white border border-slate-200 px-3 py-1 rounded font-bold hover:bg-slate-50 transition flex items-center gap-1.5">
-                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Inspect Bank Document (${v.bankDoc})
-              </button>
-            </div>
-          ` : ''}
-        </div>
-
-        <!-- Approved Quotation Record -->
-        <div class="p-3.5 bg-slate-50/50 border border-slate-200 rounded-sm space-y-1.5">
-          <span class="text-blue-600 font-bold uppercase text-[10px] tracking-wider flex items-center ga
-              <i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-600"></i> Approved Commercial Quotations & Materials
-            </span>
-            <div class="space-y-3">
-              ${(v.quotedItems && v.quotedItems.length > 0) ? v.quotedItems.map(q => `
-                <div class="border border-slate-200 bg-white rounded p-2 text-xs">
-                  <div class="flex items-center justify-between mb-1.5 pb-1.5 border-b border-slate-100">
-                    <div>
-                      <span class="text-slate-500 text-[10px]">Quote Ref:</span> <strong class="text-blue-600">${q.quotationNo || 'Direct'}</strong>
-                      <span class="text-slate-500 text-[10px] ml-3">Date:</span> <strong class="font-mono">${window.CMS_STORE.formatDate(q.quotationDate)}</strong>
-                      <span class="text-slate-500 text-[10px] ml-3">Effective:</span> <strong class="font-mono">\${window.CMS_STORE.formatDate(q.effectiveFrom) || '-'}</strong>
-                      <span class="text-slate-500 text-[10px] ml-3">Valid Till:</span> 
-                      <strong class="font-mono ${q.quotationValidTill && new Date(q.quotationValidTill) < new Date() ? 'text-red-700' : 'text-emerald-700'}">
-                        ${window.CMS_STORE.formatDate(q.quotationValidTill)} ${q.quotationValidTill && new Date(q.quotationValidTill) < new Date() ? '(Expired)' : ''}
-                      </strong>
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-4 gap-2 text-[10px]">
-                    <div class="col-span-2"><span class="text-slate-500 block">Item / Material:</span><strong class="text-sm">${q.materialName || q.materialId || '-'}</strong></div>
-                    <div><span class="text-slate-500 block">Approved Rate:</span><strong class="text-sm text-blue-600">₹${Number(q.rate || 0).toFixed(2)}</strong></div>
-                    <div><span class="text-slate-500 block">MRP (UOM):</span><strong class="text-emerald-700">₹${Number(q.mrp || 0).toFixed(2)}</strong> <span class="text-slate-400">(${q.unit || 'Nos'})</span></div>
-                  </div>
-                  ${q.doc ? `
-                    <div class="pt-2 mt-2 border-t border-slate-50">
-                      <button type="button" onclick="CMS_APP.viewDocument('${q.doc}', 'Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${q.quotationValidTill}' })" class="text-[10px] text-blue-600 bg-slate-50 border border-slate-200 px-2 py-1 rounded font-bold hover:bg-slate-100 transition flex items-center gap-1.5 inline-flex">
-                        <i data-lucide="eye" class="w-3 h-3"></i> Inspect ${q.doc}
-                      </button>
-                    </div>
-                  ` : ''}
-                </div>
-              `).join('') : `
-                <div class="grid grid-cols-3 gap-2 text-xs">
-                  <div><span class="text-slate-500 text-[10px] block">Quote Ref / No.</span><strong>${v.quotationNo || 'Direct Order'}</strong></div>
-                  <div><span class="text-slate-500 text-[10px] block">Quotation Date</span><strong class="font-mono">${window.CMS_STORE.formatDate(v.quotationDate)}</strong></div>
-                  <div>
-                    <span class="text-slate-500 text-[10px] block">Valid Till</span>
-                    <strong class="font-mono ${v.quotationValidTill && new Date(v.quotationValidTill) < new Date() ? 'text-red-700' : 'text-emerald-700'}">
-                      ${window.CMS_STORE.formatDate(v.quotationValidTill)}
-                      ${v.quotationValidTill && new Date(v.quotationValidTill) < new Date() ? ' (Expired)' : ''}
-                    </strong>
-                  </div>
-                </div>
-                ${v.quotationDoc ? `
-                  <div class="pt-2">
-                    <button type="button" onclick="CMS_APP.viewDocument('${v.quotationDoc}', 'Approved Vendor Quotation', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${v.quotationValidTill}' })" class="text-[11px] text-blue-600 bg-white border border-blue-300 px-3 py-1 rounded font-bold hover:bg-slate-50 transition flex items-center gap-1.5">
-                      <i data-lucide="eye" class="w-3.5 h-3.5"></i> Inspect Uploaded Quotation Copy (${v.quotationDoc})
-                    </button>
-                  </div>
-                ` : '<div class="text-[10px] text-slate-400 italic pt-1">No quotation copy uploaded</div>'}
-              `}
+        <div class="grid grid-cols-2 gap-x-8 gap-y-4">
+          <div class="col-span-2">
+            <h3 class="text-sm font-bold uppercase border-b border-slate-300 mb-2 text-slate-800">1. Organization Details</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div><span class="text-slate-500 block text-[10px] uppercase">Name</span> <strong class="text-base">${v.name}</strong></div>
+              <div><span class="text-slate-500 block text-[10px] uppercase">Constitution</span> <strong>${v.constitution || 'Not Specified'}</strong></div>
+              <div class="col-span-2"><span class="text-slate-500 block text-[10px] uppercase">Registered Address</span> <strong>${[v.address, v.addressTaluka, v.addressDistrict, v.addressState, v.addressCountry, v.addressPinCode].filter(Boolean).join(', ')}</strong></div>
+              <div><span class="text-slate-500 block text-[10px] uppercase">Contact Phone</span> <strong>${(v.countryCode ? v.countryCode + ' ' : '') + (v.contactNo || '-')}</strong></div>
+              <div><span class="text-slate-500 block text-[10px] uppercase">Email</span> <strong>${v.email || '-'}</strong></div>
             </div>
           </div>
 
-          <!-- Regulatory & Compliance Certificates -->
-        <div class="p-3.5 bg-slate-50/60 border border-slate-200 rounded-sm space-y-2">
-          <span class="text-blue-600 font-bold uppercase text-[10px] tracking-wider">Statutory Compliance Certificates (${(v.certificates || []).length})</span>
-          <div class="space-y-2">
-            ${(!v.certificates || v.certificates.length === 0) ? '<span class="text-slate-400 italic">No certificates recorded</span>' : (v.certificates || []).map(c => {
-              const reg = typeof c === 'string' ? c : (c.regulator || c.name || 'Certificate');
-              const form = typeof c === 'object' && c.formNo ? `Standard: ${c.formNo}` : '';
-              const certNo = typeof c === 'object' && c.certificateNo ? `License: ${c.certificateNo}` : '';
-              const hasVal = typeof c === 'object' ? c.hasValidity : false;
-              const valDate = typeof c === 'object' ? c.validTill : '';
-              const file = typeof c === 'object' ? c.fileName : '';
-              const isExpired = valDate && new Date(valDate) < new Date();
-              return `
-                <div class="p-2.5 bg-white border border-slate-200 text-blue-600 rounded-sm text-xs shadow-sm flex items-center justify-between gap-3">
-                  <div>
-                    <div class="font-bold flex items-center gap-1.5">
-                      <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
-                      <span>${reg} ${form ? `(${form})` : ''}</span>
-                    </div>
-                    <div class="text-[11px] text-slate-600 mt-0.5 space-x-2">
-                      ${certNo ? `<span class="font-mono font-medium">${certNo}</span>` : ''}
-                      ${hasVal && valDate ? `<span class="font-mono font-bold ${isExpired ? 'text-red-700' : 'text-blue-600'}">Expiry: ${window.CMS_STORE.formatDate(valDate)}${isExpired ? ' (Expired)' : ''}</span>` : '<span class="text-slate-400">Permanent Validity</span>'}
-                    </div>
-                  </div>
-                  ${file ? `
-                    <button type="button" onclick="CMS_APP.viewDocument('${file}', '${reg} Certificate', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}', validTill: '${valDate}' })" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-blue-600 border border-slate-200 rounded text-[10px] font-bold flex items-center gap-1 transition">
-                      <i data-lucide="eye" class="w-3 h-3"></i> View Certificate
-                    </button>
-                  ` : '<span class="text-[10px] text-slate-400 italic">No copy attached</span>'}
-                </div>
-              `;
-            }).join('')}
+          <div class="col-span-2 mt-4">
+            <h3 class="text-sm font-bold uppercase border-b border-slate-300 mb-2 text-slate-800">2. Statutory Identifications</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="text-slate-500 block text-[10px] uppercase">GSTIN</span> 
+                <strong class="font-mono text-sm">${v.gstNotApplicable ? 'Exempt' : (v.gstNo || 'Not Registered')}</strong>
+                ${renderDocPreview(v.gstCertificateFile, 'GST Certificate')}
+              </div>
+              <div>
+                <span class="text-slate-500 block text-[10px] uppercase">PAN</span> 
+                <strong class="font-mono text-sm">${v.panNotApplicable ? 'Not Applicable' : (v.panNo || 'Not Recorded')}</strong>
+                ${renderDocPreview(v.panCardFile, 'PAN Card')}
+              </div>
+            </div>
+          </div>
+
+          <div class="col-span-2 mt-4">
+            <h3 class="text-sm font-bold uppercase border-b border-slate-300 mb-2 text-slate-800">3. Bank Details</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div><span class="text-slate-500 block text-[10px] uppercase">Bank Name</span> <strong>${v.bankName || '-'}</strong></div>
+              <div><span class="text-slate-500 block text-[10px] uppercase">Account Name</span> <strong>${v.accountName || '-'}</strong></div>
+              <div><span class="text-slate-500 block text-[10px] uppercase">Account No</span> <strong class="font-mono">${v.accountNo || '-'}</strong></div>
+              <div><span class="text-slate-500 block text-[10px] uppercase">IFSC Code</span> <strong class="font-mono">${v.ifscCode || '-'}</strong></div>
+            </div>
+            <div class="mt-2">
+              ${renderDocPreview(v.bankDoc, 'Bank Document')}
+            </div>
+          </div>
+          
+          <div class="col-span-2 mt-4">
+            <h3 class="text-sm font-bold uppercase border-b border-slate-300 mb-2 text-slate-800">4. Quotations</h3>
+            ${(v.quotedItems && v.quotedItems.length > 0) ? v.quotedItems.map(q => `
+              <div class="mb-4">
+                <div><span class="text-slate-500 block text-[10px] uppercase">Quote Ref</span> <strong>${q.quotationNo || 'Direct'}</strong></div>
+                <div><span class="text-slate-500 block text-[10px] uppercase">Material</span> <strong>${q.materialName || q.materialId || '-'}</strong></div>
+                ${renderDocPreview(q.doc, 'Quotation Document')}
+              </div>
+            `).join('') : (v.quotationDoc ? renderDocPreview(v.quotationDoc, 'Quotation Document') : '<div class="text-slate-400 italic">No Quotations</div>')}
+          </div>
+
+          <div class="col-span-2 mt-4">
+            <h3 class="text-sm font-bold uppercase border-b border-slate-300 mb-2 text-slate-800">5. Certificates</h3>
+            ${(!v.certificates || v.certificates.length === 0) ? '<span class="text-slate-400 italic">No certificates recorded</span>' : v.certificates.map(c => `
+              <div class="mb-4">
+                <div><span class="text-slate-500 block text-[10px] uppercase">Certificate</span> <strong>${c.regulator || c.name || 'Certificate'} (${c.formNo || ''})</strong></div>
+                ${renderDocPreview(c.fileName, 'Certificate Document')}
+              </div>
+            `).join('')}
           </div>
         </div>
 
-        <div class="pt-3 border-t border-slate-200 flex flex-wrap justify-end gap-2">
-          ${(v.status === 'Pending Approval' || v.status === 'Revision Required') && role === 'Admin' ? `
-            <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorRejectModal('${v.id}');" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition inline-flex items-center gap-1.5 text-xs">
-              <i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i>
-              <span>Reject / Return</span>
-            </button>
-            <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorSanctionModal('${v.id}');" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
-              <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
-              <span>Sanction / Approve</span>
-            </button>
-          ` : ''}
-          <button onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
-            Close
+        <div class="pt-6 border-t border-slate-800 mt-8 text-center text-[10px] text-slate-500 print:block">
+          Auto-generated by Consumable Management System on ${new Date().toLocaleString()}
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-200 flex flex-wrap justify-end gap-2 print:hidden mt-4">
+        <button onclick="CMS_MASTERS.downloadVendorForm()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
+          <i data-lucide="printer" class="w-4 h-4 text-white"></i>
+          <span>Download Form (Print)</span>
+        </button>
+        ${(v.status === 'Pending Approval' || v.status === 'Revision Required') && role === 'Admin' ? `
+          <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorRejectModal('${v.id}');" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition inline-flex items-center gap-1.5 text-xs">
+            <i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i>
+            <span>Reject / Return</span>
           </button>
-        </div>
+          <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorSanctionModal('${v.id}');" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
+            <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
+            <span>Sanction / Approve</span>
+          </button>
+        ` : ''}
+        <button onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
+          Close
+        </button>
       </div>
     `;
 
-    window.CMS_APP.openModal('Vendor Profile & Statutory Inspection', content, 'max-w-2xl');
+    window.CMS_APP.openModal('Vendor Profile & Statutory Inspection', content, 'max-w-4xl');
+    
+    // Process document previews
+    setTimeout(() => {
+      document.querySelectorAll('.doc-preview-container').forEach(container => {
+        const filename = container.getAttribute('data-filename');
+        if (!filename) return;
+        const dataUrl = localStorage.getItem('CMS_FILE_' + filename);
+        if (dataUrl) {
+          if (dataUrl.startsWith('data:image')) {
+            container.innerHTML = `<img src="${dataUrl}" class="w-full max-w-lg mb-4 border border-slate-200 shadow-sm" alt="${filename}" />`;
+          } else if (dataUrl.startsWith('data:application/pdf')) {
+            container.innerHTML = `<iframe src="${dataUrl}" class="w-full h-96 border border-slate-200 shadow-sm"></iframe>`;
+          } else {
+            container.innerHTML = `<div class="text-xs text-amber-600 italic">Unsupported document format. Cannot preview inline.</div>`;
+          }
+        } else {
+          container.innerHTML = `<div class="text-xs text-slate-400 italic">Document data not found in local storage.</div>`;
+        }
+      });
+    }, 100);
+
     if (window.lucide) window.lucide.createIcons();
+  },
+
+  downloadVendorForm() {
+    // Hide standard elements and trigger print
+    const originalTitle = document.title;
+    document.title = 'Vendor_Registration_Form';
+    window.print();
+    document.title = originalTitle;
   },
 
   onGstInput(val) {
@@ -641,12 +773,61 @@ window.CMS_MASTERS = {
   },
 
   onCountryChange(countryName) {
-    const ccInput = document.getElementById('v-country-code');
-    if (!ccInput) return;
-    const c = this.countries.find(x => x.name === countryName);
-    if (c) ccInput.value = c.code;
-    else ccInput.value = '';
-  },
+      const ccInput = document.getElementById('v-country-code');
+      const stateContainer = document.getElementById('v-state-container');
+      const pinInput = document.getElementById('v-pin');
+      const gstNa = document.getElementById('v-gst-na');
+      const panNa = document.getElementById('v-pan-na');
+      
+      const c = this.countries.find(x => countryName.includes(x.name));
+      if (ccInput && c) ccInput.value = c.code;
+
+      const isIndia = countryName.includes('India');
+
+      const talukaInput = document.getElementById('v-taluka');
+      const districtInput = document.getElementById('v-district');
+      
+      if (talukaInput) {
+        talukaInput.parentElement.style.display = isIndia ? 'block' : 'none';
+        if (!isIndia) talukaInput.value = ''; // clear when hidden
+      }
+      
+      if (districtInput) {
+        const distLabel = districtInput.parentElement.querySelector('label');
+        if (distLabel) {
+           distLabel.innerHTML = isIndia ? 'District <span class="text-rose-600 font-bold">*</span>' : 'City / County <span class="text-rose-600 font-bold">*</span>';
+        }
+        districtInput.placeholder = isIndia ? 'District name' : 'City name';
+      }
+
+      if (stateContainer) {
+        if (!isIndia) {
+          stateContainer.innerHTML = `<input id="v-state" required placeholder="State / Province" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs" />`;
+        } else {
+          stateContainer.innerHTML = `<select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium text-xs">
+              <option value="">-- Choose State / UT --</option>
+              ${this.indianStates.map(s => `<option value="${s.name}">${s.code} - ${s.name}</option>`).join('')}
+            </select>`;
+        }
+      }
+
+      if (pinInput) {
+        if (!isIndia) {
+          pinInput.removeAttribute('pattern');
+          pinInput.removeAttribute('maxlength');
+          pinInput.placeholder = "ZIP / Postal Code";
+        } else {
+          pinInput.setAttribute('pattern', '[0-9]{6}');
+          pinInput.setAttribute('maxlength', '6');
+          pinInput.placeholder = "110020";
+        }
+      }
+
+      if (!isIndia) {
+        if (gstNa) { gstNa.checked = true; window.CMS_MASTERS.toggleGstApplicable(true); }
+        if (panNa) { panNa.checked = true; window.CMS_MASTERS.togglePanApplicable(true); }
+      }
+    },
 
   // Sequence strictly arranged:
   // 1. Regulatory Agency -> 2. Form/Standard No. -> 3. License/Certificate No. -> 4. Validity/Expiry -> 5. Upload Copy
@@ -1151,177 +1332,231 @@ window.CMS_MASTERS = {
     const initialPan = vendor.panNo || (vendor.gstNo && vendor.gstNo.length >= 12 ? vendor.gstNo.substring(2, 12).toUpperCase() : '');
     const today = new Date().toISOString().split('T')[0];
     const initialInfo = this.getStateInfo(vendor.addressState || 'Delhi');
+      
+      setTimeout(() => {
+        if (document.getElementById('v-country')) {
+          CMS_MASTERS.onCountryChange(document.getElementById('v-country').value);
+        }
+      }, 50);
+
+    // Global step state for this modal
+    window.CMS_MASTERS.currentVendorStep = 1;
+
+    // Attach step functions
+    window.CMS_MASTERS.switchVendorTab = function(step) {
+      for (let i = 1; i <= 4; i++) {
+        const tab = document.getElementById('v-step-' + i);
+        const btn = document.getElementById('v-tab-btn-' + i);
+        if (tab) tab.classList.toggle('hidden', i !== step);
+        if (btn) {
+          if (i === step) {
+            btn.classList.add('text-blue-600', 'border-blue-600', 'bg-blue-50');
+            btn.classList.remove('text-slate-500', 'border-transparent', 'bg-slate-50');
+          } else {
+            btn.classList.remove('text-blue-600', 'border-blue-600', 'bg-blue-50');
+            btn.classList.add('text-slate-500', 'border-transparent', 'bg-slate-50');
+          }
+        }
+      }
+      
+      const prevBtn = document.getElementById('v-prev-btn');
+      const nextBtn = document.getElementById('v-next-btn');
+      const submitBtn = document.getElementById('v-submit-btn');
+      
+      if (prevBtn) prevBtn.classList.toggle('hidden', step === 1);
+      if (nextBtn) nextBtn.classList.toggle('hidden', step === 4);
+      if (submitBtn) submitBtn.classList.toggle('hidden', step !== 4);
+      
+      window.CMS_MASTERS.currentVendorStep = step;
+    };
+
+    window.CMS_MASTERS.nextVendorTab = function() {
+      // Basic HTML5 validation trigger on visible fields
+      const form = document.getElementById('vendor-form');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      if (window.CMS_MASTERS.currentVendorStep < 4) {
+        window.CMS_MASTERS.switchVendorTab(window.CMS_MASTERS.currentVendorStep + 1);
+      }
+    };
+
+    window.CMS_MASTERS.prevVendorTab = function() {
+      if (window.CMS_MASTERS.currentVendorStep > 1) {
+        window.CMS_MASTERS.switchVendorTab(window.CMS_MASTERS.currentVendorStep - 1);
+      }
+    };
 
     const content = `
+      <div class="flex border-b border-slate-200 mb-4 overflow-x-auto whitespace-nowrap">
+        <button id="v-tab-btn-1" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-blue-600 border-b-2 border-blue-600 bg-blue-50 hover:bg-blue-100 transition" onclick="CMS_MASTERS.switchVendorTab(1)">1. Organization</button>
+        <button id="v-tab-btn-2" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent bg-slate-50 hover:bg-slate-100 transition" onclick="CMS_MASTERS.switchVendorTab(2)">2. Statutory & Certs</button>
+        <button id="v-tab-btn-3" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent bg-slate-50 hover:bg-slate-100 transition" onclick="CMS_MASTERS.switchVendorTab(3)">3. Commercials</button>
+        <button id="v-tab-btn-4" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent bg-slate-50 hover:bg-slate-100 transition" onclick="CMS_MASTERS.switchVendorTab(4)">4. Bank Details</button>
+      </div>
+
       <form id="vendor-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveVendor('${vendorId || ''}');">
         
-        <div class="p-4 bg-white border border-slate-200 rounded-sm rounded-sm text-blue-600 font-medium flex items-center gap-2">
-          <i data-lucide="info" class="w-4 h-4 shrink-0 text-blue-600"></i>
-          <span>Enter supplier credentials, GSTIN, PAN, bank details, and compliance certificates for statutory auditing.</span>
-        </div>
+        <!-- STEP 1: Organization & Address -->
+        <div id="v-step-1" class="space-y-4">
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
+            <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="building" class="w-3.5 h-3.5 text-blue-600"></i>
+              <span>1. Organization & Business Address</span>
+            </div>
 
-        <!-- 1. Organization & Address -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
-          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="building" class="w-3.5 h-3.5 text-blue-600"></i>
-            <span>1. Organization & Business Address</span>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="md:col-span-1">
-                <label class="block font-bold text-slate-700 mb-1">Constitution Type <span class="text-rose-600 font-bold">*</span></label>
-                <select id="v-constitution" required class="w-full px-3.5 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium text-sm">
-                  <option value="">-- Select Constitution --</option>
-                  ${['Proprietorship', 'Partnership', 'Limited Liability Partnership (LLP)', 'Private Limited Company', 'Public Limited Company', 'HUF', 'Trust / Society / NGO', 'Government Entity', 'Others'].map(c => `<option value="${c}" ${vendor.constitution === c ? 'selected' : ''}>${c}</option>`).join('')}
-                </select>
-              </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div class="md:col-span-1">
-                <label class="block font-bold text-slate-700 mb-1">Vendor / Supplier Company Name <span class="text-rose-600 font-bold">*</span></label>
-                <input type="text" id="v-name" required value="${vendor.name || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" placeholder="e.g. Apex Office Supplies Pvt Ltd" />
-              </div>
-            <div class="md:col-span-2">
-              <label class="block font-bold text-slate-700 mb-1">Street / Building Address <span class="text-rose-600 font-bold">*</span></label>
-              <input id="v-address" required value="${vendor.address || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Plot / Flat / Street / Area" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Taluka / Tehsil</label>
-              <input id="v-taluka" value="${vendor.addressTaluka || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Taluka name" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">District <span class="text-rose-600 font-bold">*</span></label>
-              <input id="v-district" required value="${vendor.addressDistrict || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="District name" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">State <span class="text-rose-600 font-bold">*</span></label>
-              <select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium">
-                <option value="">-- Choose State / UT --</option>
-                ${this.indianStates.map(s => `<option value="${s.name}" ${(vendor.addressState || 'Delhi') === s.name ? 'selected' : ''}>${s.code} - ${s.name}</option>`).join('')}
-              </select>
-              </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Country <span class="text-rose-600 font-bold">*</span></label>
-              <input id="v-country" list="country-options" onchange="CMS_MASTERS.onCountryChange(this.value)" required value="${vendor.addressCountry || 'India'}" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-            </div>
-                          <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-10 gap-3">
-                <div class="md:col-span-2">
-                  <label class="block font-bold text-slate-700 mb-1">PIN Code (6 Digits) <span class="text-rose-600 font-bold">*</span></label>
-                  <input id="v-pin" required maxlength="6" pattern="[0-9]{6}" value="${vendor.addressPinCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="110020" />
+                  <label class="block font-bold text-slate-700 mb-1">Constitution Type <span class="text-rose-600 font-bold">*</span></label>
+                  <select id="v-constitution" required class="w-full px-3.5 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium text-sm">
+                    <option value="">-- Select Constitution --</option>
+                    ${['Proprietorship', 'Partnership', 'Limited Liability Partnership (LLP)', 'Private Limited Company', 'Public Limited Company', 'HUF', 'Trust / Society / NGO', 'Government Entity', 'Others'].map(c => `<option value="${c}" ${vendor.constitution === c ? 'selected' : ''}>${c}</option>`).join('')}
+                  </select>
                 </div>
-                <div class="md:col-span-4">
-                  <label class="block font-bold text-slate-700 mb-1">Phone Number <span class="text-rose-600 font-bold">*</span></label>
-                  <div class="flex items-stretch border border-slate-300 rounded-sm overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 shadow-sm w-full bg-white">
-                    <select id="v-country-code" class="w-[90px] px-2 py-2 bg-slate-50 border-r border-slate-300 text-slate-700 font-mono text-xs focus:outline-none cursor-pointer">
-                      <option value="+91">IN (+91)</option>
-                      <option value="+1">US (+1)</option>
-                      <option value="+44">UK (+44)</option>
-                      <option value="+971">AE (+971)</option>
-                      <option value="+65">SG (+65)</option>
-                      <option value="+61">AU (+61)</option>
-                      <option value="+49">DE (+49)</option>
-                      <option value="+81">JP (+81)</option>
-                    </select>
-                    <input type="tel" id="v-contact" required maxlength="10" pattern="[0-9]{10}" value="${vendor.contactNo || ''}" class="flex-1 min-w-0 px-3 py-2 font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent" placeholder="10-digit number" />
+                <div class="md:col-span-1">
+                  <label class="block font-bold text-slate-700 mb-1">Vendor / Supplier Company Name <span class="text-rose-600 font-bold">*</span></label>
+                  <input type="text" id="v-name" required value="${vendor.name || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" placeholder="e.g. Apex Office Supplies Pvt Ltd" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block font-bold text-slate-700 mb-1">Nationality / Country of Vendor <span class="text-rose-600 font-bold">*</span></label>
+                  <select id="v-country" required onchange="CMS_MASTERS.onCountryChange(this.value)" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm bg-white">
+                    ${this.countries.map(c => `<option value="${c.name}" ${(vendor.addressCountry || 'India').includes(c.name) ? 'selected' : ''}>${c.flag} ${c.name}</option>`).join('')}
+                  </select>
+                </div>
+              <div class="md:col-span-2">
+                <label class="block font-bold text-slate-700 mb-1">Street / Building Address <span class="text-rose-600 font-bold">*</span></label>
+                <input id="v-address" required value="${vendor.address || ''}" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Plot / Flat / Street / Area" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Taluka / Tehsil</label>
+                <input id="v-taluka" value="${vendor.addressTaluka || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Taluka name" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">District <span class="text-rose-600 font-bold">*</span></label>
+                <input id="v-district" required value="${vendor.addressDistrict || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="District name" />
+              </div>
+              <div>
+                  <label class="block font-bold text-slate-700 mb-1">State / Province <span class="text-rose-600 font-bold">*</span></label>
+                  <div id="v-state-container">
+                    ${!(vendor.addressCountry || 'India').includes('India') ? 
+                      `<input id="v-state" required value="${vendor.addressState || ''}" placeholder="State / Province" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />` 
+                    : 
+                      `<select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium">
+                        <option value="">-- Choose State / UT --</option>
+                        ${this.indianStates.map(s => '<option value="' + s.name + '" ' + ((vendor.addressState || 'Delhi') === s.name ? 'selected' : '') + '>' + s.code + ' - ' + s.name + '</option>').join('')}
+                      </select>`
+                    }
                   </div>
                 </div>
-                <div class="md:col-span-4">
-                  <label class="block font-bold text-slate-700 mb-1">Email Address <span class="text-rose-600 font-bold">*</span></label>
-                  <input type="email" id="v-email" required value="${vendor.email || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="vendor@..." />
+                            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-10 gap-3">
+                  <div class="md:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">PIN Code (6 Digits) <span class="text-rose-600 font-bold">*</span></label>
+                    <input id="v-pin" required maxlength="6" pattern="[0-9]{6}" value="${vendor.addressPinCode || ''}" class="w-full font-mono px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="110020" />
+                  </div>
+                  <div class="md:col-span-4">
+                    <label class="block font-bold text-slate-700 mb-1">Phone Number <span class="text-rose-600 font-bold">*</span></label>
+                    <div class="flex items-stretch border border-slate-300 rounded-sm overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 shadow-sm w-full bg-white">
+                      <input type="text" id="v-country-code" list="country-codes-list" value="${vendor.countryCode || '+91'}" class="w-[80px] px-2 py-2 bg-slate-50 border-r border-slate-300 text-slate-700 font-mono text-xs focus:outline-none" placeholder="+91" />
+                        <datalist id="country-codes-list">
+                          ${this.countries.map(c => `<option value="${c.code}">${c.name}</option>`).join('')}
+                        </datalist>
+                      <input type="tel" id="v-contact" required maxlength="10" pattern="[0-9]{10}" value="${vendor.contactNo || ''}" class="flex-1 min-w-0 px-3 py-2 font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent" placeholder="10-digit number" />
+                    </div>
+                  </div>
+                  <div class="md:col-span-4">
+                    <label class="block font-bold text-slate-700 mb-1">Email Address <span class="text-rose-600 font-bold">*</span></label>
+                    <input type="email" id="v-email" required value="${vendor.email || ''}" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="vendor@..." />
+                  </div>
+                </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Statutory & Certs -->
+        <div id="v-step-2" class="space-y-4 hidden">
+          <!-- 2. GST & PAN Statutory Section -->
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
+            <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-600"></i>
+              <span>Statutory GSTIN & PAN Identification</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">
+                  GSTIN Number (15 Characters) <span class="text-rose-600 font-bold">*</span>
+                </label>
+                <input type="text" id="v-gst" ${vendor.gstNotApplicable ? 'disabled' : ''} maxlength="15" value="${vendor.gstNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstInput(this.value);" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-bold text-blue-600" placeholder="15-digit GSTIN (e.g. 07AABCA1234F1Z5)" />
+                
+                <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
+                  <input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.toggleGstApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
+                  <span class="font-semibold text-blue-600">GST registration is not applicable for this vendor (Exempt)</span>
+                </label>
+
+                <div id="v-gst-file-box" class="${vendor.gstNotApplicable ? 'hidden' : ''} mt-2">
+                  <label class="block font-bold text-slate-700 mb-1 text-[11px]">
+                    Upload GST Certificate (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                  </label>
+                  <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs" />
+                  ${vendor.gstCertificateFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.gstCertificateFile}</span>` : ''}
                 </div>
               </div>
-          </div>
-        </div>
 
-        <!-- 2. GST & PAN Statutory Section with Blue Box & Starred Fields -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
-          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-600"></i>
-            <span>2. Statutory GSTIN & PAN Identification</span>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">
-                GSTIN Number (15 Characters) <span class="text-rose-600 font-bold">*</span>
-              </label>
-              <input type="text" id="v-gst" ${vendor.gstNotApplicable ? 'disabled' : ''} maxlength="15" value="${vendor.gstNo || ''}" oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstInput(this.value);" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-bold text-blue-600" placeholder="15-digit GSTIN (e.g. 07AABCA1234F1Z5)" />
-              
-              <!-- Blue Box for GST Exemption -->
-              <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
-                <input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.toggleGstApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
-                <span class="font-semibold text-blue-600">GST registration is not applicable for this vendor (Exempt)</span>
-              </label>
-
-              <!-- Starred GST Certificate File Box -->
-              <div id="v-gst-file-box" class="${vendor.gstNotApplicable ? 'hidden' : ''} mt-2">
-                <label class="block font-bold text-slate-700 mb-1 text-[11px]">
-                  Upload GST Certificate (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">
+                  PAN Card Number (10 Characters) <span class="text-rose-600 font-bold">*</span>
                 </label>
-                <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs" />
-                ${vendor.gstCertificateFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.gstCertificateFile}</span>` : ''}
-              </div>
-            </div>
-
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">
-                PAN Card Number (10 Characters) <span class="text-rose-600 font-bold">*</span>
-              </label>
-              <input type="text" id="v-pan" ${vendor.panNotApplicable ? 'disabled' : ''} maxlength="10" value="${initialPan}" oninput="this.value = this.value.toUpperCase(); this.dataset.autoFilled = 'false';" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-bold text-indigo-900" placeholder="10-character PAN (e.g. AABCA1234F)" />
-              
-              <!-- Blue Box for PAN Exemption -->
-              <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
-                <input type="checkbox" id="v-pan-na" ${vendor.panNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.togglePanApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
-                <span class="font-semibold text-blue-600">PAN card is not applicable for this vendor</span>
-              </label>
-
-              <!-- Starred PAN Card File Box -->
-              <div id="v-pan-file-box" class="${vendor.panNotApplicable ? 'hidden' : ''} mt-2">
-                <label class="block font-bold text-slate-700 mb-1 text-[11px]">
-                  Upload PAN Card Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                <input type="text" id="v-pan" ${vendor.panNotApplicable ? 'disabled' : ''} maxlength="10" value="${initialPan}" oninput="this.value = this.value.toUpperCase(); this.dataset.autoFilled = 'false';" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-bold text-indigo-900" placeholder="10-character PAN (e.g. AABCA1234F)" />
+                
+                <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
+                  <input type="checkbox" id="v-pan-na" ${vendor.panNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.togglePanApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
+                  <span class="font-semibold text-blue-600">PAN card is not applicable for this vendor</span>
                 </label>
-                <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs" />
-                ${vendor.panCardFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.panCardFile}</span>` : ''}
+
+                <div id="v-pan-file-box" class="${vendor.panNotApplicable ? 'hidden' : ''} mt-2">
+                  <label class="block font-bold text-slate-700 mb-1 text-[11px]">
+                    Upload PAN Card Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                  </label>
+                  <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs" />
+                  ${vendor.panCardFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.panCardFile}</span>` : ''}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- 3. All 5 Bank Details -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
-          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-            <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-600"></i>
-            <span>3. Vendor Banking & Remittance Details</span>
-          </div>
+          <!-- Dynamic Regulatory Certificates Builder -->
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
+                  <span>Regulatory / Certification Agencies</span>
+                </div>
+              </div>
+              <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-blue-600 border border-blue-300 rounded-sm font-bold text-xs transition">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                <span>+ Add Certificate</span>
+              </button>
+            </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Bank Name <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-bank-name" required value="${vendor.bankName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC Bank, SBI" />
+            <datalist id="iso-suggestions">
+              <option value="9001:2015"></option>
+              <option value="14001:2015"></option>
+              <option value="45001:2018"></option>
+              <option value="22000:2018"></option>
+              <option value="27001:2022"></option>
+            </datalist>
+
+            <div id="v-cert-container" class="space-y-2.5">
+              <!-- Dynamic rows -->
             </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Account Name <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-account-name" required oninput="this.value = this.value.replace(/[^a-zA-Z\s\.\-\&]/g, '')" value="${vendor.accountName || vendor.name || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Beneficiary Name" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Account No. <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-account-no" required minlength="5" maxlength="22" value="${vendor.accountNo || ''}" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Account Number" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">IFSC Code (11 Chars) <span class="text-rose-600 font-bold">*</span></label>
-              <input type="text" id="v-ifsc" required maxlength="11" value="${vendor.ifscCode || ''}" oninput="this.value = this.value.toUpperCase();" class="w-full font-mono uppercase px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC0001234" />
-            </div>
-            <div>
-              <label class="block font-bold text-slate-700 mb-1">Branch Name</label>
-              <input type="text" id="v-branch-name" value="${vendor.branchName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Branch Name" />
-            </div>
-          </div>
-          <div class="mt-2 pt-2 border-t border-slate-200">
-            <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document (Cancelled Cheque, Passbook, or Bank Mandate)</label>
-            <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs" />
-            ${vendor.bankDoc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${vendor.bankDoc}</span>` : ''}
           </div>
         </div>
 
-        <!-- 4. Commercial Quotations & Approved Materials (Auto-Sync with Operations) -->
+        <!-- STEP 3: Commercials & Approval -->
+        <div id="v-step-3" class="space-y-4 hidden">
+          <!-- Commercial Quotations & Approved Materials -->
           <div class="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-sm space-y-3.5 shadow-sm">
             <div class="flex items-center justify-between pb-2 border-b border-slate-200">
               <div class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -1337,76 +1572,91 @@ window.CMS_MASTERS = {
             </div>
           </div>
 
-          <!-- 5. Dynamic Regulatory Certificates Builder -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
-                <span>5. Regulatory / Certification Agencies</span>
+          <!-- Limited Period Approval & Blacklist Section -->
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-slate-800">
+                  <input type="checkbox" id="v-limited" ${vendor.approvedForLimitedPeriod ? 'checked' : ''} onchange="document.getElementById('v-limited-date-box').classList.toggle('hidden', !this.checked)" class="text-blue-600 rounded" />
+                  <span>Vendor is approved for limited period.</span>
+                </label>
+                <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2">
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Approval Valid Till / Expiry Date * (No past dates)</label>
+                  <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-mono" />
+                </div>
               </div>
-              <p class="text-[11px] text-slate-500 mt-0.5">Standard sequence: 1. Agency -> 2. Document Title -> 3. Form No -> 4. License No -> 5. Validity/Expiry -> 6. Upload File Copy.</p>
+
+                ${(vendor.id && (vendor.status === 'Approved' || vendor.status === 'Blocked')) ? `
+                <div>
+                  <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-rose-800">
+                    <input type="checkbox" id="v-blocked" ${vendor.isBlocked ? 'checked' : ''} onchange="document.getElementById('v-block-reason-box').classList.toggle('hidden', !this.checked)" class="text-rose-600 rounded" />
+                    <span>Blacklist / Block this Vendor</span>
+                  </label>
+                  <div id="v-block-reason-box" class="${vendor.isBlocked ? '' : 'hidden'} mt-2">
+                    <label class="block text-[11px] font-bold text-rose-900 mb-1">Block / Blacklist Reason *</label>
+                    <input type="text" id="v-block-reason" value="${vendor.blockReason || ''}" class="w-full px-3 py-1.5 border border-rose-300 rounded-sm text-xs" placeholder="e.g. Non-compliant delivery / Audit violation" />
+                  </div>
+                </div>` : '<div></div>'}
             </div>
-            <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-blue-600 border border-blue-300 rounded-sm font-bold text-xs transition">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-              <span>+ Add Certificate</span>
+          </div>
+        </div>
+
+        <!-- STEP 4: Bank Details -->
+        <div id="v-step-4" class="space-y-4 hidden">
+          <!-- All 5 Bank Details -->
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
+            <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="landmark" class="w-3.5 h-3.5 text-blue-600"></i>
+              <span>Vendor Banking & Remittance Details</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Bank Name <span class="text-rose-600 font-bold">*</span></label>
+                <input type="text" id="v-bank-name" required value="${vendor.bankName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC Bank, SBI" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Account Name <span class="text-rose-600 font-bold">*</span></label>
+                <input type="text" id="v-account-name" required oninput="this.value = this.value.replace(/[^a-zA-Z\\s.\\-&]/g, '')" value="${vendor.accountName || vendor.name || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Beneficiary Name" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Account No. <span class="text-rose-600 font-bold">*</span></label>
+                <input type="text" id="v-account-no" required minlength="5" maxlength="22" value="${vendor.accountNo || ''}" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Account Number" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">IFSC Code (11 Chars) <span class="text-rose-600 font-bold">*</span></label>
+                <input type="text" id="v-ifsc" required maxlength="11" value="${vendor.ifscCode || ''}" oninput="this.value = this.value.toUpperCase();" class="w-full font-mono uppercase px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC0001234" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Branch Name</label>
+                <input type="text" id="v-branch-name" value="${vendor.branchName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Branch Name" />
+              </div>
+            </div>
+            <div class="mt-2 pt-2 border-t border-slate-200">
+              <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document (Cancelled Cheque, Passbook, or Bank Mandate)</label>
+              <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs" />
+              ${vendor.bankDoc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${vendor.bankDoc}</span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 flex justify-between gap-2.5">
+          <div>
+            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+          </div>
+          <div class="flex gap-2.5">
+            <button id="v-prev-btn" type="button" onclick="CMS_MASTERS.prevVendorTab()" class="hidden px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded-sm transition">Previous Step</button>
+            <button id="v-next-btn" type="button" onclick="CMS_MASTERS.nextVendorTab()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition">Next Step <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i></button>
+            <button id="v-submit-btn" type="submit" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>Submit for Admin Approval</span>
             </button>
           </div>
-
-          <datalist id="iso-suggestions">
-            <option value="9001:2015"></option>
-            <option value="14001:2015"></option>
-            <option value="45001:2018"></option>
-            <option value="22000:2018"></option>
-            <option value="27001:2022"></option>
-          </datalist>
-
-          <div id="v-cert-container" class="space-y-2.5">
-            <!-- Dynamic rows -->
-          </div>
-        </div>
-
-        <!-- 6. Limited Period Approval & Blacklist Section -->
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-slate-800">
-                <input type="checkbox" id="v-limited" ${vendor.approvedForLimitedPeriod ? 'checked' : ''} onchange="document.getElementById('v-limited-date-box').classList.toggle('hidden', !this.checked)" class="text-blue-600 rounded" />
-                <span>Vendor is approved for limited period.</span>
-              </label>
-              <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2">
-                <label class="block text-[11px] font-bold text-slate-700 mb-1">Approval Valid Till / Expiry Date * (No past dates)</label>
-                <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-mono" />
-              </div>
-            </div>
-
-              ${(vendor.id && (vendor.status === 'Approved' || vendor.status === 'Blocked')) ? `
-              <div>
-                <label class="inline-flex items-center gap-2 font-bold cursor-pointer text-rose-800">
-                  <input type="checkbox" id="v-blocked" ${vendor.isBlocked ? 'checked' : ''} onchange="document.getElementById('v-block-reason-box').classList.toggle('hidden', !this.checked)" class="text-rose-600 rounded" />
-                  <span>Blacklist / Block this Vendor</span>
-                </label>
-                <div id="v-block-reason-box" class="${vendor.isBlocked ? '' : 'hidden'} mt-2">
-                  <label class="block text-[11px] font-bold text-rose-900 mb-1">Block / Blacklist Reason *</label>
-                  <input type="text" id="v-block-reason" value="${vendor.blockReason || ''}" class="w-full px-3 py-1.5 border border-rose-300 rounded-sm text-xs" placeholder="e.g. Non-compliant delivery / Audit violation" />
-                </div>
-              </div>` : '<div></div>'}
-          </div>
-        </div>
-
-        <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">
-            Cancel
-          </button>
-          <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
-            <i data-lucide="send" class="w-4 h-4"></i>
-            <span>Submit for Admin Approval</span>
-          </button>
         </div>
       </form>
     `;
 
-    window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-3xl');
+    window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-4xl');
 
     // Populate dynamic certificates if present
     
@@ -1440,11 +1690,23 @@ window.CMS_MASTERS = {
   },
 
   toggleGstApplicable(isNotApplicable) {
+    const panNa = document.getElementById('v-pan-na');
+    if (!isNotApplicable && panNa && panNa.checked) {
+      window.CMS_APP.toast('Cannot enable GSTIN because PAN card is marked as Not Applicable.', 'error');
+      const gstNa = document.getElementById('v-gst-na');
+      if (gstNa) gstNa.checked = true;
+      return;
+    }
     const input = document.getElementById('v-gst');
     const box = document.getElementById('v-gst-file-box');
     if (input) {
       input.disabled = isNotApplicable;
-      if (isNotApplicable) input.value = '';
+      if (isNotApplicable) {
+        input.value = '';
+        input.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-50');
+      } else {
+        input.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-50');
+      }
     }
     if (box) box.classList.toggle('hidden', isNotApplicable);
   },
@@ -1454,9 +1716,22 @@ window.CMS_MASTERS = {
     const box = document.getElementById('v-pan-file-box');
     if (input) {
       input.disabled = isNotApplicable;
-      if (isNotApplicable) input.value = '';
+      if (isNotApplicable) {
+        input.value = '';
+        input.classList.add('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-50');
+      } else {
+        input.classList.remove('bg-slate-100', 'text-slate-400', 'cursor-not-allowed', 'opacity-50');
+      }
     }
     if (box) box.classList.toggle('hidden', isNotApplicable);
+
+    // Indian Statutory rule: If PAN is NA, GST must also be NA.
+    const gstNa = document.getElementById('v-gst-na');
+    if (isNotApplicable && gstNa && !gstNa.checked) {
+      gstNa.checked = true;
+      this.toggleGstApplicable(true);
+      window.CMS_APP.toast('GST Registration is legally invalid without a PAN card.', 'warning');
+    }
   },
 
   saveAndSubmitVendor(vendorId) {
@@ -1482,6 +1757,7 @@ window.CMS_MASTERS = {
     const addressCountry = document.getElementById('v-country')?.value.trim() || 'India';
     const addressPinCode = document.getElementById('v-pin')?.value.trim() || '';
     const contactNo = document.getElementById('v-contact')?.value.trim() || '';
+      const countryCode = document.getElementById('v-country-code')?.value.trim() || '+91';
     const email = document.getElementById('v-email')?.value.trim() || '';
 
     // GST & PAN Statutory Check
@@ -1568,7 +1844,21 @@ window.CMS_MASTERS = {
     // ==========================================
     // RIGOROUS MARGIN & LIMIT STATUTORY VALIDATION
     // ==========================================
-    if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is required.', 'error');
+    
+      const todayDateStr = new Date().toISOString().split('T')[0];
+      for (const q of quotedItems) {
+        if (q.quotationDate && q.quotationDate > todayDateStr) {
+          return window.CMS_APP.toast('Quotation Date cannot be a future date.', 'error');
+        }
+        if (q.effectiveFrom && q.quotationDate && q.effectiveFrom < q.quotationDate) {
+          return window.CMS_APP.toast('Effective Date cannot be older than Quotation Date.', 'error');
+        }
+        const compareBase = q.effectiveFrom || q.quotationDate;
+        if (q.quotationValidTill && compareBase && q.quotationValidTill < compareBase) {
+          return window.CMS_APP.toast('Valid Till / Expiry Date cannot be older than the ' + (q.effectiveFrom ? 'Effective' : 'Quotation') + ' Date.', 'error');
+        }
+      }
+if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is required.', 'error');
     if (!address) return window.CMS_APP.toast('Street / Building address is mandatory.', 'error');
     if (!addressDistrict) return window.CMS_APP.toast('District is required.', 'error');
     if (!addressState) return window.CMS_APP.toast('Please select an Indian State or Union Territory.', 'error');
@@ -1617,7 +1907,7 @@ window.CMS_MASTERS = {
 
     // Bank Validation
     if (!bankName) return window.CMS_APP.toast('Bank Name is mandatory.', 'error');
-    if (/[^a-zA-Z\s\.\-\&]/.test(accountName)) {
+    if (/[^a-zA-Z\s.\-&]/.test(accountName)) {
         return window.CMS_APP.toast('Bank Account Name cannot contain numbers or special symbols.', 'error');
       }
       if (!accountNo || accountNo.length < 5 || accountNo.length > 22) {
@@ -1692,7 +1982,7 @@ window.CMS_MASTERS = {
           name, constitution, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
           stateCode: stateInfo.code,
           applicableTaxType: stateInfo.taxMode,
-          contactNo, email,
+          countryCode, contactNo, email,
           gstNotApplicable, panNotApplicable,
           gstNo, panNo,
           gstCertificateFile, panCardFile,
@@ -1723,7 +2013,7 @@ window.CMS_MASTERS = {
         name, constitution, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
         stateCode: stateInfo.code,
         applicableTaxType: stateInfo.taxMode,
-        contactNo, email,
+        countryCode, contactNo, email,
         gstNotApplicable, panNotApplicable,
         gstNo, panNo,
         gstCertificateFile, panCardFile,
@@ -1909,13 +2199,7 @@ window.CMS_MASTERS = {
     if (willBlock) {
       const content = `
         <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); const reason = document.getElementById('ban-reason-input').value.trim(); if (!reason) { CMS_APP.toast('Please provide a reason for blocking.', 'error'); return; } CMS_APP.closeModal(); CMS_MASTERS.confirmBlockVendor('${vendorId}', true, reason);">
-          <div class="p-3 bg-rose-50 border border-rose-200 rounded-sm text-rose-950 flex items-start gap-2.5">
-            <i data-lucide="ban" class="w-4 h-4 text-rose-600 shrink-0 mt-0.5"></i>
-            <div>
-              <strong>Vendor Blacklist & Banning Protocol</strong>
-              <div class="text-[11px] text-rose-800 mt-0.5">Banned vendors are blocked from new Goods Receipts and Purchase Orders. Historical transaction slips, audit vouchers, and invoices remain completely intact.</div>
-            </div>
-          </div>
+          
           <div>
             <label class="block font-bold text-slate-800 mb-1">Reason / Statutory Remarks for Banning *</label>
             <textarea id="ban-reason-input" required rows="3" class="w-full px-3 py-2 border border-rose-300 rounded-sm text-xs focus:ring-2 focus:ring-rose-500" placeholder="e.g. Failure to comply with ISO standard specifications / Non-delivery / Quality defect"></textarea>
@@ -1959,7 +2243,7 @@ window.CMS_MASTERS = {
               </div>
               <span>Consumable Category</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Define classification types: Stationery, Housekeeping, Packing Material, PPE, Electrical, etc.</p>
+            
           </div>
           ${role === 'User' ? `
             <button onclick="CMS_MASTERS.openCategoryModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition text-xs">
@@ -2158,19 +2442,14 @@ window.CMS_MASTERS = {
               </div>
               <span>Material Catalog (Consumable Materials & Fixed Assets)</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Unified material catalog supporting vendor quotations, booked MRP, statutory units, warranty periods, and preventive maintenance tracking.</p>
+            
           </div>
           ${role === 'User' ? `
       <button onclick="CMS_MASTERS.openConsumableModal(null, CMS_MASTERS.consumableTypeFilter || 'Consumer')" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition text-xs">
         <i data-lucide="plus-circle" class="w-4 h-4"></i>
         <span>Add Material</span>
       </button>
-    ` : `
-      <div class="text-xs text-blue-600 bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-sm font-semibold flex items-center gap-1.5 shadow-sm">
-        <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
-        <span>Store In-Charge Governance: Sanction or Revert Consumables</span>
-      </div>
-    `}
+            ` : ''}
         </div>
 
         <!-- Table Toolbar: Live Search, Category & Type Filter -->
@@ -2656,7 +2935,7 @@ window.CMS_MASTERS = {
               <i data-lucide="${isFixed ? 'cpu' : 'package'}" class="w-4 h-4 ${isFixed ? 'text-blue-600' : 'text-blue-600'}"></i>
               <span>${isEdit ? (isFixed ? 'Edit Fixed Capital Asset' : 'Edit Consumable Material') : (isFixed ? 'New Fixed Capital Asset' : 'New Consumable Material')}</span>
             </h3>
-            <p class="text-slate-500 text-[11px] mt-0.5">${isFixed ? 'Specify capital equipment details, statutory tax, pricing, and warranty schedule.' : 'Specify consumable specifications, statutory tax, quotation pricing, and consumption buffer.'}</p>
+            
           </div>
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-semibold ${isFixed ? 'bg-slate-50 text-blue-600 border border-slate-200' : 'bg-slate-50 text-blue-600 border border-slate-200'}">
             ${isFixed ? 'Fixed Capital Asset' : 'Consumable Material'}
@@ -3255,7 +3534,7 @@ window.CMS_MASTERS = {
               </div>
               <span>GST / IGST Slab Master</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Configure statutory tax slabs for CGST + SGST or IGST, with optional statutory notes.</p>
+            
           </div>
           <button onclick="CMS_MASTERS.openGstModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition text-xs">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
@@ -3453,6 +3732,7 @@ window.CMS_MASTERS = {
     }
   }
 };
+
 
 
 

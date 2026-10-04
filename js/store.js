@@ -940,6 +940,7 @@ const EMPTY_DATABASE = {
   issuances: [],
   returns: [],
   stockAdjustments: [],
+  adminTasks: [],
   purchaseOrders: [],
   reconciliations: []
 };

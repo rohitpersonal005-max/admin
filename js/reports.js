@@ -110,7 +110,7 @@ window.CMS_REPORTS = {
               </div>
               <span>Stock Status & Inventory Summary</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Real-time store inventory levels, monthly safety buffer threshold, stock valuation, and health indicators.</p>
+            
           </div>
           <div class="flex gap-2">
             <button onclick="CMS_REPORTS.exportStockCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs transition flex items-center gap-1.5 shadow-sm">
@@ -310,7 +310,7 @@ window.CMS_REPORTS = {
               </div>
               <span>Stock Movement Ledger (Bin Card Trail)</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Complete immutable audit trail of all receipts, issuances, returns, adjustments, and reconciliations.</p>
+            
           </div>
           <button onclick="CMS_REPORTS.exportLedgerCSV()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs transition flex items-center gap-1.5 shadow-sm">
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
@@ -403,6 +403,20 @@ window.CMS_REPORTS = {
     const role = window.CMS_STORE.getRole();
 
     const pending = [];
+
+      (store.requests || []).filter(r => r.status === 'Pending Approval').forEach(r => {
+        pending.push({
+          module: 'Department Requisition',
+          id: r.id,
+          title: r.requestNo + ' - ' + r.materialName,
+          details: 'Requested By: ' + r.requestedBy + ' (' + r.department + ') | Qty: ' + r.qty + ' ' + r.unit,
+          date: r.createdAt,
+          onView: 'CMS_TRANSACTIONS.openRequestModal(\'' + r.id + '\')',
+          onApprove: 'CMS_TRANSACTIONS.approveRequest(\'' + r.id + '\')',
+          onReject: 'CMS_TRANSACTIONS.rejectRequest(\'' + r.id + '\')'
+        });
+      });
+
 
     (store.vendors || []).filter(v => v.status === 'Pending Approval' || v.status === 'Revision Required').forEach(v => {
       pending.push({
@@ -526,7 +540,7 @@ window.CMS_REPORTS = {
                   </div>
                   <span>User-Admin Statutory Approval Hub</span>
                 </h2>
-                <p class="text-xs text-slate-500 mt-0.5">Centralized regulatory queue for master data vetting, stock adjustments (+/-), and inward vouchers.</p>
+                
               </div>
               <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded text-xs">
@@ -549,7 +563,7 @@ window.CMS_REPORTS = {
               <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-sm text-emerald-900 text-xs flex items-center justify-between">
                 <div class="flex items-center gap-2">
                   <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700 shrink-0"></i>
-                  <span><strong>Authorized Sanctioning Session:</strong> You are logged in as Store In-Charge. Sanctioned records update live stock balances immediately.</span>
+                  
                 </div>
                 <span class="text-[11px] font-mono bg-white px-2 py-0.5 rounded border border-emerald-300 font-semibold">SOD VERIFIED</span>
               </div>
@@ -557,7 +571,7 @@ window.CMS_REPORTS = {
               <div class="p-3 bg-amber-50 border border-amber-200 rounded-sm text-amber-900 text-xs flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <i data-lucide="shield-alert" class="w-4 h-4 text-amber-700 shrink-0"></i>
-                  <span><strong>Operational Staff View:</strong> Logged in as Store Staff. To prevent self-approval tampering, sanctioning transactions requires Col. Anita Sharma (Admin).</span>
+                  
                 </div>
               </div>
             `}
@@ -708,7 +722,7 @@ window.CMS_REPORTS = {
               </div>
               <span>Consumable Materials Ledger</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">High-turnover consumable supplies, monthly safety buffer gauges, vendor quotations, and warranty terms.</p>
+            
           </div>
           <div class="flex flex-wrap gap-2.5">
             <button onclick="CMS_REPORTS.exportStockCSV()" class="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm border border-slate-300 transition text-xs">
@@ -919,7 +933,7 @@ window.CMS_REPORTS = {
               </div>
               <span>Fixed Assets & Care (PM)</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Capital equipment registry with asset tags, serial numbers, warranty validity tracking, and designated technician PM schedules.</p>
+            
           </div>
           <div class="flex flex-wrap gap-2.5">
             ${role === 'User' ? `
