@@ -89,33 +89,6 @@ function closeProvisionModal() {
   }, 200);
 }
 
-function submitProvision() {
-  const name = document.getElementById('p-company').value.trim();
-  const email = document.getElementById('p-email').value.trim();
-  const seats = document.getElementById('p-seats').value;
-
-  if (!name || !email || !seats) return;
-
-  const tenantId = 'tenant_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-
-  const newTenant = {
-    companyName: name,
-    adminEmail: email,
-    seatLimit: parseInt(seats),
-    status: 'Active',
-    createdAt: new Date().toISOString()
-  };
-
-  db.ref('master_tenants/' + tenantId).set(newTenant).then(() => {
-    closeProvisionModal();
-    // In a real app with Firebase Auth, you would also trigger a Cloud Function here to create the Auth user.
-    alert(`Tenant ${name} successfully provisioned!\n\nTenant ID: ${tenantId}\nAdmin: ${email}\nSeats: ${seats}`);
-  }).catch(err => {
-    console.error(err);
-    alert('Failed to provision tenant.');
-  });
-}
-
 function toggleTenantStatus(id, currentStatus) {
   const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
   if (confirm(`Are you sure you want to ${newStatus.toLowerCase()} this tenant?`)) {
@@ -152,3 +125,51 @@ function switchTab(tabId) {
     }
   });
 }
+\n\n
+window.submitProvision = function() {
+  try {
+    const name = document.getElementById('p-company').value.trim();
+    const email = document.getElementById('p-email').value.trim();
+    const seats = document.getElementById('p-seats').value;
+
+    if (!name || !email || !seats) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    if (!db) {
+      alert("ERROR: Firebase database is not connected. Did you paste your keys in firebase-config.js?");
+      return;
+    }
+
+    const tenantId = 'tenant_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+
+    const newTenant = {
+      companyName: name,
+      adminEmail: email,
+      seatLimit: parseInt(seats),
+      status: 'Active',
+      createdAt: new Date().toISOString()
+    };
+
+    db.ref('master_tenants/' + tenantId).set(newTenant).then(() => {
+      closeProvisionModal();
+      alert(`Tenant ${name} successfully provisioned!\n\nTenant ID: ${tenantId}\nAdmin: ${email}\nSeats: ${seats}`);
+    }).catch(err => {
+      console.error("FIREBASE ERROR:", err);
+      alert('Firebase Error: ' + err.message + '\n\nDid you set your Realtime Database Rules to True?');
+    });
+  } catch (e) {
+    alert("CRITICAL ERROR: " + e.message);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('provision-form');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      window.submitProvision();
+    });
+  }
+});
