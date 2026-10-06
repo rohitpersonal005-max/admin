@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HQ Console - Adminutes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+  </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-64 glass-panel border-r flex flex-col hidden md:flex">
+    <div class="h-16 flex items-center px-6 border-b border-white/10">
+      <div class="flex items-center gap-2 text-indigo-400 font-bold tracking-wider uppercase text-sm">
+        <i data-lucide="command" class="w-5 h-5"></i>
+        <span>Adminutes HQ</span>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-2">
+      <a href="#" id="nav-tenants" onclick="switchTab('tenants')" class="flex items-center gap-3 px-3 py-2 bg-indigo-500/20 text-indigo-300 rounded-lg transition font-medium text-sm border border-indigo-500/30">
+        <i data-lucide="building-2" class="w-4 h-4"></i> Client Tenants
+      </a>
+      <a href="#" id="nav-billing" onclick="switchTab('billing')" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-lg transition font-medium text-sm">
+        <i data-lucide="credit-card" class="w-4 h-4"></i> Billing & Subscriptions
+      </a>
+      <a href="#" id="nav-logs" onclick="switchTab('logs')" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-lg transition font-medium text-sm">
+        <i data-lucide="activity" class="w-4 h-4"></i> System Logs
+      </a>
+    </nav>
+    <div class="p-4 border-t border-white/10">
+      <div class="flex items-center gap-3 px-3 py-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xs">HQ</div>
+        <div>
+          <div class="text-xs font-bold">Master Creator</div>
+          <div class="text-[10px] text-slate-400">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+    
+    <!-- Top Header -->
+    <header class="h-16 glass-panel border-b flex items-center justify-between px-8 z-10">
+      <h1 class="font-semibold text-lg">Tenant Management</h1>
+      <button onclick="openProvisionModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg shadow-lg shadow-indigo-500/30 transition flex items-center gap-2">
+        <i data-lucide="plus" class="w-4 h-4"></i>
+        Provision New Client
+      </button>
+    </header>
+
+    <!-- Content Area -->
+    <div class="flex-1 overflow-y-auto p-8 relative">
+      
+      <!-- TENANTS SECTION -->
+      <div id="sec-tenants" class="tab-section block">
+      
+      <!-- Stats Row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="glass-panel p-6 rounded-xl">
+          <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Active Companies</div>
+          <div class="text-3xl font-bold" id="stat-companies">0</div>
+        </div>
+        <div class="glass-panel p-6 rounded-xl">
+          <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Total Provisioned Seats</div>
+          <div class="text-3xl font-bold" id="stat-seats">0</div>
+        </div>
+        <div class="glass-panel p-6 rounded-xl">
+          <div class="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">System Status</div>
+          <div class="text-3xl font-bold text-emerald-400 flex items-center gap-2">
+            <span class="relative flex h-4 w-4">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-4 w-4 bg-emerald-500"></span>
+            </span>
+            Operational
+          </div>
+        </div>
+      </div>
+
+      <!-- Tenants Table -->
+      <div class="glass-panel rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-slate-800/50">
+          <h2 class="font-semibold text-sm">Client Directory</h2>
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" placeholder="Search clients..." class="bg-slate-900 border border-slate-700 text-sm rounded-lg pl-9 pr-4 py-1.5 focus:outline-none focus:border-indigo-500 text-slate-200 w-64" />
+          </div>
+        </div>
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+              <th class="px-6 py-3 font-semibold">Company Name</th>
+              <th class="px-6 py-3 font-semibold">Tenant ID</th>
+              <th class="px-6 py-3 font-semibold">Admin Email</th>
+              <th class="px-6 py-3 font-semibold text-center">User Limit</th>
+              <th class="px-6 py-3 font-semibold text-center">Status</th>
+              <th class="px-6 py-3 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tenants-list" class="text-sm divide-y divide-white/5">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+      </div>
+      
+      <!-- BILLING SECTION -->
+      <div id="sec-billing" class="tab-section hidden h-full flex flex-col items-center justify-center text-slate-500">
+        <i data-lucide="credit-card" class="w-16 h-16 mb-4 text-slate-700"></i>
+        <h2 class="text-xl font-bold text-white mb-2">Billing & Subscriptions</h2>
+        <p>Stripe integration coming soon for automated invoicing.</p>
+      </div>
+
+      <!-- LOGS SECTION -->
+      <div id="sec-logs" class="tab-section hidden h-full flex flex-col items-center justify-center text-slate-500">
+        <i data-lucide="activity" class="w-16 h-16 mb-4 text-slate-700"></i>
+        <h2 class="text-xl font-bold text-white mb-2">System Audit Logs</h2>
+        <p>Master audit trail will be populated here.</p>
+      </div>
+      
+    </div>
+  </main>
+
+  <!-- Provision Modal -->
+  <div id="provision-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel w-full max-w-lg rounded-2xl shadow-2xl border border-slate-700 overflow-hidden transform scale-95 opacity-0 transition-all duration-200" id="provision-modal-content">
+      <div class="px-6 py-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+        <h3 class="font-bold text-lg text-white">Provision New Client</h3>
+        <button onclick="closeProvisionModal()" class="text-slate-400 hover:text-white transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="provision-form" class="p-6 space-y-5" onsubmit="event.preventDefault(); submitProvision();">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Company / Client Name</label>
+          <input type="text" id="p-company" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="e.g. Apex Corporation" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Client Admin Email</label>
+          <input type="email" id="p-email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="admin@apexcorp.com" />
+          <p class="text-[10px] text-slate-500 mt-1">Temporary password will be generated for this email.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Maximum User Seats</label>
+          <input type="number" id="p-seats" required min="1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="e.g. 15" value="10" />
+        </div>
+        
+        <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-700">
+          <button type="button" onclick="closeProvisionModal()" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800 transition">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-500/30 transition flex items-center gap-2">
+            <i data-lucide="zap" class="w-4 h-4"></i> Create Tenant Workspace
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/app.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
