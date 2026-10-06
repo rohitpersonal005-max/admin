@@ -46,18 +46,18 @@ function renderTable() {
     
     tbody.innerHTML += `
       <tr class="hover:bg-slate-800/30 transition">
-        <td class="px-6 py-4 font-semibold text-white">\${t.companyName}</td>
-        <td class="px-6 py-4 text-slate-400 font-mono text-xs">\${t.id}</td>
-        <td class="px-6 py-4 text-slate-300">\${t.adminEmail}</td>
+        <td class="px-6 py-4 font-semibold text-white">${t.companyName}</td>
+        <td class="px-6 py-4 text-slate-400 font-mono text-xs">${t.id}</td>
+        <td class="px-6 py-4 text-slate-300">${t.adminEmail}</td>
         <td class="px-6 py-4 text-center">
-          <span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">\${t.seatLimit}</span>
+          <span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">${t.seatLimit}</span>
         </td>
         <td class="px-6 py-4 text-center">
-          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border \${statusClass}">\${t.status}</span>
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${t.status}</span>
         </td>
         <td class="px-6 py-4 text-right">
-          <button onclick="toggleTenantStatus('\${t.id}', '\${t.status}')" class="px-3 py-1.5 rounded text-xs font-semibold \${t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'} transition">
-            \${t.status === 'Active' ? 'Suspend' : 'Activate'}
+          <button onclick="toggleTenantStatus('${t.id}', '${t.status}')" class="px-3 py-1.5 rounded text-xs font-semibold ${t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'} transition">
+            ${t.status === 'Active' ? 'Suspend' : 'Activate'}
           </button>
         </td>
       </tr>
@@ -109,7 +109,7 @@ function submitProvision() {
   db.ref('master_tenants/' + tenantId).set(newTenant).then(() => {
     closeProvisionModal();
     // In a real app with Firebase Auth, you would also trigger a Cloud Function here to create the Auth user.
-    alert(\`Tenant \${name} successfully provisioned!\\n\\nTenant ID: \${tenantId}\\nAdmin: \${email}\\nSeats: \${seats}\`);
+    alert(`Tenant ${name} successfully provisioned!\n\nTenant ID: ${tenantId}\nAdmin: ${email}\nSeats: ${seats}`);
   }).catch(err => {
     console.error(err);
     alert('Failed to provision tenant.');
@@ -118,7 +118,7 @@ function submitProvision() {
 
 function toggleTenantStatus(id, currentStatus) {
   const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
-  if (confirm(\`Are you sure you want to \${newStatus.toLowerCase()} this tenant?\`)) {
+  if (confirm(`Are you sure you want to ${newStatus.toLowerCase()} this tenant?`)) {
     db.ref('master_tenants/' + id).update({ status: newStatus });
   }
 }
