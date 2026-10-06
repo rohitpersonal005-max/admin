@@ -6,16 +6,14 @@ const firebaseConfig = {
   messagingSenderId: "9398393204",
   appId: "1:9398393204:web:e62aaf0ca09c5dcc00b421",
   measurementId: "G-PFBLVTG21C",
-  // Standard fallback database URL for Firebase Realtime Database
   databaseURL: "https://adminutes-erp-default-rtdb.firebaseio.com"
 };
 
-// Initialize Firebase using the Compat CDN method (Vanilla JS)
 if (typeof firebase !== 'undefined') {
   firebase.initializeApp(firebaseConfig);
   window.CMS_FIREBASE_DB = firebase.database();
-  console.log("🔥 Firebase Realtime Database Initialized with Live Config!");
+  console.log("Firebase Realtime Database Initialized!");
 } else {
-  console.warn("⚠️ Firebase CDN failed to load. Running in offline/local mode.");
+  console.warn("Firebase CDN failed to load.");
   window.CMS_FIREBASE_DB = null;
 }
