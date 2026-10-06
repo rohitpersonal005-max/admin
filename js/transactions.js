@@ -302,8 +302,8 @@ window.CMS_TRANSACTIONS = {
         };
       }
     } else {
-      const newId = 'REC-' + String(store.data.receipts.length + 1).padStart(3, '0');
-      const recNo = `REC-${new Date().getFullYear()}-${String(store.data.receipts.length + 1).padStart(3, '0')}`;
+      const newId = 'REC-' + String(Date.now()).slice(-6);
+      const recNo = `REC-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
       store.data.receipts.push({
         id: newId,
         receiptNo: recNo,
@@ -689,7 +689,7 @@ window.CMS_TRANSACTIONS = {
                 <i data-lucide="send" class="w-4 h-4"></i>
                 <span>${isEdit ? 'Save Changes' : 'Submit Requisition'}</span>
               </button>
-            `
+            `}
         </div>
       </form>
     `;
@@ -738,9 +738,9 @@ window.CMS_TRANSACTIONS = {
         };
       }
     } else {
-      const reqNo = `REQ-${new Date().getFullYear()}-${String(store.data.requests.length + 101)}`;
+      const reqNo = `REQ-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
       store.data.requests.push({
-        id: 'REQ-' + String(store.data.requests.length + 1).padStart(3, '0'),
+        id: 'REQ-' + String(Date.now()).slice(-6),
         requestNo: reqNo,
         materialId, materialName: mat ? mat.materialName : '',
         brand: mat ? mat.brand : '',
@@ -1048,9 +1048,9 @@ window.CMS_TRANSACTIONS = {
       }
     }
 
-    const issueNo = `ISS-${new Date().getFullYear()}-${String(store.data.issuances.length + 1).padStart(3, '0')}`;
+    const issueNo = `ISS-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
     const newIssue = {
-      id: 'ISS-' + String(store.data.issuances.length + 1).padStart(3, '0'),
+      id: 'ISS-' + String(Date.now()).slice(-6),
       issueNo,
       requestId: req.id,
       requestNo: req.requestNo,
@@ -1247,9 +1247,9 @@ window.CMS_TRANSACTIONS = {
       return;
     }
 
-    const returnNo = `RET-${new Date().getFullYear()}-${String(store.data.returns.length + 1).padStart(3, '0')}`;
+    const returnNo = `RET-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
     store.data.returns.push({
-      id: 'RET-' + String(store.data.returns.length + 1).padStart(3, '0'),
+      id: 'RET-' + String(Date.now()).slice(-6),
       returnNo,
       materialId: mat.id,
       materialName: mat.materialName,
@@ -1518,9 +1518,9 @@ window.CMS_TRANSACTIONS = {
       }
     }
 
-    const adjNo = `ADJ-${new Date().getFullYear()}-${String(store.data.stockAdjustments.length + 1).padStart(3, '0')}`;
+    const adjNo = `ADJ-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
     store.data.stockAdjustments.push({
-      id: 'ADJ-' + String(store.data.stockAdjustments.length + 1).padStart(3, '0'),
+      id: 'ADJ-' + String(Date.now()).slice(-6),
       adjustmentNo: adjNo,
       materialId: mat.id,
       materialName: mat.materialName,
@@ -1564,3 +1564,4 @@ window.CMS_TRANSACTIONS = {
     }
   }
 };
+

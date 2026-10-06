@@ -275,9 +275,9 @@ window.CMS_RECONCILIATION = {
       }
     }
 
-    const recNo = `REC-AUD-${new Date().getFullYear()}-${String(store.data.reconciliations.length + 1).padStart(3, '0')}`;
+    const recNo = `REC-AUD-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
     const newRecon = {
-      id: 'RECON-' + String(store.data.reconciliations.length + 1).padStart(3, '0'),
+      id: 'RECON-' + String(Date.now()).slice(-6),
       reconciliationNo: recNo,
       reconciliationDate: date,
       categoryId: catId,

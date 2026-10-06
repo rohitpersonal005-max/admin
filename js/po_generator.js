@@ -368,9 +368,9 @@ window.CMS_PO = {
     const taxAmount = (subtotal * totalGst) / 100;
     const totalAmount = subtotal + taxAmount;
 
-    const poNo = `PO/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(store.data.purchaseOrders.length + 1).padStart(3, '0')}`;
+    const poNo = `PO/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(Date.now()).slice(-6)}`;
     const newPO = {
-      id: 'PO-' + String(store.data.purchaseOrders.length + 1).padStart(3, '0'),
+      id: 'PO-' + String(Date.now()).slice(-6),
       poNo,
       categoryId: catId,
       categoryName: category ? category.name : 'General',

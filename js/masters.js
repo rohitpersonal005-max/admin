@@ -860,7 +860,7 @@ window.CMS_MASTERS = {
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Date</label>
-          <input type="date" class="q-date w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${dt}" />
+          <input type="date" class="q-date w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${dt}" / max="\${today}">
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Effective From</label>
@@ -1371,12 +1371,18 @@ window.CMS_MASTERS = {
     };
 
     window.CMS_MASTERS.nextVendorTab = function() {
-      // Basic HTML5 validation trigger on visible fields
-      const form = document.getElementById('vendor-form');
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
+      // Only validate the CURRENT visible step to avoid hidden required fields blocking the Next button
+      const currentStepDiv = document.getElementById('v-step-' + window.CMS_MASTERS.currentVendorStep);
+      if (currentStepDiv) {
+        const inputs = currentStepDiv.querySelectorAll('input, select, textarea');
+        for (const input of inputs) {
+          if (!input.checkValidity()) {
+            input.reportValidity();
+            return; // Stop and let browser show the tooltip on this specific invalid field
+          }
+        }
       }
+
       if (window.CMS_MASTERS.currentVendorStep < 4) {
         window.CMS_MASTERS.switchVendorTab(window.CMS_MASTERS.currentVendorStep + 1);
       }
@@ -1396,7 +1402,7 @@ window.CMS_MASTERS = {
         <button id="v-tab-btn-4" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent bg-slate-50 hover:bg-slate-100 transition" onclick="CMS_MASTERS.switchVendorTab(4)">4. Bank Details</button>
       </div>
 
-      <form id="vendor-form" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveVendor('${vendorId || ''}');">
+      <form id="vendor-form" autocomplete="new-password" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveVendor('${vendorId || ''}');">
         
         <!-- STEP 1: Organization & Address -->
         <div id="v-step-1" class="space-y-4">
@@ -1499,6 +1505,7 @@ window.CMS_MASTERS = {
                     Upload GST Certificate (PDF/Image) <span class="text-rose-600 font-bold">*</span>
                   </label>
                   <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs" />
+                  <input type="text" id="v-gst-title" placeholder="Document Title (e.g. GST Registration 2024)" class="w-full mt-1.5 px-2 py-1 text-xs border border-slate-300 rounded" value="${vendor.gstDocTitle || ''}" />
                   ${vendor.gstCertificateFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.gstCertificateFile}</span>` : ''}
                 </div>
               </div>
@@ -1519,6 +1526,7 @@ window.CMS_MASTERS = {
                     Upload PAN Card Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
                   </label>
                   <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs" />
+                  <input type="text" id="v-pan-title" placeholder="Document Title" class="w-full mt-1.5 px-2 py-1 text-xs border border-slate-300 rounded" value="${vendor.panDocTitle || ''}" />
                   ${vendor.panCardFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.panCardFile}</span>` : ''}
                 </div>
               </div>
@@ -1531,7 +1539,7 @@ window.CMS_MASTERS = {
               <div>
                 <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                   <i data-lucide="award" class="w-3.5 h-3.5 text-blue-600"></i>
-                  <span>Regulatory / Certification Agencies</span>
+                  <span>Regulatory Licenses/Certification</span>
                 </div>
               </div>
               <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-blue-600 border border-blue-300 rounded-sm font-bold text-xs transition">
@@ -1613,28 +1621,29 @@ window.CMS_MASTERS = {
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2.5">
               <div>
                 <label class="block font-bold text-slate-700 mb-1">Bank Name <span class="text-rose-600 font-bold">*</span></label>
-                <input type="text" id="v-bank-name" required value="${vendor.bankName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC Bank, SBI" />
+                <input type="text" id="v-bank-name" autocomplete="new-password" required value="${vendor.bankName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC Bank, SBI" />
               </div>
               <div>
                 <label class="block font-bold text-slate-700 mb-1">Account Name <span class="text-rose-600 font-bold">*</span></label>
-                <input type="text" id="v-account-name" required oninput="this.value = this.value.replace(/[^a-zA-Z\\s.\\-&]/g, '')" value="${vendor.accountName || vendor.name || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Beneficiary Name" />
+                <input type="text" id="v-account-name" autocomplete="new-password" required oninput="this.value = this.value.replace(/[^a-zA-Z\\s.\\-&]/g, '')" value="${vendor.accountName || vendor.name || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Beneficiary Name" />
               </div>
               <div>
                 <label class="block font-bold text-slate-700 mb-1">Account No. <span class="text-rose-600 font-bold">*</span></label>
-                <input type="text" id="v-account-no" required minlength="5" maxlength="22" value="${vendor.accountNo || ''}" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Account Number" />
+                <input type="text" id="v-account-no" autocomplete="new-password" required minlength="5" maxlength="22" value="${vendor.accountNo || ''}" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Account Number" />
               </div>
               <div>
                 <label class="block font-bold text-slate-700 mb-1">IFSC Code (11 Chars) <span class="text-rose-600 font-bold">*</span></label>
-                <input type="text" id="v-ifsc" required maxlength="11" value="${vendor.ifscCode || ''}" oninput="this.value = this.value.toUpperCase();" class="w-full font-mono uppercase px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC0001234" />
+                <input type="text" id="v-ifsc" autocomplete="new-password" required maxlength="11" value="${vendor.ifscCode || ''}" oninput="this.value = this.value.toUpperCase();" class="w-full font-mono uppercase px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC0001234" />
               </div>
               <div>
                 <label class="block font-bold text-slate-700 mb-1">Branch Name</label>
-                <input type="text" id="v-branch-name" value="${vendor.branchName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Branch Name" />
+                <input type="text" id="v-branch-name" autocomplete="new-password" value="${vendor.branchName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Branch Name" />
               </div>
             </div>
             <div class="mt-2 pt-2 border-t border-slate-200">
-              <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document (Cancelled Cheque, Passbook, or Bank Mandate)</label>
+              <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document (Cancelled Cheque, Passbook, or Bank Statement)</label>
               <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs" />
+              <input type="text" id="v-bank-title" placeholder="Document Title" class="w-full mt-1.5 px-2 py-1 text-xs border border-slate-300 rounded" value="${vendor.bankDocTitle || ''}" />
               ${vendor.bankDoc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${vendor.bankDoc}</span>` : ''}
             </div>
           </div>
@@ -1647,7 +1656,7 @@ window.CMS_MASTERS = {
           <div class="flex gap-2.5">
             <button id="v-prev-btn" type="button" onclick="CMS_MASTERS.prevVendorTab()" class="hidden px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded-sm transition">Previous Step</button>
             <button id="v-next-btn" type="button" onclick="CMS_MASTERS.nextVendorTab()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition">Next Step <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i></button>
-            <button id="v-submit-btn" type="submit" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
+            <button id="v-submit-btn" type="button" onclick="CMS_MASTERS.saveVendor('${vendorId || ''}')" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
               <i data-lucide="send" class="w-4 h-4"></i>
               <span>Submit for Admin Approval</span>
             </button>
@@ -1669,7 +1678,10 @@ window.CMS_MASTERS = {
         const qList = vendor.quotedItems || [];
         if (qList.length === 0 && (vendor.quotedMaterialId || vendor.quotedMaterialName || vendor.quotationNo)) {
           CMS_MASTERS.addVendorQuotationRow({
-            quotationNo: vendor.quotationNo,
+            quotationNo: vendor.
+          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
+          quotationNo,
+
             quotationDate: vendor.quotationDate,
             quotationValidTill: vendor.quotationValidTill,
             materialId: vendor.quotedMaterialId,
@@ -1759,6 +1771,11 @@ window.CMS_MASTERS = {
     const contactNo = document.getElementById('v-contact')?.value.trim() || '';
       const countryCode = document.getElementById('v-country-code')?.value.trim() || '+91';
     const email = document.getElementById('v-email')?.value.trim() || '';
+    const gstDocTitle = document.getElementById('v-gst-title')?.value.trim() || '';
+    const panDocTitle = document.getElementById('v-pan-title')?.value.trim() || '';
+    const bankDocTitle = document.getElementById('v-bank-title')?.value.trim() || '';
+    const limAlertDays = document.getElementById('v-lim-alert-days')?.value.trim() || '';
+
 
     // GST & PAN Statutory Check
     const gstNotApplicable = document.getElementById('v-gst-na')?.checked || false;
@@ -1789,7 +1806,7 @@ window.CMS_MASTERS = {
     const bankFileInput = document.getElementById('v-bank-file');
     let bankDoc = (bankFileInput && bankFileInput.files[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
     if (accountNo && !bankDoc) {
-      bankDoc = `${accountNo}_Bank_Mandate.pdf`; // Mock auto-attachment if none uploaded
+      bankDoc = `${accountNo}_Bank_Statement.pdf`; // Mock auto-attachment if none uploaded
     }
 
     const quoteRows = document.querySelectorAll('#v-quotations-container .quote-row');
@@ -1808,19 +1825,38 @@ window.CMS_MASTERS = {
           }
       }
       
+      
+      const qDate = row.querySelector('.q-date')?.value || '';
+      const qEff = row.querySelector('.q-eff')?.value || '';
+      const qValid = row.querySelector('.q-valid')?.value || '';
+      
+      const today = new Date().toISOString().split('T')[0];
+      if (qDate && qDate > today) {
+        return window.CMS_APP.toast('System does not allow future quotation dates.', 'error');
+      }
+      if (qEff && qDate && qEff < qDate) {
+        return window.CMS_APP.toast('Effective date cannot be older than the quotation date.', 'error');
+      }
+      if (qValid && qEff && qValid < qEff) {
+        return window.CMS_APP.toast('Valid till/expiry date cannot be older than the effective date.', 'error');
+      }
+
       quotedItems.push({
         quotationNo: qno,
-        quotationDate: row.querySelector('.q-date')?.value || '',
-        effectiveFrom: row.querySelector('.q-eff')?.value || '',
-        quotationValidTill: row.querySelector('.q-exp')?.value || '',
+        quotationDate: qDate,
+        effectiveFrom: qEff,
+        validTill: qValid,
+        alertDays: row.querySelector('.q-alert') ? row.querySelector('.q-alert').value : '',
         materialId: row.querySelector('.q-mat-id')?.value || '',
         materialName: matName,
-        rate: parseFloat(row.querySelector('.q-rate')?.value) || 0,
-        mrp: parseFloat(row.querySelector('.q-mrp')?.value) || 0,
-        unit: row.querySelector('.q-unit')?.value.trim() || 'Nos',
-        hsn: row.querySelector('.q-hsn')?.value.trim() || '8472',
-        doc: docName
+        rate: row.querySelector('.q-rate')?.value || 0,
+        mrp: row.querySelector('.q-mrp')?.value || 0,
+        unit: row.querySelector('.q-unit')?.value || 'Nos',
+        hsn: row.querySelector('.q-hsn')?.value || '',
+        doc: docName,
+        docTitle: row.querySelector('.q-title') ? row.querySelector('.q-title').value : ''
       });
+
     }
     
     const quotationNo = quotedItems.length > 0 ? quotedItems[0].quotationNo : '';
@@ -1987,7 +2023,10 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
           gstNo, panNo,
           gstCertificateFile, panCardFile,
           bankName, accountName, accountNo, ifscCode, branchName, bankDoc,
-          quotationNo, quotationDate, quotationValidTill, quotationDoc, supportingDoc,
+          
+          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
+          quotationNo,
+ quotationDate, quotationValidTill, quotationDoc, supportingDoc,
           quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
           approvedForLimitedPeriod, approvalValidTill,
           isBlocked, blockReason, quotedItems,
@@ -2001,7 +2040,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
     } else {
       // Sequence-based unique Vendor ID
       const existingIds = new Set(store.data.vendors.map(v => v.id));
-      let nextNum = store.data.vendors.length + 1;
+      let nextNum = Math.floor(Date.now() / 1000);
       let newId = 'VEN-' + String(nextNum).padStart(3, '0');
       while (existingIds.has(newId)) {
         nextNum++;
@@ -2018,7 +2057,10 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
         gstNo, panNo,
         gstCertificateFile, panCardFile,
         bankName, accountName, accountNo, ifscCode, branchName, bankDoc,
-        quotationNo, quotationDate, quotationValidTill, quotationDoc,
+        
+          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
+          quotationNo,
+ quotationDate, quotationValidTill, quotationDoc,
         quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
         approvedForLimitedPeriod, approvalValidTill,
         isBlocked, blockReason, quotedItems,
@@ -2064,7 +2106,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
             if (q.hsn) existingMat.hsnCode = q.hsn;
             if (q.unit) existingMat.unit = q.unit;
           } else {
-            const newCount = store.data.consumables.length + 1;
+            const newCount = Math.floor(Date.now() / 1000);
             const newMatId = `MAT-CON-${String(newCount).padStart(3, '0')}`;
             store.data.consumables.push({
               id: newMatId,
@@ -2079,7 +2121,10 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
               sgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
               cgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
               igst: stateInfo.taxMode === 'IGST' ? 18 : 0,
-              quotationNo: q.quotationNo,
+              quotationNo: q.
+          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
+          quotationNo,
+
               quotationDate: q.quotationDate || today,
               quotationRate: q.rate,
               mrpBooked: q.mrp > 0 ? q.mrp : Number((q.rate * 1.25).toFixed(2)),
@@ -2346,7 +2391,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
         };
       }
     } else {
-      const newId = 'CAT-' + String(store.data.categories.length + 1).padStart(3, '0');
+      const newId = 'CAT-' + String(Date.now()).slice(-6);
       store.data.categories.push({
         id: newId,
         name, description,
@@ -2715,7 +2760,10 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             ${((m.vendors && m.vendors.length > 0) ? m.vendors : [
-              ...(m.vendor1Id ? [{ vendorId: m.vendor1Id, vendorName: m.vendor1Name, rate: m.vendor1Rate, quotationNo: m.quotationNo, effectiveFrom: m.vendor1RateEffectiveFrom, isPrimary: true }] : []),
+              ...(m.vendor1Id ? [{ vendorId: m.vendor1Id, vendorName: m.vendor1Name, rate: m.vendor1Rate, quotationNo: m.
+          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
+          quotationNo,
+ effectiveFrom: m.vendor1RateEffectiveFrom, isPrimary: true }] : []),
               ...(m.vendor2Id ? [{ vendorId: m.vendor2Id, vendorName: m.vendor2Name, rate: m.vendor2Rate, quotationNo: '', effectiveFrom: m.vendor2RateEffectiveFrom, isPrimary: false }] : [])
             ]).map((v, i) => `
               <div class="p-3.5 border-2 ${v.isPrimary ? 'border-blue-300 bg-slate-50/50' : 'border-slate-200 bg-slate-50'} rounded-sm space-y-1.5">
@@ -3362,7 +3410,10 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
           categoryName: category ? category.name : store.data.consumables[idx].categoryName,
           materialName, unit, brand, supplierProductCode, hsnCode,
           gstSlabId, taxMode, sgst, cgst, igst,
-          quotationNo, quotationDate, quotationRate, mrpBooked,
+          
+          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
+          quotationNo,
+ quotationDate, quotationRate, mrpBooked,
           assetTag, serialNo, custodianDept,
           hasWarranty, warrantyPeriod, warrantyValidTill, warrantyVendor,
           hasPm, pmFrequency, repairmanName, repairmanContact, repairmanAgency, pmVendor, nextPmDate,
@@ -3377,8 +3428,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
       }
     } else {
       const prefix = inventoryType === 'Fixed' ? 'MAT-FIX-' : 'MAT-';
-      const count = store.data.consumables.filter(c => (c.inventoryType || 'Consumer') === inventoryType).length + 1;
-      const newId = prefix + String(count).padStart(3, '0');
+      const newId = prefix + String(Date.now()).slice(-6);
       store.data.consumables.push({
         id: newId,
         inventoryType,
@@ -3386,7 +3436,10 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
         categoryName: category ? category.name : 'General',
         materialName, unit, brand, supplierProductCode, hsnCode,
         gstSlabId, taxMode, sgst, cgst, igst,
-        quotationNo, quotationDate, quotationRate, mrpBooked,
+        
+          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
+          quotationNo,
+ quotationDate, quotationRate, mrpBooked,
         assetTag: assetTag || (inventoryType === 'Fixed' ? `AST-${newId}` : ''),
         serialNo, custodianDept,
         hasWarranty, warrantyPeriod, warrantyValidTill, warrantyVendor,
@@ -3688,7 +3741,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
         };
       }
     } else {
-      const newId = 'GST-' + String(store.data.gstSlabs.length + 1).padStart(3, '0');
+      const newId = 'GST-' + String(Date.now()).slice(-6);
       store.data.gstSlabs.push({
         id: newId,
         name, taxMode, sgst, cgst, igst, remarks,
@@ -3732,6 +3785,8 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
     }
   }
 };
+
+
 
 
 

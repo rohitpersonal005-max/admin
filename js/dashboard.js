@@ -405,14 +405,7 @@ window.CMS_DASHBOARD = {
       `);
     }
 
-    // The dashboard is intentionally limited to unresolved alerts and approvals.
-    return pins.length > 0 ? pins.join('') : `
-      <div class="p-8 text-center bg-white rounded-md border border-slate-200">
-        <i data-lucide="check-circle-2" class="w-8 h-8 mx-auto text-emerald-500 mb-2"></i>
-        <div class="text-sm font-bold text-slate-700">No pending approvals</div>
-        <p class="text-xs text-slate-500 mt-1">The dashboard will show new action items here.</p>
-      </div>
-    `;
+    
 
     // ==========================================
     // PINS 3: Reorder & Low Stock Pins
