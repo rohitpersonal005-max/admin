@@ -66,10 +66,11 @@ function renderTable() {
 }
 
 // Modal Handling
-const modal = document.getElementById('provision-modal');
-const modalContent = document.getElementById('provision-modal-content');
+
 
 function openProvisionModal() {
+  const modal = document.getElementById('provision-modal');
+  const modalContent = document.getElementById('provision-modal-content');
   modal.classList.remove('hidden');
   setTimeout(() => {
     modalContent.classList.remove('scale-95', 'opacity-0');
@@ -78,6 +79,8 @@ function openProvisionModal() {
 }
 
 function closeProvisionModal() {
+  const modal = document.getElementById('provision-modal');
+  const modalContent = document.getElementById('provision-modal-content');
   modalContent.classList.remove('scale-100', 'opacity-100');
   modalContent.classList.add('scale-95', 'opacity-0');
   setTimeout(() => {
