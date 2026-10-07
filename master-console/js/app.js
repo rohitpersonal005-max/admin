@@ -126,39 +126,7 @@ function switchTab(tabId) {
   });
 }
 
-window.submitProvision = function() {
-  try {
-    const name = document.getElementById('p-company').value.trim();
-    const email = document.getElementById('p-email').value.trim();
-    const seats = document.getElementById('p-seats').value;
 
-    if (!name || !email || !seats) {
-      alert("Please fill in all fields.");
-      return;
-    }
-
-    if (!db) {
-      alert("ERROR: Firebase database is not connected. Did you paste your keys in firebase-config.js?");
-      return;
-    }
-
-    const tenantId = 'tenant_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-
-    const newTenant = {
-      companyName: name,
-      adminEmail: email,
-      seatLimit: parseInt(seats),
-      status: 'Active',
-      createdAt: new Date().toISOString()
-    };
-
-    db.ref('master_tenants/' + tenantId).set(newTenant).then(() => {
-      closeProvisionModal();
-      alert(`Tenant ${name} successfully provisioned!Tenant ID: ${tenantId}Admin: ${email}Seats: ${seats}`);
-    }).catch(err => {
-      console.error("FIREBASE ERROR:", err);
-      alert('Firebase Error: ' + err.message + 'Did you set your Realtime Database Rules to True?');
-    });
   } catch (e) {
     alert("CRITICAL ERROR: " + e.message);
   }
@@ -190,6 +158,8 @@ window.forceSubmitProvision = function() {
 
   try {
     updateStatus('Starting provision...');
+    if (btn && btn.disabled) return;
+    if (btn) btn.disabled = true;
     const name = document.getElementById('p-company').value.trim();
     const email = document.getElementById('p-email').value.trim();
     const seats = document.getElementById('p-seats').value;
@@ -235,7 +205,7 @@ window.forceSubmitProvision = function() {
             updateStatus('Database record saved successfully!');
             document.getElementById('p-company').value = "";
             document.getElementById('p-email').value = "";
-            if (btn) btn.innerHTML = originalBtnText;
+            if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
             if (statusDiv) statusDiv.innerHTML = '';
             
             closeProvisionModal();
@@ -249,7 +219,7 @@ window.forceSubmitProvision = function() {
             updateStatus('DB ERROR: ' + dbErr.message);
             console.error("FIREBASE DB ERROR:", dbErr);
             alert('Firebase Database Error: ' + dbErr.message);
-            if (btn) btn.innerHTML = originalBtnText;
+            if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
             firebase.auth().signOut().catch(console.error);
           });
       })
@@ -258,13 +228,14 @@ window.forceSubmitProvision = function() {
         console.error("FIREBASE AUTH ERROR:", authErr);
         // Fallback: If alert is suppressed by browser, statusDiv will show the error!
         setTimeout(() => alert('Authentication Error: ' + authErr.message), 100);
-        if (btn) btn.innerHTML = originalBtnText;
+        if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
       });
 
   } catch (e) {
     updateStatus('CRITICAL ERROR: ' + e.message);
     console.error("CRITICAL ERROR:", e);
     alert("CRITICAL ERROR: " + e.message);
-    if (btn) btn.innerHTML = originalBtnText;
+    if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
