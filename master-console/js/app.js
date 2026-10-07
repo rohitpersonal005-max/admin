@@ -182,7 +182,11 @@ window.forceSubmitProvision = function() {
       return;
     }
 
-    firebase.auth().createUserWithEmailAndPassword(email, tempPassword)
+    const tempAppName = "TempApp_" + Date.now();
+    updateStatus('Initializing secondary auth app...');
+    const tempApp = firebase.initializeApp(firebaseConfig, tempAppName);
+
+    tempApp.auth().createUserWithEmailAndPassword(email, tempPassword)
       .then((userCredential) => {
         updateStatus('Auth user created successfully! UID: ' + userCredential.user.uid);
         updateStatus('Connecting to Firebase Realtime Database...');
@@ -207,16 +211,18 @@ window.forceSubmitProvision = function() {
             closeProvisionModal();
             alert('Tenant ' + name + ' successfully provisioned!\\n\\nTenant ID: ' + tenantId + '\\nAdmin Email: ' + email + '\\nTemporary Password: ' + tempPassword);
             
-            // Log out the admin
-            updateStatus('Signing out...');
-            firebase.auth().signOut().catch(console.error);
+            // Cleanup temp app
+            updateStatus('Cleaning up secure connection...');
+            tempApp.auth().signOut()
+              .then(() => tempApp.delete())
+              .catch(console.error);
           })
           .catch((dbErr) => {
             updateStatus('DB ERROR: ' + dbErr.message);
             console.error("FIREBASE DB ERROR:", dbErr);
             alert('Firebase Database Error: ' + dbErr.message);
             if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
-            firebase.auth().signOut().catch(console.error);
+            tempApp.delete().catch(console.error);
           });
       })
       .catch((authErr) => {
@@ -224,6 +230,7 @@ window.forceSubmitProvision = function() {
         console.error("FIREBASE AUTH ERROR:", authErr);
         setTimeout(() => alert('Authentication Error: ' + authErr.message), 100);
         if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
+        tempApp.delete().catch(console.error);
       });
 
   } catch (e) {
