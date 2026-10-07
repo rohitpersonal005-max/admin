@@ -623,12 +623,12 @@ window.CMS_MASTERS = {
               <div>
                 <span class="text-slate-500 block text-[10px] uppercase">GSTIN</span> 
                 <strong class="font-mono text-sm">${v.gstNotApplicable ? 'Exempt' : (v.gstNo || 'Not Registered')}</strong>
-                ${renderDocPreview(v.gstCertificateFile, 'GST Certificate')}
+                ${renderDocPreview(v.gstCertificateFile, v.gstDocTitle || 'GST Certificate')}
               </div>
               <div>
                 <span class="text-slate-500 block text-[10px] uppercase">PAN</span> 
                 <strong class="font-mono text-sm">${v.panNotApplicable ? 'Not Applicable' : (v.panNo || 'Not Recorded')}</strong>
-                ${renderDocPreview(v.panCardFile, 'PAN Card')}
+                ${renderDocPreview(v.panCardFile, v.panDocTitle || 'PAN Card')}
               </div>
             </div>
           </div>
@@ -642,7 +642,7 @@ window.CMS_MASTERS = {
               <div><span class="text-slate-500 block text-[10px] uppercase">IFSC Code</span> <strong class="font-mono">${v.ifscCode || '-'}</strong></div>
             </div>
             <div class="mt-2">
-              ${renderDocPreview(v.bankDoc, 'Bank Document')}
+              ${renderDocPreview(v.bankDoc, v.bankDocTitle || 'Bank Document')}
             </div>
           </div>
           
@@ -652,9 +652,9 @@ window.CMS_MASTERS = {
               <div class="mb-4">
                 <div><span class="text-slate-500 block text-[10px] uppercase">Quote Ref</span> <strong>${q.quotationNo || 'Direct'}</strong></div>
                 <div><span class="text-slate-500 block text-[10px] uppercase">Material</span> <strong>${q.materialName || q.materialId || '-'}</strong></div>
-                ${renderDocPreview(q.doc, 'Quotation Document')}
+                ${renderDocPreview(q.doc, q.docTitle || 'Quotation Document')}
               </div>
-            `).join('') : (v.quotationDoc ? renderDocPreview(v.quotationDoc, 'Quotation Document') : '<div class="text-slate-400 italic">No Quotations</div>')}
+            `).join('') : (v.quotationDoc ? renderDocPreview(v.quotationDoc, v.quotationDocTitle || 'Quotation Document') : '<div class="text-slate-400 italic">No Quotations</div>')}
           </div>
 
           <div class="col-span-2 mt-4">
@@ -662,7 +662,7 @@ window.CMS_MASTERS = {
             ${(!v.certificates || v.certificates.length === 0) ? '<span class="text-slate-400 italic">No certificates recorded</span>' : v.certificates.map(c => `
               <div class="mb-4">
                 <div><span class="text-slate-500 block text-[10px] uppercase">Certificate</span> <strong>${c.regulator || c.name || 'Certificate'} (${c.formNo || ''})</strong></div>
-                ${renderDocPreview(c.fileName, 'Certificate Document')}
+                ${renderDocPreview(c.fileName, c.docTitle || 'Certificate Document')}
               </div>
             `).join('')}
           </div>
@@ -717,6 +717,75 @@ window.CMS_MASTERS = {
     }, 100);
 
     if (window.lucide) window.lucide.createIcons();
+  },
+
+  toggleMrp(checkbox) {
+    const row = checkbox.closest('.quote-row');
+    if (!row) return;
+    const mrpInput = row.querySelector('.q-mrp');
+    if (checkbox.checked) {
+      mrpInput.value = '';
+      mrpInput.disabled = true;
+      mrpInput.classList.add('bg-slate-100', 'cursor-not-allowed', 'opacity-50');
+    } else {
+      mrpInput.disabled = false;
+      mrpInput.classList.remove('bg-slate-100', 'cursor-not-allowed', 'opacity-50');
+    }
+  },
+
+  validateQuotationDates(element) {
+    const row = element.closest('.quote-row');
+    if (!row) return;
+    const qDateInput = row.querySelector('.q-date');
+    const qEffInput = row.querySelector('.q-eff');
+    const qValidInput = row.querySelector('.q-valid');
+
+    const qDate = qDateInput.value;
+    const qEff = qEffInput.value;
+    const qValid = qValidInput.value;
+    const today = new Date().toISOString().split('T')[0];
+
+    // Check 1: Quotation Date cannot be future
+    if (qDate && qDate > today) {
+      window.CMS_APP.toast('System does not allow future quotation dates.', 'error');
+      qDateInput.value = '';
+      return;
+    }
+
+    // Check 2: Effective date cannot be older than Quotation Date
+    if (qEff && qDate && qEff < qDate) {
+      window.CMS_APP.toast('Effective date cannot be older than the quotation date.', 'error');
+      qEffInput.value = '';
+      return;
+    }
+
+    // Check 3: Valid till cannot be older than effective date
+    if (qValid && qEff && qValid < qEff) {
+      window.CMS_APP.toast('Valid till/expiry date cannot be older than the effective date.', 'error');
+      qValidInput.value = '';
+      return;
+    }
+  },
+
+  checkRateVsMrp(element) {
+    const row = element.closest('.quote-row');
+    if (!row) return;
+    const rateInput = row.querySelector('.q-rate');
+    const mrpInput = row.querySelector('.q-mrp');
+    const mrpNa = row.querySelector('.q-mrp-na')?.checked;
+
+    if (mrpNa) return; // Ignore validation if MRP is Not Applicable
+
+    const rate = parseFloat(rateInput.value);
+    const mrp = parseFloat(mrpInput.value);
+
+    if (!isNaN(rate) && !isNaN(mrp) && rate > mrp) {
+      const confirmProceed = confirm('Approved rate is more than MRP.\n\nDo you want to continue with entered rate? (Yes = Keep, No = Clear Rate)');
+      if (!confirmProceed) {
+        rateInput.value = '';
+        rateInput.focus();
+      }
+    }
   },
 
   downloadVendorForm() {
@@ -848,6 +917,7 @@ window.CMS_MASTERS = {
     const unit = qData ? (qData.unit || 'Nos') : 'Nos';
     const hsn = qData ? (qData.hsn || '8472') : '8472';
     const doc = qData ? (qData.doc || '') : '';
+      const today = new Date().toISOString().split('T')[0];
     
     const row = document.createElement('div');
     row.className = 'quote-row p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-2.5 relative shadow-sm';
@@ -923,6 +993,23 @@ window.CMS_MASTERS = {
     const fileName = certData && typeof certData === 'object' ? (certData.fileName || '') : '';
     const today = new Date().toISOString().split('T')[0];
 
+    // FORCE HTML5 FORM VALIDATION ACROSS ALL HIDDEN TABS
+    const form = document.getElementById('vendor-form');
+    if (form && !form.checkValidity()) {
+      const firstInvalid = form.querySelector(':invalid');
+      if (firstInvalid) {
+        const stepDiv = firstInvalid.closest('div[id^="v-step-"]');
+        if (stepDiv) {
+          const stepNum = parseInt(stepDiv.id.replace('v-step-', ''));
+          if (!isNaN(stepNum)) {
+            this.changeVendorStep(stepNum);
+          }
+        }
+        setTimeout(() => firstInvalid.reportValidity(), 50);
+      }
+      return;
+    }
+
     const regulators = ['BIS', 'CDSCO', 'FDA', 'FSSAI', 'GMP Certificate', 'ISO', 'NABL', 'State FDA', 'Other'];
 
     const row = document.createElement('div');
@@ -950,14 +1037,14 @@ window.CMS_MASTERS = {
           <!-- 2. Form No -->
           <div>
             <label class="block text-[11px] font-bold text-slate-700 mb-1">2. Form / Standard No.</label>
-            <input type="text" list="iso-suggestions" class="cert-form-input w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" value="${formNo}" placeholder="e.g. 9001:2015" />
+            <input type="text" autocomplete="off" class="cert-form-input w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" value="${formNo}" placeholder="e.g. 9001:2015" />
           </div>
           <!-- 3. License No -->
           <div>
             <label class="block text-[11px] font-bold text-slate-700 mb-1">
               3. License / Certificate No.
             </label>
-            <input type="text" class="cert-number-input w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" value="${certificateNo}" placeholder="e.g. LIC-2026-981" />
+            <input type="text" autocomplete="off" class="cert-number-input w-full px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs font-mono" value="${certificateNo}" placeholder="e.g. LIC-2026-981" />
           </div>
         </div>
         <button type="button" onclick="CMS_MASTERS.removeCertificateRow('${rowId}')" class="mt-5 p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition" title="Remove Certificate">
@@ -1548,13 +1635,7 @@ window.CMS_MASTERS = {
               </button>
             </div>
 
-            <datalist id="iso-suggestions">
-              <option value="9001:2015"></option>
-              <option value="14001:2015"></option>
-              <option value="45001:2018"></option>
-              <option value="22000:2018"></option>
-              <option value="27001:2022"></option>
-            </datalist>
+
 
             <div id="v-cert-container" class="space-y-2.5">
               <!-- Dynamic rows -->
@@ -1679,7 +1760,7 @@ window.CMS_MASTERS = {
         if (qList.length === 0 && (vendor.quotedMaterialId || vendor.quotedMaterialName || vendor.quotationNo)) {
           CMS_MASTERS.addVendorQuotationRow({
             quotationNo: vendor.
-          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
+          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays, limAlertFreq,
           quotationNo,
 
             quotationDate: vendor.quotationDate,
@@ -1775,6 +1856,7 @@ window.CMS_MASTERS = {
     const panDocTitle = document.getElementById('v-pan-title')?.value.trim() || '';
     const bankDocTitle = document.getElementById('v-bank-title')?.value.trim() || '';
     const limAlertDays = document.getElementById('v-lim-alert-days')?.value.trim() || '';
+      const limAlertFreq = document.getElementById('v-lim-alert-freq')?.value || 'Daily';
 
 
     // GST & PAN Statutory Check
@@ -1847,6 +1929,7 @@ window.CMS_MASTERS = {
         effectiveFrom: qEff,
         validTill: qValid,
         alertDays: row.querySelector('.q-alert') ? row.querySelector('.q-alert').value : '',
+          alertFreq: row.querySelector('.q-freq') ? row.querySelector('.q-freq').value : 'Daily',
         materialId: row.querySelector('.q-mat-id')?.value || '',
         materialName: matName,
         rate: row.querySelector('.q-rate')?.value || 0,
@@ -1992,6 +2075,8 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
       if (!certNo) return window.CMS_APP.toast(`License / Certificate Number is mandatory for ${reg}.`, 'error');
       if (hasVal && !expiry) return window.CMS_APP.toast(`Expiry date is mandatory for ${reg} (${certNo}).`, 'error');
       if (hasVal && expiry < today) return window.CMS_APP.toast(`Expiry date for ${reg} cannot be in the past.`, 'error');
+      
+      if (!fileName) return window.CMS_APP.toast(`Please upload the document file for ${reg} (${certNo}).`, 'error');
 
       if (!fileName) {
         fileName = `${reg.replace(/\s+/g, '_')}_${certNo || 'Certificate'}.pdf`;
@@ -2026,7 +2111,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
           
           gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
           quotationNo,
- quotationDate, quotationValidTill, quotationDoc, supportingDoc,
+ quotationDate, quotationValidTill, quotationDoc, 
           quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
           approvedForLimitedPeriod, approvalValidTill,
           isBlocked, blockReason, quotedItems,

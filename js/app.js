@@ -935,6 +935,22 @@ window.CMS_APP = {
     if (window.lucide) window.lucide.createIcons();
   },
 
+  createBlobUrl(base64Data) {
+    try {
+      const arr = base64Data.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return URL.createObjectURL(new Blob([u8arr], { type: mime }));
+    } catch (e) {
+      return base64Data;
+    }
+  },
+
   downloadDocument(fileName, explicitData = null) {
     const data = explicitData || localStorage.getItem('CMS_FILE_' + fileName);
     if (!data) {

@@ -9,7 +9,7 @@
   
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>`n  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
   
   <style>
@@ -143,24 +143,24 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <form id="provision-form" class="p-6 space-y-5" onsubmit="event.preventDefault(); submitProvision();">
+      <form id="provision-form" class="p-6 space-y-5" >
         <div>
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Company / Client Name</label>
-          <input type="text" id="p-company" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="e.g. Apex Corporation" />
+          <input type="text" id="p-company" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="e.g. Apex Corporation" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Client Admin Email</label>
-          <input type="email" id="p-email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="admin@apexcorp.com" />
+          <input type="text" id="p-email" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="admin@apexcorp.com" />
           <p class="text-[10px] text-slate-500 mt-1">Temporary password will be generated for this email.</p>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Maximum User Seats</label>
-          <input type="number" id="p-seats" required min="1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="e.g. 15" value="10" />
+          <input type="number" id="p-seats" min="1" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="e.g. 15" value="10" />
         </div>
         
         <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-700">
           <button type="button" onclick="closeProvisionModal()" class="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-300 hover:bg-slate-800 transition">Cancel</button>
-          <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-500/30 transition flex items-center gap-2">
+          <button type="button" onclick="window.forceSubmitProvision()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-indigo-500/30 transition flex items-center gap-2">
             <i data-lucide="zap" class="w-4 h-4"></i> Create Tenant Workspace
           </button>
         </div>
@@ -169,10 +169,11 @@
   </div>
 
   <script src="js/firebase-config.js??v=1791272748762"></script>
-  <script src="js/app.js??v=1791274217000"></script>
+  <script src="js/app.js??v=1791274575290"></script>
   <script>lucide.createIcons();</script>
 </body>
 </html>
+
 
 
 

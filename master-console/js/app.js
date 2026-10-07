@@ -173,3 +173,75 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+\n
+window.forceSubmitProvision = function() {
+  try {
+    const name = document.getElementById('p-company').value.trim();
+    const email = document.getElementById('p-email').value.trim();
+    const seats = document.getElementById('p-seats').value;
+
+    if (!name || !email || !seats) {
+      alert("Please fill in all fields (Company Name, Email, and Seats).");
+      return;
+    }
+
+    if (!email.includes('@')) {
+      alert("Please enter a valid email address containing an '@' symbol.");
+      return;
+    }
+
+    if (!db) {
+      alert("ERROR: Firebase database is not connected. Did you paste your keys in firebase-config.js?");
+      return;
+    }
+
+    const tenantId = 'tenant_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+
+    const newTenant = {
+      companyName: name,
+      adminEmail: email,
+      seatLimit: parseInt(seats),
+      status: 'Active',
+      createdAt: new Date().toISOString()
+    };
+
+    // Show a loading alert so the user knows JS is actually running
+    document.getElementById('p-company').value = "Loading...";
+
+    
+    // We use a secondary Firebase app instance to create the user so it doesn't log the Master Admin out!
+    const tempApp = firebase.initializeApp(firebaseConfig, "TempApp_" + Date.now());
+    const tempPassword = "Welcome@" + Math.floor(1000 + Math.random() * 9000);
+    
+    tempApp.auth().createUserWithEmailAndPassword(email, tempPassword)
+      .then((userCredential) => {
+        newTenant.adminUid = userCredential.user.uid;
+        
+        db.ref('master_tenants/' + tenantId).set(newTenant).then(() => {
+          // Revert text
+          document.getElementById('p-company').value = "";
+          document.getElementById('p-email').value = "";
+          
+          closeProvisionModal();
+          alert('Tenant ' + name + ' successfully provisioned!\n\nTenant ID: ' + tenantId + '\nAdmin Email: ' + email + '\nTemporary Password: ' + tempPassword + '\n\nPlease securely share these credentials with the client.');
+          
+          // Cleanup temp app
+          tempApp.auth().signOut().then(() => tempApp.delete());
+          
+        }).catch(err => {
+          document.getElementById('p-company').value = name;
+          console.error("FIREBASE DB ERROR:", err);
+          alert('Firebase DB Error: ' + err.message);
+        });
+        
+      })
+      .catch((error) => {
+        document.getElementById('p-company').value = name;
+        console.error("FIREBASE AUTH ERROR:", error);
+        alert('Authentication Error: ' + error.message + '\n\nDid you enable Email/Password provider in Firebase Console?');
+        tempApp.delete();
+      });
+  } catch (e) {
+    alert("CRITICAL ERROR: " + e.message);
+  }
+};
