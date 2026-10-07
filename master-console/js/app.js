@@ -174,7 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-window.forceSubmitProvision = function() {
+window.forceSubmitProvision = async function() {
+  const btn = document.querySelector('button[onclick="window.forceSubmitProvision()"]');
+  const originalBtnText = btn ? btn.innerHTML : '';
+  
   try {
     const name = document.getElementById('p-company').value.trim();
     const email = document.getElementById('p-email').value.trim();
@@ -191,58 +194,68 @@ window.forceSubmitProvision = function() {
     }
 
     if (!db) {
-      alert("ERROR: Firebase database is not connected. Did you paste your keys in firebase-config.js?");
+      alert("ERROR: Firebase database is not connected. Check firebase-config.js");
       return;
     }
 
-    const tenantId = 'tenant_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+    if (btn) btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Provisioning...';
+    document.getElementById('p-company').value = "Loading... Please wait";
 
+    const tenantId = 'tenant_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+    const tempPassword = "Welcome@" + Math.floor(1000 + Math.random() * 9000);
+    
+    // 1. Create Auth User
+    const tempApp = firebase.initializeApp(firebaseConfig, "TempApp_" + Date.now());
+    let userCredential;
+    try {
+      userCredential = await tempApp.auth().createUserWithEmailAndPassword(email, tempPassword);
+    } catch (authErr) {
+      console.error("FIREBASE AUTH ERROR:", authErr);
+      alert('Authentication Error: ' + authErr.message);
+      await tempApp.delete();
+      document.getElementById('p-company').value = name;
+      if (btn) btn.innerHTML = originalBtnText;
+      return;
+    }
+
+    // 2. Write to DB
     const newTenant = {
       companyName: name,
       adminEmail: email,
       seatLimit: parseInt(seats),
       status: 'Active',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      adminUid: userCredential.user.uid
     };
 
-    // Show a loading alert so the user knows JS is actually running
-    document.getElementById('p-company').value = "Loading...";
+    try {
+      await db.ref('master_tenants/' + tenantId).set(newTenant);
+    } catch (dbErr) {
+      console.error("FIREBASE DB ERROR:", dbErr);
+      alert('Firebase Database Error: ' + dbErr.message + '\nDid you set your Realtime Database Rules to True?');
+      await tempApp.auth().signOut();
+      await tempApp.delete();
+      document.getElementById('p-company').value = name;
+      if (btn) btn.innerHTML = originalBtnText;
+      return;
+    }
 
+    // Success
+    document.getElementById('p-company').value = "";
+    document.getElementById('p-email').value = "";
+    if (btn) btn.innerHTML = originalBtnText;
+    closeProvisionModal();
     
-    // We use a secondary Firebase app instance to create the user so it doesn't log the Master Admin out!
-    const tempApp = firebase.initializeApp(firebaseConfig, "TempApp_" + Date.now());
-    const tempPassword = "Welcome@" + Math.floor(1000 + Math.random() * 9000);
+    alert('Tenant ' + name + ' successfully provisioned!\n\nTenant ID: ' + tenantId + '\nAdmin Email: ' + email + '\nTemporary Password: ' + tempPassword + '\n\nPlease securely share these credentials with the client.');
     
-    tempApp.auth().createUserWithEmailAndPassword(email, tempPassword)
-      .then((userCredential) => {
-        newTenant.adminUid = userCredential.user.uid;
-        
-        db.ref('master_tenants/' + tenantId).set(newTenant).then(() => {
-          // Revert text
-          document.getElementById('p-company').value = "";
-          document.getElementById('p-email').value = "";
-          
-          closeProvisionModal();
-          alert('Tenant ' + name + ' successfully provisioned!Tenant ID: ' + tenantId + 'Admin Email: ' + email + 'Temporary Password: ' + tempPassword + 'Please securely share these credentials with the client.');
-          
-          // Cleanup temp app
-          tempApp.auth().signOut().then(() => tempApp.delete());
-          
-        }).catch(err => {
-          document.getElementById('p-company').value = name;
-          console.error("FIREBASE DB ERROR:", err);
-          alert('Firebase DB Error: ' + err.message);
-        });
-        
-      })
-      .catch((error) => {
-        document.getElementById('p-company').value = name;
-        console.error("FIREBASE AUTH ERROR:", error);
-        alert('Authentication Error: ' + error.message + 'Did you enable Email/Password provider in Firebase Console?');
-        tempApp.delete();
-      });
+    // Cleanup
+    await tempApp.auth().signOut();
+    await tempApp.delete();
+    
   } catch (e) {
+    console.error("CRITICAL ERROR:", e);
     alert("CRITICAL ERROR: " + e.message);
+    document.getElementById('p-company').value = "";
+    if (btn) btn.innerHTML = originalBtnText;
   }
 };
-
