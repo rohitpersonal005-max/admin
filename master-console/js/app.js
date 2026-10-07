@@ -13,7 +13,6 @@ setTimeout(() => {
   }
 }, 500);
 
-
 function loadTenants() {
   db.ref('master_tenants').on('value', (snapshot) => {
     tenants = [];
@@ -46,18 +45,18 @@ function renderTable() {
     
     tbody.innerHTML += `
       <tr class="hover:bg-slate-800/30 transition">
-        <td class="px-6 py-4 font-semibold text-white">${t.companyName}</td>
-        <td class="px-6 py-4 text-slate-400 font-mono text-xs">${t.id}</td>
-        <td class="px-6 py-4 text-slate-300">${t.adminEmail}</td>
+        <td class="px-6 py-4 font-semibold text-white">\${t.companyName}</td>
+        <td class="px-6 py-4 text-slate-400 font-mono text-xs">\${t.id}</td>
+        <td class="px-6 py-4 text-slate-300">\${t.adminEmail}</td>
         <td class="px-6 py-4 text-center">
-          <span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">${t.seatLimit}</span>
+          <span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">\${t.seatLimit}</span>
         </td>
         <td class="px-6 py-4 text-center">
-          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${t.status}</span>
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border \${statusClass}">\${t.status}</span>
         </td>
         <td class="px-6 py-4 text-right">
-          <button onclick="toggleTenantStatus('${t.id}', '${t.status}')" class="px-3 py-1.5 rounded text-xs font-semibold ${t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'} transition">
-            ${t.status === 'Active' ? 'Suspend' : 'Activate'}
+          <button onclick="toggleTenantStatus('\${t.id}', '\${t.status}')" class="px-3 py-1.5 rounded text-xs font-semibold \${t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'} transition">
+            \${t.status === 'Active' ? 'Suspend' : 'Activate'}
           </button>
         </td>
       </tr>
@@ -66,7 +65,6 @@ function renderTable() {
 }
 
 // Modal Handling
-
 
 function openProvisionModal() {
   const modal = document.getElementById('provision-modal');
@@ -86,20 +84,20 @@ function closeProvisionModal() {
   setTimeout(() => {
     modal.classList.add('hidden');
     document.getElementById('provision-form').reset();
+    const statusDiv = document.getElementById('provision-status');
+    if (statusDiv) statusDiv.innerHTML = '';
   }, 200);
 }
 
 function toggleTenantStatus(id, currentStatus) {
   const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
-  if (confirm(`Are you sure you want to ${newStatus.toLowerCase()} this tenant?`)) {
+  if (confirm(`Are you sure you want to \${newStatus.toLowerCase()} this tenant?`)) {
     db.ref('master_tenants/' + id).update({ status: newStatus });
   }
 }
 
-
 // Tab Switching Logic
 function switchTab(tabId) {
-  // Update nav UI
   const navs = ['tenants', 'billing', 'logs'];
   navs.forEach(nav => {
     const el = document.getElementById('nav-' + nav);
@@ -111,7 +109,6 @@ function switchTab(tabId) {
     }
   });
 
-  // Update Sections
   const sections = ['sec-tenants', 'sec-billing', 'sec-logs'];
   sections.forEach(sec => {
     const el = document.getElementById(sec);
@@ -126,24 +123,22 @@ function switchTab(tabId) {
   });
 }
 
-
-  } catch (e) {
-    alert("CRITICAL ERROR: " + e.message);
-  }
-};
-
+// Map form submit to our new forceSubmitProvision to prevent enter key bugs
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('provision-form');
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      window.submitProvision();
+      window.forceSubmitProvision();
     });
   }
 });
 
 window.forceSubmitProvision = function() {
   const btn = document.querySelector('button[onclick="window.forceSubmitProvision()"]');
+  if (btn && btn.disabled) return;
+  if (btn) btn.disabled = true;
+
   const originalBtnText = btn ? btn.innerHTML : '';
   const statusDiv = document.getElementById('provision-status');
   if (statusDiv) statusDiv.innerHTML = '';
@@ -158,19 +153,19 @@ window.forceSubmitProvision = function() {
 
   try {
     updateStatus('Starting provision...');
-    if (btn && btn.disabled) return;
-    if (btn) btn.disabled = true;
     const name = document.getElementById('p-company').value.trim();
     const email = document.getElementById('p-email').value.trim();
     const seats = document.getElementById('p-seats').value;
 
     if (!name || !email || !seats) {
       alert("Please fill in all fields (Company Name, Email, and Seats).");
+      if (btn) btn.disabled = false;
       return;
     }
 
     if (!db) {
       alert("ERROR: Firebase database is not connected.");
+      if (btn) btn.disabled = false;
       return;
     }
 
@@ -183,6 +178,7 @@ window.forceSubmitProvision = function() {
 
     if (typeof firebase.auth !== 'function') {
       updateStatus('ERROR: firebase.auth is not a function! Check script tags.');
+      if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
       return;
     }
 
@@ -209,9 +205,9 @@ window.forceSubmitProvision = function() {
             if (statusDiv) statusDiv.innerHTML = '';
             
             closeProvisionModal();
-            alert('Tenant ' + name + ' successfully provisioned!\n\nTenant ID: ' + tenantId + '\nAdmin Email: ' + email + '\nTemporary Password: ' + tempPassword);
+            alert('Tenant ' + name + ' successfully provisioned!\\n\\nTenant ID: ' + tenantId + '\\nAdmin Email: ' + email + '\\nTemporary Password: ' + tempPassword);
             
-            // Log out the admin so they don't get stuck in the client account
+            // Log out the admin
             updateStatus('Signing out...');
             firebase.auth().signOut().catch(console.error);
           })
@@ -226,7 +222,6 @@ window.forceSubmitProvision = function() {
       .catch((authErr) => {
         updateStatus('AUTH ERROR: ' + authErr.message);
         console.error("FIREBASE AUTH ERROR:", authErr);
-        // Fallback: If alert is suppressed by browser, statusDiv will show the error!
         setTimeout(() => alert('Authentication Error: ' + authErr.message), 100);
         if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
       });
@@ -238,4 +233,3 @@ window.forceSubmitProvision = function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
-
