@@ -174,11 +174,22 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-window.forceSubmitProvision = async function() {
+window.forceSubmitProvision = function() {
   const btn = document.querySelector('button[onclick="window.forceSubmitProvision()"]');
   const originalBtnText = btn ? btn.innerHTML : '';
+  const statusDiv = document.getElementById('provision-status');
+  if (statusDiv) statusDiv.innerHTML = '';
   
+  function updateStatus(msg) {
+    console.log(msg);
+    if (statusDiv) {
+      statusDiv.innerHTML += msg + '<br/>';
+      statusDiv.style.display = 'block';
+    }
+  }
+
   try {
+    updateStatus('Starting provision...');
     const name = document.getElementById('p-company').value.trim();
     const email = document.getElementById('p-email').value.trim();
     const seats = document.getElementById('p-seats').value;
@@ -188,74 +199,72 @@ window.forceSubmitProvision = async function() {
       return;
     }
 
-    if (!email.includes('@')) {
-      alert("Please enter a valid email address containing an '@' symbol.");
-      return;
-    }
-
     if (!db) {
-      alert("ERROR: Firebase database is not connected. Check firebase-config.js");
+      alert("ERROR: Firebase database is not connected.");
       return;
     }
 
     if (btn) btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Provisioning...';
-    document.getElementById('p-company').value = "Loading... Please wait";
 
     const tenantId = 'tenant_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
     const tempPassword = "Welcome@" + Math.floor(1000 + Math.random() * 9000);
     
-    // 1. Create Auth User
-    const tempApp = firebase.initializeApp(firebaseConfig, "TempApp_" + Date.now());
-    let userCredential;
-    try {
-      userCredential = await tempApp.auth().createUserWithEmailAndPassword(email, tempPassword);
-    } catch (authErr) {
-      console.error("FIREBASE AUTH ERROR:", authErr);
-      alert('Authentication Error: ' + authErr.message);
-      await tempApp.delete();
-      document.getElementById('p-company').value = name;
-      if (btn) btn.innerHTML = originalBtnText;
+    updateStatus('Connecting to Firebase Auth...');
+
+    if (typeof firebase.auth !== 'function') {
+      updateStatus('ERROR: firebase.auth is not a function! Check script tags.');
       return;
     }
 
-    // 2. Write to DB
-    const newTenant = {
-      companyName: name,
-      adminEmail: email,
-      seatLimit: parseInt(seats),
-      status: 'Active',
-      createdAt: new Date().toISOString(),
-      adminUid: userCredential.user.uid
-    };
+    firebase.auth().createUserWithEmailAndPassword(email, tempPassword)
+      .then((userCredential) => {
+        updateStatus('Auth user created successfully! UID: ' + userCredential.user.uid);
+        updateStatus('Connecting to Firebase Realtime Database...');
+        
+        const newTenant = {
+          companyName: name,
+          adminEmail: email,
+          seatLimit: parseInt(seats),
+          status: 'Active',
+          createdAt: new Date().toISOString(),
+          adminUid: userCredential.user.uid
+        };
 
-    try {
-      await db.ref('master_tenants/' + tenantId).set(newTenant);
-    } catch (dbErr) {
-      console.error("FIREBASE DB ERROR:", dbErr);
-      alert('Firebase Database Error: ' + dbErr.message + '\nDid you set your Realtime Database Rules to True?');
-      await tempApp.auth().signOut();
-      await tempApp.delete();
-      document.getElementById('p-company').value = name;
-      if (btn) btn.innerHTML = originalBtnText;
-      return;
-    }
+        db.ref('master_tenants/' + tenantId).set(newTenant)
+          .then(() => {
+            updateStatus('Database record saved successfully!');
+            document.getElementById('p-company').value = "";
+            document.getElementById('p-email').value = "";
+            if (btn) btn.innerHTML = originalBtnText;
+            if (statusDiv) statusDiv.innerHTML = '';
+            
+            closeProvisionModal();
+            alert('Tenant ' + name + ' successfully provisioned!\n\nTenant ID: ' + tenantId + '\nAdmin Email: ' + email + '\nTemporary Password: ' + tempPassword);
+            
+            // Log out the admin so they don't get stuck in the client account
+            updateStatus('Signing out...');
+            firebase.auth().signOut().catch(console.error);
+          })
+          .catch((dbErr) => {
+            updateStatus('DB ERROR: ' + dbErr.message);
+            console.error("FIREBASE DB ERROR:", dbErr);
+            alert('Firebase Database Error: ' + dbErr.message);
+            if (btn) btn.innerHTML = originalBtnText;
+            firebase.auth().signOut().catch(console.error);
+          });
+      })
+      .catch((authErr) => {
+        updateStatus('AUTH ERROR: ' + authErr.message);
+        console.error("FIREBASE AUTH ERROR:", authErr);
+        // Fallback: If alert is suppressed by browser, statusDiv will show the error!
+        setTimeout(() => alert('Authentication Error: ' + authErr.message), 100);
+        if (btn) btn.innerHTML = originalBtnText;
+      });
 
-    // Success
-    document.getElementById('p-company').value = "";
-    document.getElementById('p-email').value = "";
-    if (btn) btn.innerHTML = originalBtnText;
-    closeProvisionModal();
-    
-    alert('Tenant ' + name + ' successfully provisioned!\n\nTenant ID: ' + tenantId + '\nAdmin Email: ' + email + '\nTemporary Password: ' + tempPassword + '\n\nPlease securely share these credentials with the client.');
-    
-    // Cleanup
-    await tempApp.auth().signOut();
-    await tempApp.delete();
-    
   } catch (e) {
+    updateStatus('CRITICAL ERROR: ' + e.message);
     console.error("CRITICAL ERROR:", e);
     alert("CRITICAL ERROR: " + e.message);
-    document.getElementById('p-company').value = "";
     if (btn) btn.innerHTML = originalBtnText;
   }
 };
