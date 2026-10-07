@@ -125,7 +125,7 @@ function switchTab(tabId) {
     }
   });
 }
-\n\n
+
 window.submitProvision = function() {
   try {
     const name = document.getElementById('p-company').value.trim();
@@ -154,10 +154,10 @@ window.submitProvision = function() {
 
     db.ref('master_tenants/' + tenantId).set(newTenant).then(() => {
       closeProvisionModal();
-      alert(`Tenant ${name} successfully provisioned!\n\nTenant ID: ${tenantId}\nAdmin: ${email}\nSeats: ${seats}`);
+      alert(`Tenant ${name} successfully provisioned!Tenant ID: ${tenantId}Admin: ${email}Seats: ${seats}`);
     }).catch(err => {
       console.error("FIREBASE ERROR:", err);
-      alert('Firebase Error: ' + err.message + '\n\nDid you set your Realtime Database Rules to True?');
+      alert('Firebase Error: ' + err.message + 'Did you set your Realtime Database Rules to True?');
     });
   } catch (e) {
     alert("CRITICAL ERROR: " + e.message);
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-\n
+
 window.forceSubmitProvision = function() {
   try {
     const name = document.getElementById('p-company').value.trim();
@@ -223,7 +223,7 @@ window.forceSubmitProvision = function() {
           document.getElementById('p-email').value = "";
           
           closeProvisionModal();
-          alert('Tenant ' + name + ' successfully provisioned!\n\nTenant ID: ' + tenantId + '\nAdmin Email: ' + email + '\nTemporary Password: ' + tempPassword + '\n\nPlease securely share these credentials with the client.');
+          alert('Tenant ' + name + ' successfully provisioned!Tenant ID: ' + tenantId + 'Admin Email: ' + email + 'Temporary Password: ' + tempPassword + 'Please securely share these credentials with the client.');
           
           // Cleanup temp app
           tempApp.auth().signOut().then(() => tempApp.delete());
@@ -238,10 +238,11 @@ window.forceSubmitProvision = function() {
       .catch((error) => {
         document.getElementById('p-company').value = name;
         console.error("FIREBASE AUTH ERROR:", error);
-        alert('Authentication Error: ' + error.message + '\n\nDid you enable Email/Password provider in Firebase Console?');
+        alert('Authentication Error: ' + error.message + 'Did you enable Email/Password provider in Firebase Console?');
         tempApp.delete();
       });
   } catch (e) {
     alert("CRITICAL ERROR: " + e.message);
   }
 };
+
