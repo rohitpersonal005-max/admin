@@ -162,7 +162,7 @@ window.CMS_APP = {
         break;
       case 'dashboard':
         main.innerHTML = window.CMS_DASHBOARD.render();
-        window.setTimeout(() => window.CMS_DASHBOARD.showEmergencyAlerts(), 0);
+        // Removed showEmergencyAlerts
         break;
       case 'draft-workspace':
         main.innerHTML = window.CMS_DRAFTS.render();

@@ -22,6 +22,13 @@ window.CMS_AUTH = {
 
   async handleUserLogin(user) {
     console.log("Logged in as:", user.email);
+    
+    // CRITICAL FIREBASE FIX: When Firebase Auth logs in, it aggressively resets the Realtime Database websocket connection to re-authenticate it.
+    // If we fire database queries immediately, they will hang infinitely in a pending state! 
+    // We must wait 2 seconds for the websocket to reconnect before querying.
+    console.log("Waiting for Firebase websocket to stabilize...");
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
     this.db = firebase.database();
     window.CMS_FIREBASE_DB = this.db;
 
