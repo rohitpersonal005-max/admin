@@ -286,7 +286,7 @@ window.CMS_DASHBOARD = {
     `;
   },
 
-  renderPills() { try {
+  renderPills() {
     const store = window.CMS_STORE.data;
     const consumables = store.consumables || [];
     const lowStockCount = consumables.filter(m => {
@@ -716,3 +716,4 @@ window.CMS_DASHBOARD = {
     return pins.join('');
   }
 };
+
