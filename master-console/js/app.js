@@ -67,69 +67,27 @@ function renderTable() {
   tbody.innerHTML = '';
   
   if (tenants.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No client companies provisioned yet.</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No client companies provisioned yet.</td></tr>';
     return;
   }
 
   tenants.forEach(t => {
     const statusClass = t.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30';
     
-    tbody.innerHTML += `
-      <tr class="hover:bg-slate-800/30 transition">
-        <td class="px-6 py-4 font-semibold text-white">${t.companyName}</td>
-        <td class="px-6 py-4 text-slate-400 font-mono text-xs">${t.id}</td>
-        <td class="px-6 py-4 text-slate-300">${t.adminEmail}</td>
-        <td class="px-6 py-4 text-center">
-          <span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">${t.seatLimit}</span>
-        </td>
-        <td class="px-6 py-4 text-center">
-          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${t.status}</span>
-        </td>
-        <td class="px-6 py-4 text-right">
-          <button onclick="toggleTenantStatus('${t.id}', '${t.status}')" class="px-3 py-1.5 rounded text-xs font-semibold ${t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'} transition">
-            ${t.status === 'Active' ? 'Suspend' : 'Activate'}
-          </button>
-        </td>
-      </tr>
-    `;
+    let tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-800/30 transition';
+    
+    tr.innerHTML = '<td class="px-6 py-4 font-semibold text-white">' + t.companyName + '</td>' +
+                   '<td class="px-6 py-4 text-slate-400 font-mono text-xs">' + t.id + '</td>' +
+                   '<td class="px-6 py-4 text-slate-300">' + t.adminEmail + '</td>' +
+                   '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">' + t.seatLimit + '</span></td>' +
+                   '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ' + statusClass + '">' + t.status + '</span></td>' +
+                   '<td class="px-6 py-4 text-right flex justify-end gap-2">' +
+                   '<button onclick="editTenant(\'' + t.id + '\')" class="px-3 py-1.5 rounded text-xs font-semibold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition">Edit</button>' +
+                   '<button onclick="toggleTenantStatus(\'' + t.id + '\', \'' + t.status + '\')" class="px-3 py-1.5 rounded text-xs font-semibold ' + (t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20') + ' transition">' +
+                   (t.status === 'Active' ? 'Suspend' : 'Activate') + '</button></td>';
+    tbody.appendChild(tr);
   });
-}
-
-// Modal Handling
-
-function openProvisionModal() {
-  const modal = document.getElementById('provision-modal');
-  const modalContent = document.getElementById('provision-modal-content');
-  modal.classList.remove('hidden');
-  setTimeout(() => {
-    modalContent.classList.remove('scale-95', 'opacity-0');
-    modalContent.classList.add('scale-100', 'opacity-100');
-  }, 10);
-}
-
-function closeProvisionModal() {
-  const modal = document.getElementById('provision-modal');
-  const modalContent = document.getElementById('provision-modal-content');
-  modalContent.classList.remove('scale-100', 'opacity-100');
-  modalContent.classList.add('scale-95', 'opacity-0');
-  setTimeout(() => {
-    modal.classList.add('hidden');
-    document.getElementById('provision-form').reset();
-    const statusDiv = document.getElementById('provision-status');
-    if (statusDiv) statusDiv.innerHTML = '';
-  }, 200);
-}
-
-async function toggleTenantStatus(id, currentStatus) {
-  const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
-  if (confirm(`Are you sure you want to ${newStatus.toLowerCase()} this tenant?`)) {
-    const { error } = await window.CMS_SUPABASE.from('master_tenants').update({ status: newStatus }).eq('id', id);
-    if (!error) {
-      loadTenants();
-    } else {
-      alert("Error updating status: " + error.message);
-    }
-  }
 }
 
 // Tab Switching Logic
@@ -259,6 +217,10 @@ window.forceSubmitProvision = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
+
+
+
 
 
 
