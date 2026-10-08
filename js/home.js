@@ -44,7 +44,19 @@ window.CMS_HOME = {
   },
 
   addUser() {
+    const users = window.CMS_STORE.getUsers();
+    const seatLimit = window.CMS_TENANT_SEATS || 10;
+    const remaining = seatLimit - users.length;
+    
+    if (remaining <= 0) {
+      window.CMS_APP.toast('Seat limit reached. You cannot add more users without upgrading your plan.', 'error');
+      return;
+    }
+    
     window.CMS_APP.openModal('Add New User', `
+      <div class="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-sm text-xs flex gap-2 items-center font-medium">
+        <i data-lucide="info" class="w-4 h-4"></i> You have ${remaining} seat(s) remaining out of your ${seatLimit} limit.
+      </div>
       <form class="space-y-4" onsubmit="event.preventDefault(); CMS_HOME.submitAddUser();">
         <div>
           <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Full Name</label>
@@ -85,6 +97,13 @@ window.CMS_HOME = {
     }
     
     const users = window.CMS_STORE.getUsers();
+    const seatLimit = window.CMS_TENANT_SEATS || 10;
+    
+    if (users.length >= seatLimit) {
+      window.CMS_APP.toast('Seat limit reached. Upgrade your plan to add more users.', 'error');
+      return;
+    }
+
     const newId = 'EMP-' + Math.floor(1000 + Math.random() * 9000);
     const newUser = {
       id: newId,
@@ -98,7 +117,8 @@ window.CMS_HOME = {
     };
     
     window.CMS_STORE.setUsers([...users, newUser]);
-    window.CMS_APP.toast(`User ${name} added successfully.`, 'success');
+    const remaining = seatLimit - (users.length + 1);
+    window.CMS_APP.toast(`User ${name} added successfully! ${remaining} seat(s) remaining.`, 'success');
     this.render();
     if(window.lucide) window.lucide.createIcons();
     window.CMS_APP.closeStackedModal();

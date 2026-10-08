@@ -39,7 +39,7 @@ window.CMS_AUTH = {
       }
 
       const tenantData = tenants[0];
-      window.CMS_TENANT_ID = tenantData.id;
+      window.CMS_TENANT_ID = tenantData.id;\n      window.CMS_TENANT_SEATS = tenantData.seat_limit || 10;
       console.log("Welcome to tenant:", tenantData.company_name);
         if (window.CMS_STORE) { await window.CMS_STORE.loadFromCloud(); const saasAdmin = { id: user.id, name: tenantData.admin_username || tenantData.company_name + ' Admin', email: user.email, role: 'Admin', department: tenantData.company_name, pin: null }; const existingUsers = window.CMS_STORE.getUsers();
           if (existingUsers.length === 0 || !existingUsers.find(u => u.id === user.id)) {
@@ -128,6 +128,7 @@ window.CMS_AUTH = {
 };
 
 window.addEventListener('DOMContentLoaded', () => window.CMS_AUTH.init());
+
 
 
 
