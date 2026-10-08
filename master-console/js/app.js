@@ -39,7 +39,10 @@ window.editTenant = function(id) {
   document.getElementById('e-name').value = t.companyName || '';
   document.getElementById('e-username').value = t.admin_username || '';
   document.getElementById('e-seats').value = t.seatLimit || 10;
-  document.getElementById('edit-modal').classList.remove('hidden');
+      const modal = document.getElementById('edit-modal');
+    const content = document.getElementById('edit-modal-content');
+    modal.classList.remove('hidden');
+    setTimeout(() => { modal.classList.remove('opacity-0'); content.classList.remove('scale-95'); }, 10);
 };
 
 window.submitEdit = async function() {
@@ -57,7 +60,7 @@ window.submitEdit = async function() {
   if (error) {
     alert("Error updating client: " + error.message);
   } else {
-    document.getElementById('edit-modal').classList.add('hidden');
+    if(typeof closeEditModal === 'function') closeEditModal();
     loadTenants();
   }
 };
@@ -72,10 +75,10 @@ function renderTable() {
   }
 
   tenants.forEach(t => {
-    const statusClass = t.status === 'Active' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+    const statusClass = t.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]';
     
     let tr = document.createElement('tr');
-    tr.className = 'hover:bg-slate-800/30 transition';
+    tr.className = 'hover:bg-slate-800/40 transition group';
     
     tr.innerHTML = '<td class="px-6 py-4 font-semibold text-white">' + t.companyName + '</td>' +
                    '<td class="px-6 py-4 text-slate-400 font-mono text-xs">' + t.id + '</td>' +
@@ -84,8 +87,8 @@ function renderTable() {
                    '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">' + t.seatLimit + '</span></td>' +
                    '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ' + statusClass + '">' + t.status + '</span></td>' +
                    '<td class="px-6 py-4 text-right flex justify-end gap-2">' +
-                   '<button onclick="editTenant(\'' + t.id + '\')" class="px-3 py-1.5 rounded text-xs font-semibold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition">Edit</button>' +
-                   '<button onclick="toggleTenantStatus(\'' + t.id + '\', \'' + t.status + '\')" class="px-3 py-1.5 rounded text-xs font-semibold ' + (t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20') + ' transition">' +
+                   '<button onclick="editTenant(\'' + t.id + '\')" class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700 group-hover:border-slate-600 transition">Edit</button>' +
+                   '<button onclick="toggleTenantStatus(\'' + t.id + '\', \'' + t.status + '\')" class="px-3 py-1.5 rounded text-xs font-semibold ' + (t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-transparent hover:border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-transparent hover:border-emerald-500/30') + ' transition">' +
                    (t.status === 'Active' ? 'Suspend' : 'Activate') + '</button></td>';
     tbody.appendChild(tr);
   });
@@ -219,6 +222,7 @@ window.forceSubmitProvision = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
 
 
 
