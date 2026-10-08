@@ -48,7 +48,7 @@ window.CMS_AUTH = {
       // If cloud DB is empty and local data exists, migrate it
       const isEmpty = !tenantData.cms_db || Object.keys(tenantData.cms_db).length === 0;
       
-      if (isEmpty && localData) {
+      if (false) {
         console.log("Auto-migrating local database to Supabase...");
         await window.CMS_SUPABASE
           .from('master_tenants')
@@ -167,5 +167,7 @@ window.CMS_AUTH = {
 };
 
 window.addEventListener('DOMContentLoaded', () => window.CMS_AUTH.init());
+
+
 
 

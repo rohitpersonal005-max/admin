@@ -4,7 +4,7 @@
  * and User-Admin approval workflow.
  */
 
-const STORAGE_KEY = 'CMS_DATABASE_V2';
+const getStorageKey = () => 'CMS_DATABASE_V2_' + (window.CMS_TENANT_ID || 'UNASSIGNED');
 const ROLE_KEY = 'CMS_USER_ROLE_V1';
 const USER_KEY = 'CMS_CURRENT_USER_ID_V1';
 
@@ -1037,7 +1037,7 @@ class Store {
 
   loadData() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(getStorageKey());
       const savedUserId = localStorage.getItem(USER_KEY) || 'EMP-2041';
       const user = ENTERPRISE_USERS.find(u => u.id === savedUserId) || ENTERPRISE_USERS[0];
 
@@ -1089,7 +1089,12 @@ class Store {
         
         // Preserve userRole if it existed locally so UI stays correct for the current user
         this.data.userRole = this.getRole();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+        localStorage.setItem(getStorageKey(), JSON.stringify(this.data));
+        if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
+          window.CMS_SUPABASE.from('master_tenants').update({ cms_db: this.data }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
+            if (error) console.error("Cloud sync failed:", error);
+          });
+        }
         if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
           window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
         }
@@ -1099,7 +1104,12 @@ class Store {
 
   save() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+      localStorage.setItem(getStorageKey(), JSON.stringify(this.data));
+        if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
+          window.CMS_SUPABASE.from('master_tenants').update({ cms_db: this.data }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
+            if (error) console.error("Cloud sync failed:", error);
+          });
+        }
       const currentUser = this.getCurrentUser();
       localStorage.setItem(ROLE_KEY, currentUser.role);
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
@@ -1558,6 +1568,11 @@ class Store {
 }
 
 window.CMS_STORE = new Store();
+
+
+
+
+
 
 
 
