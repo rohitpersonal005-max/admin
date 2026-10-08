@@ -149,6 +149,7 @@ window.forceSubmitProvision = async function() {
     updateStatus('Starting provision...');
     const name = document.getElementById('p-company').value.trim();
     const email = document.getElementById('p-email').value.trim();
+    const username = document.getElementById('p-username') ? document.getElementById('p-username').value.trim() : '';
         const seats = document.getElementById('p-seats').value;
     const manualPassword = document.getElementById('p-password') ? document.getElementById('p-password').value : '';
 
@@ -218,6 +219,7 @@ window.forceSubmitProvision = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
 
 
 
