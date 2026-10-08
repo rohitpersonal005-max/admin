@@ -65,6 +65,23 @@ window.submitEdit = async function() {
   }
 };
 
+window.toggleTenantStatus = async function(id, currentStatus) {
+  const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
+  if (newStatus === 'Suspended') {
+    if (!confirm('Are you sure you want to suspend this client? They will instantly lose access to the system.')) return;
+  }
+  
+  const { error } = await window.CMS_SUPABASE.from('master_tenants').update({
+    status: newStatus
+  }).eq('id', id);
+  
+  if (error) {
+    alert("Error updating status: " + error.message);
+  } else {
+    loadTenants();
+  }
+};
+
 function renderTable() {
   const tbody = document.getElementById('tenants-list');
   tbody.innerHTML = '';
@@ -223,6 +240,7 @@ window.provisionTenant = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
 
 
 
