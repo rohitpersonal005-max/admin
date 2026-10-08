@@ -20,11 +20,6 @@
               600: 'var(--brand-600)',
               900: 'var(--brand-900)',
               950: 'var(--brand-950)',
-            },
-            surface: {
-              800: '#1e293b',
-              900: '#0f172a',
-              950: '#020617',
             }
           },
           fontFamily: {
@@ -71,84 +66,84 @@
       --brand-950: #451a03;
     }
 
-    body { font-family: 'Inter', sans-serif; background-color: var(--surface-950, #020617); color: #f8fafc; }
+    body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
     
     .glass-panel { 
-      background: rgba(15, 23, 42, 0.7); 
+      background: rgba(255, 255, 255, 0.8); 
       backdrop-filter: blur(16px); 
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.05); 
+      border-right: 1px solid rgba(0, 0, 0, 0.05); 
     }
     
     .glass-card {
-      background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+      background: white;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
     
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
-<body class="h-screen flex overflow-hidden selection:bg-brand-500/30">
+<body class="h-screen flex overflow-hidden selection:bg-brand-500/20">
 
   <!-- Sidebar -->
-  <aside class="w-64 glass-panel border-r border-slate-800 flex flex-col hidden md:flex relative z-20">
-    <div class="h-16 flex items-center px-6 border-b border-slate-800/80">
-      <div class="flex items-center gap-3 text-brand-400 font-bold tracking-wider uppercase text-sm">
-        <div class="w-8 h-8 rounded-lg bg-brand-500/20 flex items-center justify-center border border-brand-500/30">
-          <i data-lucide="command" class="w-4 h-4 text-brand-400"></i>
+  <aside class="w-64 glass-panel flex flex-col hidden md:flex relative z-20">
+    <div class="h-16 flex items-center px-6 border-b border-slate-200">
+      <div class="flex items-center gap-3 text-brand-600 font-bold tracking-wider uppercase text-sm">
+        <div class="w-8 h-8 rounded-lg bg-brand-500/10 flex items-center justify-center border border-brand-500/20">
+          <i data-lucide="command" class="w-4 h-4 text-brand-600"></i>
         </div>
         <span>Adminutes HQ</span>
       </div>
     </div>
     <nav class="flex-1 p-4 space-y-2">
-      <a href="#" id="nav-tenants" onclick="switchTab('tenants')" class="flex items-center gap-3 px-3 py-2.5 bg-brand-500/10 text-brand-400 rounded-lg transition font-semibold text-sm border border-brand-500/20">
+      <a href="#" id="nav-tenants" onclick="switchTab('tenants')" class="flex items-center gap-3 px-3 py-2.5 bg-brand-50 text-brand-600 rounded-lg transition font-semibold text-sm border border-brand-200 shadow-sm">
         <i data-lucide="building-2" class="w-4 h-4"></i> Client Tenants
       </a>
-      <a href="#" id="nav-billing" onclick="switchTab('billing')" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-lg transition font-medium text-sm">
+      <a href="#" id="nav-billing" onclick="switchTab('billing')" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition font-medium text-sm">
         <i data-lucide="credit-card" class="w-4 h-4"></i> Billing & Plans
       </a>
-      <a href="#" id="nav-logs" onclick="switchTab('logs')" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-lg transition font-medium text-sm">
+      <a href="#" id="nav-logs" onclick="switchTab('logs')" class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition font-medium text-sm">
         <i data-lucide="activity" class="w-4 h-4"></i> System Logs
       </a>
     </nav>
     
     <!-- Theme Switcher -->
-    <div class="px-4 py-3 border-t border-slate-800">
-      <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 px-1">Color Theme</div>
+    <div class="px-4 py-3 border-t border-slate-200 bg-slate-50/50">
+      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 px-1">Color Theme</div>
       <div class="flex items-center gap-2 px-1">
-        <button onclick="setTheme('')" class="w-5 h-5 rounded-full bg-indigo-500 ring-2 ring-offset-2 ring-offset-slate-900 ring-transparent focus:ring-indigo-400 hover:scale-110 transition cursor-pointer"></button>
-        <button onclick="setTheme('theme-emerald')" class="w-5 h-5 rounded-full bg-emerald-500 ring-2 ring-offset-2 ring-offset-slate-900 ring-transparent focus:ring-emerald-400 hover:scale-110 transition cursor-pointer"></button>
-        <button onclick="setTheme('theme-rose')" class="w-5 h-5 rounded-full bg-rose-500 ring-2 ring-offset-2 ring-offset-slate-900 ring-transparent focus:ring-rose-400 hover:scale-110 transition cursor-pointer"></button>
-        <button onclick="setTheme('theme-amber')" class="w-5 h-5 rounded-full bg-amber-500 ring-2 ring-offset-2 ring-offset-slate-900 ring-transparent focus:ring-amber-400 hover:scale-110 transition cursor-pointer"></button>
+        <button onclick="setTheme('')" class="w-5 h-5 rounded-full bg-indigo-500 ring-2 ring-offset-2 ring-offset-slate-50 ring-transparent focus:ring-indigo-400 hover:scale-110 transition cursor-pointer shadow-sm"></button>
+        <button onclick="setTheme('theme-emerald')" class="w-5 h-5 rounded-full bg-emerald-500 ring-2 ring-offset-2 ring-offset-slate-50 ring-transparent focus:ring-emerald-400 hover:scale-110 transition cursor-pointer shadow-sm"></button>
+        <button onclick="setTheme('theme-rose')" class="w-5 h-5 rounded-full bg-rose-500 ring-2 ring-offset-2 ring-offset-slate-50 ring-transparent focus:ring-rose-400 hover:scale-110 transition cursor-pointer shadow-sm"></button>
+        <button onclick="setTheme('theme-amber')" class="w-5 h-5 rounded-full bg-amber-500 ring-2 ring-offset-2 ring-offset-slate-50 ring-transparent focus:ring-amber-400 hover:scale-110 transition cursor-pointer shadow-sm"></button>
       </div>
     </div>
 
-    <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+    <div class="p-4 border-t border-slate-200 bg-white">
       <div class="flex items-center gap-3 px-2 py-1">
-        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center font-bold text-sm shadow-lg shadow-brand-500/20">HQ</div>
+        <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center font-bold text-white text-sm shadow-lg shadow-brand-500/30">HQ</div>
         <div>
-          <div class="text-sm font-bold text-white">System Admin</div>
-          <div class="text-[10px] text-brand-400 uppercase tracking-wide font-semibold">God Mode</div>
+          <div class="text-sm font-bold text-slate-800">System Admin</div>
+          <div class="text-[10px] text-brand-600 uppercase tracking-wide font-bold">God Mode</div>
         </div>
       </div>
     </div>
   </aside>
 
   <!-- Main Content -->
-  <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-900">
+  <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50">
     
     <!-- Top Header -->
-    <header class="h-16 glass-panel border-b border-slate-800 flex items-center justify-between px-8 z-10">
-      <h1 class="font-bold text-lg tracking-tight text-white flex items-center gap-2">
-        <i data-lucide="layout-dashboard" class="w-5 h-5 text-brand-400"></i>
+    <header class="h-16 glass-panel border-b border-slate-200 flex items-center justify-between px-8 z-10 bg-white/80">
+      <h1 class="font-bold text-lg tracking-tight text-slate-800 flex items-center gap-2">
+        <i data-lucide="layout-dashboard" class="w-5 h-5 text-brand-500"></i>
         Tenant Management
       </h1>
-      <button onclick="openProvisionModal()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold rounded-lg shadow-[0_0_15px_rgba(var(--brand-500),0.4)] transition flex items-center gap-2">
+      <button onclick="openProvisionModal()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold rounded-lg shadow-[0_4px_15px_rgba(var(--brand-500),0.3)] transition flex items-center gap-2">
         <i data-lucide="plus" class="w-4 h-4"></i>
         Provision New Client
       </button>
@@ -157,60 +152,60 @@
     <!-- Content Area -->
     <div class="flex-1 overflow-y-auto p-8 relative">
       <!-- Glow effect in background -->
-      <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand-500/5 rounded-full blur-[100px] pointer-events-none"></div>
 
       <!-- Overview Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 relative z-10">
         <div class="glass-card rounded-xl p-6 flex items-center gap-5 relative overflow-hidden group">
-          <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-500/10 rounded-full blur-2xl group-hover:bg-brand-500/20 transition duration-500"></div>
-          <div class="w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400">
+          <div class="absolute -right-4 -top-4 w-24 h-24 bg-brand-500/5 rounded-full blur-2xl group-hover:bg-brand-500/10 transition duration-500"></div>
+          <div class="w-14 h-14 rounded-2xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600">
             <i data-lucide="building" class="w-7 h-7"></i>
           </div>
           <div>
-            <div class="text-3xl font-black text-white tracking-tight" id="stat-companies">0</div>
-            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">Active Companies</div>
+            <div class="text-3xl font-black text-slate-800 tracking-tight" id="stat-companies">0</div>
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mt-1">Active Companies</div>
           </div>
         </div>
         
         <div class="glass-card rounded-xl p-6 flex items-center gap-5 relative overflow-hidden group">
-          <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition duration-500"></div>
-          <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+          <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition duration-500"></div>
+          <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
             <i data-lucide="users" class="w-7 h-7"></i>
           </div>
           <div>
-            <div class="text-3xl font-black text-white tracking-tight" id="stat-seats">0</div>
-            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">Total Seats Allocated</div>
+            <div class="text-3xl font-black text-slate-800 tracking-tight" id="stat-seats">0</div>
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mt-1">Total Seats Allocated</div>
           </div>
         </div>
 
         <div class="glass-card rounded-xl p-6 flex items-center gap-5 relative overflow-hidden group">
-          <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition duration-500"></div>
-          <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition duration-500"></div>
+          <div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
             <i data-lucide="server" class="w-7 h-7"></i>
           </div>
           <div>
-            <div class="text-3xl font-black text-white tracking-tight">100%</div>
-            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mt-1">System Uptime</div>
+            <div class="text-3xl font-black text-slate-800 tracking-tight">100%</div>
+            <div class="text-xs font-bold uppercase tracking-wider text-slate-500 mt-1">System Uptime</div>
           </div>
         </div>
       </div>
 
       <!-- Main Tab Content -->
       <div id="tab-tenants" class="space-y-6 relative z-10">
-        <div class="glass-card rounded-xl overflow-hidden border border-slate-700/60">
-          <div class="px-6 py-5 border-b border-slate-700/60 flex items-center justify-between bg-slate-800/30">
-            <h2 class="text-base font-bold text-white flex items-center gap-2">
-              <i data-lucide="folder-open" class="w-4 h-4 text-brand-400"></i> Client Directory
+        <div class="glass-card rounded-xl overflow-hidden border border-slate-200">
+          <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <i data-lucide="folder-open" class="w-4 h-4 text-brand-500"></i> Client Directory
             </h2>
             <div class="relative">
-              <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2"></i>
-              <input type="text" placeholder="Search clients..." class="pl-9 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition w-64">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" placeholder="Search clients..." class="pl-9 pr-4 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition w-64 shadow-sm">
             </div>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
-                <tr class="bg-slate-900/60 text-slate-400 text-[11px] uppercase tracking-wider border-b border-slate-700/60">
+                <tr class="bg-slate-100/50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
                   <th class="px-6 py-4 font-bold">Company Name</th>
                   <th class="px-6 py-4 font-bold">Tenant ID</th>
                   <th class="px-6 py-4 font-bold">Admin Email</th>
@@ -220,9 +215,9 @@
                   <th class="px-6 py-4 font-bold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody id="tenants-list" class="divide-y divide-slate-800/60">
+              <tbody id="tenants-list" class="divide-y divide-slate-200">
                 <!-- Data populated by JS -->
-                <tr><td colspan="7" class="px-6 py-12 text-center text-slate-500">
+                <tr><td colspan="7" class="px-6 py-12 text-center text-slate-400">
                   <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-brand-500"></i>
                   Loading database...
                 </td></tr>
@@ -233,24 +228,24 @@
       </div>
       
       <div id="tab-billing" class="hidden relative z-10">
-        <div class="glass-card rounded-xl p-12 text-center border border-slate-700/60">
-          <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-700">
+        <div class="glass-card rounded-xl p-12 text-center border border-slate-200">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200">
             <i data-lucide="credit-card" class="w-8 h-8 text-slate-400"></i>
           </div>
-          <h2 class="text-xl font-bold text-white mb-2">Billing Engine</h2>
-          <p class="text-slate-400 max-w-md mx-auto">The centralized billing module allows you to track subscription plans, issue invoices, and monitor revenue per tenant.</p>
-          <button class="mt-6 px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-semibold transition border border-slate-700">Coming in v2.0</button>
+          <h2 class="text-xl font-bold text-slate-800 mb-2">Billing Engine</h2>
+          <p class="text-slate-500 max-w-md mx-auto">The centralized billing module allows you to track subscription plans, issue invoices, and monitor revenue per tenant.</p>
+          <button class="mt-6 px-6 py-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg font-bold transition border border-slate-300 shadow-sm">Coming in v2.0</button>
         </div>
       </div>
 
       <div id="tab-logs" class="hidden relative z-10">
-        <div class="glass-card rounded-xl p-12 text-center border border-slate-700/60">
-          <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-700">
+        <div class="glass-card rounded-xl p-12 text-center border border-slate-200">
+          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200">
             <i data-lucide="activity" class="w-8 h-8 text-slate-400"></i>
           </div>
-          <h2 class="text-xl font-bold text-white mb-2">System Logs</h2>
-          <p class="text-slate-400 max-w-md mx-auto">Global system activity, error tracking, and authentication logs will appear here for security auditing.</p>
-          <button class="mt-6 px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-semibold transition border border-slate-700">Connect Log Server</button>
+          <h2 class="text-xl font-bold text-slate-800 mb-2">System Logs</h2>
+          <p class="text-slate-500 max-w-md mx-auto">Global system activity, error tracking, and authentication logs will appear here for security auditing.</p>
+          <button class="mt-6 px-6 py-2.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg font-bold transition border border-slate-300 shadow-sm">Connect Log Server</button>
         </div>
       </div>
 
@@ -258,46 +253,46 @@
   </main>
 
   <!-- Provision Modal -->
-  <div id="provision-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-    <div class="glass-card border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl relative transform scale-95 transition-transform duration-300" id="provision-modal-content">
+  <div id="provision-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <div class="glass-card border border-slate-200 rounded-2xl w-full max-w-md shadow-2xl relative transform scale-95 transition-transform duration-300" id="provision-modal-content">
       
-      <div class="px-6 py-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/30 rounded-t-2xl">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <i data-lucide="zap" class="w-5 h-5 text-brand-400"></i> Provision Client
+      <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
+        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i data-lucide="zap" class="w-5 h-5 text-brand-500"></i> Provision Client
         </h3>
-        <button onclick="closeProvisionModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg transition">
+        <button onclick="closeProvisionModal()" class="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-1.5 rounded-lg transition">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
       
       <div class="p-6 space-y-5">
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Company / Tenant Name</label>
-          <input type="text" id="p-company" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" placeholder="e.g. Apex Corporation" />
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Company / Tenant Name</label>
+          <input type="text" id="p-company" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition shadow-sm" placeholder="e.g. Apex Corporation" />
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Client Admin Email</label>
-          <input type="text" id="p-email" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" placeholder="admin@apexcorp.com" />
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Client Admin Email</label>
+          <input type="text" id="p-email" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition shadow-sm" placeholder="admin@apexcorp.com" />
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Admin Username</label>
-          <input type="text" id="p-username" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" placeholder="e.g. storeadmin" />
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Admin Username</label>
+          <input type="text" id="p-username" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition shadow-sm" placeholder="e.g. storeadmin" />
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Admin Password</label>
-            <input type="text" id="p-password" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" placeholder="Leave empty for auto" />
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Admin Password</label>
+            <input type="text" id="p-password" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition shadow-sm" placeholder="Leave empty for auto" />
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Seat Limit</label>
-            <input type="number" id="p-seats" value="10" min="1" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition" />
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Seat Limit</label>
+            <input type="number" id="p-seats" value="10" min="1" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition shadow-sm" />
           </div>
         </div>
         
-        <div id="p-status" class="hidden p-3 rounded-lg bg-brand-500/10 border border-brand-500/20 text-brand-400 text-sm font-semibold flex items-center gap-2"></div>
+        <div id="p-status" class="hidden p-3 rounded-lg bg-brand-50 border border-brand-100 text-brand-600 text-sm font-semibold flex items-center gap-2 shadow-sm"></div>
         
         <div class="pt-4 flex items-center justify-end gap-3">
-          <button type="button" onclick="closeProvisionModal()" class="px-5 py-2.5 rounded-lg text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition">Cancel</button>
+          <button type="button" onclick="closeProvisionModal()" class="px-5 py-2.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition">Cancel</button>
           <button id="p-btn" type="button" onclick="provisionTenant()" class="px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-brand-500/30 transition">
             Create Workspace
           </button>
@@ -307,33 +302,33 @@
   </div>
 
   <!-- Edit Tenant Modal -->
-  <div id="edit-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-    <div class="glass-card border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl relative transform scale-95 transition-transform duration-300" id="edit-modal-content">
-      <div class="px-6 py-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/30 rounded-t-2xl">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <i data-lucide="edit-3" class="w-5 h-5 text-blue-400"></i> Edit Client
+  <div id="edit-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <div class="glass-card border border-slate-200 rounded-2xl w-full max-w-md shadow-2xl relative transform scale-95 transition-transform duration-300" id="edit-modal-content">
+      <div class="px-6 py-5 border-b border-slate-200 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
+        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <i data-lucide="edit-3" class="w-5 h-5 text-blue-500"></i> Edit Client
         </h3>
-        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg transition">
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 p-1.5 rounded-lg transition">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
       <input type="hidden" id="e-id" />
       <div class="p-6 space-y-5">
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Company Name</label>
-          <input type="text" id="e-name" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Company Name</label>
+          <input type="text" id="e-name" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-sm" />
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Admin Username</label>
-          <input type="text" id="e-username" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Admin Username</label>
+          <input type="text" id="e-username" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-sm" />
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Maximum User Seats</label>
-          <input type="number" id="e-seats" min="1" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition" />
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Maximum User Seats</label>
+          <input type="number" id="e-seats" min="1" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-sm" />
         </div>
-        <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-700/50">
-          <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 rounded-lg text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition">Cancel</button>
-          <button type="button" onclick="window.submitEdit()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-blue-500/30 transition flex items-center gap-2">
+        <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 mt-4">
+          <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition mt-4">Cancel</button>
+          <button type="button" onclick="window.submitEdit()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-blue-500/30 transition flex items-center gap-2 mt-4">
             <i data-lucide="save" class="w-4 h-4"></i> Save Changes
           </button>
         </div>
@@ -342,12 +337,11 @@
   </div>
 
   <script src="supabase-config.js"></script>
-  <script src="js/app.js??v=1791446480000"></script>
+  <script src="js/app.js??v=1791446845000"></script>
   
   <script>
     lucide.createIcons();
     
-    // UI Interactions
     function openProvisionModal() {
       const modal = document.getElementById('provision-modal');
       const content = document.getElementById('provision-modal-content');
@@ -379,11 +373,10 @@
     }
     
     function setTheme(themeName) {
-      document.body.className = 'h-screen flex overflow-hidden selection:bg-brand-500/30 ' + themeName;
+      document.body.className = 'h-screen flex overflow-hidden selection:bg-brand-500/20 ' + themeName;
       localStorage.setItem('hq-theme', themeName);
     }
     
-    // Load saved theme
     const savedTheme = localStorage.getItem('hq-theme');
     if(savedTheme) setTheme(savedTheme);
   </script>

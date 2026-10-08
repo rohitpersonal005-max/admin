@@ -75,20 +75,20 @@ function renderTable() {
   }
 
   tenants.forEach(t => {
-    const statusClass = t.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]';
+    const statusClass = t.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm' : 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm';
     
     let tr = document.createElement('tr');
-    tr.className = 'hover:bg-slate-800/40 transition group';
+    tr.className = 'hover:bg-slate-50 transition group border-b border-slate-100 last:border-0';
     
-    tr.innerHTML = '<td class="px-6 py-4 font-semibold text-white">' + t.companyName + '</td>' +
-                   '<td class="px-6 py-4 text-slate-400 font-mono text-xs">' + t.id + '</td>' +
-                   '<td class="px-6 py-4 text-slate-300">' + t.adminEmail + '</td>' +
-                   '<td class="px-6 py-4 text-slate-300 font-mono text-xs">' + (t.admin_username || '-') + '</td>' +
-                   '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">' + t.seatLimit + '</span></td>' +
+    tr.innerHTML = '<td class="px-6 py-4 font-semibold text-slate-800">' + t.companyName + '</td>' +
+                   '<td class="px-6 py-4 text-slate-500 font-mono text-xs">' + t.id + '</td>' +
+                   '<td class="px-6 py-4 text-slate-600">' + t.adminEmail + '</td>' +
+                   '<td class="px-6 py-4 text-slate-600 font-mono text-xs">' + (t.admin_username || '-') + '</td>' +
+                   '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md font-mono text-xs border border-slate-200 shadow-sm">' + t.seatLimit + '</span></td>' +
                    '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ' + statusClass + '">' + t.status + '</span></td>' +
                    '<td class="px-6 py-4 text-right flex justify-end gap-2">' +
-                   '<button onclick="editTenant(\'' + t.id + '\')" class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700 group-hover:border-slate-600 transition">Edit</button>' +
-                   '<button onclick="toggleTenantStatus(\'' + t.id + '\', \'' + t.status + '\')" class="px-3 py-1.5 rounded text-xs font-semibold ' + (t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-transparent hover:border-rose-500/30' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-transparent hover:border-emerald-500/30') + ' transition">' +
+                   '<button onclick="editTenant(\'' + t.id + '\')" class="px-3 py-1.5 rounded text-xs font-semibold bg-white text-blue-600 hover:bg-blue-50 border border-slate-200 group-hover:border-blue-200 shadow-sm transition">Edit</button>' +
+                   '<button onclick="toggleTenantStatus(\'' + t.id + '\', \'' + t.status + '\')" class="px-3 py-1.5 rounded text-xs font-semibold ' + (t.status === 'Active' ? 'bg-white text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 shadow-sm') + ' transition">' +
                    (t.status === 'Active' ? 'Suspend' : 'Activate') + '</button></td>';
     tbody.appendChild(tr);
   });
@@ -222,6 +222,7 @@ window.forceSubmitProvision = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
 
 
 
