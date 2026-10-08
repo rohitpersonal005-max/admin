@@ -32,6 +32,36 @@ async function loadTenants() {
   renderTable();
 }
 
+window.editTenant = function(id) {
+  const t = tenants.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('e-id').value = t.id;
+  document.getElementById('e-name').value = t.companyName || '';
+  document.getElementById('e-username').value = t.admin_username || '';
+  document.getElementById('e-seats').value = t.seatLimit || 10;
+  document.getElementById('edit-modal').classList.remove('hidden');
+};
+
+window.submitEdit = async function() {
+  const id = document.getElementById('e-id').value;
+  const name = document.getElementById('e-name').value;
+  const username = document.getElementById('e-username').value;
+  const seats = document.getElementById('e-seats').value;
+  
+  const { error } = await window.CMS_SUPABASE.from('master_tenants').update({
+    company_name: name,
+    admin_username: username,
+    seat_limit: parseInt(seats)
+  }).eq('id', id);
+  
+  if (error) {
+    alert("Error updating client: " + error.message);
+  } else {
+    document.getElementById('edit-modal').classList.add('hidden');
+    loadTenants();
+  }
+};
+
 function renderTable() {
   const tbody = document.getElementById('tenants-list');
   tbody.innerHTML = '';
@@ -229,5 +259,6 @@ window.forceSubmitProvision = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
 
 
