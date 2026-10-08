@@ -494,7 +494,7 @@ window.CMS_HOME = {
     if (window.lucide) window.lucide.createIcons();
   },
 
-  async saveProfile() {
+  saveProfile() {
     const name = document.getElementById('home-prof-name').value.trim();
     const username = document.getElementById('home-prof-username').value.trim().toLowerCase();
     const email = document.getElementById('home-prof-email').value.trim();
@@ -503,50 +503,19 @@ window.CMS_HOME = {
 
     if (!name || !username) return window.CMS_APP.toast('Name and username are required', 'error');
 
-    try {
-      const response = await fetch('/api/users/' + currentUser.id, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, username, email, password: password || undefined })
-      });
-      let result;
-        try {
-          result = await response.json();
-        } catch(err) {
-          throw new Error('Server returned an invalid response. Are you accessing the site via localhost:8080?');
-        }
-      if (!response.ok) throw new Error(result.error || 'Failed to update profile.');
+    let users = window.CMS_STORE.getUsers();
+    let userIndex = users.findIndex(u => u.id === currentUser.id);
+    
+    if (userIndex !== -1) {
+      users[userIndex].name = name;
+      users[userIndex].username = username;
+      users[userIndex].email = email;
+      if (password) users[userIndex].password = password;
       
+      window.CMS_STORE.setUsers(users);
       window.CMS_APP.toast('Profile updated successfully!', 'success');
-      currentUser.name = name;
-      currentUser.username = username;
-      currentUser.email = email;
       this.render();
-      window.CMS_APP.updateUserProfile(); 
-    } catch (e) {
-      window.CMS_APP.toast(e.message, 'error');
     }
-  },
-
-  saveCompany() {
-    this.companyInfo = {
-      name: document.getElementById('home-comp-name').value,
-      address: document.getElementById('home-comp-address').value,
-      taluka: document.getElementById('home-comp-taluka').value,
-      district: document.getElementById('home-comp-district').value,
-      state: document.getElementById('home-comp-state').value,
-      stateCode: document.getElementById('home-comp-state-code').value.trim(),
-      pin: document.getElementById('home-comp-pin').value,
-      contact: document.getElementById('home-comp-contact').value,
-      email: document.getElementById('home-comp-email').value,
-      gstin: document.getElementById('home-comp-gstin').value,
-      pan: document.getElementById('home-comp-pan').value,
-      cert: document.getElementById('home-comp-cert').value,
-      license: document.getElementById('home-comp-license').value
-    };
-    localStorage.setItem('CMS_COMPANY_INFO', JSON.stringify(this.companyInfo));
-    window.CMS_APP.toast('Company profile saved successfully! This info will be used in transactions.', 'success');
-      this.render();
   },
 
   async saveUserSettings(userId) {
@@ -579,23 +548,21 @@ window.CMS_HOME = {
     }
   },
 
-  async deleteUser(userId) {
+  deleteUser(userId) {
     if (!confirm('Are you sure you want to delete this user completely?')) return;
-    try {
-      const response = await fetch('/api/users/' + userId, { method: 'DELETE' });
-      let result;
-        try {
-          result = await response.json();
-        } catch(err) {
-          throw new Error('Server returned an invalid response. Are you accessing the site via localhost:8080?');
-        }
-      if (!response.ok) throw new Error(result.error || 'Failed to delete user.');
-      
-      window.CMS_APP.toast('User deleted successfully.', 'success');
-      window.CMS_AUTH.loadUsers().then(() => this.render());
-    } catch (e) {
-      window.CMS_APP.toast(e.message, 'error');
+    
+    let users = window.CMS_STORE.getUsers();
+    const currentUser = window.CMS_STORE.getCurrentUser();
+    if (userId === currentUser.id) {
+      window.CMS_APP.toast('Cannot delete the currently logged in user.', 'error');
+      return;
     }
+    
+    users = users.filter(u => u.id !== userId);
+    window.CMS_STORE.setUsers(users);
+    
+    window.CMS_APP.toast('User deleted successfully.', 'success');
+    this.render();
   }
 };
 
