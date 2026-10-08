@@ -126,13 +126,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      window.forceSubmitProvision();
+      window.provisionTenant();
     });
   }
 });
 
-window.forceSubmitProvision = async function() {
-  const btn = document.querySelector('button[onclick="window.forceSubmitProvision()"]');
+window.provisionTenant = async function() {
+  const btn = document.getElementById('p-btn');
   if (btn && btn.disabled) return;
   if (btn) btn.disabled = true;
 
@@ -196,6 +196,7 @@ window.forceSubmitProvision = async function() {
       company_name: name,
       cms_db: {},
       admin_email: email,
+      admin_username: username,
       seat_limit: parseInt(seats),
       status: 'Active'
     });
@@ -222,6 +223,8 @@ window.forceSubmitProvision = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
+
 
 
 
