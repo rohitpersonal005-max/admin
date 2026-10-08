@@ -1045,7 +1045,7 @@ class Store {
         const parsed = JSON.parse(saved);
         const hasRecords = ['categories', 'gstSlabs', 'vendors', 'consumables'].some(key => (parsed[key] || []).length > 0);
         if (!hasRecords) {
-          const initial = JSON.parse(JSON.stringify(INITIAL_SEED));
+          const initial = JSON.parse(JSON.stringify(EMPTY_DATABASE));
           initial.vendors = initial.vendors.map(normalizeVendor);
           initial.consumables = initial.consumables.map(normalizeConsumable);
           initial.userRole = user.role;
@@ -1062,7 +1062,7 @@ class Store {
     } catch (e) {
       console.error('Failed to load from localStorage, using empty database', e);
     }
-    const initial = JSON.parse(JSON.stringify(INITIAL_SEED));
+    const initial = JSON.parse(JSON.stringify(EMPTY_DATABASE));
     initial.vendors = initial.vendors.map(normalizeVendor);
     initial.consumables = initial.consumables.map(normalizeConsumable);
     return initial;
@@ -1568,6 +1568,7 @@ class Store {
 }
 
 window.CMS_STORE = new Store();
+
 
 
 
