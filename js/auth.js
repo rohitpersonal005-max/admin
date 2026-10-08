@@ -101,7 +101,8 @@ window.CMS_AUTH = {
     }
 
     const form = document.getElementById('auth-form');
-    const emailInput = document.getElementById('auth-username');
+    const emailInput = document.getElementById('auth-email');
+    const userInput = document.getElementById('auth-username');
     const pwdInput = document.getElementById('auth-password');
     const btn = form ? form.querySelector('button[type="submit"]') : null;
 
@@ -109,8 +110,9 @@ window.CMS_AUTH = {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = emailInput.value.trim();
+        const typedUsername = userInput ? userInput.value.trim() : '';
         const pwd = pwdInput.value;
-        if (!email || !pwd) return;
+        if (!email || !pwd || !typedUsername) return;
 
         if (btn) {
           btn.disabled = true;
@@ -118,8 +120,20 @@ window.CMS_AUTH = {
         }
 
         try {
-          const { error } = await window.CMS_SUPABASE.auth.signInWithPassword({ email, password: pwd });
+          const { error, data } = await window.CMS_SUPABASE.auth.signInWithPassword({ email, password: pwd });
           if (error) throw error;
+          
+          // Verify Username matches
+          if (data && data.user) {
+            const { data: tenants } = await window.CMS_SUPABASE.from('master_tenants').select('admin_username').eq('admin_uid', data.user.id);
+            if (tenants && tenants.length > 0) {
+              const realUsername = tenants[0].admin_username;
+              if (realUsername !== typedUsername) {
+                await window.CMS_SUPABASE.auth.signOut();
+                throw new Error("Invalid username for this account.");
+              }
+            }
+          }
           // onAuthStateChange will handle the rest
         } catch (loginError) {
           console.error(loginError);
@@ -153,4 +167,5 @@ window.CMS_AUTH = {
 };
 
 window.addEventListener('DOMContentLoaded', () => window.CMS_AUTH.init());
+
 

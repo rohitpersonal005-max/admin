@@ -160,7 +160,8 @@ window.forceSubmitProvision = async function() {
     updateStatus('Starting provision...');
     const name = document.getElementById('p-company').value.trim();
     const email = document.getElementById('p-email').value.trim();
-    const seats = document.getElementById('p-seats').value;
+        const seats = document.getElementById('p-seats').value;
+    const manualPassword = document.getElementById('p-password') ? document.getElementById('p-password').value : '';
 
     if (!name || !email || !seats) {
       alert("Please fill in all fields (Company Name, Email, and Seats).");
@@ -176,7 +177,7 @@ window.forceSubmitProvision = async function() {
 
     if (btn) btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Provisioning...';
 
-    const tempPassword = "Welcome@" + Math.floor(1000 + Math.random() * 9000);
+        const tempPassword = manualPassword || ("Welcome@" + Math.floor(1000 + Math.random() * 9000));
     
     updateStatus('Connecting to Supabase Auth...');
 
@@ -228,3 +229,5 @@ window.forceSubmitProvision = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
+
