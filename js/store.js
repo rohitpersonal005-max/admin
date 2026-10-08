@@ -1145,36 +1145,32 @@ class Store {
   }
 
   getUsers() {
-    const role = this.getRole();
-    if (role === 'Admin') {
-      return ENTERPRISE_USERS;
+      return this.data.users || [];
     }
-    const current = this.getCurrentUser();
-    return current ? [current] : [];
-  }
 
   setUsers(users) {
-    if (!Array.isArray(users) || users.length === 0) return;
-    ENTERPRISE_USERS = users.map(user => {
-      const existing = ENTERPRISE_USERS.find(candidate => candidate.id === user.id);
-      return {
-        ...user,
-        roleTitle: user.role === 'Admin' ? 'Store In-Charge (Admin)' : 'Store Staff (User)',
-        badgeLabel: user.role === 'Admin' ? 'STORE IN-CHARGE / ADMIN' : 'STORE CLERK / USER',
-        avatarText: (user.name || 'User').split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase(),
-        avatarBg: user.role === 'Admin' ? 'bg-slate-900' : 'bg-slate-900',
-        avatarTextCol: 'text-white',
-        pin: existing ? existing.pin : null,
-        description: user.role === 'Admin' ? 'Store approval authority.' : 'Operational store maker.'
-      };
-    });
-  }
+      if (!Array.isArray(users) || users.length === 0) return;
+      this.data.users = users.map(user => {
+        return {
+          ...user,
+          roleTitle: user.role === 'Admin' ? 'Store In-Charge (Admin)' : 'Store Staff (' + user.role + ')',
+          badgeLabel: user.role === 'Admin' ? 'STORE IN-CHARGE / ADMIN' : (user.role + ' / USER').toUpperCase(),
+          avatarText: (user.name || 'User').split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase(),
+          avatarBg: 'bg-slate-900',
+          avatarTextCol: 'text-white',
+          pin: user.pin || null,
+          description: user.role === 'Admin' ? 'Store approval authority.' : 'Operational store maker.'
+        };
+      });
+      this.save();
+    }
 
   getCurrentUser() {
-    const savedUserId = localStorage.getItem(USER_KEY) || 'EMP-2041';
-    const user = ENTERPRISE_USERS.find(u => u.id === savedUserId);
-    return user || ENTERPRISE_USERS[0];
-  }
+      const savedUserId = localStorage.getItem(USER_KEY);
+      const users = this.getUsers();
+      const user = users.find(u => u.id === savedUserId);
+      return user || users[0] || { role: 'User', name: 'Unknown' };
+    }
 
   setCurrentUser(userId) {
     const user = ENTERPRISE_USERS.find(u => u.id === userId);

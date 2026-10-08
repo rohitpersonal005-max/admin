@@ -51,8 +51,12 @@ window.CMS_HOME = {
           <input type="text" id="add-user-name" class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. John Doe">
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email</label>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email / Username</label>
           <input type="email" id="add-user-email" class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. john@example.com">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Password</label>
+          <input type="text" id="add-user-password" class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none font-mono" placeholder="Default Password">
         </div>
         <div>
           <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Role</label>
@@ -67,6 +71,7 @@ window.CMS_HOME = {
       const name = document.getElementById('add-user-name').value.trim();
       const email = document.getElementById('add-user-email').value.trim();
       const role = document.getElementById('add-user-role').value;
+      const password = document.getElementById('add-user-password').value.trim();
       if (!name || !email) {
         window.CMS_APP.toast('Name and Email are required.', 'error');
         return false;
@@ -77,7 +82,9 @@ window.CMS_HOME = {
       const newUser = {
         id: newId,
         name: name,
+        username: email,
         email: email,
+        password: password,
         role: role,
         department: 'General',
         pin: null
