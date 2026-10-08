@@ -65,6 +65,17 @@ window.submitEdit = async function() {
   }
 };
 
+window.deleteTenant = async function(id) {
+  if (!confirm('CRITICAL WARNING: Are you absolutely sure you want to permanently delete this client? All their data will be destroyed forever. This cannot be undone.')) return;
+  
+  const { error } = await window.CMS_SUPABASE.from('master_tenants').delete().eq('id', id);
+  if (error) {
+    alert("Error deleting client: " + error.message);
+  } else {
+    loadTenants();
+  }
+};
+
 window.toggleTenantStatus = async function(id, currentStatus) {
   const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
   if (newStatus === 'Suspended') {
@@ -94,6 +105,10 @@ function renderTable() {
   tenants.forEach(t => {
     const statusClass = t.status === 'Active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200 shadow-sm' : 'bg-rose-50 text-rose-600 border-rose-200 shadow-sm';
     
+        let deleteBtn = '';
+    if (t.status === 'Suspended') {
+      deleteBtn = '<button onclick="deleteTenant(\'' + t.id + '\')" class="px-3 py-1.5 rounded text-xs font-semibold bg-white text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 shadow-sm transition">Delete</button>';
+    }
     let tr = document.createElement('tr');
     tr.className = 'hover:bg-slate-50 transition group border-b border-slate-100 last:border-0';
     
@@ -106,7 +121,7 @@ function renderTable() {
                    '<td class="px-6 py-4 text-right flex justify-end gap-2">' +
                    '<button onclick="editTenant(\'' + t.id + '\')" class="px-3 py-1.5 rounded text-xs font-semibold bg-white text-blue-600 hover:bg-blue-50 border border-slate-200 group-hover:border-blue-200 shadow-sm transition">Edit</button>' +
                    '<button onclick="toggleTenantStatus(\'' + t.id + '\', \'' + t.status + '\')" class="px-3 py-1.5 rounded text-xs font-semibold ' + (t.status === 'Active' ? 'bg-white text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 shadow-sm' : 'bg-white text-emerald-600 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 shadow-sm') + ' transition">' +
-                   (t.status === 'Active' ? 'Suspend' : 'Activate') + '</button></td>';
+                   (t.status === 'Active' ? 'Suspend' : 'Activate') + '</button>' + deleteBtn + '</td>';
     tbody.appendChild(tr);
   });
 }
@@ -240,6 +255,7 @@ window.provisionTenant = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
 
 
 
