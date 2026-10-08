@@ -63,7 +63,11 @@ window.CMS_HOME = {
           <input type="text" id="add-user-name" required class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. John Doe">
         </div>
         <div>
-          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email / Username</label>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Username</label>
+          <input type="text" id="add-user-username" required class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. john_doe">
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email</label>
           <input type="email" id="add-user-email" required class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. john@example.com">
         </div>
         <div>
@@ -89,12 +93,14 @@ window.CMS_HOME = {
   submitAddUser() {
     const name = document.getElementById('add-user-name').value.trim();
     const email = document.getElementById('add-user-email').value.trim();
+    const username = document.getElementById('add-user-username').value.trim().toLowerCase();
     const role = document.getElementById('add-user-role').value;
     const password = document.getElementById('add-user-password').value.trim();
-    if (!name || !email || !password) {
-      window.CMS_APP.toast('Name, Email, and Password are required.', 'error');
+    if (!name || !username || !email || !password) {
+      window.CMS_APP.toast('Name, Username, Email, and Password are required.', 'error');
       return;
     }
+      
     
     const users = window.CMS_STORE.getUsers();
     const seatLimit = window.CMS_TENANT_SEATS || 10;
@@ -108,7 +114,7 @@ window.CMS_HOME = {
     const newUser = {
       id: newId,
       name: name,
-      username: email,
+      username: username,
       email: email,
       password: password,
       role: role,
