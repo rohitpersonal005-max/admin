@@ -67,7 +67,7 @@ function renderTable() {
   tbody.innerHTML = '';
   
   if (tenants.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No client companies provisioned yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-8 text-center text-slate-500">No client companies provisioned yet.</td></tr>';
     return;
   }
 
@@ -80,6 +80,7 @@ function renderTable() {
     tr.innerHTML = '<td class="px-6 py-4 font-semibold text-white">' + t.companyName + '</td>' +
                    '<td class="px-6 py-4 text-slate-400 font-mono text-xs">' + t.id + '</td>' +
                    '<td class="px-6 py-4 text-slate-300">' + t.adminEmail + '</td>' +
+                   '<td class="px-6 py-4 text-slate-300 font-mono text-xs">' + (t.admin_username || '-') + '</td>' +
                    '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">' + t.seatLimit + '</span></td>' +
                    '<td class="px-6 py-4 text-center"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ' + statusClass + '">' + t.status + '</span></td>' +
                    '<td class="px-6 py-4 text-right flex justify-end gap-2">' +
@@ -217,6 +218,8 @@ window.forceSubmitProvision = async function() {
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
+
+
 
 
 
