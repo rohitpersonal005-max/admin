@@ -1068,6 +1068,35 @@ class Store {
     return initial;
   }
 
+  async loadFromCloud() {
+    if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
+      // Load Database
+      const { data: tenants, error } = await window.CMS_SUPABASE
+        .from('master_tenants')
+        .select('cms_db')
+        .eq('id', window.CMS_TENANT_ID);
+        
+      if (!error && tenants && tenants.length > 0) {
+        let val = tenants[0].cms_db || {};
+        
+        // Merge with EMPTY_DATABASE to ensure no arrays/objects are missing
+        this.data = {
+          ...EMPTY_DATABASE,
+          ...val,
+          vendors: (val.vendors || []).map(normalizeVendor),
+          consumables: (val.consumables || []).map(normalizeConsumable)
+        };
+        
+        // Preserve userRole if it existed locally so UI stays correct for the current user
+        this.data.userRole = this.getRole();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+          window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
+        }
+      }
+    }
+  }
+
   save() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
@@ -1529,5 +1558,7 @@ class Store {
 }
 
 window.CMS_STORE = new Store();
+
+
 
 
