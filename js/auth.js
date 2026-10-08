@@ -101,8 +101,8 @@ window.CMS_AUTH = {
     }
 
     const form = document.getElementById('auth-form');
-    const emailInput = document.getElementById('auth-email');
-    const pwdInput = document.getElementById('auth-pwd');
+    const emailInput = document.getElementById('auth-username');
+    const pwdInput = document.getElementById('auth-password');
     const btn = form ? form.querySelector('button[type="submit"]') : null;
 
     if (form) {
@@ -153,3 +153,4 @@ window.CMS_AUTH = {
 };
 
 window.addEventListener('DOMContentLoaded', () => window.CMS_AUTH.init());
+
