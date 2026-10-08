@@ -41,6 +41,18 @@ window.CMS_AUTH = {
       const tenantData = tenants[0];
       window.CMS_TENANT_ID = tenantData.id;
       console.log("Welcome to tenant:", tenantData.company_name);
+        if (window.CMS_STORE) {
+          const saasAdmin = {
+            id: user.id,
+            name: tenantData.admin_username || tenantData.company_name + " Admin",
+            email: user.email,
+            role: "Admin",
+            department: tenantData.company_name,
+            pin: null
+          };
+          window.CMS_STORE.setUsers([saasAdmin]);
+          window.CMS_STORE.setCurrentUser(user.id);
+        }
 
       // 2. Auto-Migration Logic (Local to Cloud)
       const localData = localStorage.getItem('CMS_DATABASE_V2');
@@ -167,6 +179,8 @@ window.CMS_AUTH = {
 };
 
 window.addEventListener('DOMContentLoaded', () => window.CMS_AUTH.init());
+
+
 
 
 
