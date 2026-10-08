@@ -45,18 +45,18 @@ window.CMS_HOME = {
 
   addUser() {
     window.CMS_APP.openModal('Add New User', `
-      <div class="space-y-4">
+      <form class="space-y-4" onsubmit="event.preventDefault(); CMS_HOME.submitAddUser();">
         <div>
           <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Full Name</label>
-          <input type="text" id="add-user-name" class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. John Doe">
+          <input type="text" id="add-user-name" required class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. John Doe">
         </div>
         <div>
           <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Email / Username</label>
-          <input type="email" id="add-user-email" class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. john@example.com">
+          <input type="email" id="add-user-email" required class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. john@example.com">
         </div>
         <div>
           <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Password</label>
-          <input type="text" id="add-user-password" class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none font-mono" placeholder="Default Password">
+          <input type="text" id="add-user-password" required class="w-full px-3 py-2 border border-slate-300 rounded-sm text-sm focus:ring-2 focus:ring-slate-500 outline-none font-mono" placeholder="Default Password">
         </div>
         <div>
           <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Role</label>
@@ -66,36 +66,42 @@ window.CMS_HOME = {
             ${this.getCustomRoles().map(r => `<option value="${r}">${r}</option>`).join('')}
           </select>
         </div>
-      </div>
-    `, async () => {
-      const name = document.getElementById('add-user-name').value.trim();
-      const email = document.getElementById('add-user-email').value.trim();
-      const role = document.getElementById('add-user-role').value;
-      const password = document.getElementById('add-user-password').value.trim();
-      if (!name || !email) {
-        window.CMS_APP.toast('Name and Email are required.', 'error');
-        return false;
-      }
-      
-      const users = window.CMS_STORE.getUsers();
-      const newId = 'EMP-' + Math.floor(1000 + Math.random() * 9000);
-      const newUser = {
-        id: newId,
-        name: name,
-        username: email,
-        email: email,
-        password: password,
-        role: role,
-        department: 'General',
-        pin: null
-      };
-      
-      window.CMS_STORE.setUsers([...users, newUser]);
-      window.CMS_APP.toast(`User ${name} added successfully.`, 'success');
-      this.render();
-      if(window.lucide) window.lucide.createIcons();
-      return true;
-    });
+        <div class="pt-4 mt-6 border-t border-slate-100 flex justify-end gap-3">
+          <button type="button" onclick="CMS_APP.closeStackedModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-sm transition">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-sm shadow-sm transition">Confirm Add User</button>
+        </div>
+      </form>
+    `, 'max-w-lg');
+  },
+
+  submitAddUser() {
+    const name = document.getElementById('add-user-name').value.trim();
+    const email = document.getElementById('add-user-email').value.trim();
+    const role = document.getElementById('add-user-role').value;
+    const password = document.getElementById('add-user-password').value.trim();
+    if (!name || !email || !password) {
+      window.CMS_APP.toast('Name, Email, and Password are required.', 'error');
+      return;
+    }
+    
+    const users = window.CMS_STORE.getUsers();
+    const newId = 'EMP-' + Math.floor(1000 + Math.random() * 9000);
+    const newUser = {
+      id: newId,
+      name: name,
+      username: email,
+      email: email,
+      password: password,
+      role: role,
+      department: 'General',
+      pin: null
+    };
+    
+    window.CMS_STORE.setUsers([...users, newUser]);
+    window.CMS_APP.toast(`User ${name} added successfully.`, 'success');
+    this.render();
+    if(window.lucide) window.lucide.createIcons();
+    window.CMS_APP.closeStackedModal();
   },
 
   addCustomRole() {
