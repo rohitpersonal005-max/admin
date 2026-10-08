@@ -41,66 +41,9 @@ window.CMS_AUTH = {
       const tenantData = tenants[0];
       window.CMS_TENANT_ID = tenantData.id;
       console.log("Welcome to tenant:", tenantData.company_name);
-        if (window.CMS_STORE) {
-          const saasAdmin = {
-            id: user.id,
-            name: tenantData.admin_username || tenantData.company_name + " Admin",
-            email: user.email,
-            role: "Admin",
-            department: tenantData.company_name,
-            pin: null
-          };
-          window.CMS_STORE.setUsers([saasAdmin]);
-          window.CMS_STORE.setCurrentUser(user.id);
-        }
-
-      // 2. Auto-Migration Logic (Local to Cloud)
-      const localData = localStorage.getItem('CMS_DATABASE_V2');
-      
-      // If cloud DB is empty and local data exists, migrate it
-      const isEmpty = !tenantData.cms_db || Object.keys(tenantData.cms_db).length === 0;
-      
-      if (false) {
-        console.log("Auto-migrating local database to Supabase...");
-        await window.CMS_SUPABASE
-          .from('master_tenants')
-          .update({ cms_db: JSON.parse(localData) })
-          .eq('id', window.CMS_TENANT_ID);
-          
-        // Background upload for local files to Supabase Storage
-        setTimeout(async () => {
-          for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('CMS_FILE_')) {
-              const filename = key.replace('CMS_FILE_', '');
-              const base64 = localStorage.getItem(key);
-              
-              if (base64.startsWith('data:')) {
-                const arr = base64.split(',');
-                const mime = arr[0].match(/:(.*?);/)[1];
-                const bstr = atob(arr[1]);
-                let n = bstr.length;
-                const u8arr = new Uint8Array(n);
-                while (n--) {
-                  u8arr[n] = bstr.charCodeAt(n);
-                }
-                const blob = new Blob([u8arr], { type: mime });
-                
-                const safeName = filename.replace(/[.#$\\[\\]]/g, '_');
-                await window.CMS_SUPABASE.storage.from('cms-files').upload(window.CMS_TENANT_ID + '/' + safeName, blob, { upsert: true });
-              }
-            }
-          }
-          console.log("Migration complete!");
-        }, 1000);
-      }
-
-      // 3. Load final data into store and start app
-      if (window.CMS_STORE) {
-        await window.CMS_STORE.loadFromCloud();
-      }
-      
-      this.hideLogin();
+        if (window.CMS_STORE) { await window.CMS_STORE.loadFromCloud(); const saasAdmin = { id: user.id, name: tenantData.admin_username || tenantData.company_name + ' Admin', email: user.email, role: 'Admin', department: tenantData.company_name, pin: null }; window.CMS_STORE.setUsers([saasAdmin]); window.CMS_STORE.setCurrentUser(user.id); }
+        
+        this.hideLogin();
     } catch (err) {
       console.error(err);
       this.showLogin('Error syncing workspace: ' + err.message);
@@ -179,6 +122,7 @@ window.CMS_AUTH = {
 };
 
 window.addEventListener('DOMContentLoaded', () => window.CMS_AUTH.init());
+
 
 
 
