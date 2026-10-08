@@ -703,9 +703,9 @@ window.CMS_MASTERS = {
         if (!filename) return;
         const dataUrl = localStorage.getItem('CMS_FILE_' + filename);
         if (dataUrl) {
-          if (dataUrl.startsWith('data:image')) {
+          if (dataUrl.startsWith('data:image') || dataUrl.match(/\.(png|jpg|jpeg|gif)$/i)) {
             container.innerHTML = `<img src="${dataUrl}" class="w-full max-w-lg mb-4 border border-slate-200 shadow-sm" alt="${filename}" />`;
-          } else if (dataUrl.startsWith('data:application/pdf')) {
+          } else if (dataUrl.startsWith('data:application/pdf') || dataUrl.match(/\.pdf$/i) || dataUrl.includes('supabase')) {
             container.innerHTML = `<iframe src="${dataUrl}" class="w-full h-96 border border-slate-200 shadow-sm"></iframe>`;
           } else {
             container.innerHTML = `<div class="text-xs text-amber-600 italic">Unsupported document format. Cannot preview inline.</div>`;
@@ -3870,6 +3870,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
     }
   }
 };
+
 
 
 

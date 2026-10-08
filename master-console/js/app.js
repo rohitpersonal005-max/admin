@@ -1,34 +1,35 @@
 // Master Console Logic
 
-let db = null;
 let tenants = [];
 
-// Wait for Firebase to initialize from config
+// Wait for Supabase to initialize from config
 setTimeout(() => {
-  if (window.CMS_FIREBASE_DB) {
-    db = window.CMS_FIREBASE_DB;
+  if (window.CMS_SUPABASE) {
     loadTenants();
   } else {
-    alert("Firebase not connected. Check firebase-config.js");
+    alert("Supabase not connected. Check config.");
   }
 }, 500);
 
-function loadTenants() {
-  db.ref('master_tenants').on('value', (snapshot) => {
-    tenants = [];
-    let totalSeats = 0;
-    if (snapshot.exists()) {
-      snapshot.forEach(child => {
-        const t = child.val();
-        t.id = child.key;
-        tenants.push(t);
-        totalSeats += parseInt(t.seatLimit || 0);
-      });
-    }
-    document.getElementById('stat-companies').innerText = tenants.length;
-    document.getElementById('stat-seats').innerText = totalSeats;
-    renderTable();
+async function loadTenants() {
+  const { data, error } = await window.CMS_SUPABASE.from('master_tenants').select('*');
+  if (error) {
+    console.error("Error loading tenants:", error);
+    return;
+  }
+  tenants = data || [];
+  let totalSeats = 0;
+  tenants.forEach(t => {
+    const seatLimit = t.seat_limit || t.seatLimit || 0;
+    totalSeats += parseInt(seatLimit);
+    t.companyName = t.company_name || t.companyName;
+    t.adminEmail = t.admin_email || t.adminEmail;
+    t.seatLimit = seatLimit;
+    t.status = t.status || 'Active';
   });
+  document.getElementById('stat-companies').innerText = tenants.length;
+  document.getElementById('stat-seats').innerText = totalSeats;
+  renderTable();
 }
 
 function renderTable() {
@@ -45,18 +46,18 @@ function renderTable() {
     
     tbody.innerHTML += `
       <tr class="hover:bg-slate-800/30 transition">
-        <td class="px-6 py-4 font-semibold text-white">\${t.companyName}</td>
-        <td class="px-6 py-4 text-slate-400 font-mono text-xs">\${t.id}</td>
-        <td class="px-6 py-4 text-slate-300">\${t.adminEmail}</td>
+        <td class="px-6 py-4 font-semibold text-white">${t.companyName}</td>
+        <td class="px-6 py-4 text-slate-400 font-mono text-xs">${t.id}</td>
+        <td class="px-6 py-4 text-slate-300">${t.adminEmail}</td>
         <td class="px-6 py-4 text-center">
-          <span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">\${t.seatLimit}</span>
+          <span class="px-2.5 py-1 bg-slate-800 rounded-md font-mono text-xs border border-slate-700">${t.seatLimit}</span>
         </td>
         <td class="px-6 py-4 text-center">
-          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border \${statusClass}">\${t.status}</span>
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${statusClass}">${t.status}</span>
         </td>
         <td class="px-6 py-4 text-right">
-          <button onclick="toggleTenantStatus('\${t.id}', '\${t.status}')" class="px-3 py-1.5 rounded text-xs font-semibold \${t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'} transition">
-            \${t.status === 'Active' ? 'Suspend' : 'Activate'}
+          <button onclick="toggleTenantStatus('${t.id}', '${t.status}')" class="px-3 py-1.5 rounded text-xs font-semibold ${t.status === 'Active' ? 'bg-rose-500/10 text-rose-400 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'} transition">
+            ${t.status === 'Active' ? 'Suspend' : 'Activate'}
           </button>
         </td>
       </tr>
@@ -89,10 +90,15 @@ function closeProvisionModal() {
   }, 200);
 }
 
-function toggleTenantStatus(id, currentStatus) {
+async function toggleTenantStatus(id, currentStatus) {
   const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
-  if (confirm(`Are you sure you want to \${newStatus.toLowerCase()} this tenant?`)) {
-    db.ref('master_tenants/' + id).update({ status: newStatus });
+  if (confirm(`Are you sure you want to ${newStatus.toLowerCase()} this tenant?`)) {
+    const { error } = await window.CMS_SUPABASE.from('master_tenants').update({ status: newStatus }).eq('id', id);
+    if (!error) {
+      loadTenants();
+    } else {
+      alert("Error updating status: " + error.message);
+    }
   }
 }
 
@@ -123,7 +129,6 @@ function switchTab(tabId) {
   });
 }
 
-// Map form submit to our new forceSubmitProvision to prevent enter key bugs
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('provision-form');
   if (form) {
@@ -134,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-window.forceSubmitProvision = function() {
+window.forceSubmitProvision = async function() {
   const btn = document.querySelector('button[onclick="window.forceSubmitProvision()"]');
   if (btn && btn.disabled) return;
   if (btn) btn.disabled = true;
@@ -163,80 +168,63 @@ window.forceSubmitProvision = function() {
       return;
     }
 
-    if (!db) {
-      alert("ERROR: Firebase database is not connected.");
+    if (!window.CMS_SUPABASE) {
+      alert("ERROR: Supabase is not connected.");
       if (btn) btn.disabled = false;
       return;
     }
 
     if (btn) btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Provisioning...';
 
-    const tenantId = 'tenant_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
     const tempPassword = "Welcome@" + Math.floor(1000 + Math.random() * 9000);
     
-    updateStatus('Connecting to Firebase Auth...');
+    updateStatus('Connecting to Supabase Auth...');
 
-    if (typeof firebase.auth !== 'function') {
-      updateStatus('ERROR: firebase.auth is not a function! Check script tags.');
-      if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
-      return;
+    const { data: authData, error: authError } = await window.CMS_SUPABASE.auth.signUp({
+      email,
+      password: tempPassword
+    });
+
+    if (authError) {
+      throw new Error('Auth Error: ' + authError.message);
     }
 
-    const tempAppName = "TempApp_" + Date.now();
-    updateStatus('Initializing secondary auth app...');
-    const tempApp = firebase.initializeApp(firebaseConfig, tempAppName);
+    const user = authData.user;
+    if (!user) {
+      throw new Error('User creation failed, no user returned.');
+    }
 
-    tempApp.auth().createUserWithEmailAndPassword(email, tempPassword)
-      .then((userCredential) => {
-        updateStatus('Auth user created successfully! UID: ' + userCredential.user.uid);
-        updateStatus('Connecting to Firebase Realtime Database...');
-        
-        const newTenant = {
-          companyName: name,
-          adminEmail: email,
-          seatLimit: parseInt(seats),
-          status: 'Active',
-          createdAt: new Date().toISOString(),
-          adminUid: userCredential.user.uid
-        };
+    updateStatus('Auth user created successfully! UID: ' + user.id);
+    updateStatus('Connecting to Supabase Database...');
 
-        db.ref('master_tenants/' + tenantId).set(newTenant)
-          .then(() => {
-            updateStatus('Database record saved successfully!');
-            document.getElementById('p-company').value = "";
-            document.getElementById('p-email').value = "";
-            if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
-            if (statusDiv) statusDiv.innerHTML = '';
-            
-            closeProvisionModal();
-            alert('Tenant ' + name + ' successfully provisioned!\\n\\nTenant ID: ' + tenantId + '\\nAdmin Email: ' + email + '\\nTemporary Password: ' + tempPassword);
-            
-            // Cleanup temp app
-            updateStatus('Cleaning up secure connection...');
-            tempApp.auth().signOut()
-              .then(() => tempApp.delete())
-              .catch(console.error);
-          })
-          .catch((dbErr) => {
-            updateStatus('DB ERROR: ' + dbErr.message);
-            console.error("FIREBASE DB ERROR:", dbErr);
-            alert('Firebase Database Error: ' + dbErr.message);
-            if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
-            tempApp.delete().catch(console.error);
-          });
-      })
-      .catch((authErr) => {
-        updateStatus('AUTH ERROR: ' + authErr.message);
-        console.error("FIREBASE AUTH ERROR:", authErr);
-        setTimeout(() => alert('Authentication Error: ' + authErr.message), 100);
-        if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
-        tempApp.delete().catch(console.error);
-      });
+    const { error: dbError } = await window.CMS_SUPABASE.from('master_tenants').insert({
+      admin_uid: user.id,
+      company_name: name,
+      cms_db: {},
+      admin_email: email,
+      seat_limit: parseInt(seats),
+      status: 'Active'
+    });
+
+    if (dbError) {
+      throw new Error('DB Error: ' + dbError.message);
+    }
+
+    updateStatus('Database record saved successfully!');
+    document.getElementById('p-company').value = "";
+    document.getElementById('p-email').value = "";
+    if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
+    if (statusDiv) statusDiv.innerHTML = '';
+    
+    closeProvisionModal();
+    alert('Tenant ' + name + ' successfully provisioned!\n\nAdmin Email: ' + email + '\nTemporary Password: ' + tempPassword);
+    
+    loadTenants(); // Refresh table
 
   } catch (e) {
-    updateStatus('CRITICAL ERROR: ' + e.message);
-    console.error("CRITICAL ERROR:", e);
-    alert("CRITICAL ERROR: " + e.message);
+    updateStatus('ERROR: ' + e.message);
+    console.error("ERROR:", e);
+    alert("ERROR: " + e.message);
     if (btn) { btn.innerHTML = originalBtnText; btn.disabled = false; }
   }
 };
