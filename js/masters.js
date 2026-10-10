@@ -1767,16 +1767,17 @@ window.CMS_MASTERS = {
           <div>
             <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
           </div>
-          <div class="flex gap-2.5">
+          <div class="flex items-center justify-between w-full"><div id="v-autosave-status" class="flex-1 text-xs text-emerald-600 font-semibold italic"></div><div class="flex gap-2.5">
             <button id="v-prev-btn" type="button" onclick="CMS_MASTERS.prevVendorTab()" class="hidden px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded-sm transition">Previous Step</button>
             <button id="v-next-btn" type="button" onclick="CMS_MASTERS.nextVendorTab()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition">Next Step <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i></button>
             <button id="v-submit-btn" type="button" onclick="CMS_MASTERS.saveVendor('${vendorId || ''}')" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
               <i data-lucide="send" class="w-4 h-4"></i>
               <span>Submit for Admin Approval</span>
             </button>
+            </div>
           </div>
-        </div>
-      </form>
+          </div>
+        </form>
     `;
 
     window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-4xl');
@@ -1811,6 +1812,15 @@ window.CMS_MASTERS = {
                 
                 // Save quietly as draft
                 CMS_MASTERS.saveVendor(activeId, false);
+                const statusEl = document.getElementById('v-autosave-status');
+                if (statusEl) {
+                   statusEl.innerText = 'Draft auto-saved at ' + new Date().toLocaleTimeString();
+                   setTimeout(() => { if (statusEl.innerText.includes('auto-saved')) statusEl.innerText = ''; }, 3000);
+                }
+                if (!vendorForm.dataset.toastShown) {
+                   window.CMS_APP.toast('Draft successfully auto-saved in the background!', 'success');
+                   vendorForm.dataset.toastShown = 'true';
+                }
              }, 1000); // 1-second debounce
           };
 
@@ -2463,6 +2473,19 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   },
 
+  deleteVendor(vendorId) {
+    if (confirm('Delete this draft vendor? This action cannot be undone.')) {
+      const store = window.CMS_STORE;
+      const idx = store.data.vendors.findIndex(v => v.id === vendorId);
+      if (idx !== -1) {
+        store.data.vendors.splice(idx, 1);
+        store.save();
+        window.CMS_APP.toast('Draft vendor deleted successfully.', 'success');
+        window.CMS_APP.refreshView();
+      }
+    }
+  },
+  
   promptBlockVendor(vendorId, willBlock) {
     const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
     if (!v) return;
@@ -2477,6 +2500,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
             <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-sm">Cancel</button>
             <button type="submit" class="px-5 py-2 bg-rose-600 text-white font-bold rounded-sm shadow hover:bg-rose-700">Confirm Blacklist / Ban</button>
+            </div>
+          </div>
           </div>
         </form>
       `;
