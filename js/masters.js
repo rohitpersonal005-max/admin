@@ -958,7 +958,7 @@ window.CMS_MASTERS = {
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Date</label>
-          <input type="date" class="q-date w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${dt}" / max="\${today}">
+          <input type="date" class="q-date w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${dt}" max="${today}" />
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Effective From</label>
