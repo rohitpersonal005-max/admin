@@ -991,22 +991,7 @@ window.CMS_MASTERS = {
     const fileName = certData && typeof certData === 'object' ? (certData.fileName || '') : '';
     const today = new Date().toISOString().split('T')[0];
 
-    // FORCE HTML5 FORM VALIDATION ACROSS ALL HIDDEN TABS
-    const form = document.getElementById('vendor-form');
-    if (form && !form.checkValidity()) {
-      const firstInvalid = form.querySelector(':invalid');
-      if (firstInvalid) {
-        const stepDiv = firstInvalid.closest('div[id^="v-step-"]');
-        if (stepDiv) {
-          const stepNum = parseInt(stepDiv.id.replace('v-step-', ''));
-          if (!isNaN(stepNum)) {
-            this.changeVendorStep(stepNum);
-          }
-        }
-        setTimeout(() => firstInvalid.reportValidity(), 50);
-      }
-      return;
-    }
+    
 
     const regulators = ['BIS', 'CDSCO', 'FDA', 'FSSAI', 'GMP Certificate', 'ISO', 'NABL', 'State FDA', 'Other'];
 
