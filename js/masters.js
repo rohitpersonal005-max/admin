@@ -1622,7 +1622,7 @@ window.CMS_MASTERS = {
               </div>
               <button type="button" onclick="CMS_MASTERS.addCertificateRow()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-blue-600 border border-blue-300 rounded-sm font-bold text-xs transition">
                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                <span>+ Add Certificate</span>
+                <span>Add Certificate</span>
               </button>
             </div>
 
