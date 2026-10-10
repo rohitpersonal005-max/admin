@@ -929,6 +929,26 @@ window.CMS_MASTERS = {
   // Sequence strictly arranged:
   // 1. Regulatory Agency -> 2. Form/Standard No. -> 3. License/Certificate No. -> 4. Validity/Expiry -> 5. Upload Copy
   
+  onQuotationDateChange(el) {
+    const row = el.closest('.quote-row');
+    if (!row) return;
+    const eff = row.querySelector('.q-eff');
+    if (!eff) return;
+    
+    if (!el.value) {
+       eff.disabled = true;
+       eff.value = '';
+       eff.removeAttribute('min');
+    } else {
+       eff.disabled = false;
+       eff.min = el.value;
+       if (eff.value && eff.value < el.value) {
+          eff.value = ''; 
+          window.CMS_APP.toast('Effective date reset as it was older than the new quotation date.', 'warning');
+       }
+    }
+  },
+
   addVendorQuotationRow(qData = null) {
     const container = document.getElementById('v-quotations-container');
     if (!container) return;
@@ -958,11 +978,11 @@ window.CMS_MASTERS = {
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Date</label>
-          <input type="date" class="q-date w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${dt}" max="${today}" />
+          <input type="date" class="q-date w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${dt}" max="${today}" onchange="CMS_MASTERS.onQuotationDateChange(this)" />
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Effective From</label>
-          <input type="date" class="q-eff w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${qData ? (qData.effectiveFrom || '') : ''}" />
+          <input type="date" class="q-eff w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${eff}" ${!dt ? 'disabled' : `min="${dt}"`} />
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Valid Till / Expiry</label>
