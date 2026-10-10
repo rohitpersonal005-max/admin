@@ -1006,7 +1006,7 @@ window.CMS_MASTERS = {
     row.className = 'quote-row p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-2.5 relative shadow-sm';
     row.innerHTML = `
       <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-600 transition" title="Remove row"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-      <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 pr-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-3 pr-6">
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Ref No</label>
           <input type="text" class="q-no w-full font-mono uppercase font-bold text-blue-600 px-2.5 py-1.5 border border-blue-300 rounded text-xs bg-white" value="${no}" placeholder="e.g. QT-101" />
@@ -1042,11 +1042,11 @@ window.CMS_MASTERS = {
             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add New Material
           </button>
         </div>
-        <div class="sm:col-span-3 flex flex-col justify-end">
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col justify-end">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Approved Rate</label>
           <input type="number" step="0.01" class="q-rate w-full font-mono font-bold text-blue-600 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${rate}" placeholder="0.00" onchange="CMS_MASTERS.checkRateVsMrp(this)" />
         </div>
-        <div class="sm:col-span-3 flex flex-col justify-end">
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col justify-end">
           <label class="flex justify-between items-center font-semibold text-slate-700 mb-1 text-[10px]">
             <span>MRP</span>
             <label class="flex items-center gap-1 cursor-pointer text-slate-500 hover:text-slate-700" title="MRP is not applicable">
@@ -1056,11 +1056,11 @@ window.CMS_MASTERS = {
           </label>
           <input type="number" step="0.01" class="q-mrp w-full font-mono font-bold text-emerald-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${mrp}" placeholder="0.00" onchange="CMS_MASTERS.checkRateVsMrp(this)" ${qData && qData.mrpNotApplicable ? 'disabled' : ''} />
         </div>
-        <div class="sm:col-span-3 flex flex-col justify-end">
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col justify-end">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">UOM</label>
           <input type="text" class="q-unit w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${unit}" placeholder="Nos, Rim, Box" />
         </div>
-        <div class="sm:col-span-3 flex flex-col justify-end">
+        <div class="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col justify-end">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">HSN / SAC</label>
           <input type="text" class="q-hsn w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${hsn}" placeholder="e.g. 4802" />
         </div>
@@ -4093,6 +4093,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   }
 };
+
+
 
 
 
