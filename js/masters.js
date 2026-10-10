@@ -1006,7 +1006,7 @@ window.CMS_MASTERS = {
     row.className = 'quote-row p-4 bg-white border border-slate-200 rounded-sm rounded-sm space-y-2.5 relative shadow-sm';
     row.innerHTML = `
       <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-600 transition" title="Remove row"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pr-6">
+      <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 pr-6">
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Ref No</label>
           <input type="text" class="q-no w-full font-mono uppercase font-bold text-blue-600 px-2.5 py-1.5 border border-blue-300 rounded text-xs bg-white" value="${no}" placeholder="e.g. QT-101" />
@@ -1022,9 +1022,13 @@ window.CMS_MASTERS = {
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Valid Till / Expiry</label>
           <input type="date" class="q-valid w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${exp}" ${!eff ? 'disabled' : `min="${eff}"`} />
+        
+          <div>
+            <label class="block font-bold text-amber-700 mb-1 text-[10px]">Alert Date</label>
+            <input type="date" class="q-alert w-full font-mono px-2.5 py-1.5 border border-amber-300 bg-amber-50 rounded text-xs" value="${qData ? (qData.alertDate || '') : ''}" />
+          </div>
         </div>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
         <div class="sm:col-span-6">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Select Existing Material</label>
           <select class="q-mat-id w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white" onchange="const o=this.options[this.selectedIndex]; if(!o.value)return; const r=this.closest('.quote-row'); r.querySelector('.q-mat-name').value=o.dataset.name; r.querySelector('.q-rate').value=o.dataset.rate; r.querySelector('.q-mrp').value=o.dataset.mrp; r.querySelector('.q-unit').value=o.dataset.unit; r.querySelector('.q-hsn').value=o.dataset.hsn;">
@@ -1143,10 +1147,14 @@ window.CMS_MASTERS = {
               </label>
             </div>
           </div>
-          <div id="expiry_box_${rowId}" class="cert-expiry-box ${hasValidity ? '' : 'hidden'}">
-            <div class="flex items-center gap-2 bg-slate-50/70 border border-slate-200 p-1.5 rounded-sm">
+          <div id="expiry_box_${rowId}" class="cert-expiry-box ${hasValidity ? '' : 'hidden'} flex gap-2">
+            <div class="flex items-center gap-2 bg-slate-50/70 border border-slate-200 p-1.5 rounded-sm flex-1">
               <label class="text-[11px] font-bold text-blue-600 shrink-0">Expiry Date *:</label>
               <input type="date" min="${today}" class="cert-expiry-input w-full px-2 py-1 border border-blue-300 rounded bg-white text-xs font-mono" value="${validTill}" />
+            </div>
+            <div class="flex items-center gap-2 bg-amber-50/70 border border-amber-200 p-1.5 rounded-sm flex-1">
+              <label class="text-[11px] font-bold text-amber-700 shrink-0">Alert Date:</label>
+              <input type="date" class="cert-alert-input w-full px-2 py-1 border border-amber-300 rounded bg-white text-xs font-mono" value="${certData && typeof certData === 'object' ? (certData.alertDate || '') : ''}" />
             </div>
           </div>
         </div>
@@ -1755,9 +1763,15 @@ window.CMS_MASTERS = {
                   <input type="checkbox" id="v-limited" ${vendor.approvedForLimitedPeriod ? 'checked' : ''} onchange="document.getElementById('v-limited-date-box').classList.toggle('hidden', !this.checked)" class="text-blue-600 rounded" />
                   <span>Vendor is approved for limited period.</span>
                 </label>
-                <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2">
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Approval Valid Till / Expiry Date * (No past dates)</label>
-                  <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-mono" />
+                <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2 grid grid-cols-2 gap-2 grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Approval Valid Till *</label>
+                    <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-mono" />
+                  </div>
+                  <div>
+                    <label class="block text-[11px] font-bold text-amber-700 mb-1">Alert Date</label>
+                    <input type="date" id="v-approval-alert-date" value="${vendor.approvalAlertDate || ''}" class="w-full px-3 py-1.5 border border-amber-300 bg-amber-50 rounded-sm focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs font-mono" />
+                  </div>
                 </div>
               </div>
 
@@ -2110,6 +2124,7 @@ window.CMS_MASTERS = {
         quotationDate: qDate,
         effectiveFrom: qEff,
         validTill: qValid,
+          alertDate: row.querySelector('.q-alert')?.value || '',
         alertDays: row.querySelector('.q-alert') ? row.querySelector('.q-alert').value : '',
           alertFreq: row.querySelector('.q-freq') ? row.querySelector('.q-freq').value : 'Daily',
         materialId: row.querySelector('.q-mat-id')?.value || '',
@@ -4078,6 +4093,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   }
 };
+
 
 
 
