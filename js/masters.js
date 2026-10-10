@@ -780,11 +780,9 @@ window.CMS_MASTERS = {
     const mrp = parseFloat(mrpInput.value);
 
     if (!isNaN(rate) && !isNaN(mrp) && rate > mrp) {
-      const confirmProceed = confirm('Approved rate is more than MRP.\n\nDo you want to continue with entered rate? (Yes = Keep, No = Clear Rate)');
-      if (!confirmProceed) {
-        rateInput.value = '';
-        rateInput.focus();
-      }
+      window.CMS_APP.toast('Error: Approved Rate cannot be higher than MRP.', 'error');
+      rateInput.value = '';
+      rateInput.focus();
     }
   },
 
@@ -1923,8 +1921,17 @@ window.CMS_MASTERS = {
         return window.CMS_APP.toast('Effective date cannot be older than the quotation date.', 'error');
       }
       if (qValid && qEff && qValid < qEff) {
-        return window.CMS_APP.toast('Valid till/expiry date cannot be older than the effective date.', 'error');
-      }
+          return window.CMS_APP.toast('Valid till/expiry date cannot be older than the effective date.', 'error');
+        }
+        
+        const rateVal = parseFloat(row.querySelector('.q-rate')?.value || 0);
+        const mrpVal = parseFloat(row.querySelector('.q-mrp')?.value || 0);
+        const mrpNa = row.querySelector('.q-mrp-na')?.checked;
+        if (!mrpNa && rateVal > mrpVal) {
+          window.CMS_APP.toast('Error: Approved Rate cannot be higher than MRP for material ' + matName, 'error');
+          this.switchVendorTab(3);
+          return;
+        }
 
       quotedItems.push({
         quotationNo: qno,
