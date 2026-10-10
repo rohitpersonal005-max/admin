@@ -2,7 +2,7 @@
  * Adminutes - Masters Module Engine
  * Handles Vendor Master, Consumable Category Master, Consumable (Material) Master
  * with Rate Effective From & Authorized Consumer Confirmation, and GST/IGST Slabs.
- * Includes Live Search, Category Filters, and Material 360° Inspection Drawers.
+ * Includes Live Search, Category Filters, and Material 360� Inspection Drawers.
  */
 
 window.CMS_MASTERS = {
@@ -11,200 +11,200 @@ window.CMS_MASTERS = {
   vendorStateFilter: 'ALL',
   consumableSearchQuery: '',
   countries: [
-      { name: 'Afghanistan', flag: '🇦🇫', code: '+93' },
-      { name: 'Albania', flag: '🇦🇱', code: '+355' },
-      { name: 'Algeria', flag: '🇩🇿', code: '+213' },
-      { name: 'Andorra', flag: '🇦🇩', code: '+376' },
-      { name: 'Angola', flag: '🇦🇴', code: '+244' },
-      { name: 'Antigua and Barbuda', flag: '🇦🇬', code: '+1' },
-      { name: 'Argentina', flag: '🇦🇷', code: '+54' },
-      { name: 'Armenia', flag: '🇦🇲', code: '+374' },
-      { name: 'Australia', flag: '🇦🇺', code: '+61' },
-      { name: 'Austria', flag: '🇦🇹', code: '+43' },
-      { name: 'Azerbaijan', flag: '🇦🇿', code: '+994' },
-      { name: 'Bahamas', flag: '🇧🇸', code: '+1' },
-      { name: 'Bahrain', flag: '🇧🇭', code: '+973' },
-      { name: 'Bangladesh', flag: '🇧🇩', code: '+880' },
-      { name: 'Barbados', flag: '🇧🇧', code: '+1' },
-      { name: 'Belarus', flag: '🇧🇾', code: '+375' },
-      { name: 'Belgium', flag: '🇧🇪', code: '+32' },
-      { name: 'Belize', flag: '🇧🇿', code: '+501' },
-      { name: 'Benin', flag: '🇧🇯', code: '+229' },
-      { name: 'Bhutan', flag: '🇧🇹', code: '+975' },
-      { name: 'Bolivia', flag: '🇧🇴', code: '+591' },
-      { name: 'Bosnia and Herzegovina', flag: '🇧🇦', code: '+387' },
-      { name: 'Botswana', flag: '🇧🇼', code: '+267' },
-      { name: 'Brazil', flag: '🇧🇷', code: '+55' },
-      { name: 'Brunei', flag: '🇧🇳', code: '+673' },
-      { name: 'Bulgaria', flag: '🇧🇬', code: '+359' },
-      { name: 'Burkina Faso', flag: '🇧🇫', code: '+226' },
-      { name: 'Burundi', flag: '🇧🇮', code: '+257' },
-      { name: 'Cabo Verde', flag: '🇨🇻', code: '+238' },
-      { name: 'Cambodia', flag: '🇰🇭', code: '+855' },
-      { name: 'Cameroon', flag: '🇨🇲', code: '+237' },
-      { name: 'Canada', flag: '🇨🇦', code: '+1' },
-      { name: 'Central African Republic', flag: '🇨🇫', code: '+236' },
-      { name: 'Chad', flag: '🇹🇩', code: '+235' },
-      { name: 'Chile', flag: '🇨🇱', code: '+56' },
-      { name: 'China', flag: '🇨🇳', code: '+86' },
-      { name: 'Colombia', flag: '🇨🇴', code: '+57' },
-      { name: 'Comoros', flag: '🇰🇲', code: '+269' },
-      { name: 'Congo', flag: '🇨🇬', code: '+242' },
-      { name: 'Costa Rica', flag: '🇨🇷', code: '+506' },
-      { name: 'Croatia', flag: '🇭🇷', code: '+385' },
-      { name: 'Cuba', flag: '🇨🇺', code: '+53' },
-      { name: 'Cyprus', flag: '🇨🇾', code: '+357' },
-      { name: 'Czechia', flag: '🇨🇿', code: '+420' },
-      { name: 'Denmark', flag: '🇩🇰', code: '+45' },
-      { name: 'Djibouti', flag: '🇩🇯', code: '+253' },
-      { name: 'Dominica', flag: '🇩🇲', code: '+1' },
-      { name: 'Dominican Republic', flag: '🇩🇴', code: '+1' },
-      { name: 'Ecuador', flag: '🇪🇨', code: '+593' },
-      { name: 'Egypt', flag: '🇪🇬', code: '+20' },
-      { name: 'El Salvador', flag: '🇸🇻', code: '+503' },
-      { name: 'Equatorial Guinea', flag: '🇬🇶', code: '+240' },
-      { name: 'Eritrea', flag: '🇪🇷', code: '+291' },
-      { name: 'Estonia', flag: '🇪🇪', code: '+372' },
-      { name: 'Eswatini', flag: '🇸🇿', code: '+268' },
-      { name: 'Ethiopia', flag: '🇪🇹', code: '+251' },
-      { name: 'Fiji', flag: '🇫🇯', code: '+679' },
-      { name: 'Finland', flag: '🇫🇮', code: '+358' },
-      { name: 'France', flag: '🇫🇷', code: '+33' },
-      { name: 'Gabon', flag: '🇬🇦', code: '+241' },
-      { name: 'Gambia', flag: '🇬🇲', code: '+220' },
-      { name: 'Georgia', flag: '🇬🇪', code: '+995' },
-      { name: 'Germany', flag: '🇩🇪', code: '+49' },
-      { name: 'Ghana', flag: '🇬🇭', code: '+233' },
-      { name: 'Greece', flag: '🇬🇷', code: '+30' },
-      { name: 'Grenada', flag: '🇬🇩', code: '+1' },
-      { name: 'Guatemala', flag: '🇬🇹', code: '+502' },
-      { name: 'Guinea', flag: '🇬🇳', code: '+224' },
-      { name: 'Guinea-Bissau', flag: '🇬🇼', code: '+245' },
-      { name: 'Guyana', flag: '🇬🇾', code: '+592' },
-      { name: 'Haiti', flag: '🇭🇹', code: '+509' },
-      { name: 'Honduras', flag: '🇭🇳', code: '+504' },
-      { name: 'Hungary', flag: '🇭🇺', code: '+36' },
-      { name: 'Iceland', flag: '🇮🇸', code: '+354' },
-      { name: 'India', flag: '🇮🇳', code: '+91' },
-      { name: 'Indonesia', flag: '🇮🇩', code: '+62' },
-      { name: 'Iran', flag: '🇮🇷', code: '+98' },
-      { name: 'Iraq', flag: '🇮🇶', code: '+964' },
-      { name: 'Ireland', flag: '🇮🇪', code: '+353' },
-      { name: 'Israel', flag: '🇮🇱', code: '+972' },
-      { name: 'Italy', flag: '🇮🇹', code: '+39' },
-      { name: 'Jamaica', flag: '🇯🇲', code: '+1' },
-      { name: 'Japan', flag: '🇯🇵', code: '+81' },
-      { name: 'Jordan', flag: '🇯🇴', code: '+962' },
-      { name: 'Kazakhstan', flag: '🇰🇿', code: '+7' },
-      { name: 'Kenya', flag: '🇰🇪', code: '+254' },
-      { name: 'Kiribati', flag: '🇰🇮', code: '+686' },
-      { name: 'Kuwait', flag: '🇰🇼', code: '+965' },
-      { name: 'Kyrgyzstan', flag: '🇰🇬', code: '+996' },
-      { name: 'Laos', flag: '🇱🇦', code: '+856' },
-      { name: 'Latvia', flag: '🇱🇻', code: '+371' },
-      { name: 'Lebanon', flag: '🇱🇧', code: '+961' },
-      { name: 'Lesotho', flag: '🇱🇸', code: '+266' },
-      { name: 'Liberia', flag: '🇱🇷', code: '+231' },
-      { name: 'Libya', flag: '🇱🇾', code: '+218' },
-      { name: 'Liechtenstein', flag: '🇱🇮', code: '+423' },
-      { name: 'Lithuania', flag: '🇱🇹', code: '+370' },
-      { name: 'Luxembourg', flag: '🇱🇺', code: '+352' },
-      { name: 'Madagascar', flag: '🇲🇬', code: '+261' },
-      { name: 'Malawi', flag: '🇲🇼', code: '+265' },
-      { name: 'Malaysia', flag: '🇲🇾', code: '+60' },
-      { name: 'Maldives', flag: '🇲🇻', code: '+960' },
-      { name: 'Mali', flag: '🇲🇱', code: '+223' },
-      { name: 'Malta', flag: '🇲🇹', code: '+356' },
-      { name: 'Marshall Islands', flag: '🇲🇭', code: '+692' },
-      { name: 'Mauritania', flag: '🇲🇷', code: '+222' },
-      { name: 'Mauritius', flag: '🇲🇺', code: '+230' },
-      { name: 'Mexico', flag: '🇲🇽', code: '+52' },
-      { name: 'Micronesia', flag: '🇫🇲', code: '+691' },
-      { name: 'Moldova', flag: '🇲🇩', code: '+373' },
-      { name: 'Monaco', flag: '🇲🇨', code: '+377' },
-      { name: 'Mongolia', flag: '🇲🇳', code: '+976' },
-      { name: 'Montenegro', flag: '🇲🇪', code: '+382' },
-      { name: 'Morocco', flag: '🇲🇦', code: '+212' },
-      { name: 'Mozambique', flag: '🇲🇿', code: '+258' },
-      { name: 'Myanmar', flag: '🇲🇲', code: '+95' },
-      { name: 'Namibia', flag: '🇳🇦', code: '+264' },
-      { name: 'Nauru', flag: '🇳🇷', code: '+674' },
-      { name: 'Nepal', flag: '🇳🇵', code: '+977' },
-      { name: 'Netherlands', flag: '🇳🇱', code: '+31' },
-      { name: 'New Zealand', flag: '🇳🇿', code: '+64' },
-      { name: 'Nicaragua', flag: '🇳🇮', code: '+505' },
-      { name: 'Niger', flag: '🇳🇪', code: '+227' },
-      { name: 'Nigeria', flag: '🇳🇬', code: '+234' },
-      { name: 'North Korea', flag: '🇰🇵', code: '+850' },
-      { name: 'North Macedonia', flag: '🇲🇰', code: '+389' },
-      { name: 'Norway', flag: '🇳🇴', code: '+47' },
-      { name: 'Oman', flag: '🇴🇲', code: '+968' },
-      { name: 'Pakistan', flag: '🇵🇰', code: '+92' },
-      { name: 'Palau', flag: '🇵🇼', code: '+680' },
-      { name: 'Palestine', flag: '🇵🇸', code: '+970' },
-      { name: 'Panama', flag: '🇵🇦', code: '+507' },
-      { name: 'Papua New Guinea', flag: '🇵🇬', code: '+675' },
-      { name: 'Paraguay', flag: '🇵🇾', code: '+595' },
-      { name: 'Peru', flag: '🇵🇪', code: '+51' },
-      { name: 'Philippines', flag: '🇵🇭', code: '+63' },
-      { name: 'Poland', flag: '🇵🇱', code: '+48' },
-      { name: 'Portugal', flag: '🇵🇹', code: '+351' },
-      { name: 'Qatar', flag: '🇶🇦', code: '+974' },
-      { name: 'Romania', flag: '🇷🇴', code: '+40' },
-      { name: 'Russia', flag: '🇷🇺', code: '+7' },
-      { name: 'Rwanda', flag: '🇷🇼', code: '+250' },
-      { name: 'Saint Kitts and Nevis', flag: '🇰🇳', code: '+1' },
-      { name: 'Saint Lucia', flag: '🇱🇨', code: '+1' },
-      { name: 'Saint Vincent and the Grenadines', flag: '🇻🇨', code: '+1' },
-      { name: 'Samoa', flag: '🇼🇸', code: '+685' },
-      { name: 'San Marino', flag: '🇸🇲', code: '+378' },
-      { name: 'Sao Tome and Principe', flag: '🇸🇹', code: '+239' },
-      { name: 'Saudi Arabia', flag: '🇸🇦', code: '+966' },
-      { name: 'Senegal', flag: '🇸🇳', code: '+221' },
-      { name: 'Serbia', flag: '🇷🇸', code: '+381' },
-      { name: 'Seychelles', flag: '🇸🇨', code: '+248' },
-      { name: 'Sierra Leone', flag: '🇸🇱', code: '+232' },
-      { name: 'Singapore', flag: '🇸🇬', code: '+65' },
-      { name: 'Slovakia', flag: '🇸🇰', code: '+421' },
-      { name: 'Slovenia', flag: '🇸🇮', code: '+386' },
-      { name: 'Solomon Islands', flag: '🇸🇧', code: '+677' },
-      { name: 'Somalia', flag: '🇸🇴', code: '+252' },
-      { name: 'South Africa', flag: '🇿🇦', code: '+27' },
-      { name: 'South Korea', flag: '🇰🇷', code: '+82' },
-      { name: 'South Sudan', flag: '🇸🇸', code: '+211' },
-      { name: 'Spain', flag: '🇪🇸', code: '+34' },
-      { name: 'Sri Lanka', flag: '🇱🇰', code: '+94' },
-      { name: 'Sudan', flag: '🇸🇩', code: '+249' },
-      { name: 'Suriname', flag: '🇸🇷', code: '+597' },
-      { name: 'Sweden', flag: '🇸🇪', code: '+46' },
-      { name: 'Switzerland', flag: '🇨🇭', code: '+41' },
-      { name: 'Syria', flag: '🇸🇾', code: '+963' },
-      { name: 'Taiwan', flag: '🇹🇼', code: '+886' },
-      { name: 'Tajikistan', flag: '🇹🇯', code: '+992' },
-      { name: 'Tanzania', flag: '🇹🇿', code: '+255' },
-      { name: 'Thailand', flag: '🇹🇭', code: '+66' },
-      { name: 'Timor-Leste', flag: '🇹🇱', code: '+670' },
-      { name: 'Togo', flag: '🇹🇬', code: '+228' },
-      { name: 'Tonga', flag: '🇹🇴', code: '+676' },
-      { name: 'Trinidad and Tobago', flag: '🇹🇹', code: '+1' },
-      { name: 'Tunisia', flag: '🇹🇳', code: '+216' },
-      { name: 'Turkey', flag: '🇹🇷', code: '+90' },
-      { name: 'Turkmenistan', flag: '🇹🇲', code: '+993' },
-      { name: 'Tuvalu', flag: '🇹🇻', code: '+688' },
-      { name: 'Uganda', flag: '🇺🇬', code: '+256' },
-      { name: 'Ukraine', flag: '🇺🇦', code: '+380' },
-      { name: 'United Arab Emirates', flag: '🇦🇪', code: '+971' },
-      { name: 'United Kingdom', flag: '🇬🇧', code: '+44' },
-      { name: 'United States', flag: '🇺🇸', code: '+1' },
-      { name: 'Uruguay', flag: '🇺🇾', code: '+598' },
-      { name: 'Uzbekistan', flag: '🇺🇿', code: '+998' },
-      { name: 'Vanuatu', flag: '🇻🇺', code: '+678' },
-      { name: 'Vatican City', flag: '🇻🇦', code: '+379' },
-      { name: 'Venezuela', flag: '🇻🇪', code: '+58' },
-      { name: 'Vietnam', flag: '🇻🇳', code: '+84' },
-      { name: 'Yemen', flag: '🇾🇪', code: '+967' },
-      { name: 'Zambia', flag: '🇿🇲', code: '+260' },
-      { name: 'Zimbabwe', flag: '🇿🇼', code: '+263' }
+      { name: 'Afghanistan', flag: '????', code: '+93' },
+      { name: 'Albania', flag: '????', code: '+355' },
+      { name: 'Algeria', flag: '????', code: '+213' },
+      { name: 'Andorra', flag: '????', code: '+376' },
+      { name: 'Angola', flag: '????', code: '+244' },
+      { name: 'Antigua and Barbuda', flag: '????', code: '+1' },
+      { name: 'Argentina', flag: '????', code: '+54' },
+      { name: 'Armenia', flag: '????', code: '+374' },
+      { name: 'Australia', flag: '????', code: '+61' },
+      { name: 'Austria', flag: '????', code: '+43' },
+      { name: 'Azerbaijan', flag: '????', code: '+994' },
+      { name: 'Bahamas', flag: '????', code: '+1' },
+      { name: 'Bahrain', flag: '????', code: '+973' },
+      { name: 'Bangladesh', flag: '????', code: '+880' },
+      { name: 'Barbados', flag: '????', code: '+1' },
+      { name: 'Belarus', flag: '????', code: '+375' },
+      { name: 'Belgium', flag: '????', code: '+32' },
+      { name: 'Belize', flag: '????', code: '+501' },
+      { name: 'Benin', flag: '????', code: '+229' },
+      { name: 'Bhutan', flag: '????', code: '+975' },
+      { name: 'Bolivia', flag: '????', code: '+591' },
+      { name: 'Bosnia and Herzegovina', flag: '????', code: '+387' },
+      { name: 'Botswana', flag: '????', code: '+267' },
+      { name: 'Brazil', flag: '????', code: '+55' },
+      { name: 'Brunei', flag: '????', code: '+673' },
+      { name: 'Bulgaria', flag: '????', code: '+359' },
+      { name: 'Burkina Faso', flag: '????', code: '+226' },
+      { name: 'Burundi', flag: '????', code: '+257' },
+      { name: 'Cabo Verde', flag: '????', code: '+238' },
+      { name: 'Cambodia', flag: '????', code: '+855' },
+      { name: 'Cameroon', flag: '????', code: '+237' },
+      { name: 'Canada', flag: '????', code: '+1' },
+      { name: 'Central African Republic', flag: '????', code: '+236' },
+      { name: 'Chad', flag: '????', code: '+235' },
+      { name: 'Chile', flag: '????', code: '+56' },
+      { name: 'China', flag: '????', code: '+86' },
+      { name: 'Colombia', flag: '????', code: '+57' },
+      { name: 'Comoros', flag: '????', code: '+269' },
+      { name: 'Congo', flag: '????', code: '+242' },
+      { name: 'Costa Rica', flag: '????', code: '+506' },
+      { name: 'Croatia', flag: '????', code: '+385' },
+      { name: 'Cuba', flag: '????', code: '+53' },
+      { name: 'Cyprus', flag: '????', code: '+357' },
+      { name: 'Czechia', flag: '????', code: '+420' },
+      { name: 'Denmark', flag: '????', code: '+45' },
+      { name: 'Djibouti', flag: '????', code: '+253' },
+      { name: 'Dominica', flag: '????', code: '+1' },
+      { name: 'Dominican Republic', flag: '????', code: '+1' },
+      { name: 'Ecuador', flag: '????', code: '+593' },
+      { name: 'Egypt', flag: '????', code: '+20' },
+      { name: 'El Salvador', flag: '????', code: '+503' },
+      { name: 'Equatorial Guinea', flag: '????', code: '+240' },
+      { name: 'Eritrea', flag: '????', code: '+291' },
+      { name: 'Estonia', flag: '????', code: '+372' },
+      { name: 'Eswatini', flag: '????', code: '+268' },
+      { name: 'Ethiopia', flag: '????', code: '+251' },
+      { name: 'Fiji', flag: '????', code: '+679' },
+      { name: 'Finland', flag: '????', code: '+358' },
+      { name: 'France', flag: '????', code: '+33' },
+      { name: 'Gabon', flag: '????', code: '+241' },
+      { name: 'Gambia', flag: '????', code: '+220' },
+      { name: 'Georgia', flag: '????', code: '+995' },
+      { name: 'Germany', flag: '????', code: '+49' },
+      { name: 'Ghana', flag: '????', code: '+233' },
+      { name: 'Greece', flag: '????', code: '+30' },
+      { name: 'Grenada', flag: '????', code: '+1' },
+      { name: 'Guatemala', flag: '????', code: '+502' },
+      { name: 'Guinea', flag: '????', code: '+224' },
+      { name: 'Guinea-Bissau', flag: '????', code: '+245' },
+      { name: 'Guyana', flag: '????', code: '+592' },
+      { name: 'Haiti', flag: '????', code: '+509' },
+      { name: 'Honduras', flag: '????', code: '+504' },
+      { name: 'Hungary', flag: '????', code: '+36' },
+      { name: 'Iceland', flag: '????', code: '+354' },
+      { name: 'India', flag: '????', code: '+91' },
+      { name: 'Indonesia', flag: '????', code: '+62' },
+      { name: 'Iran', flag: '????', code: '+98' },
+      { name: 'Iraq', flag: '????', code: '+964' },
+      { name: 'Ireland', flag: '????', code: '+353' },
+      { name: 'Israel', flag: '????', code: '+972' },
+      { name: 'Italy', flag: '????', code: '+39' },
+      { name: 'Jamaica', flag: '????', code: '+1' },
+      { name: 'Japan', flag: '????', code: '+81' },
+      { name: 'Jordan', flag: '????', code: '+962' },
+      { name: 'Kazakhstan', flag: '????', code: '+7' },
+      { name: 'Kenya', flag: '????', code: '+254' },
+      { name: 'Kiribati', flag: '????', code: '+686' },
+      { name: 'Kuwait', flag: '????', code: '+965' },
+      { name: 'Kyrgyzstan', flag: '????', code: '+996' },
+      { name: 'Laos', flag: '????', code: '+856' },
+      { name: 'Latvia', flag: '????', code: '+371' },
+      { name: 'Lebanon', flag: '????', code: '+961' },
+      { name: 'Lesotho', flag: '????', code: '+266' },
+      { name: 'Liberia', flag: '????', code: '+231' },
+      { name: 'Libya', flag: '????', code: '+218' },
+      { name: 'Liechtenstein', flag: '????', code: '+423' },
+      { name: 'Lithuania', flag: '????', code: '+370' },
+      { name: 'Luxembourg', flag: '????', code: '+352' },
+      { name: 'Madagascar', flag: '????', code: '+261' },
+      { name: 'Malawi', flag: '????', code: '+265' },
+      { name: 'Malaysia', flag: '????', code: '+60' },
+      { name: 'Maldives', flag: '????', code: '+960' },
+      { name: 'Mali', flag: '????', code: '+223' },
+      { name: 'Malta', flag: '????', code: '+356' },
+      { name: 'Marshall Islands', flag: '????', code: '+692' },
+      { name: 'Mauritania', flag: '????', code: '+222' },
+      { name: 'Mauritius', flag: '????', code: '+230' },
+      { name: 'Mexico', flag: '????', code: '+52' },
+      { name: 'Micronesia', flag: '????', code: '+691' },
+      { name: 'Moldova', flag: '????', code: '+373' },
+      { name: 'Monaco', flag: '????', code: '+377' },
+      { name: 'Mongolia', flag: '????', code: '+976' },
+      { name: 'Montenegro', flag: '????', code: '+382' },
+      { name: 'Morocco', flag: '????', code: '+212' },
+      { name: 'Mozambique', flag: '????', code: '+258' },
+      { name: 'Myanmar', flag: '????', code: '+95' },
+      { name: 'Namibia', flag: '????', code: '+264' },
+      { name: 'Nauru', flag: '????', code: '+674' },
+      { name: 'Nepal', flag: '????', code: '+977' },
+      { name: 'Netherlands', flag: '????', code: '+31' },
+      { name: 'New Zealand', flag: '????', code: '+64' },
+      { name: 'Nicaragua', flag: '????', code: '+505' },
+      { name: 'Niger', flag: '????', code: '+227' },
+      { name: 'Nigeria', flag: '????', code: '+234' },
+      { name: 'North Korea', flag: '????', code: '+850' },
+      { name: 'North Macedonia', flag: '????', code: '+389' },
+      { name: 'Norway', flag: '????', code: '+47' },
+      { name: 'Oman', flag: '????', code: '+968' },
+      { name: 'Pakistan', flag: '????', code: '+92' },
+      { name: 'Palau', flag: '????', code: '+680' },
+      { name: 'Palestine', flag: '????', code: '+970' },
+      { name: 'Panama', flag: '????', code: '+507' },
+      { name: 'Papua New Guinea', flag: '????', code: '+675' },
+      { name: 'Paraguay', flag: '????', code: '+595' },
+      { name: 'Peru', flag: '????', code: '+51' },
+      { name: 'Philippines', flag: '????', code: '+63' },
+      { name: 'Poland', flag: '????', code: '+48' },
+      { name: 'Portugal', flag: '????', code: '+351' },
+      { name: 'Qatar', flag: '????', code: '+974' },
+      { name: 'Romania', flag: '????', code: '+40' },
+      { name: 'Russia', flag: '????', code: '+7' },
+      { name: 'Rwanda', flag: '????', code: '+250' },
+      { name: 'Saint Kitts and Nevis', flag: '????', code: '+1' },
+      { name: 'Saint Lucia', flag: '????', code: '+1' },
+      { name: 'Saint Vincent and the Grenadines', flag: '????', code: '+1' },
+      { name: 'Samoa', flag: '????', code: '+685' },
+      { name: 'San Marino', flag: '????', code: '+378' },
+      { name: 'Sao Tome and Principe', flag: '????', code: '+239' },
+      { name: 'Saudi Arabia', flag: '????', code: '+966' },
+      { name: 'Senegal', flag: '????', code: '+221' },
+      { name: 'Serbia', flag: '????', code: '+381' },
+      { name: 'Seychelles', flag: '????', code: '+248' },
+      { name: 'Sierra Leone', flag: '????', code: '+232' },
+      { name: 'Singapore', flag: '????', code: '+65' },
+      { name: 'Slovakia', flag: '????', code: '+421' },
+      { name: 'Slovenia', flag: '????', code: '+386' },
+      { name: 'Solomon Islands', flag: '????', code: '+677' },
+      { name: 'Somalia', flag: '????', code: '+252' },
+      { name: 'South Africa', flag: '????', code: '+27' },
+      { name: 'South Korea', flag: '????', code: '+82' },
+      { name: 'South Sudan', flag: '????', code: '+211' },
+      { name: 'Spain', flag: '????', code: '+34' },
+      { name: 'Sri Lanka', flag: '????', code: '+94' },
+      { name: 'Sudan', flag: '????', code: '+249' },
+      { name: 'Suriname', flag: '????', code: '+597' },
+      { name: 'Sweden', flag: '????', code: '+46' },
+      { name: 'Switzerland', flag: '????', code: '+41' },
+      { name: 'Syria', flag: '????', code: '+963' },
+      { name: 'Taiwan', flag: '????', code: '+886' },
+      { name: 'Tajikistan', flag: '????', code: '+992' },
+      { name: 'Tanzania', flag: '????', code: '+255' },
+      { name: 'Thailand', flag: '????', code: '+66' },
+      { name: 'Timor-Leste', flag: '????', code: '+670' },
+      { name: 'Togo', flag: '????', code: '+228' },
+      { name: 'Tonga', flag: '????', code: '+676' },
+      { name: 'Trinidad and Tobago', flag: '????', code: '+1' },
+      { name: 'Tunisia', flag: '????', code: '+216' },
+      { name: 'Turkey', flag: '????', code: '+90' },
+      { name: 'Turkmenistan', flag: '????', code: '+993' },
+      { name: 'Tuvalu', flag: '????', code: '+688' },
+      { name: 'Uganda', flag: '????', code: '+256' },
+      { name: 'Ukraine', flag: '????', code: '+380' },
+      { name: 'United Arab Emirates', flag: '????', code: '+971' },
+      { name: 'United Kingdom', flag: '????', code: '+44' },
+      { name: 'United States', flag: '????', code: '+1' },
+      { name: 'Uruguay', flag: '????', code: '+598' },
+      { name: 'Uzbekistan', flag: '????', code: '+998' },
+      { name: 'Vanuatu', flag: '????', code: '+678' },
+      { name: 'Vatican City', flag: '????', code: '+379' },
+      { name: 'Venezuela', flag: '????', code: '+58' },
+      { name: 'Vietnam', flag: '????', code: '+84' },
+      { name: 'Yemen', flag: '????', code: '+967' },
+      { name: 'Zambia', flag: '????', code: '+260' },
+      { name: 'Zimbabwe', flag: '????', code: '+263' }
     ],
     consumableCategoryFilter: '',
   consumableTypeFilter: '',
@@ -308,7 +308,7 @@ window.CMS_MASTERS = {
               ${isBlocked ? '<span class="px-1.5 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold text-[9px] uppercase tracking-wide">BLOCKED</span>' : ''}
               ${isRevision ? '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-bold text-[9px] uppercase tracking-wide">REVISION REQUIRED</span>' : ''}
             </div>
-            <div class="text-[11px] text-slate-400 font-mono mt-0.5">${v.id} • ${stateInfo.code ? `State Code: ${stateInfo.code}` : ''}</div>
+            <div class="text-[11px] text-slate-400 font-mono mt-0.5">${v.id} � ${stateInfo.code ? `State Code: ${stateInfo.code}` : ''}</div>
             <div class="text-slate-500 line-clamp-1 mt-0.5 text-[11px]" title="${[v.address, v.addressDistrict, v.addressState].filter(Boolean).join(', ')}">
               ${[v.address, v.addressDistrict, v.addressState].filter(Boolean).join(', ')}
             </div>
@@ -1263,7 +1263,7 @@ window.CMS_MASTERS = {
 
         <div>
           <label class="block font-semibold text-slate-700 mb-1">
-            Quotation Rate (₹) <span class="text-rose-500">*</span>
+            Quotation Rate (?) <span class="text-rose-500">*</span>
           </label>
           <input type="number" step="0.01" class="mat-v-rate w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-blue-600 text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" value="${rate}" placeholder="0.00" required />
         </div>
@@ -1842,6 +1842,20 @@ window.CMS_MASTERS = {
     const currentUser = store.getCurrentUser();
     if (currentUser && currentUser.role === 'Admin') {
       return window.CMS_APP.toast('Col. Anita Sharma (Admin) cannot create or modify vendors. You are authorized to approve and view vendor records only.', 'error');
+    }
+    
+    const form = document.getElementById('vendor-form');
+    if (form && !form.checkValidity()) {
+      const firstInvalid = form.querySelector(':invalid');
+      if (firstInvalid) {
+        const stepDiv = firstInvalid.closest('[id^="v-step-"]');
+        if (stepDiv) {
+          const stepNum = parseInt(stepDiv.id.replace('v-step-', ''), 10);
+          this.switchVendorTab(stepNum);
+        }
+        firstInvalid.reportValidity();
+      }
+      return;
     }
     const isEdit = Boolean(vendorId);
     const existingVendor = isEdit ? store.data.vendors.find(v => v.id === vendorId) : null;
@@ -2664,16 +2678,16 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
                         </span>
                       </td>
                       <td class="p-4">
-                        <div class="text-blue-600 font-medium">Quote: <span class="font-mono font-bold text-blue-600">₹${Number(m.quotationRate || m.vendor1Rate || 0).toFixed(2)}</span></div>
+                        <div class="text-blue-600 font-medium">Quote: <span class="font-mono font-bold text-blue-600">?${Number(m.quotationRate || m.vendor1Rate || 0).toFixed(2)}</span></div>
                         <div class="text-[10px] text-slate-500 font-mono">Ref: ${m.quotationNo || 'Direct'} (${m.quotationDate || '-'})</div>
-                        <div class="text-[11px] text-slate-800 font-semibold mt-0.5">MRP: <span class="font-mono text-blue-600">₹${Number(m.mrpBooked || 0).toFixed(2)}</span></div>
+                        <div class="text-[11px] text-slate-800 font-semibold mt-0.5">MRP: <span class="font-mono text-blue-600">?${Number(m.mrpBooked || 0).toFixed(2)}</span></div>
                       </td>
                       <td class="p-4">
                         <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 font-bold text-[11px] rounded-sm">${m.categoryName || 'General'}</span>
                         <div class="text-slate-500 mt-1">Unit: <span class="font-bold text-slate-800 font-mono">${m.unit}</span></div>
                       </td>
                       <td class="p-4">
-                        <div class="font-mono text-xs"><strong class="text-blue-600">₹${Number(m.vendor1Rate || 0).toFixed(2)}</strong></div>
+                        <div class="font-mono text-xs"><strong class="text-blue-600">?${Number(m.vendor1Rate || 0).toFixed(2)}</strong></div>
                         <div class="text-[10px] text-slate-500 line-clamp-1">${m.vendor1Name || 'Approved Vendor'}</div>
                       </td>
                       <td class="p-4">
@@ -2707,7 +2721,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
                         </span>
                       </td>
                       <td class="p-4 text-right space-x-1">
-                        <button onclick="CMS_MASTERS.viewMaterial360('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-sm transition" title="Inspect 360° Material Details">
+                        <button onclick="CMS_MASTERS.viewMaterial360('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-blue-600 bg-slate-50 hover:bg-slate-100 rounded-sm transition" title="Inspect 360� Material Details">
                           <i data-lucide="scan" class="w-3.5 h-3.5"></i>
                         </button>
                         ${role === 'User' ? `
@@ -2844,11 +2858,11 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
             </div>
             <div>
               <span class="text-slate-400 block text-[10px] uppercase font-bold">Quotation Rate:</span>
-              <strong class="font-mono text-emerald-700 text-sm">₹${Number(m.quotationRate || m.vendor1Rate || 0).toFixed(2)}</strong>
+              <strong class="font-mono text-emerald-700 text-sm">?${Number(m.quotationRate || m.vendor1Rate || 0).toFixed(2)}</strong>
             </div>
             <div>
               <span class="text-slate-400 block text-[10px] uppercase font-bold">Booked MRP:</span>
-              <strong class="font-mono text-blue-600 text-sm">₹${Number(m.mrpBooked || 0).toFixed(2)}</strong>
+              <strong class="font-mono text-blue-600 text-sm">?${Number(m.mrpBooked || 0).toFixed(2)}</strong>
             </div>
           </div>
         </div>
@@ -2875,7 +2889,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
                     <i data-lucide="${v.isPrimary ? 'award' : 'building'}" class="w-3.5 h-3.5 ${v.isPrimary ? 'text-blue-600' : 'text-slate-500'}"></i>
                     ${v.isPrimary ? 'Vendor-1 (Primary Source)' : `Vendor-${i + 1} (Alternate Source)`}
                   </span>
-                  <span class="font-mono font-bold text-blue-600 text-sm">₹${Number(v.rate || 0).toFixed(2)}</span>
+                  <span class="font-mono font-bold text-blue-600 text-sm">?${Number(v.rate || 0).toFixed(2)}</span>
                 </div>
                 <p class="font-bold text-blue-600 text-xs truncate">${v.vendorName || v.vendorId || 'Approved Vendor'}</p>
                 <div class="text-[11px] text-slate-600 flex items-center justify-between pt-1 border-t border-slate-200/60">
@@ -3013,7 +3027,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
       </div>
     `;
 
-    window.CMS_APP.openModal('Material 360° Inspection Drawer', content, 'max-w-2xl');
+    window.CMS_APP.openModal('Material 360� Inspection Drawer', content, 'max-w-2xl');
     if (window.lucide) window.lucide.createIcons();
   },
 
@@ -3132,7 +3146,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
                 <option value="">-- Select Configured GST Slab --</option>
                 ${(store.gstSlabs || []).filter(g => g.status === 'Approved').map(g => `
                   <option value="${g.id}" ${(m.gstSlabId === g.id || m.taxMode === g.taxMode) ? 'selected' : ''}>
-                    ${g.name} — ${window.CMS_STORE.getTaxLabel(g)} (${g.taxMode === 'IGST' ? 'Inter-state IGST' : 'Intra-state CGST+SGST'})
+                    ${g.name} � ${window.CMS_STORE.getTaxLabel(g)} (${g.taxMode === 'IGST' ? 'Inter-state IGST' : 'Intra-state CGST+SGST'})
                   </option>
                 `).join('')}
               </select>
@@ -3186,7 +3200,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
           <!-- Product Level MRP -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-white border border-slate-200 rounded-sm rounded-sm items-center">
             <div>
-              <label class="block font-semibold text-slate-700 mb-1">Booked MRP (₹) <span class="text-rose-500">*</span></label>
+              <label class="block font-semibold text-slate-700 mb-1">Booked MRP (?) <span class="text-rose-500">*</span></label>
               <input type="number" step="0.01" id="m-mrp" required value="${m.mrpBooked || ''}" class="w-full font-mono font-bold px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-blue-600 text-xs focus:ring-2 focus:ring-slate-500 focus:outline-none" placeholder="0.00" />
             </div>
             <div class="sm:col-span-2 text-[11px] text-slate-500">
@@ -3617,7 +3631,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
           <div>Category: <strong class="text-slate-800">${m.categoryName}</strong></div>
           <div>Unit / HSN: <strong class="text-slate-800">${m.unit} | ${m.hsnCode}</strong></div>
           <div>Primary Vendor: <strong class="text-slate-800">${m.vendor1Name}</strong></div>
-          <div>Approved Rate: <strong class="font-mono text-emerald-700 font-bold">₹${Number(m.vendor1Rate || 0).toFixed(2)}</strong></div>
+          <div>Approved Rate: <strong class="font-mono text-emerald-700 font-bold">?${Number(m.vendor1Rate || 0).toFixed(2)}</strong></div>
         </div>
       </div>
     `;
@@ -3888,6 +3902,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
     }
   }
 };
+
 
 
 
