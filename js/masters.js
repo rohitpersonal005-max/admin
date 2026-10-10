@@ -933,18 +933,49 @@ window.CMS_MASTERS = {
     const row = el.closest('.quote-row');
     if (!row) return;
     const eff = row.querySelector('.q-eff');
+    const valid = row.querySelector('.q-valid');
     if (!eff) return;
     
     if (!el.value) {
        eff.disabled = true;
        eff.value = '';
        eff.removeAttribute('min');
+       if (valid) {
+           valid.disabled = true;
+           valid.value = '';
+           valid.removeAttribute('min');
+       }
     } else {
        eff.disabled = false;
        eff.min = el.value;
        if (eff.value && eff.value < el.value) {
           eff.value = ''; 
           window.CMS_APP.toast('Effective date reset as it was older than the new quotation date.', 'warning');
+          if (valid) {
+              valid.disabled = true;
+              valid.value = '';
+              valid.removeAttribute('min');
+          }
+       }
+    }
+  },
+
+  onEffectiveDateChange(el) {
+    const row = el.closest('.quote-row');
+    if (!row) return;
+    const valid = row.querySelector('.q-valid');
+    if (!valid) return;
+    
+    if (!el.value) {
+       valid.disabled = true;
+       valid.value = '';
+       valid.removeAttribute('min');
+    } else {
+       valid.disabled = false;
+       valid.min = el.value;
+       if (valid.value && valid.value < el.value) {
+          valid.value = '';
+          window.CMS_APP.toast('Valid Till date reset as it was older than the new Effective date.', 'warning');
        }
     }
   },
@@ -982,11 +1013,11 @@ window.CMS_MASTERS = {
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Effective From</label>
-          <input type="date" class="q-eff w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${eff}" ${!dt ? 'disabled' : `min="${dt}"`} />
+          <input type="date" class="q-eff w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${eff}" ${!dt ? 'disabled' : `min="${dt}"`} onchange="CMS_MASTERS.onEffectiveDateChange(this)" />
         </div>
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Valid Till / Expiry</label>
-          <input type="date" class="q-exp w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${exp}" />
+          <input type="date" class="q-valid w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${exp}" ${!eff ? 'disabled' : `min="${eff}"`} />
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
