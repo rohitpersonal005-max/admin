@@ -1722,8 +1722,8 @@ window.CMS_MASTERS = {
               </div>
             </div>
             <div class="mt-2 pt-2 border-t border-slate-200">
-              <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document (Cancelled Cheque, Passbook, or Bank Statement)</label>
-              <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs" />
+              <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document (Cancelled Cheque, Passbook, or Bank Statement) <span class="text-rose-600 font-bold">*</span></label>
+                <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs" ${!vendor.bankDoc ? 'required' : ''} />
               <input type="text" id="v-bank-title" placeholder="Document Title" class="w-full mt-1.5 px-2 py-1 text-xs border border-slate-300 rounded" value="${vendor.bankDocTitle || ''}" />
               ${vendor.bankDoc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${vendor.bankDoc}</span>` : ''}
             </div>
@@ -1886,10 +1886,13 @@ window.CMS_MASTERS = {
     const branchName = document.getElementById('v-branch-name')?.value.trim() || '';
     
     const bankFileInput = document.getElementById('v-bank-file');
-    let bankDoc = (bankFileInput && bankFileInput.files[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
-    if (accountNo && !bankDoc) {
-      bankDoc = `${accountNo}_Bank_Statement.pdf`; // Mock auto-attachment if none uploaded
-    }
+      let bankDoc = (bankFileInput && bankFileInput.files[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
+      
+      if (!bankDoc) {
+        window.CMS_APP.toast('Supporting Bank Document (Cancelled Cheque, Passbook, or Bank Statement) is mandatory.', 'error');
+        this.switchVendorTab(4);
+        return;
+      }
 
     const quoteRows = document.querySelectorAll('#v-quotations-container .quote-row');
     const quotedItems = [];
