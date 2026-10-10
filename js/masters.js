@@ -1456,15 +1456,23 @@ window.CMS_MASTERS = {
     };
 
     window.CMS_MASTERS.nextVendorTab = function() {
-      // Only validate the CURRENT visible step to avoid hidden required fields blocking the Next button
       const currentStepDiv = document.getElementById('v-step-' + window.CMS_MASTERS.currentVendorStep);
+      let isValid = true;
       if (currentStepDiv) {
         const inputs = currentStepDiv.querySelectorAll('input, select, textarea');
+        let firstInvalid = null;
         for (const input of inputs) {
+          input.classList.remove('border-rose-500', 'bg-rose-50');
           if (!input.checkValidity()) {
-            input.reportValidity();
-            return; // Stop and let browser show the tooltip on this specific invalid field
+            isValid = false;
+            input.classList.add('border-rose-500', 'bg-rose-50');
+            if (!firstInvalid) firstInvalid = input;
           }
+        }
+        if (!isValid) {
+          window.CMS_APP.toast('Please complete all highlighted mandatory fields before proceeding.', 'error');
+          if (firstInvalid) firstInvalid.reportValidity();
+          return; 
         }
       }
 
@@ -1754,6 +1762,21 @@ window.CMS_MASTERS = {
 
     window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-4xl');
 
+      // Auto-clear error styling on input
+      const vendorForm = document.getElementById('vendor-form');
+      if (vendorForm) {
+        vendorForm.addEventListener('input', (e) => {
+          if (e.target.classList.contains('border-rose-500')) {
+            e.target.classList.remove('border-rose-500', 'bg-rose-50');
+          }
+        });
+        vendorForm.addEventListener('change', (e) => {
+          if (e.target.classList.contains('border-rose-500')) {
+            e.target.classList.remove('border-rose-500', 'bg-rose-50');
+          }
+        });
+      }
+
     // Populate dynamic certificates if present
     
       const certList = vendor.certificates || [];
@@ -1845,18 +1868,27 @@ window.CMS_MASTERS = {
     }
     
     const form = document.getElementById('vendor-form');
-    if (form && !form.checkValidity()) {
-      const firstInvalid = form.querySelector(':invalid');
-      if (firstInvalid) {
-        const stepDiv = firstInvalid.closest('[id^="v-step-"]');
-        if (stepDiv) {
-          const stepNum = parseInt(stepDiv.id.replace('v-step-', ''), 10);
-          this.switchVendorTab(stepNum);
+      if (form && !form.checkValidity()) {
+        const inputs = form.querySelectorAll('input, select, textarea');
+        let firstInvalid = null;
+        for (const input of inputs) {
+          input.classList.remove('border-rose-500', 'bg-rose-50');
+          if (!input.checkValidity()) {
+            input.classList.add('border-rose-500', 'bg-rose-50');
+            if (!firstInvalid) firstInvalid = input;
+          }
         }
-        firstInvalid.reportValidity();
+        if (firstInvalid) {
+          window.CMS_APP.toast('Submission blocked. Please fill all highlighted mandatory fields.', 'error');
+          const stepDiv = firstInvalid.closest('[id^="v-step-"]');
+          if (stepDiv) {
+            const stepNum = parseInt(stepDiv.id.replace('v-step-', ''), 10);
+            this.switchVendorTab(stepNum);
+          }
+          firstInvalid.reportValidity();
+        }
+        return;
       }
-      return;
-    }
     const isEdit = Boolean(vendorId);
     const existingVendor = isEdit ? store.data.vendors.find(v => v.id === vendorId) : null;
     const today = new Date().toISOString().split('T')[0];
