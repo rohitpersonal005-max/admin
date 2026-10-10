@@ -1173,7 +1173,7 @@ class Store {
     }
 
   setCurrentUser(userId) {
-    const user = ENTERPRISE_USERS.find(u => u.id === userId);
+    const user = this.getUsers().find(u => u.id === userId);
     if (!user) return false;
     localStorage.setItem(USER_KEY, user.id);
     localStorage.setItem(ROLE_KEY, user.role);
@@ -1183,7 +1183,7 @@ class Store {
   }
 
   verifyManagerPin(pin) {
-    const mgr = ENTERPRISE_USERS.find(u => u.role === 'Admin');
+    const mgr = this.getUsers().find(u => u.role === 'Admin');
     return mgr && String(pin).trim() === String(mgr.pin);
   }
 
@@ -1215,7 +1215,7 @@ class Store {
   }
 
   setRole(role) {
-    const user = ENTERPRISE_USERS.find(u => u.role === role);
+    const user = this.getUsers().find(u => u.role === role);
     if (user) {
       this.setCurrentUser(user.id);
     }

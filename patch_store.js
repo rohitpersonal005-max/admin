@@ -1,53 +1,38 @@
 const fs = require('fs');
 let code = fs.readFileSync('js/store.js', 'utf8');
 
-const targetSave = `  save() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
-      const currentUser = this.getCurrentUser();
-      localStorage.setItem(ROLE_KEY, currentUser.role);
-      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
-        window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
-      }
-    } catch (e) {
-      console.error('Error saving store', e);
+const regexSetCurrentUser = /setCurrentUser\(userId\) \{[\s\S]*?this\.save\(\);\s*return true;\s*\}/;
+
+const newSetCurrentUser = `setCurrentUser(userId) {
+    const user = this.getUsers().find(u => u.id === userId);
+    if (!user) return false;
+    localStorage.setItem(USER_KEY, user.id);
+    localStorage.setItem(ROLE_KEY, user.role);
+    this.data.userRole = user.role;
+    this.save();
+    return true;
+  }`;
+
+code = code.replace(regexSetCurrentUser, newSetCurrentUser);
+
+const regexVerifyManagerPin = /verifyManagerPin\(pin\) \{[\s\S]*?return mgr && String\(pin\)\.trim\(\) === String\(mgr\.pin\);\s*\}/;
+
+const newVerifyManagerPin = `verifyManagerPin(pin) {
+    const mgr = this.getUsers().find(u => u.role === 'Admin');
+    return mgr && String(pin).trim() === String(mgr.pin);
+  }`;
+
+code = code.replace(regexVerifyManagerPin, newVerifyManagerPin);
+
+const regexSetRole = /setRole\(role\) \{[\s\S]*?this\.setCurrentUser\(user\.id\);\s*\}\s*\}/;
+
+const newSetRole = `setRole(role) {
+    const user = this.getUsers().find(u => u.role === role);
+    if (user) {
+      this.setCurrentUser(user.id);
     }
   }`;
 
-const replaceSave = `  async loadFromCloud() {
-    if (window.CMS_TENANT_ID && window.CMS_FIREBASE_DB) {
-      const snap = await window.CMS_FIREBASE_DB.ref('master_tenants/' + window.CMS_TENANT_ID + '/cms_db').once('value');
-      if (snap.exists()) {
-        this.data = snap.val();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
-        this.notifySubscribers();
-      }
-    }
-  }
+code = code.replace(regexSetRole, newSetRole);
 
-  notifySubscribers() {
-    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
-      window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
-    }
-  }
-
-  save() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
-      const currentUser = this.getCurrentUser();
-      localStorage.setItem(ROLE_KEY, currentUser.role);
-      
-      // FIREBASE SYNC: If authenticated to a tenant, push changes up
-      if (window.CMS_TENANT_ID && window.CMS_FIREBASE_DB) {
-        window.CMS_FIREBASE_DB.ref('master_tenants/' + window.CMS_TENANT_ID + '/cms_db').set(this.data).catch(console.error);
-      }
-      
-      this.notifySubscribers();
-    } catch (e) {
-      console.error('Error saving store', e);
-    }
-  }`;
-
-code = code.replace(targetSave, replaceSave);
 fs.writeFileSync('js/store.js', code);
-console.log('Successfully patched store.js with cloud sync capability');
