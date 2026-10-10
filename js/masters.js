@@ -830,14 +830,44 @@ window.CMS_MASTERS = {
           stateSelect.value = matched.name;
           stateSelect.dataset.autoDetected = 'true';
           this.onStateChange(matched.name);
+          }
         }
       }
-    }
+      this.validateGstStateCode();
+    
   },
 
   onStateChange(stateName) {
-    // Badges removed by request. Tax logic is still processed in background.
-  },
+      this.validateGstStateCode();
+    },
+
+    validateGstStateCode() {
+      const gstInput = document.getElementById('v-gst');
+      const stateInput = document.getElementById('v-state');
+      if (!gstInput || !stateInput || gstInput.disabled) return;
+
+      const gstVal = gstInput.value.trim().toUpperCase();
+      const stateVal = stateInput.value;
+
+      gstInput.classList.remove('border-rose-600', 'bg-rose-50', 'text-rose-600');
+      gstInput.setCustomValidity('');
+
+      if (gstVal.length >= 2 && stateVal) {
+        const prefix = gstVal.substring(0, 2);
+        // Special case for Daman & Diu and Dadra & Nagar Haveli which merged (codes 25 and 26)
+        // or just check against indianStates array directly.
+        let matchedState = this.indianStates.find(s => s.code === prefix);
+        if (prefix === '25') matchedState = this.indianStates.find(s => s.code === '26'); // Legacy Daman & Diu fallback
+        
+        if (matchedState && matchedState.name !== stateVal) {
+          gstInput.classList.add('border-rose-600', 'bg-rose-50', 'text-rose-600');
+          gstInput.setCustomValidity('State code ' + prefix + ' (' + matchedState.name + ') does not match selected state ' + stateVal + '.');
+        } else if (!matchedState) {
+          gstInput.classList.add('border-rose-600', 'bg-rose-50', 'text-rose-600');
+          gstInput.setCustomValidity('Invalid GST State Code: ' + prefix);
+        }
+      }
+    },
 
   onCountryChange(countryName) {
       const ccInput = document.getElementById('v-country-code');
