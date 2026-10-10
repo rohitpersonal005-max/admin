@@ -711,7 +711,7 @@ window.CMS_MASTERS = {
             container.innerHTML = `<div class="text-xs text-amber-600 italic">Unsupported document format. Cannot preview inline.</div>`;
           }
         } else {
-          container.innerHTML = `<div class="text-xs text-slate-400 italic">Document data not found in local storage.</div>`;
+          container.innerHTML = `<div class="text-xs text-slate-400 italic">Document not available.</div>`;
         }
       });
     }, 100);
