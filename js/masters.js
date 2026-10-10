@@ -767,22 +767,26 @@ window.CMS_MASTERS = {
     }
   },
 
-  checkRateVsMrp(element) {
-    const row = element.closest('.quote-row');
+  checkRateVsMrp(el) {
+    const row = el.closest('.quote-row');
     if (!row) return;
     const rateInput = row.querySelector('.q-rate');
     const mrpInput = row.querySelector('.q-mrp');
     const mrpNa = row.querySelector('.q-mrp-na')?.checked;
 
-    if (mrpNa) return; // Ignore validation if MRP is Not Applicable
+    if (mrpNa) return;
 
-    const rate = parseFloat(rateInput.value);
-    const mrp = parseFloat(mrpInput.value);
-
-    if (!isNaN(rate) && !isNaN(mrp) && rate > mrp) {
-      window.CMS_APP.toast('Error: Approved Rate cannot be higher than MRP.', 'error');
-      rateInput.value = '';
-      rateInput.focus();
+    const rate = parseFloat(rateInput.value) || 0;
+    const mrp = parseFloat(mrpInput.value) || 0;
+    
+    if (rate > 0 && mrp > 0 && rate > mrp) {
+       setTimeout(() => {
+           const proceed = confirm('Approved rate is more than MRP, do you want to continue with entered rate?\n\n[OK] = Yes, continue with entered rate\n[Cancel] = No, allow me to enter revised rate');
+           if (!proceed) {
+              rateInput.value = '';
+              rateInput.focus();
+           }
+       }, 50);
     }
   },
 
@@ -1036,11 +1040,17 @@ window.CMS_MASTERS = {
         </div>
         <div class="sm:col-span-3">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Approved Rate</label>
-          <input type="number" step="0.01" class="q-rate w-full font-mono font-bold text-blue-600 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${rate}" placeholder="0.00" oninput="CMS_MASTERS.checkRateVsMrp(this)" />
+          <input type="number" step="0.01" class="q-rate w-full font-mono font-bold text-blue-600 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${rate}" placeholder="0.00" onchange="CMS_MASTERS.checkRateVsMrp(this)" />
         </div>
         <div class="sm:col-span-3">
-          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">MRP</label>
-          <input type="number" step="0.01" class="q-mrp w-full font-mono font-bold text-emerald-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${mrp}" placeholder="0.00" oninput="CMS_MASTERS.checkRateVsMrp(this)" />
+          <label class="flex justify-between items-center font-semibold text-slate-700 mb-1 text-[10px]">
+            <span>MRP</span>
+            <label class="flex items-center gap-1 cursor-pointer text-slate-500 hover:text-slate-700" title="MRP is not applicable">
+              <input type="checkbox" class="q-mrp-na" onchange="CMS_MASTERS.toggleMrp(this)" ${qData && qData.mrpNotApplicable ? 'checked' : ''} />
+              <span class="text-[9px]">N/A</span>
+            </label>
+          </label>
+          <input type="number" step="0.01" class="q-mrp w-full font-mono font-bold text-emerald-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${mrp}" placeholder="0.00" onchange="CMS_MASTERS.checkRateVsMrp(this)" ${qData && qData.mrpNotApplicable ? 'disabled' : ''} />
         </div>
         <div class="sm:col-span-3">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">UOM</label>
@@ -2093,11 +2103,7 @@ window.CMS_MASTERS = {
         const rateVal = parseFloat(row.querySelector('.q-rate')?.value || 0);
         const mrpVal = parseFloat(row.querySelector('.q-mrp')?.value || 0);
         const mrpNa = row.querySelector('.q-mrp-na')?.checked;
-        if (directSubmit && !mrpNa && rateVal > mrpVal) {
-          window.CMS_APP.toast('Error: Approved Rate cannot be higher than MRP for material ' + matName, 'error');
-          this.switchVendorTab(3);
-          return;
-        }
+        // MRP vs Rate strict blocking removed; handled by confirm prompt onchange.
 
       quotedItems.push({
         quotationNo: qno,
@@ -2110,6 +2116,7 @@ window.CMS_MASTERS = {
         materialName: matName,
         rate: row.querySelector('.q-rate')?.value || 0,
         mrp: row.querySelector('.q-mrp')?.value || 0,
+        mrpNotApplicable: row.querySelector('.q-mrp-na')?.checked || false,
         unit: row.querySelector('.q-unit')?.value || 'Nos',
         hsn: row.querySelector('.q-hsn')?.value || '',
         doc: docName,
@@ -4071,6 +4078,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   }
 };
+
+
 
 
 
