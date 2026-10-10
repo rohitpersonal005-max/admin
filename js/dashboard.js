@@ -306,7 +306,7 @@ window.CMS_DASHBOARD = {
             <h1 class="text-2xl font-bold text-slate-900">Task Manager</h1>
             <p class="text-sm text-slate-500 mt-1">Communicate and manage tasks.</p>
           </div>
-          <button onclick="CMS_DASHBOARD.openTaskModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow-md transition flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Add task</button>
+          ${role === 'Admin' ? `<button onclick="CMS_DASHBOARD.openTaskModal()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow-md transition flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> Add task</button>` : ''}
         </div>
 
         <div class="space-y-6">
