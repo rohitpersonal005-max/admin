@@ -1042,12 +1042,12 @@ window.CMS_MASTERS = {
             <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Add New Material
           </button>
         </div>
-        <div class="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col justify-end">
+        <div class="col-span-12 sm:col-span-6 flex flex-col justify-end">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Approved Rate</label>
           <input type="number" step="0.01" class="q-rate w-full font-mono font-bold text-blue-600 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${rate}" placeholder="0.00" onchange="CMS_MASTERS.checkRateVsMrp(this)" />
         </div>
-        <div class="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col justify-end">
-          <label class="flex justify-between items-center font-semibold text-slate-700 mb-1 text-[10px]">
+        <div class="col-span-12 sm:col-span-6 flex flex-col justify-end">
+          <label class="flex justify-between items-center font-semibold text-slate-700 mb-1 text-[10px] w-full">
             <span>MRP</span>
             <label class="flex items-center gap-1 cursor-pointer text-slate-500 hover:text-slate-700" title="MRP is not applicable">
               <input type="checkbox" class="q-mrp-na m-0 h-3 w-3" onchange="CMS_MASTERS.toggleMrp(this)" ${qData && qData.mrpNotApplicable ? 'checked' : ''} />
@@ -1056,11 +1056,11 @@ window.CMS_MASTERS = {
           </label>
           <input type="number" step="0.01" class="q-mrp w-full font-mono font-bold text-emerald-900 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${mrp}" placeholder="0.00" onchange="CMS_MASTERS.checkRateVsMrp(this)" ${qData && qData.mrpNotApplicable ? 'disabled' : ''} />
         </div>
-        <div class="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col justify-end">
+        <div class="col-span-12 sm:col-span-6 flex flex-col justify-end">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">UOM</label>
           <input type="text" class="q-unit w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${unit}" placeholder="Nos, Rim, Box" />
         </div>
-        <div class="col-span-12 sm:col-span-6 lg:col-span-3 flex flex-col justify-end">
+        <div class="col-span-12 sm:col-span-6 flex flex-col justify-end">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">HSN / SAC</label>
           <input type="text" class="q-hsn w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${hsn}" placeholder="e.g. 4802" />
         </div>
@@ -4093,6 +4093,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   }
 };
+
 
 
 
