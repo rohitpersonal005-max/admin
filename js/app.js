@@ -353,7 +353,7 @@ window.CMS_APP = {
               </div>
               <span class="px-2 py-0.5 bg-amber-600 text-white rounded text-[10px] font-bold uppercase font-mono">MOVEMENT</span>
             </div>
-            <p class="text-xs text-slate-700"><strong>Role in ERP:</strong> Handles physical transactions — items coming in from vendors, and moving out to departments.</p>
+            <p class="text-xs text-slate-700"><strong>Role in ERP:</strong> Handles physical transactions � items coming in from vendors, and moving out to departments.</p>
             <div class="bg-white p-2.5 rounded border border-amber-200 space-y-1 text-slate-600 text-[11px]">
               <div><strong>Key Question Answered:</strong> <em>"Who brought material in, who requisitioned stock, and who returned damaged items?"</em></div>
               <div class="pt-1 border-t border-slate-100">
@@ -401,7 +401,7 @@ window.CMS_APP = {
       </div>
     `;
 
-    this.openModal('Adminutes ERP — Module Differences & Architecture Guide', content, 'max-w-4xl');
+    this.openModal('Adminutes ERP � Module Differences & Architecture Guide', content, 'max-w-4xl');
   },
 
   // User Session & Security Management
@@ -483,7 +483,7 @@ window.CMS_APP = {
                     <span>${u.name}</span>
                     <span class="text-[9px] px-1 bg-slate-100 text-slate-700 rounded font-semibold">${u.role}</span>
                   </div>
-                  <div class="text-[10px] text-slate-400 font-mono truncate">${u.id} • ${u.department || 'Store'}</div>
+                  <div class="text-[10px] text-slate-400 font-mono truncate">${u.id} � ${u.department || 'Store'}</div>
                 </div>
               </div>
               <button type="button" class="px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 transition shrink-0" title="View Profile">
@@ -610,7 +610,7 @@ window.CMS_APP = {
                 ${user.role}
               </span>
             </div>
-            <div class="text-slate-500 font-mono text-[11px]">${user.id} • ${user.roleTitle || user.role}</div>
+            <div class="text-slate-500 font-mono text-[11px]">${user.id} � ${user.roleTitle || user.role}</div>
           </div>
         </div>
 
@@ -1010,7 +1010,7 @@ window.CMS_APP = {
             </div>
             <div>
               <div class="text-xs font-bold">${cleanFileName}</div>
-              <div class="text-[10px] text-slate-300 font-mono">${docType} • Verified Repository File</div>
+              <div class="text-[10px] text-slate-300 font-mono">${docType} � Verified Repository File</div>
             </div>
           </div>
           <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-bold uppercase tracking-wider">
@@ -1218,6 +1218,7 @@ if (!window.CMS_AUTH) {
     window.CMS_APP.init();
   }
 }
+
 
 
 

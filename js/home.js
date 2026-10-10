@@ -477,9 +477,9 @@ window.CMS_HOME = {
                   </td>
                   <td class='py-3 px-3'>
                     <div class='flex gap-2 flex-wrap'>
-                      ${['Inventory', 'Transactions', 'Reports'].map(mod => `
+                      ${['Reports', 'Setup', 'Transaction'].map(mod => `
                         <label class='inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-600 bg-white border border-slate-200 px-2 py-1 rounded shadow-sm hover:bg-slate-50 cursor-pointer transition'>
-                          <input type='checkbox' class='mod-chk-${u.id} accent-emerald-600' value='${mod}' ${(u.role === 'Admin' || (u.modules || ['Inventory', 'Transactions', 'Reports']).includes(mod)) ? 'checked' : ''} ${u.role === 'Admin' ? 'disabled' : ''} />
+                          <input type='checkbox' class='mod-chk-${u.id} accent-emerald-600' value='${mod}' ${(u.role === 'Admin' || (u.modules || ['Reports', 'Setup', 'Transaction']).includes(mod)) ? 'checked' : ''} ${u.role === 'Admin' ? 'disabled' : ''} />
                           ${mod}
                         </label>
                       `).join('')}
@@ -571,6 +571,7 @@ window.CMS_HOME = {
     this.render();
   }
 };
+
 
 
 
