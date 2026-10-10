@@ -1417,7 +1417,7 @@ window.CMS_MASTERS = {
   openVendorModal(vendorId = null) {
     const role = window.CMS_STORE.getRole();
     if (role === 'Admin') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Vendor registration must be initiated by User.', 'warning');
+      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Vendor registration must be initiated by User.', 'warning');
     }
     const isEdit = Boolean(vendorId);
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
@@ -1781,20 +1781,52 @@ window.CMS_MASTERS = {
 
     window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-4xl');
 
-      // Auto-clear error styling on input
-      const vendorForm = document.getElementById('vendor-form');
-      if (vendorForm) {
-        vendorForm.addEventListener('input', (e) => {
-          if (e.target.classList.contains('border-rose-500')) {
-            e.target.classList.remove('border-rose-500', 'bg-rose-50');
-          }
-        });
-        vendorForm.addEventListener('change', (e) => {
-          if (e.target.classList.contains('border-rose-500')) {
-            e.target.classList.remove('border-rose-500', 'bg-rose-50');
-          }
-        });
-      }
+      // Auto-clear error styling and Auto-Save Draft
+        const vendorForm = document.getElementById('vendor-form');
+        if (vendorForm) {
+          
+          let draftTimeout;
+          const triggerAutoSave = () => {
+             // Only auto-save if they've at least typed a Company Name or something basic, to avoid blank drafts.
+             const n = document.getElementById('v-name')?.value.trim();
+             if (!n) return;
+             clearTimeout(draftTimeout);
+             draftTimeout = setTimeout(() => {
+                // Determine ID: if we opened an edit modal, vendorId is passed. 
+                // Wait, openVendorModal passes vendorId into the HTML string: saveVendor('${vendorId || ''}')
+                // We need to know the active ID. Let's just parse it from the submit button.
+                const btn = document.getElementById('v-submit-btn');
+                let activeId = null;
+                if (btn) {
+                  const match = btn.getAttribute('onclick').match(/'([^']+)'/);
+                  if (match && match[1]) activeId = match[1];
+                }
+                
+                // If no active ID, generate one and update the submit button so future saves use it!
+                if (!activeId) {
+                  activeId = 'V-' + Date.now();
+                  if (btn) btn.setAttribute('onclick', `CMS_MASTERS.saveVendor('${activeId}')`);
+                  vendorForm.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${activeId}');`);
+                }
+                
+                // Save quietly as draft
+                CMS_MASTERS.saveVendor(activeId, false);
+             }, 1000); // 1-second debounce
+          };
+
+          vendorForm.addEventListener('input', (e) => {
+            if (e.target.classList.contains('border-rose-500')) {
+              e.target.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-600');
+            }
+            triggerAutoSave();
+          });
+          vendorForm.addEventListener('change', (e) => {
+            if (e.target.classList.contains('border-rose-500')) {
+              e.target.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-600');
+            }
+            triggerAutoSave();
+          });
+        }
 
     // Populate dynamic certificates if present
     
@@ -1887,7 +1919,7 @@ window.CMS_MASTERS = {
     }
     
     const form = document.getElementById('vendor-form');
-      if (form && !form.checkValidity()) {
+      if (directSubmit && form && !form.checkValidity()) {
         const inputs = form.querySelectorAll('input, select, textarea');
         let firstInvalid = null;
         for (const input of inputs) {
@@ -1959,7 +1991,7 @@ window.CMS_MASTERS = {
     const bankFileInput = document.getElementById('v-bank-file');
       let bankDoc = (bankFileInput && bankFileInput.files[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
       
-      if (!bankDoc || !bankDocTitle) {
+      if (directSubmit && (!bankDoc || !bankDocTitle)) {
           window.CMS_APP.toast('Supporting Bank Document and its Document Type are mandatory.', 'error');
           this.switchVendorTab(4);
           return;
@@ -1988,19 +2020,19 @@ window.CMS_MASTERS = {
       
       const today = new Date().toISOString().split('T')[0];
       if (qDate && qDate > today) {
-        return window.CMS_APP.toast('System does not allow future quotation dates.', 'error');
+        if (directSubmit) return window.CMS_APP.toast('System does not allow future quotation dates.', 'error');
       }
       if (qEff && qDate && qEff < qDate) {
-        return window.CMS_APP.toast('Effective date cannot be older than the quotation date.', 'error');
+        if (directSubmit) return window.CMS_APP.toast('Effective date cannot be older than the quotation date.', 'error');
       }
       if (qValid && qEff && qValid < qEff) {
-          return window.CMS_APP.toast('Valid till/expiry date cannot be older than the effective date.', 'error');
+          if (directSubmit) return window.CMS_APP.toast('Valid till/expiry date cannot be older than the effective date.', 'error');
         }
         
         const rateVal = parseFloat(row.querySelector('.q-rate')?.value || 0);
         const mrpVal = parseFloat(row.querySelector('.q-mrp')?.value || 0);
         const mrpNa = row.querySelector('.q-mrp-na')?.checked;
-        if (!mrpNa && rateVal > mrpVal) {
+        if (directSubmit && !mrpNa && rateVal > mrpVal) {
           window.CMS_APP.toast('Error: Approved Rate cannot be higher than MRP for material ' + matName, 'error');
           this.switchVendorTab(3);
           return;
@@ -2050,88 +2082,88 @@ window.CMS_MASTERS = {
       const todayDateStr = new Date().toISOString().split('T')[0];
       for (const q of quotedItems) {
         if (q.quotationDate && q.quotationDate > todayDateStr) {
-          return window.CMS_APP.toast('Quotation Date cannot be a future date.', 'error');
+          if (directSubmit) return window.CMS_APP.toast('Quotation Date cannot be a future date.', 'error');
         }
         if (q.effectiveFrom && q.quotationDate && q.effectiveFrom < q.quotationDate) {
-          return window.CMS_APP.toast('Effective Date cannot be older than Quotation Date.', 'error');
+          if (directSubmit) return window.CMS_APP.toast('Effective Date cannot be older than Quotation Date.', 'error');
         }
         const compareBase = q.effectiveFrom || q.quotationDate;
         if (q.quotationValidTill && compareBase && q.quotationValidTill < compareBase) {
-          return window.CMS_APP.toast('Valid Till / Expiry Date cannot be older than the ' + (q.effectiveFrom ? 'Effective' : 'Quotation') + ' Date.', 'error');
+          if (directSubmit) return window.CMS_APP.toast('Valid Till / Expiry Date cannot be older than the ' + (q.effectiveFrom ? 'Effective' : 'Quotation') + ' Date.', 'error');
         }
       }
-if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is required.', 'error');
-    if (!address) return window.CMS_APP.toast('Street / Building address is mandatory.', 'error');
-    if (!addressDistrict) return window.CMS_APP.toast('District is required.', 'error');
-    if (!addressState) return window.CMS_APP.toast('Please select an Indian State or Union Territory.', 'error');
+if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Company Name is required.', 'error');
+    if (directSubmit && !address) return window.CMS_APP.toast('Street / Building address is mandatory.', 'error');
+    if (directSubmit && !addressDistrict) return window.CMS_APP.toast('District is required.', 'error');
+    if (directSubmit && !addressState) return window.CMS_APP.toast('Please select an Indian State or Union Territory.', 'error');
 
     // PIN Code: exactly 6 digits
     if (!addressPinCode || !/^[0-9]{6}$/.test(addressPinCode)) {
-      return window.CMS_APP.toast(`PIN Code must be exactly 6 numeric digits (currently "${addressPinCode}"). Example: 110020.`, 'error');
+      if (directSubmit) return window.CMS_APP.toast(`PIN Code must be exactly 6 numeric digits (currently "${addressPinCode}"). Example: 110020.`, 'error');
     }
 
     // Phone: minimum 10 digits
     const cleanPhone = contactNo.replace(/[^0-9]/g, '');
     if (cleanPhone.length < 10) {
-      return window.CMS_APP.toast(`Phone number must contain at least 10 digits (currently ${cleanPhone.length} digits).`, 'error');
+      if (directSubmit) return window.CMS_APP.toast(`Phone number must contain at least 10 digits (currently ${cleanPhone.length} digits).`, 'error');
     }
 
     // GSTIN Validation (unless exempt)
     if (!gstNotApplicable) {
       if (!gstNo) {
-        return window.CMS_APP.toast('GSTIN Number is mandatory. If vendor is unregistered, you must confirm the blue box (GST registration is not applicable).', 'error');
+        if (directSubmit) return window.CMS_APP.toast('GSTIN Number is mandatory. If vendor is unregistered, you must confirm the blue box (GST registration is not applicable).', 'error');
       }
       if (gstNo.length !== 15) {
-        return window.CMS_APP.toast(`GSTIN must be exactly 15 characters (currently ${gstNo.length} characters). Example: 07AABCA1234F1Z5.`, 'error');
+        if (directSubmit) return window.CMS_APP.toast(`GSTIN must be exactly 15 characters (currently ${gstNo.length} characters). Example: 07AABCA1234F1Z5.`, 'error');
       }
       if (!/^[0-9A-Z]{15}$/.test(gstNo)) {
-        return window.CMS_APP.toast('GSTIN must be 15 alphanumeric characters without spaces or symbols.', 'error');
+        if (directSubmit) return window.CMS_APP.toast('GSTIN must be 15 alphanumeric characters without spaces or symbols.', 'error');
       }
       // Check duplicate GSTIN across other vendors
       const duplicateGst = store.data.vendors.find(v => v.id !== vendorId && v.gstNo && v.gstNo.toUpperCase() === gstNo);
       if (duplicateGst) {
-        return window.CMS_APP.toast(`Duplicate GSTIN! "${duplicateGst.name}" (${duplicateGst.id}) is already registered with GSTIN ${gstNo}.`, 'error');
+        if (directSubmit) return window.CMS_APP.toast(`Duplicate GSTIN! "${duplicateGst.name}" (${duplicateGst.id}) is already registered with GSTIN ${gstNo}.`, 'error');
       }
     }
 
     // PAN Validation (unless exempt)
     if (!panNotApplicable) {
       if (!panNo) {
-        return window.CMS_APP.toast('PAN Card Number is mandatory. If vendor has no PAN, confirm the PAN exemption blue box.', 'error');
+        if (directSubmit) return window.CMS_APP.toast('PAN Card Number is mandatory. If vendor has no PAN, confirm the PAN exemption blue box.', 'error');
       }
       if (panNo.length !== 10) {
-        return window.CMS_APP.toast(`PAN Number must be exactly 10 characters (currently ${panNo.length} characters). Example: AABCA1234F.`, 'error');
+        if (directSubmit) return window.CMS_APP.toast(`PAN Number must be exactly 10 characters (currently ${panNo.length} characters). Example: AABCA1234F.`, 'error');
       }
       if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNo)) {
-        return window.CMS_APP.toast('PAN format must be 5 letters, 4 digits, and 1 letter (e.g. AABCA1234F).', 'error');
+        if (directSubmit) return window.CMS_APP.toast('PAN format must be 5 letters, 4 digits, and 1 letter (e.g. AABCA1234F).', 'error');
       }
     }
 
     // Bank Validation
-    if (!bankName) return window.CMS_APP.toast('Bank Name is mandatory.', 'error');
+    if (directSubmit && !bankName) return window.CMS_APP.toast('Bank Name is mandatory.', 'error');
     if (/[^a-zA-Z\s.\-&]/.test(accountName)) {
-        return window.CMS_APP.toast('Bank Account Name cannot contain numbers or special symbols.', 'error');
+        if (directSubmit) return window.CMS_APP.toast('Bank Account Name cannot contain numbers or special symbols.', 'error');
       }
       if (!accountNo || accountNo.length < 5 || accountNo.length > 22) {
-      return window.CMS_APP.toast(`Bank Account Number must be between 5 and 22 digits (currently ${accountNo.length} digits).`, 'error');
+      if (directSubmit) return window.CMS_APP.toast(`Bank Account Number must be between 5 and 22 digits (currently ${accountNo.length} digits).`, 'error');
     }
     if (!ifscCode || ifscCode.length < 8 || ifscCode.length > 11) {
-      return window.CMS_APP.toast(`Bank IFSC Code must be valid (e.g. HDFC0001234). Currently: "${ifscCode}".`, 'error');
+      if (directSubmit) return window.CMS_APP.toast(`Bank IFSC Code must be valid (e.g. HDFC0001234). Currently: "${ifscCode}".`, 'error');
     }
 
     // Limited period approval validation
     if (approvedForLimitedPeriod) {
       if (!approvalValidTill) {
-        return window.CMS_APP.toast('Approval Expiry Date is mandatory when limited period approval is selected.', 'error');
+        if (directSubmit) return window.CMS_APP.toast('Approval Expiry Date is mandatory when limited period approval is selected.', 'error');
       }
       if (approvalValidTill < today) {
-        return window.CMS_APP.toast('Approval Expiry Date cannot be a past date.', 'error');
+        if (directSubmit) return window.CMS_APP.toast('Approval Expiry Date cannot be a past date.', 'error');
       }
     }
 
     // Quotation validation
     if (quotationValidTill && quotationValidTill < today) {
-      return window.CMS_APP.toast('Quotation Validity Date cannot be a past date.', 'error');
+      if (directSubmit) return window.CMS_APP.toast('Quotation Validity Date cannot be a past date.', 'error');
     }
 
     // Extract dynamic certificates (optional)
@@ -2142,7 +2174,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
       if (reg === 'Other') {
         const otherVal = row.querySelector('.cert-regulator-other-input')?.value.trim();
         if (otherVal) reg = otherVal;
-        else return window.CMS_APP.toast('Please specify the agency name for "Other".', 'error');
+        else if (directSubmit) return window.CMS_APP.toast('Please specify the agency name for "Other".', 'error');
       }
       const formNo = row.querySelector('.cert-form-input')?.value.trim() || '';
       const certNo = row.querySelector('.cert-number-input')?.value.trim() || '';
@@ -2154,12 +2186,12 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
       // Skip blank rows if user didn't enter agency or number
       if (!reg && !certNo) continue;
 
-      if (!reg) return window.CMS_APP.toast('Please select a Regulatory / Certification Agency for the added certificate row.', 'error');
-      if (!certNo) return window.CMS_APP.toast(`License / Certificate Number is mandatory for ${reg}.`, 'error');
-      if (hasVal && !expiry) return window.CMS_APP.toast(`Expiry date is mandatory for ${reg} (${certNo}).`, 'error');
-      if (hasVal && expiry < today) return window.CMS_APP.toast(`Expiry date for ${reg} cannot be in the past.`, 'error');
+      if (directSubmit && !reg) return window.CMS_APP.toast('Please select a Regulatory / Certification Agency for the added certificate row.', 'error');
+      if (directSubmit && !certNo) return window.CMS_APP.toast(`License / Certificate Number is mandatory for ${reg}.`, 'error');
+      if (directSubmit && hasVal && !expiry) return window.CMS_APP.toast(`Expiry date is mandatory for ${reg} (${certNo}).`, 'error');
+      if (directSubmit && hasVal && expiry < today) return window.CMS_APP.toast(`Expiry date for ${reg} cannot be in the past.`, 'error');
       
-      if (!fileName) return window.CMS_APP.toast(`Please upload the document file for ${reg} (${certNo}).`, 'error');
+      if (directSubmit && !fileName) return window.CMS_APP.toast(`Please upload the document file for ${reg} (${certNo}).`, 'error');
 
       if (!fileName) {
         fileName = `${reg.replace(/\s+/g, '_')}_${certNo || 'Certificate'}.pdf`;
@@ -2318,10 +2350,35 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
         }
       }
 
-      store.save();
-    window.CMS_APP.closeModal();
-    window.CMS_APP.toast(directSubmit ? 'Vendor credentials and statutory certificates submitted for Admin approval!' : 'Vendor saved successfully!', 'success');
-    window.CMS_APP.refreshView();
+      
+    if (directSubmit) {
+      store.save(); // full UI update
+      window.CMS_APP.closeModal();
+      window.CMS_APP.toast('Vendor credentials and statutory certificates submitted for Admin approval!', 'success');
+      window.CMS_APP.refreshView();
+    } else {
+      // Quiet background save for drafts: update localStorage directly without triggering global UI rebuilds
+      const storageKey = window.CMS_TENANT_ID ? 'CMS_DATA_' + window.CMS_TENANT_ID : 'CMS_DATA';
+      localStorage.setItem(storageKey, JSON.stringify(store.data));
+      if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
+          window.CMS_SUPABASE.from('master_tenants').update({ cms_db: store.data }).eq('id', window.CMS_TENANT_ID).then(() => {});
+      }
+      
+      const vendorCountDisplay = document.getElementById('vendor-count-display');
+      if (vendorCountDisplay) {
+         // Optionally update row count in background silently
+      }
+    }
+      window.CMS_APP.closeModal();
+      window.CMS_APP.toast('Vendor credentials and statutory certificates submitted for Admin approval!', 'success');
+      window.CMS_APP.refreshView();
+    } else {
+      // Quiet background save for drafts: just refresh the background table if needed, or don't do anything disruptive.
+      const vendorCountDisplay = document.getElementById('vendor-count-display');
+      if (vendorCountDisplay) {
+         window.CMS_APP.refreshView(true); // Assuming soft refresh exists, or just do nothing UI-wise to avoid focus loss.
+      }
+    }
   },
 
   openVendorSanctionModal(vendorId) {
@@ -2515,7 +2572,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
   openCategoryModal(catId = null) {
     const role = window.CMS_STORE.getRole();
     if (role === 'Admin') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying categories must be initiated by User.', 'warning');
+      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying categories must be initiated by User.', 'warning');
     }
     const isEdit = Boolean(catId);
     const cat = isEdit ? window.CMS_STORE.data.categories.find(c => c.id === catId) : { name: '', description: '' };
@@ -2543,7 +2600,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
   saveCategory(catId, directSubmit = false) {
     const role = window.CMS_STORE.getRole();
     if (role === 'Admin') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying categories must be initiated by User.', 'warning');
+      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying categories must be initiated by User.', 'warning');
     }
     const name = document.getElementById('cat-name').value.trim();
     const description = document.getElementById('cat-desc').value.trim();
@@ -3100,7 +3157,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
   openConsumableModal(matId = null, forcedType = null) {
     const role = window.CMS_STORE.getRole();
     if (role === 'Admin') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying materials must be initiated by User.', 'warning');
+      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying materials must be initiated by User.', 'warning');
     }
     const store = window.CMS_STORE.data;
     const isEdit = Boolean(matId);
@@ -3465,7 +3522,7 @@ if (!name) return window.CMS_APP.toast('Vendor / Supplier Company Name is requir
   saveConsumable(matId, directSubmit = false) {
     const role = window.CMS_STORE.getRole();
     if (role === 'Admin') {
-      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying materials must be initiated by User.', 'warning');
+      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying materials must be initiated by User.', 'warning');
     }
     const store = window.CMS_STORE;
     const inventoryType = document.getElementById('m-inv-type').value;
