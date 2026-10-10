@@ -1022,13 +1022,13 @@ window.CMS_MASTERS = {
         <div>
           <label class="block font-bold text-slate-800 mb-1 text-[10px]">Valid Till / Expiry</label>
           <input type="date" class="q-valid w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${exp}" ${!eff ? 'disabled' : `min="${eff}"`} />
-        
-          <div>
-            <label class="block font-bold text-amber-700 mb-1 text-[10px]">Alert Date</label>
-            <input type="date" class="q-alert w-full font-mono px-2.5 py-1.5 border border-amber-300 bg-amber-50 rounded text-xs" value="${qData ? (qData.alertDate || '') : ''}" />
-          </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+        <div>
+          <label class="block font-bold text-amber-700 mb-1 text-[10px]">Alert Date</label>
+          <input type="date" class="q-alert w-full font-mono px-2.5 py-1.5 border border-amber-300 bg-amber-50 rounded text-xs" value="${qData ? (qData.alertDate || '') : ''}" />
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 mt-2">
         <div class="sm:col-span-6">
           <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Select Existing Material</label>
           <select class="q-mat-id w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white" onchange="const o=this.options[this.selectedIndex]; if(!o.value)return; const r=this.closest('.quote-row'); r.querySelector('.q-mat-name').value=o.dataset.name; r.querySelector('.q-rate').value=o.dataset.rate; r.querySelector('.q-mrp').value=o.dataset.mrp; r.querySelector('.q-unit').value=o.dataset.unit; r.querySelector('.q-hsn').value=o.dataset.hsn;">
@@ -4093,6 +4093,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   }
 };
+
 
 
 
