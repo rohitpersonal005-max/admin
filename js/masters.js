@@ -2373,21 +2373,6 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
           window.CMS_SUPABASE.from('master_tenants').update({ cms_db: store.data }).eq('id', window.CMS_TENANT_ID).then(() => {});
       }
-      
-      const vendorCountDisplay = document.getElementById('vendor-count-display');
-      if (vendorCountDisplay) {
-         // Optionally update row count in background silently
-      }
-    }
-      window.CMS_APP.closeModal();
-      window.CMS_APP.toast('Vendor credentials and statutory certificates submitted for Admin approval!', 'success');
-      window.CMS_APP.refreshView();
-    } else {
-      // Quiet background save for drafts: just refresh the background table if needed, or don't do anything disruptive.
-      const vendorCountDisplay = document.getElementById('vendor-count-display');
-      if (vendorCountDisplay) {
-         window.CMS_APP.refreshView(true); // Assuming soft refresh exists, or just do nothing UI-wise to avoid focus loss.
-      }
     }
   },
 
