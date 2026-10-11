@@ -661,8 +661,8 @@ window.CMS_MASTERS = {
             <h3 class="text-sm font-bold uppercase border-b border-slate-300 mb-2 text-slate-800">5. Certificates</h3>
             ${(!v.certificates || v.certificates.length === 0) ? '<span class="text-slate-400 italic">No certificates recorded</span>' : v.certificates.map(c => `
               <div class="mb-4">
-                <div><span class="text-slate-500 block text-[10px] uppercase">Certificate</span> <strong>${c.regulator || c.name || 'Certificate'} (${c.formNo || ''})</strong></div>
-                ${renderDocPreview(c.fileName, c.docTitle || 'Certificate Document')}
+                <div><span class="text-slate-500 block text-[10px] uppercase">Certificate</span> <strong>${c.documentName || c.docTitle || (c.regulator || c.name || 'Certificate') + (c.formNo ? ' (' + c.formNo + ')' : '')}</strong></div>
+                ${renderDocPreview(c.fileName, c.documentName || c.docTitle || 'Certificate Document')}
               </div>
             `).join('')}
           </div>
@@ -1084,6 +1084,7 @@ window.CMS_MASTERS = {
     const formNo = certData && typeof certData === 'object' ? (certData.formNo || '') : '';
     const certificateNo = certData && typeof certData === 'object' ? (certData.certificateNo || '') : '';
     const fileName = certData && typeof certData === 'object' ? (certData.fileName || '') : '';
+    const docTitle = certData && typeof certData === 'object' ? (certData.documentName || certData.docTitle || '') : '';
     const today = new Date().toISOString().split('T')[0];
 
     
@@ -1159,14 +1160,22 @@ window.CMS_MASTERS = {
           </div>
         </div>
 
-        <!-- 5. Upload File Copy -->
-        <div>
-          <label class="block text-[11px] font-bold text-slate-700 mb-1">
-            5. Upload Certificate Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
-          </label>
-          <div class="flex items-center gap-2">
-            <input type="file" accept=".pdf,image/*" class="cert-file-input text-[11px]" data-current="${fileName}" />
-            ${fileName ? `<span class="text-[10px] text-emerald-700 font-mono truncate max-w-[120px]" title="${fileName}">${fileName}</span>` : ''}
+        <!-- 5. Upload File Copy & Document Name -->
+        <div class="space-y-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">
+              5. Upload Certificate Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="file" accept=".pdf,image/*" class="cert-file-input text-[11px]" data-current="${fileName}" />
+              ${fileName ? `<span class="text-[10px] text-emerald-700 font-mono truncate max-w-[120px]" title="${fileName}">${fileName}</span>` : ''}
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">
+              Document Name
+            </label>
+            <input type="text" class="cert-title-input w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs outline-none focus:border-blue-500" placeholder="e.g. ISO 9001:2015 Quality Certificate" value="${docTitle}" />
           </div>
         </div>
       </div>
@@ -2263,6 +2272,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       const certNo = row.querySelector('.cert-number-input')?.value.trim() || '';
       const hasVal = row.querySelector('input[type="radio"]:checked')?.value === 'yes';
       const expiry = hasVal ? (row.querySelector('.cert-expiry-input')?.value || '') : '';
+            const docName = row.querySelector('.cert-title-input')?.value.trim() || '';
+      const alertDate = row.querySelector('.cert-alert-input')?.value || '';
       const fileInput = row.querySelector('.cert-file-input');
       let fileName = (fileInput && fileInput.files[0]) ? fileInput.files[0].name : (fileInput?.dataset.current || '');
 
@@ -2280,13 +2291,16 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         fileName = `${reg.replace(/\s+/g, '_')}_${certNo || 'Certificate'}.pdf`;
       }
 
-      certificates.push({
+            certificates.push({
         regulator: reg,
         name: reg,
         formNo,
         certificateNo: certNo,
         hasValidity: hasVal,
         validTill: expiry,
+        alertDate,
+        documentName: docName,
+        docTitle: docName,
         fileName
       });
     }
