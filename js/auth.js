@@ -17,7 +17,11 @@ window.CMS_AUTH = {
   hideLogin() {
     const gate = document.getElementById('auth-gate');
     if (gate) gate.classList.add('hidden');
-    if (window.CMS_APP) window.CMS_APP.init();
+    this.isLoggedIn = true;
+    if (window.CMS_APP && !window.CMS_APP_INITIALIZED) {
+      window.CMS_APP_INITIALIZED = true;
+      window.CMS_APP.init();
+    }
   },
 
   async handleUserLogin(user) {
@@ -39,7 +43,7 @@ window.CMS_AUTH = {
       }
 
       const tenantData = tenants[0];
-      window.CMS_TENANT_ID = tenantData.id;
+      window.CMS_TENANT_ID = tenantData.id; localStorage.setItem('CMS_TENANT_ID_CACHE', tenantData.id);
       window.CMS_TENANT_SEATS = tenantData.seat_limit || 10;
       console.log("Welcome to tenant:", tenantData.company_name);
         if (window.CMS_STORE) { await window.CMS_STORE.loadFromCloud(); const saasAdmin = { id: user.id, name: tenantData.admin_username || tenantData.company_name + ' Admin', email: user.email, role: 'Admin', department: tenantData.company_name, pin: null }; const existingUsers = window.CMS_STORE.getUsers();
@@ -52,8 +56,18 @@ window.CMS_AUTH = {
         
         this.hideLogin();
     } catch (err) {
-      console.error(err);
-      this.showLogin('Error syncing workspace: ' + err.message);
+      console.error("Workspace sync issue:", err);
+      // If we already have local data or tenant ID cached, do not lock out the user
+      if (window.CMS_TENANT_ID || localStorage.getItem('CMS_TENANT_ID_CACHE')) {
+        console.warn("Proceeding with cached workspace offline.");
+        window.CMS_TENANT_ID = window.CMS_TENANT_ID || localStorage.getItem('CMS_TENANT_ID_CACHE');
+        this.hideLogin();
+        if (window.CMS_APP && window.CMS_APP.toast) {
+          window.CMS_APP.toast('Connected in offline/cached mode. Cloud sync will retry.', 'warning');
+        }
+      } else {
+        this.showLogin('Error syncing workspace: ' + (err.message || 'Check network connection.'));
+      }
     }
   },
 
@@ -158,28 +172,46 @@ window.CMS_AUTH = {
       });
     }
 
-    // Wait for Supabase Auth state
+    // Wait for Supabase Auth state with resilient re-auth protection
     setTimeout(() => {
       window.CMS_SUPABASE.auth.onAuthStateChange((event, session) => {
+        console.log("Supabase Auth Event:", event);
         if (event === 'SIGNED_OUT') {
+          this.isLoggedIn = false;
+          window.CMS_APP_INITIALIZED = false;
           localStorage.removeItem('CMS_SUBUSER_SESSION');
           this.showLogin();
           return;
         }
+
+        // Prevent token refresh from destroying current UI state or reloading page
+        if (this.isLoggedIn && (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED')) {
+          console.log("Token refreshed in background without interrupting session.");
+          return;
+        }
+
         if (session && session.user) {
-          this.handleUserLogin(session.user);
+          if (!this.isLoggedIn) {
+            this.handleUserLogin(session.user);
+          }
         } else {
           const subSessionStr = localStorage.getItem('CMS_SUBUSER_SESSION');
           if (subSessionStr) {
              try {
                const subSession = JSON.parse(subSessionStr);
                if (subSession.tenantId && subSession.userId) {
-                  this.handleSubUserLogin(subSession);
+                  if (!this.isLoggedIn) {
+                    this.handleSubUserLogin(subSession);
+                  }
                   return;
                }
-             } catch(e){}
+             } catch(e){
+               console.warn("Invalid subSession", e);
+             }
           }
-          this.showLogin();
+          if (!this.isLoggedIn) {
+            this.showLogin();
+          }
         }
       });
     }, 500);

@@ -5,8 +5,15 @@ window.CMS_DASHBOARD = {
     this.renderToDOM();
   },
 
+  showEmergencyAlerts(showModal = false) {
+    if (showModal) {
+      const html = this.getAlertsHtml();
+      window.CMS_APP.openModal('Notifications & Emergency Alerts', html || '<div class="p-8 text-center text-slate-500">No active alerts or critical notifications at this time.</div>', 'max-w-3xl');
+    }
+  },
+
   renderToDOM() {
-    const root = document.getElementById('app-content');
+    const root = document.getElementById('view-container') || document.getElementById('app-content');
     if (root) {
       root.innerHTML = this.render();
       if (window.lucide) window.lucide.createIcons();
@@ -16,7 +23,7 @@ window.CMS_DASHBOARD = {
   openTaskModal() {
     const store = window.CMS_STORE;
     const users = (store.data.users || []).filter(u => u.role !== 'Admin');
-    const userOptions = users.map(u => `<option value="${u.username}">${u.username} (${u.role})</option>`).join('');
+    const userOptions = users.map(u => `<option value="${u.username || u.name}">${u.name || u.username} (${u.role})</option>`).join('');
 
     const content = `
       <form class="space-y-4 text-sm" onsubmit="event.preventDefault(); CMS_DASHBOARD.saveTask();">
@@ -55,7 +62,7 @@ window.CMS_DASHBOARD = {
       createdAt: new Date().toISOString(),
       status: 'Open',
       chat: [
-        { sender: window.CMS_STORE.getCurrentUser().username, text: message, timestamp: new Date().toISOString() }
+        { sender: (window.CMS_STORE.getCurrentUser().username || window.CMS_STORE.getCurrentUser().name || 'User'), text: message, timestamp: new Date().toISOString() }
       ]
     };
 
@@ -233,7 +240,7 @@ window.CMS_DASHBOARD = {
     const store = window.CMS_STORE;
     const currentUser = store.getCurrentUser();
     const role = currentUser ? currentUser.role : '';
-    const username = currentUser ? currentUser.username : '';
+    const username = currentUser ? (currentUser.username || currentUser.name || '') : '';
 
     const allTasks = store.data.adminTasks || [];
     

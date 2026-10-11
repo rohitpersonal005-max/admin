@@ -36,6 +36,15 @@ window.CMS_APP = {
   },
 
   bindEvents() {
+    // Prevent backend fetch, promise, or runtime errors from crashing the page
+    window.addEventListener('unhandledrejection', (event) => {
+      console.warn('Protected: Suppressed unhandled rejection to prevent webpage crash:', event.reason);
+      if (event && typeof event.preventDefault === 'function') event.preventDefault();
+    });
+
+    window.addEventListener('error', (event) => {
+      console.warn('Protected: Caught runtime error without crashing:', event.message || event.error);
+    });
         // Global realtime validation for important fields
     document.addEventListener('input', (e) => {
       const el = e.target;
