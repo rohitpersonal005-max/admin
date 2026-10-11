@@ -1,3 +1,100 @@
+// High-Capacity Persistent Document Storage via IndexedDB (Bypasses 5MB localStorage quota)
+window.CMS_FILE_STORE = {
+  dbPromise: null,
+  cache: new Map(),
+
+  getDB() {
+    if (!this.dbPromise) {
+      this.dbPromise = new Promise((resolve, reject) => {
+        try {
+          const req = indexedDB.open('CMS_REPOSITORY_V2', 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('files')) {
+              db.createObjectStore('files');
+            }
+          };
+          req.onsuccess = (e) => resolve(e.target.result);
+          req.onerror = (e) => {
+            console.warn('IndexedDB open error:', e.target.error);
+            resolve(null);
+          };
+        } catch (err) {
+          console.warn('IndexedDB not supported or blocked, using memory cache:', err);
+          resolve(null);
+        }
+      });
+    }
+    return this.dbPromise;
+  },
+
+  async saveFile(name, dataUrl) {
+    if (!name || !dataUrl) return;
+    this.cache.set(name, dataUrl);
+    try {
+      const db = await this.getDB();
+      if (!db) return;
+      return new Promise((resolve) => {
+        const tx = db.transaction('files', 'readwrite');
+        const store = tx.objectStore('files');
+        const putReq = store.put(dataUrl, name);
+        putReq.onsuccess = () => resolve(true);
+        putReq.onerror = () => {
+          console.warn('IndexedDB put error:', putReq.error);
+          resolve(false);
+        };
+      });
+    } catch (err) {
+      console.warn('IndexedDB save failed, safely kept in memory cache:', err);
+    }
+  },
+
+  async getFile(name) {
+    if (!name) return null;
+    if (this.cache.has(name)) return this.cache.get(name);
+    try {
+      const db = await this.getDB();
+      if (!db) {
+        return localStorage.getItem('CMS_FILE_' + name) || null;
+      }
+      return new Promise((resolve) => {
+        const tx = db.transaction('files', 'readonly');
+        const store = tx.objectStore('files');
+        const req = store.get(name);
+        req.onsuccess = () => {
+          let val = req.result;
+          if (!val) {
+            try { val = localStorage.getItem('CMS_FILE_' + name); } catch(e){}
+          }
+          if (val) this.cache.set(name, val);
+          resolve(val || null);
+        };
+        req.onerror = () => {
+          try { resolve(localStorage.getItem('CMS_FILE_' + name)); } catch(e){ resolve(null); }
+        };
+      });
+    } catch (err) {
+      try { return localStorage.getItem('CMS_FILE_' + name) || null; } catch(e){ return null; }
+    }
+  },
+
+  cleanLocalStorage() {
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('CMS_FILE_')) {
+          const val = localStorage.getItem(key);
+          const fname = key.replace('CMS_FILE_', '');
+          this.saveFile(fname, val);
+          localStorage.removeItem(key);
+        }
+      }
+    } catch(e) {
+      console.warn('Cleanup error', e);
+    }
+  }
+};
+
 /**
  * Adminutes - Main Application Orchestrator
  * Handles view routing, Executive Dashboard, modal dialogues,
@@ -9,6 +106,7 @@ window.CMS_APP = {
   currentView: 'dashboard',
 
   init() {
+    if (window.CMS_FILE_STORE) window.CMS_FILE_STORE.cleanLocalStorage();
     this.bindEvents();
     this.updateUserProfile();
     this.updatePendingBadge();
