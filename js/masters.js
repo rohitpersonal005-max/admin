@@ -1695,7 +1695,6 @@ window.CMS_MASTERS = {
                     Upload GST Certificate (PDF/Image) <span class="text-rose-600 font-bold">*</span>
                   </label>
                   <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs" />
-                  <input type="text" id="v-gst-title" placeholder="Document Title (e.g. GST Registration 2024)" class="w-full mt-1.5 px-2 py-1 text-xs border border-slate-300 rounded" value="${vendor.gstDocTitle || ''}" />
                   ${vendor.gstCertificateFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.gstCertificateFile}</span>` : ''}
                 </div>
               </div>
@@ -1716,7 +1715,6 @@ window.CMS_MASTERS = {
                     Upload PAN Card Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
                   </label>
                   <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs" />
-                  <input type="text" id="v-pan-title" placeholder="Document Title" class="w-full mt-1.5 px-2 py-1 text-xs border border-slate-300 rounded" value="${vendor.panDocTitle || ''}" />
                   ${vendor.panCardFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.panCardFile}</span>` : ''}
                 </div>
               </div>
@@ -2049,8 +2047,8 @@ window.CMS_MASTERS = {
     const contactNo = document.getElementById('v-contact')?.value.trim() || '';
       const countryCode = document.getElementById('v-country-code')?.value.trim() || '+91';
     const email = document.getElementById('v-email')?.value.trim() || '';
-    const gstDocTitle = document.getElementById('v-gst-title')?.value.trim() || '';
-    const panDocTitle = document.getElementById('v-pan-title')?.value.trim() || '';
+    const gstDocTitle = document.getElementById('v-gst-title')?.value.trim() || 'GST Certificate';
+    const panDocTitle = document.getElementById('v-pan-title')?.value.trim() || 'PAN Card';
     const bankDocTitle = document.getElementById('v-bank-title')?.value.trim() || '';
     const limAlertDays = document.getElementById('v-lim-alert-days')?.value.trim() || '';
       const limAlertFreq = document.getElementById('v-lim-alert-freq')?.value || 'Daily';
