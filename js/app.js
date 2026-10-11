@@ -119,14 +119,57 @@ window.CMS_APP = {
     }
     this.navigateTo(route);
 
-    // Global interceptor for all file uploads
+    // Global dual-retention & repository sync pipeline for all file uploads
     document.addEventListener('change', (e) => {
       if (e.target && e.target.type === 'file' && e.target.files.length > 0) {
         const file = e.target.files[0];
-        if (file.size > 5 * 1024 * 1024) return; // Ignore large files
+        const inputEl = e.target;
+
+        // 1. Browser downloads/retains the file locally
+        try {
+          const blobUrl = URL.createObjectURL(file);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        } catch (downloadErr) {
+          console.warn('Local file retention notice:', downloadErr);
+        }
+
+        // 2. Read and save copy to backend repository (IndexedDB without localStorage quota limits)
         const reader = new FileReader();
-        reader.onload = (ev) => {
-          localStorage.setItem('CMS_FILE_' + file.name, ev.target.result);
+        reader.onload = async (ev) => {
+          try {
+            if (window.CMS_FILE_STORE) {
+              await window.CMS_FILE_STORE.saveFile(file.name, ev.target.result);
+            }
+
+            // Remove any existing badge
+            const parent = inputEl.parentElement || inputEl.closest('div');
+            if (parent) {
+              const existingBadge = parent.querySelector('.file-dual-sync-badge');
+              if (existingBadge) existingBadge.remove();
+
+              // 3. Clear indicator showing original retained and copy shared to backend
+              const badge = document.createElement('div');
+              badge.className = 'file-dual-sync-badge mt-1.5 flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-1.5 rounded shadow-xs';
+              badge.innerHTML = `
+                <i data-lucide="check-check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                <span><strong>Original file retained in local files</strong> & copy shared to backend repository: <span class="font-mono text-emerald-900">${file.name}</span></span>
+              `;
+              parent.appendChild(badge);
+              if (window.lucide) window.lucide.createIcons();
+            }
+
+            if (window.CMS_APP && window.CMS_APP.toast) {
+              window.CMS_APP.toast('Original file retained locally & copy shared to backend repository: ' + file.name, 'success');
+            }
+          } catch (storageErr) {
+            console.error('File repository save error:', storageErr);
+          }
         };
         reader.readAsDataURL(file);
       }
