@@ -349,13 +349,26 @@ window.CMS_APP = {
     // Update active nav styling
     document.querySelectorAll('.nav-link').forEach(link => {
       const target = link.getAttribute('data-route');
+      const icon = link.querySelector('i, svg');
+      const span = link.querySelector('span');
+
       if (target === route) {
         link.classList.add('bg-slate-900', 'text-white', 'shadow-sm');
         link.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900', 'text-slate-300', 'hover:bg-slate-800');
+        if (icon) {
+          icon.classList.remove('text-slate-500', 'text-blue-600', 'text-blue-400', 'text-amber-400', 'text-sky-400', 'text-emerald-400', 'text-rose-400', 'text-purple-400', 'text-cyan-400', 'text-teal-400');
+          icon.classList.add('text-white');
+        }
+        if (span) {
+          span.classList.remove('text-slate-800', 'text-slate-700', 'text-slate-600', 'text-slate-500');
+          span.classList.add('text-white');
+        }
       } else {
         link.classList.remove('bg-slate-900', 'text-white', 'shadow-sm');
         link.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
         link.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+        if (icon) icon.classList.remove('text-white');
+        if (span) span.classList.remove('text-white');
       }
     });
 
