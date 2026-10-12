@@ -152,16 +152,19 @@ window.CMS_APP = {
             // Hide the native "Choose File" input so the Delete button & status take its place
             inputEl.classList.add('hidden');
 
-            // 2. Add inline indicator showing "Document Submitted" with Delete option in place of Choose File
+            // 2. Add professional inline box showing document name and "Document Submitted" below it with Delete option
             const actionContainer = document.createElement('div');
-            actionContainer.className = 'file-action-container inline-flex items-center gap-2 bg-emerald-50 border border-emerald-300 px-3 py-1.5 rounded text-xs shadow-xs';
+            actionContainer.className = 'file-action-container flex items-center justify-between gap-3 bg-white border border-slate-300 px-3 py-1.5 rounded text-xs mt-1 w-full max-w-md shadow-2xs';
             actionContainer.innerHTML = `
-              <div class="flex items-center gap-1.5 min-w-0">
-                <i data-lucide="check-check" class="w-4 h-4 text-emerald-600 shrink-0"></i>
-                <span class="text-xs font-semibold text-emerald-900">Document Submitted</span>
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-semibold text-slate-800 truncate" title="${file.name}">${file.name}</div>
+                <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
+                  <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
+                  <span>Document Submitted</span>
+                </div>
               </div>
-              <button type="button" class="file-remove-btn inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded transition cursor-pointer" title="Delete document">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
+              <button type="button" class="file-remove-btn shrink-0 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-slate-50 border border-slate-300 rounded transition cursor-pointer" title="Delete document">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-slate-500"></i>
                 <span>Delete</span>
               </button>
             `;
