@@ -149,15 +149,15 @@ window.CMS_APP = {
             const existingAction = inputEl.parentElement ? inputEl.parentElement.querySelector('.file-action-container') : null;
             if (existingAction) existingAction.remove();
 
-            // 2. Add inline Delete / Remove option directly beside/under the input
+            // 2. Add inline indicator showing "Document Submitted" with Delete option
             const actionContainer = document.createElement('div');
-            actionContainer.className = 'file-action-container mt-1.5 inline-flex items-center gap-2 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded shadow-xs';
+            actionContainer.className = 'file-action-container mt-1.5 inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded shadow-xs';
             actionContainer.innerHTML = `
               <div class="flex items-center gap-1.5 min-w-0">
-                <i data-lucide="file-check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
-                <span class="truncate text-[11px] font-medium text-slate-700 max-w-[220px]">${file.name}</span>
+                <i data-lucide="check-check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                <span class="text-[11px] font-semibold text-emerald-800">Document Submitted</span>
               </div>
-              <button type="button" class="file-remove-btn inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded transition cursor-pointer" title="Remove this file">
+              <button type="button" class="file-remove-btn inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded transition cursor-pointer" title="Delete document">
                 <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
                 <span>Delete</span>
               </button>
@@ -179,7 +179,7 @@ window.CMS_APP = {
                 }
                 actionContainer.remove();
                 if (window.CMS_APP && window.CMS_APP.toast) {
-                  window.CMS_APP.toast('File removed from field.', 'info');
+                  window.CMS_APP.toast('Document removed.', 'info');
                 }
               });
             }
@@ -188,7 +188,7 @@ window.CMS_APP = {
             if (window.lucide) window.lucide.createIcons();
 
             if (window.CMS_APP && window.CMS_APP.toast) {
-              window.CMS_APP.toast('File attached: ' + file.name, 'success');
+              window.CMS_APP.toast('Document Submitted', 'success');
             }
           } catch (storageErr) {
             console.error('File repository save error:', storageErr);
