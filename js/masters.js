@@ -1821,9 +1821,14 @@ window.CMS_MASTERS = {
                           <span>Document Submitted</span>
                         </div>
                       </div>
-                      <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-gst-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="shrink-0 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                      </button>
+                      <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="CMS_APP.previewFile('${vendor.gstCertificateFile}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                        <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-gst-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
+                          <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                      </div>
                     </div>` : ''}
                 </div>
               </div>
@@ -1853,9 +1858,14 @@ window.CMS_MASTERS = {
                           <span>Document Submitted</span>
                         </div>
                       </div>
-                      <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-pan-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="shrink-0 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                      </button>
+                      <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" onclick="CMS_APP.previewFile('${vendor.panCardFile}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
+                          <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                        <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-pan-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
+                          <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                      </div>
                     </div>` : ''}
                 </div>
               </div>
@@ -1990,9 +2000,14 @@ window.CMS_MASTERS = {
                       <span>Document Submitted</span>
                     </div>
                   </div>
-                  <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-bank-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="shrink-0 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                  </button>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" onclick="CMS_APP.previewFile('${vendor.bankDoc}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
+                      <i data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                    <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-bank-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
+                      <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                  </div>
                 </div>` : ''}
             </div>
           </div>

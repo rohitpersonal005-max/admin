@@ -163,10 +163,26 @@ window.CMS_APP = {
                   <span>Document Submitted</span>
                 </div>
               </div>
-              <button type="button" class="file-remove-btn shrink-0 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                <i data-lucide="x" class="w-4 h-4"></i>
-              </button>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" class="file-view-btn w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button type="button" class="file-remove-btn w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
             `;
+
+            const viewBtn = actionContainer.querySelector('.file-view-btn');
+            if (viewBtn) {
+              viewBtn.addEventListener('click', (evBtn) => {
+                evBtn.preventDefault();
+                evBtn.stopPropagation();
+                if (window.CMS_APP && window.CMS_APP.previewFile) {
+                  window.CMS_APP.previewFile(file.name, ev.target.result);
+                }
+              });
+            }
 
             const removeBtn = actionContainer.querySelector('.file-remove-btn');
             if (removeBtn) {
@@ -1099,6 +1115,63 @@ window.CMS_APP = {
         </div>
         <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
           <button class="bg-slate-800 text-white px-5 py-2 rounded-sm font-bold hover:bg-slate-700 transition" onclick="this.closest('.fixed').remove()">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  async previewFile(fileName, optionalDataUrl = null) {
+    if (!fileName) return;
+    let dataUrl = optionalDataUrl;
+    if (!dataUrl && window.CMS_FILE_STORE) {
+      dataUrl = await window.CMS_FILE_STORE.getFile(fileName);
+    }
+    if (!dataUrl) {
+      dataUrl = localStorage.getItem('CMS_FILE_' + fileName);
+    }
+
+    const isPdf = (dataUrl && String(dataUrl).startsWith('data:application/pdf')) || fileName.toLowerCase().endsWith('.pdf');
+    let viewerHtml = '';
+
+    if (dataUrl) {
+      if (isPdf) {
+        viewerHtml = `<iframe src="${dataUrl}" class="w-full h-[70vh] border-0 rounded bg-white"></iframe>`;
+      } else {
+        viewerHtml = `<div class="max-h-[70vh] overflow-auto flex items-center justify-center p-2"><img src="${dataUrl}" class="max-w-full max-h-[68vh] object-contain rounded shadow-xs" alt="${fileName}" /></div>`;
+      }
+    } else {
+      viewerHtml = `
+        <div class="p-12 text-center bg-white rounded">
+          <div class="w-16 h-16 mx-auto bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-3">
+            <i data-lucide="file-text" class="w-8 h-8 text-slate-500"></i>
+          </div>
+          <h4 class="font-bold text-slate-800 text-sm mb-1">${fileName}</h4>
+          <p class="text-xs text-slate-500">Document is on record in repository.</p>
+        </div>
+      `;
+    }
+
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-[120] bg-slate-900/80 flex items-center justify-center p-4 backdrop-blur-xs';
+    modal.innerHTML = `
+      <div class="bg-white rounded-sm shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden border border-slate-200">
+        <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 bg-slate-50">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <i data-lucide="${isPdf ? 'file-text' : 'image'}" class="w-4 h-4 text-blue-600 shrink-0"></i>
+            <span class="font-bold text-slate-900 text-sm truncate" title="${fileName}">${fileName}</span>
+          </div>
+          <button type="button" class="text-slate-400 hover:text-slate-700 p-1 rounded hover:bg-slate-200 transition cursor-pointer" onclick="this.closest('.fixed').remove()">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div class="p-3 bg-slate-100 flex-1 overflow-auto">
+          ${viewerHtml}
+        </div>
+        <div class="px-5 py-3 border-t border-slate-200 bg-white flex justify-between items-center text-xs">
+          <span class="text-slate-500 text-[11px]">Previewing document</span>
+          <button type="button" class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-sm text-xs transition" onclick="this.closest('.fixed').remove()">Close</button>
         </div>
       </div>
     `;
