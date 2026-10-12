@@ -94,18 +94,18 @@ window.CMS_FILE_STORE = {
   },
 
   cleanLocalStorage() {
+    // Zero-deletion policy: mirror any files to IndexedDB without removing them from localStorage
     try {
-      for (let i = localStorage.length - 1; i >= 0; i--) {
+      for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith('CMS_FILE_')) {
           const val = localStorage.getItem(key);
           const fname = key.replace('CMS_FILE_', '');
           this.saveFile(fname, val);
-          localStorage.removeItem(key);
         }
       }
     } catch(e) {
-      console.warn('Cleanup error', e);
+      console.warn('Storage sync notice:', e);
     }
   }
 };
@@ -193,10 +193,7 @@ window.CMS_APP = {
                   // Also clear any adjacent on-record label if present
                   const onRecordSpan = parent.querySelector('span.text-emerald-700');
                   if (onRecordSpan) onRecordSpan.remove();
-                  // Delete from backend file store
-                  if (window.CMS_FILE_STORE) {
-                    await window.CMS_FILE_STORE.deleteFile(file.name);
-                  }
+                  // Zero-deletion: keep file safely in repository without autodeletion (only unselect from this field)
                   // Remove badge from DOM
                   badge.remove();
                   if (window.CMS_APP && window.CMS_APP.toast) {

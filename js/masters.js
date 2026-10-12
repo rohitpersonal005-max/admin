@@ -698,10 +698,16 @@ window.CMS_MASTERS = {
     
     // Process document previews
     setTimeout(() => {
-      document.querySelectorAll('.doc-preview-container').forEach(container => {
+      document.querySelectorAll('.doc-preview-container').forEach(async (container) => {
         const filename = container.getAttribute('data-filename');
         if (!filename) return;
-        const dataUrl = localStorage.getItem('CMS_FILE_' + filename);
+        let dataUrl = null;
+        if (window.CMS_FILE_STORE) {
+          dataUrl = await window.CMS_FILE_STORE.getFile(filename);
+        }
+        if (!dataUrl) {
+          dataUrl = localStorage.getItem('CMS_FILE_' + filename);
+        }
         if (dataUrl) {
           if (dataUrl.startsWith('data:image') || dataUrl.match(/\.(png|jpg|jpeg|gif)$/i)) {
             container.innerHTML = `<img src="${dataUrl}" class="w-full max-w-lg mb-4 border border-slate-200 shadow-sm" alt="${filename}" />`;
