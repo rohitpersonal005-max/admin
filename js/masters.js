@@ -1812,7 +1812,7 @@ window.CMS_MASTERS = {
                     Upload GST Certificate (PDF/Image) <span class="text-rose-600 font-bold">*</span>
                   </label>
                   <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs" />
-                  ${vendor.gstCertificateFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.gstCertificateFile}</span>` : ''}
+                  ${vendor.gstCertificateFile ? `<span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded mt-1 file-on-record-label font-mono"><i data-lucide="file-check" class="w-3 h-3 text-emerald-600"></i> On Record: ${vendor.gstCertificateFile} <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-gst-file'); if(fi){fi.value=''; fi.dataset.current='';} CMS_APP.toast('File removed from field.', 'info');" class="text-rose-600 hover:text-rose-800 ml-1 font-sans font-bold" title="Delete file">✕ Delete</button></span>` : ''}
                 </div>
               </div>
 
@@ -1832,7 +1832,7 @@ window.CMS_MASTERS = {
                     Upload PAN Card Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
                   </label>
                   <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs" />
-                  ${vendor.panCardFile ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">On Record: ${vendor.panCardFile}</span>` : ''}
+                  ${vendor.panCardFile ? `<span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded mt-1 file-on-record-label font-mono"><i data-lucide="file-check" class="w-3 h-3 text-emerald-600"></i> On Record: ${vendor.panCardFile} <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-pan-file'); if(fi){fi.value=''; fi.dataset.current='';} CMS_APP.toast('File removed from field.', 'info');" class="text-rose-600 hover:text-rose-800 ml-1 font-sans font-bold" title="Delete file">✕ Delete</button></span>` : ''}
                 </div>
               </div>
             </div>
@@ -1957,7 +1957,7 @@ window.CMS_MASTERS = {
                     <option value="Other Bank Document" ${vendor.bankDocTitle === 'Other Bank Document' ? 'selected' : ''}>Other Bank Document</option>
                   </select>
                 </div>
-              ${vendor.bankDoc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${vendor.bankDoc}</span>` : ''}
+              ${vendor.bankDoc ? `<span class="inline-flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded mt-1 file-on-record-label font-mono"><i data-lucide="file-check" class="w-3 h-3 text-emerald-600"></i> Attached on record: ${vendor.bankDoc} <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-bank-file'); if(fi){fi.value=''; fi.dataset.current='';} CMS_APP.toast('File removed from field.', 'info');" class="text-rose-600 hover:text-rose-800 ml-1 font-sans font-bold" title="Delete file">✕ Delete</button></span>` : ''}
             </div>
           </div>
         </div>

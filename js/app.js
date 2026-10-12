@@ -137,21 +137,7 @@ window.CMS_APP = {
         const file = e.target.files[0];
         const inputEl = e.target;
 
-        // 1. Browser downloads/retains the file locally
-        try {
-          const blobUrl = URL.createObjectURL(file);
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          a.download = file.name;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-        } catch (downloadErr) {
-          console.warn('Local file retention notice:', downloadErr);
-        }
-
-        // 2. Read and save copy to backend repository (IndexedDB without localStorage quota limits)
+        // 1. Read and save copy to backend repository (IndexedDB without localStorage quota limits)
         const reader = new FileReader();
         reader.onload = async (ev) => {
           try {
@@ -159,52 +145,50 @@ window.CMS_APP = {
               await window.CMS_FILE_STORE.saveFile(file.name, ev.target.result);
             }
 
-            // Remove any existing badge
-            const parent = inputEl.parentElement || inputEl.closest('div');
-            if (parent) {
-              const existingBadge = parent.querySelector('.file-dual-sync-badge');
-              if (existingBadge) existingBadge.remove();
+            // Remove any existing action container for this input
+            const existingAction = inputEl.parentElement ? inputEl.parentElement.querySelector('.file-action-container') : null;
+            if (existingAction) existingAction.remove();
 
-              // 3. Clear indicator showing original retained and copy shared to backend with REMOVE OPTION
-              const badge = document.createElement('div');
-              badge.className = 'file-dual-sync-badge mt-1.5 flex items-center justify-between gap-2 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-1.5 rounded shadow-xs';
-              badge.innerHTML = `
-                <div class="flex items-center gap-1.5 min-w-0">
-                  <i data-lucide="check-check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
-                  <span class="truncate"><strong>Retained locally</strong> & copy saved: <span class="font-mono text-emerald-900 font-semibold">${file.name}</span></span>
-                </div>
-                <button type="button" class="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 text-[9.5px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded transition cursor-pointer" title="Mistakenly uploaded? Click to remove this file">
-                  <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
-                  <span>Remove</span>
-                </button>
-              `;
+            // 2. Add inline Delete / Remove option directly beside/under the input
+            const actionContainer = document.createElement('div');
+            actionContainer.className = 'file-action-container mt-1.5 inline-flex items-center gap-2 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded shadow-xs';
+            actionContainer.innerHTML = `
+              <div class="flex items-center gap-1.5 min-w-0">
+                <i data-lucide="file-check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                <span class="truncate text-[11px] font-medium text-slate-700 max-w-[220px]">${file.name}</span>
+              </div>
+              <button type="button" class="file-remove-btn inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded transition cursor-pointer" title="Remove this file">
+                <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
+                <span>Delete</span>
+              </button>
+            `;
 
-              const removeBtn = badge.querySelector('button');
-              if (removeBtn) {
-                removeBtn.addEventListener('click', async (evBtn) => {
-                  evBtn.preventDefault();
-                  evBtn.stopPropagation();
-                  // Reset file input
-                  inputEl.value = '';
-                  if (inputEl.dataset) inputEl.dataset.current = '';
-                  // Also clear any adjacent on-record label if present
-                  const onRecordSpan = parent.querySelector('span.text-emerald-700');
+            const removeBtn = actionContainer.querySelector('.file-remove-btn');
+            if (removeBtn) {
+              removeBtn.addEventListener('click', (evBtn) => {
+                evBtn.preventDefault();
+                evBtn.stopPropagation();
+                // Clear the input value so user can re-select or leave empty
+                inputEl.value = '';
+                if (inputEl.dataset) inputEl.dataset.current = '';
+                // Also remove any existing on-record badge in the same container
+                const parent = inputEl.closest('div');
+                if (parent) {
+                  const onRecordSpan = parent.querySelector('.file-on-record-label');
                   if (onRecordSpan) onRecordSpan.remove();
-                  // Zero-deletion: keep file safely in repository without autodeletion (only unselect from this field)
-                  // Remove badge from DOM
-                  badge.remove();
-                  if (window.CMS_APP && window.CMS_APP.toast) {
-                    window.CMS_APP.toast('File "' + file.name + '" removed. You can now select another file.', 'info');
-                  }
-                });
-              }
-
-              parent.appendChild(badge);
-              if (window.lucide) window.lucide.createIcons();
+                }
+                actionContainer.remove();
+                if (window.CMS_APP && window.CMS_APP.toast) {
+                  window.CMS_APP.toast('File removed from field.', 'info');
+                }
+              });
             }
 
+            inputEl.insertAdjacentElement('afterend', actionContainer);
+            if (window.lucide) window.lucide.createIcons();
+
             if (window.CMS_APP && window.CMS_APP.toast) {
-              window.CMS_APP.toast('Original file retained locally & copy shared to backend repository: ' + file.name, 'success');
+              window.CMS_APP.toast('File attached: ' + file.name, 'success');
             }
           } catch (storageErr) {
             console.error('File repository save error:', storageErr);
