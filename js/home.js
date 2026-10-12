@@ -211,8 +211,7 @@ window.CMS_HOME = {
   </datalist>
 
       <div class="mb-6">
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Admin Headquarters</h2>
-        
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">${currentUser.role === 'Admin' ? 'Admin Headquarters' : 'Enterprise Home & Profile'}</h2>
       </div>
 
       <div class="flex flex-col gap-6">
@@ -220,7 +219,7 @@ window.CMS_HOME = {
         <div class="stat-card p-4 bg-white border border-slate-200 rounded-sm rounded-sm shadow-sm">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
             <i data-lucide="user" class="w-5 h-5 text-blue-600"></i>
-            <h3 class="font-bold text-slate-800 text-base">My Admin Profile</h3>
+            <h3 class="font-bold text-slate-800 text-base">${currentUser.role === 'Admin' ? 'My Admin Profile' : 'My User Profile'}</h3>
           </div>
           
           <div id="profile-view-mode" class="space-y-4">
@@ -441,6 +440,7 @@ window.CMS_HOME = {
         </div>
       </div>
 
+      ${currentUser.role === 'Admin' ? `
       <!-- User & Module Management -->
       <div class="mt-6 stat-card p-4 bg-white border border-slate-200 rounded-sm rounded-sm shadow-sm">
         <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
@@ -494,6 +494,7 @@ window.CMS_HOME = {
           </table>
         </div>
       </div>
+      ` : ''}
     `;
 
     container.innerHTML = html;

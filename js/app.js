@@ -125,11 +125,8 @@ window.CMS_APP = {
     this.bindEvents();
     this.updateUserProfile();
     this.updatePendingBadge();
-    const role = window.CMS_STORE.getRole();
     let route = this.getHashRoute();
     if (!route) {
-      route = role === 'Admin' ? 'home' : 'dashboard';
-    } else if (route === 'home' && role !== 'Admin') {
       route = 'dashboard';
     }
     this.navigateTo(route);
@@ -269,10 +266,8 @@ window.CMS_APP = {
     });
 
     window.addEventListener('hashchange', () => {
-      const role = window.CMS_STORE.getRole();
       let r = this.getHashRoute();
-      if (!r) r = role === 'Admin' ? 'home' : 'dashboard';
-      if (r === 'home' && role !== 'Admin') r = 'dashboard';
+      if (!r) r = 'dashboard';
       this.navigateTo(r);
     });
 
@@ -306,18 +301,25 @@ window.CMS_APP = {
 
   navigateTo(route) {
     const user = window.CMS_STORE.getCurrentUser();
-    if (user && user.role !== 'Admin') {
-      const allowedModules = user.modules || ['Inventory', 'Transactions', 'Reports'];
-      let requiredModule = null;
+    if (user && user.role !== 'Admin' && user.modules && Array.isArray(user.modules) && user.modules.length > 0) {
+      const allowedModules = user.modules.map(m => String(m).toLowerCase());
       
-      const invRoutes = ['vendors', 'categories', 'consumables', 'gst-slabs', 'consumer-inventory', 'fixed-inventory', 'stock-status', 'stock-ledger'];
-      const transRoutes = ['receipts', 'requests', 'issuances', 'draft-workspace'];
+      const setupRoutes = ['vendors', 'categories', 'consumables', 'gst-slabs'];
+      const reportRoutes = ['consumer-inventory', 'fixed-inventory', 'stock-status', 'stock-ledger'];
+      const transRoutes = ['receipts', 'requests', 'issuances', 'returns', 'stock-adjustments', 'challan-conversion', 'po-generation', 'reconciliation', 'draft-workspace'];
       
-      if (invRoutes.includes(route)) requiredModule = 'Inventory';
-      else if (transRoutes.includes(route)) requiredModule = 'Transactions';
+      const hasSetup = allowedModules.includes('setup') || allowedModules.includes('inventory');
+      const hasReports = allowedModules.includes('reports') || allowedModules.includes('inventory') || allowedModules.includes('stock');
+      const hasTrans = allowedModules.includes('transaction') || allowedModules.includes('transactions') || allowedModules.includes('operations');
       
-      if (requiredModule && !allowedModules.includes(requiredModule)) {
-        this.toast('Access Denied: Your role does not have permission for the ' + requiredModule + ' module.', 'error');
+      if (setupRoutes.includes(route) && !hasSetup) {
+        this.toast('Access Denied: Your account does not have permission for the Setup module.', 'error');
+        route = 'dashboard';
+      } else if (reportRoutes.includes(route) && !hasReports) {
+        this.toast('Access Denied: Your account does not have permission for the Reports module.', 'error');
+        route = 'dashboard';
+      } else if (transRoutes.includes(route) && !hasTrans) {
+        this.toast('Access Denied: Your account does not have permission for the Transactions module.', 'error');
         route = 'dashboard';
       }
     }
@@ -337,10 +339,11 @@ window.CMS_APP = {
       const target = link.getAttribute('data-route');
       if (target === route) {
         link.classList.add('bg-slate-900', 'text-white', 'shadow-sm');
-        link.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+        link.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900', 'text-slate-300', 'hover:bg-slate-800');
       } else {
         link.classList.remove('bg-slate-900', 'text-white', 'shadow-sm');
-        link.classList.add('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
+        link.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+        link.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
       }
     });
 
@@ -601,7 +604,7 @@ window.CMS_APP = {
     const user = window.CMS_STORE.getCurrentUser();
     const isChecker = user && user.role === 'Admin';
     const navAdminHome = document.getElementById('nav-admin-home');
-    if (navAdminHome) navAdminHome.classList.toggle('hidden', !isChecker);
+    if (navAdminHome) navAdminHome.classList.remove('hidden');
     const users = window.CMS_STORE.getUsers();
 
     // Header updates
