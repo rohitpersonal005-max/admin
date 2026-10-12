@@ -1,6 +1,30 @@
 window.CMS_HOME = {
-  companyInfo: JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}'),
-  companyDocs: JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS') || '[]'),
+  get companyInfo() {
+    try {
+      return JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}') || {};
+    } catch (e) {
+      return {};
+    }
+  },
+  set companyInfo(val) {
+    try {
+      localStorage.setItem('CMS_COMPANY_INFO', JSON.stringify(val || {}));
+    } catch (e) {}
+  },
+
+  get companyDocs() {
+    try {
+      const docs = JSON.parse(localStorage.getItem('CMS_COMPANY_DOCS') || '[]');
+      return Array.isArray(docs) ? docs : [];
+    } catch (e) {
+      return [];
+    }
+  },
+  set companyDocs(val) {
+    try {
+      localStorage.setItem('CMS_COMPANY_DOCS', JSON.stringify(val || []));
+    } catch (e) {}
+  },
 
   uploadDocument(event) {
     const file = event.target.files[0];
