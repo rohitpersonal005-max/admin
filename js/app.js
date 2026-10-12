@@ -78,6 +78,21 @@ window.CMS_FILE_STORE = {
     }
   },
 
+  async deleteFile(name) {
+    if (!name) return;
+    this.cache.delete(name);
+    try {
+      const db = await this.getDB();
+      if (db) {
+        const tx = db.transaction('files', 'readwrite');
+        tx.objectStore('files').delete(name);
+      }
+      localStorage.removeItem('CMS_FILE_' + name);
+    } catch (err) {
+      console.warn('File removal error:', err);
+    }
+  },
+
   cleanLocalStorage() {
     try {
       for (let i = localStorage.length - 1; i >= 0; i--) {
@@ -153,13 +168,43 @@ window.CMS_APP = {
               const existingBadge = parent.querySelector('.file-dual-sync-badge');
               if (existingBadge) existingBadge.remove();
 
-              // 3. Clear indicator showing original retained and copy shared to backend
+              // 3. Clear indicator showing original retained and copy shared to backend with REMOVE OPTION
               const badge = document.createElement('div');
-              badge.className = 'file-dual-sync-badge mt-1.5 flex items-center gap-1.5 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-1.5 rounded shadow-xs';
-              badge.innerHTML = `
-                <i data-lucide="check-check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
-                <span><strong>Original file retained in local files</strong> & copy shared to backend repository: <span class="font-mono text-emerald-900">${file.name}</span></span>
-              `;
+              badge.className = 'file-dual-sync-badge mt-1.5 flex items-center justify-between gap-2 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-1.5 rounded shadow-xs';
+              badge.innerHTML = \`
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <i data-lucide="check-check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
+                  <span class="truncate"><strong>Retained locally</strong> & copy saved: <span class="font-mono text-emerald-900 font-semibold">${file.name}</span></span>
+                </div>
+                <button type="button" class="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 text-[9.5px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded transition cursor-pointer" title="Mistakenly uploaded? Click to remove this file">
+                  <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
+                  <span>Remove</span>
+                </button>
+              \`;
+
+              const removeBtn = badge.querySelector('button');
+              if (removeBtn) {
+                removeBtn.addEventListener('click', async (evBtn) => {
+                  evBtn.preventDefault();
+                  evBtn.stopPropagation();
+                  // Reset file input
+                  inputEl.value = '';
+                  if (inputEl.dataset) inputEl.dataset.current = '';
+                  // Also clear any adjacent on-record label if present
+                  const onRecordSpan = parent.querySelector('span.text-emerald-700');
+                  if (onRecordSpan) onRecordSpan.remove();
+                  // Delete from backend file store
+                  if (window.CMS_FILE_STORE) {
+                    await window.CMS_FILE_STORE.deleteFile(file.name);
+                  }
+                  // Remove badge from DOM
+                  badge.remove();
+                  if (window.CMS_APP && window.CMS_APP.toast) {
+                    window.CMS_APP.toast('File "' + file.name + '" removed. You can now select another file.', 'info');
+                  }
+                });
+              }
+
               parent.appendChild(badge);
               if (window.lucide) window.lucide.createIcons();
             }
