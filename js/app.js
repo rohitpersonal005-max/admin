@@ -163,9 +163,8 @@ window.CMS_APP = {
                   <span>Document Submitted</span>
                 </div>
               </div>
-              <button type="button" class="file-remove-btn shrink-0 inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-600 hover:text-rose-600 hover:bg-slate-50 border border-slate-300 rounded transition cursor-pointer" title="Delete document">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-slate-500"></i>
-                <span>Delete</span>
+              <button type="button" class="file-remove-btn shrink-0 w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
+                <i data-lucide="x" class="w-4 h-4"></i>
               </button>
             `;
 
