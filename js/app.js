@@ -168,7 +168,7 @@ window.CMS_APP = {
               // 3. Clear indicator showing original retained and copy shared to backend with REMOVE OPTION
               const badge = document.createElement('div');
               badge.className = 'file-dual-sync-badge mt-1.5 flex items-center justify-between gap-2 text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-1.5 rounded shadow-xs';
-              badge.innerHTML = \`
+              badge.innerHTML = `
                 <div class="flex items-center gap-1.5 min-w-0">
                   <i data-lucide="check-check" class="w-3.5 h-3.5 text-emerald-600 shrink-0"></i>
                   <span class="truncate"><strong>Retained locally</strong> & copy saved: <span class="font-mono text-emerald-900 font-semibold">${file.name}</span></span>
@@ -177,7 +177,7 @@ window.CMS_APP = {
                   <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
                   <span>Remove</span>
                 </button>
-              \`;
+              `;
 
               const removeBtn = badge.querySelector('button');
               if (removeBtn) {
@@ -275,6 +275,18 @@ window.CMS_APP = {
       this.updateUserProfile();
       this.updatePendingBadge();
       this.refreshView();
+    });
+
+    // Intercept clicks on navigation links to trigger route immediately
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[data-route]');
+      if (link) {
+        const targetRoute = link.getAttribute('data-route');
+        if (targetRoute) {
+          e.preventDefault();
+          this.navigateTo(targetRoute);
+        }
+      }
     });
 
     // Close dropdown on click outside
@@ -447,11 +459,14 @@ window.CMS_APP = {
         modBadge = '<span class="px-2 py-0.5 rounded bg-purple-100 text-purple-900 border border-purple-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Governance Hub</span>';
       } else if (route === 'dashboard') {
         modBadge = '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-950 border border-amber-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Dashboard</span>';
+      } else if (route === 'home') {
+        modBadge = '<span class="px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-300 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Company & Staff</span>';
       } else {
         modBadge = '<span class="px-2 py-0.5 rounded bg-slate-50 text-blue-600 border border-slate-200 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">Operations Cockpit</span>';
       }
 
       const titles = {
+        'home': 'Company Home & Profile',
         'dashboard': 'Executive Cockpit',
         'draft-workspace': 'Draft Workspace',
         'consumer-inventory': 'Consumable Materials Ledger (Supplies & Buffers)',
