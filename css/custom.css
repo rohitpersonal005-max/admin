@@ -966,3 +966,51 @@ th {
   color: #334155 !important;
   border-color: #cbd5e1 !important;
 }
+
+/* ------------------------------------------------------------------
+   Uniform document upload box
+   The "Choose File" input and the uploaded-document box share the exact
+   same footprint, so the field keeps its length after a file is uploaded.
+   ------------------------------------------------------------------ */
+input[type="file"],
+.doc-upload-box {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 28rem;
+  height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background-color: #ffffff;
+}
+
+input[type="file"] {
+  padding: 7px 8px;
+  font-size: 12px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  padding: 4px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  background-color: #f8fafc;
+  color: #1e293b;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #f1f5f9;
+}
+
+.doc-upload-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 6px 0 10px;
+  overflow: hidden;
+}

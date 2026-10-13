@@ -154,7 +154,7 @@ window.CMS_APP = {
 
             // 2. Add professional inline box showing document name and "Document Submitted" below it with Delete option
             const actionContainer = document.createElement('div');
-            actionContainer.className = 'file-action-container flex items-center justify-between gap-3 bg-white border border-slate-300 px-3 py-1.5 rounded text-xs mt-1 w-full max-w-md shadow-2xs';
+            actionContainer.className = 'file-action-container doc-upload-box text-xs';
             actionContainer.innerHTML = `
               <div class="min-w-0 flex-1">
                 <div class="text-xs font-semibold text-slate-800 truncate" title="${file.name}">${file.name}</div>

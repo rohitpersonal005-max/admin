@@ -1776,7 +1776,7 @@ window.CMS_MASTERS = {
                   </label>
                   <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs ${vendor.panCardFile ? 'hidden' : ''}" />
                   ${vendor.panCardFile ? `
-                    <div class="file-on-record-label flex items-center justify-between gap-3 bg-white border border-slate-300 px-3 py-1.5 rounded text-xs mt-1 w-full max-w-md shadow-2xs">
+                    <div class="file-on-record-label doc-upload-box text-xs">
                       <div class="min-w-0 flex-1">
                         <div class="text-xs font-semibold text-slate-800 truncate" title="${vendor.panCardFile}">${vendor.panCardFile}</div>
                         <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
@@ -1852,7 +1852,7 @@ window.CMS_MASTERS = {
                   </label>
                   <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs ${vendor.gstCertificateFile ? 'hidden' : ''}" />
                   ${vendor.gstCertificateFile ? `
-                    <div class="file-on-record-label flex items-center justify-between gap-3 bg-white border border-slate-300 px-3 py-1.5 rounded text-xs mt-1 w-full max-w-md shadow-2xs">
+                    <div class="file-on-record-label doc-upload-box text-xs">
                       <div class="min-w-0 flex-1">
                         <div class="text-xs font-semibold text-slate-800 truncate" title="${vendor.gstCertificateFile}">${vendor.gstCertificateFile}</div>
                         <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
@@ -1984,7 +1984,25 @@ window.CMS_MASTERS = {
             <div class="mt-2 pt-2 border-t border-slate-200">
               <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document <span class="text-rose-600 font-bold">*</span></label>
                 <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                  <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs shrink-0 ${vendor.bankDoc ? 'hidden' : ''}" ${!vendor.bankDoc ? 'required' : ''} />
+                  <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs ${vendor.bankDoc ? 'hidden' : ''}" ${!vendor.bankDoc ? 'required' : ''} />
+                  ${vendor.bankDoc ? `
+                  <div class="file-on-record-label doc-upload-box text-xs">
+                    <div class="min-w-0 flex-1">
+                      <div class="text-xs font-semibold text-slate-800 truncate" title="${vendor.bankDoc}">${vendor.bankDoc}</div>
+                      <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
+                        <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
+                        <span>Document Submitted</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <button type="button" onclick="CMS_APP.previewFile('${vendor.bankDoc}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                      </button>
+                      <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-bank-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>` : ''}
                   <select id="v-bank-title" class="w-full sm:w-64 mt-1.5 sm:mt-0 px-2 py-1 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
                     <option value="" ${!vendor.bankDocTitle ? 'selected' : ''}>-- Select Document Type --</option>
                     <option value="Cancelled Cheque" ${vendor.bankDocTitle === 'Cancelled Cheque' ? 'selected' : ''}>Cancelled Cheque</option>
@@ -1993,24 +2011,6 @@ window.CMS_MASTERS = {
                     <option value="Other Bank Document" ${vendor.bankDocTitle === 'Other Bank Document' ? 'selected' : ''}>Other Bank Document</option>
                   </select>
                 </div>
-              ${vendor.bankDoc ? `
-                <div class="file-on-record-label flex items-center justify-between gap-3 bg-white border border-slate-300 px-3 py-1.5 rounded text-xs mt-1 w-full max-w-md shadow-2xs">
-                  <div class="min-w-0 flex-1">
-                    <div class="text-xs font-semibold text-slate-800 truncate" title="${vendor.bankDoc}">${vendor.bankDoc}</div>
-                    <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
-                      <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
-                      <span>Document Submitted</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-1 shrink-0">
-                    <button type="button" onclick="CMS_APP.previewFile('${vendor.bankDoc}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
-                      <i data-lucide="eye" class="w-4 h-4"></i>
-                    </button>
-                    <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-bank-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                      <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                  </div>
-                </div>` : ''}
             </div>
           </div>
         </div>
