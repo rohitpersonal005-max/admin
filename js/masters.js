@@ -1751,28 +1751,44 @@ window.CMS_MASTERS = {
           <!-- STEP 2: Statutory & Certs -->
         <div id="v-step-2" class="space-y-4 hidden">
           <!-- 2. GST & PAN Statutory Section -->
-          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
-            <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-blue-600"></i>
-              <span>Statutory PAN & GSTIN Identification</span>
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+              <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-4 h-4 text-blue-600"></i>
+                <span>Statutory PAN & GSTIN Identification</span>
+              </div>
+              <span class="text-[10px] text-slate-500 font-medium">Step 2 of 4</span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <!-- 1. PAN Card Details (First) -->
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">
-                  PAN Card Number (10 Characters) <span class="text-rose-600 font-bold">*</span>
-                </label>
-                <input type="text" id="v-pan" ${vendor.panNotApplicable ? 'disabled' : ''} maxlength="10" value="${initialPan}" oninput="this.value = this.value.toUpperCase(); this.dataset.autoFilled = 'false'; CMS_MASTERS.onPanInput(this.value);" class="w-full font-mono uppercase px-3 py-2 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-bold text-indigo-900" placeholder="10-character PAN (e.g. AABCA1234F)" />
-                
-                <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
-                  <input type="checkbox" id="v-pan-na" ${vendor.panNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.togglePanApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
-                  <span class="font-semibold text-blue-600">PAN card is not applicable for this vendor</span>
-                </label>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- 1. PAN Card Details (Left Card) -->
+              <div class="bg-white p-4 rounded border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5 h-5">
+                    <label for="v-pan" class="text-xs font-bold text-slate-800">
+                      PAN Card Number (10 Characters) <span class="text-rose-600">*</span>
+                    </label>
+                    <span class="text-[9px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">Income Tax</span>
+                  </div>
 
-                <div id="v-pan-file-box" class="${vendor.panNotApplicable ? 'hidden' : ''} mt-2">
-                  <label class="block font-bold text-slate-700 mb-1 text-[11px]">
-                    Upload PAN Card Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                  <input type="text" id="v-pan" ${vendor.panNotApplicable ? 'disabled' : ''} maxlength="10" value="${initialPan}" oninput="this.value = this.value.toUpperCase(); this.dataset.autoFilled = 'false'; CMS_MASTERS.onPanInput(this.value);" class="w-full h-10 px-3 border border-slate-300 rounded font-mono font-bold uppercase tracking-wider text-xs text-slate-800 bg-white placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition shadow-2xs" placeholder="e.g. AABCA1234F" />
+
+                  <div class="h-5 mt-1.5 flex items-center text-[11px] text-slate-500">
+                    <i data-lucide="info" class="w-3.5 h-3.5 text-slate-400 mr-1 shrink-0"></i>
+                    <span>Auto-syncs into middle 10 characters of GSTIN</span>
+                  </div>
+
+                  <div class="h-6 mt-2 flex items-center">
+                    <label class="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+                      <input type="checkbox" id="v-pan-na" ${vendor.panNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.togglePanApplicable(this.checked)" class="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                      <span>PAN card is not applicable for this vendor</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div id="v-pan-file-box" class="${vendor.panNotApplicable ? 'hidden' : ''} mt-3 pt-3 border-t border-slate-200/80">
+                  <label class="block text-xs font-bold text-slate-800 mb-1.5">
+                    Upload PAN Card Copy (PDF/Image) <span class="text-rose-600">*</span>
                   </label>
                   <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs ${vendor.panCardFile ? 'hidden' : ''}" />
                   ${vendor.panCardFile ? `
@@ -1796,59 +1812,63 @@ window.CMS_MASTERS = {
                 </div>
               </div>
 
-              <!-- 2. GSTIN Number (Second - auto-synced from State & PAN) -->
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">
-                  GSTIN Number (15 Characters) <span class="text-rose-600 font-bold">*</span>
-                </label>
-                
-                <div class="flex items-center gap-1.5">
-                  <!-- Bracket 1: State Code (2 digits) - Locked to State -->
-                  <div class="w-16">
-                    <span class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5 text-center">State</span>
-                    <input type="text" id="v-gst-state" readonly tabindex="-1" maxlength="2" value="${initialGstState}"
-                      class="w-full text-center font-mono font-bold text-xs px-1.5 py-2 bg-slate-100 border border-slate-300 rounded text-blue-700 cursor-not-allowed select-none focus:outline-none"
-                      title="State code is auto-locked to the selected State" />
+              <!-- 2. GSTIN Number (Right Card - auto-synced from State & PAN) -->
+              <div class="bg-white p-4 rounded border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5 h-5">
+                    <label class="text-xs font-bold text-slate-800">
+                      GSTIN Number (15 Characters) <span class="text-rose-600">*</span>
+                    </label>
+                    <span class="text-[9px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">Goods & Services</span>
+                  </div>
+                  
+                  <div class="flex items-center gap-1.5 h-10">
+                    <!-- Bracket 1: State Code (2 digits) - Locked to State -->
+                    <div class="w-14 h-10 shrink-0">
+                      <input type="text" id="v-gst-state" readonly tabindex="-1" maxlength="2" value="${initialGstState}"
+                        class="w-full h-10 text-center font-mono font-bold text-xs bg-slate-100 border border-slate-300 rounded text-slate-800 cursor-not-allowed select-none focus:outline-none shadow-2xs"
+                        title="2-digit State code (Locked to selected State)" placeholder="State" />
+                    </div>
+
+                    <span class="text-slate-400 font-bold">-</span>
+
+                    <!-- Bracket 2: PAN (10 chars) - Auto-synced with PAN Card -->
+                    <div class="flex-1 h-10 min-w-0">
+                      <input type="text" id="v-gst-pan" maxlength="10" value="${initialGstPan}" placeholder="10-digit PAN"
+                        oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstPanSegmentInput(this.value);"
+                        class="w-full h-10 text-center font-mono font-bold uppercase text-xs px-2 border border-slate-300 rounded text-slate-800 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition shadow-2xs"
+                        title="10-digit PAN (Auto-synced with PAN Card)" />
+                    </div>
+
+                    <span class="text-slate-400 font-bold">-</span>
+
+                    <!-- Bracket 3: Entity / Suffix (3 chars) - Editable for ahead numbers -->
+                    <div class="w-20 h-10 shrink-0">
+                      <input type="text" id="v-gst-suffix" maxlength="3" value="${initialGstSuffix}" placeholder="1Z5"
+                        oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstSuffixInput(this.value);"
+                        class="w-full h-10 text-center font-mono font-bold uppercase text-xs px-1.5 border border-slate-300 bg-white rounded text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none shadow-2xs"
+                        title="Entity / Suffix code (3 chars, e.g. 1Z5)" />
+                    </div>
                   </div>
 
-                  <span class="text-slate-400 font-bold mt-3.5">-</span>
-
-                  <!-- Bracket 2: PAN (10 chars) - Auto-synced with PAN Card -->
-                  <div class="flex-1">
-                    <span class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5 text-center">PAN (10 Chars)</span>
-                    <input type="text" id="v-gst-pan" maxlength="10" value="${initialGstPan}" placeholder="ABCDE1234F"
-                      oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstPanSegmentInput(this.value);"
-                      class="w-full text-center font-mono font-bold uppercase text-xs px-2 py-2 border border-slate-300 rounded text-slate-800 bg-slate-50 focus:bg-white focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                      title="Auto-synced with PAN Card" />
+                  <!-- Hidden full input to preserve full compatibility with database & validation -->
+                  <input type="hidden" id="v-gst" value="${vendor.gstNo || ''}" />
+                  <div class="h-5 mt-1.5 flex items-center justify-between text-[11px] text-slate-600 font-mono">
+                    <span class="truncate">Full GSTIN: <strong id="v-gst-full-display" class="text-slate-900 font-bold">${vendor.gstNo || (initialGstState + initialGstPan + initialGstSuffix) || '-'}</strong></span>
+                    <span id="v-gst-state-name" class="text-slate-500 italic font-sans text-[10px] shrink-0 ml-1">${initialInfo.name ? '(' + initialInfo.name + ')' : ''}</span>
                   </div>
-
-                  <span class="text-slate-400 font-bold mt-3.5">-</span>
-
-                  <!-- Bracket 3: Entity / Suffix (3 chars) - Editable for ahead numbers -->
-                  <div class="w-20">
-                    <span class="block text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-0.5 text-center">Suffix</span>
-                    <input type="text" id="v-gst-suffix" maxlength="3" value="${initialGstSuffix}" placeholder="1Z5"
-                      oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onGstSuffixInput(this.value);"
-                      class="w-full text-center font-mono font-bold uppercase text-xs px-1.5 py-2 border border-blue-400 bg-white rounded text-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-sm"
-                      title="Type ahead numbers manually (e.g. 1Z5)" />
+                  
+                  <div class="h-6 mt-2 flex items-center">
+                    <label class="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+                      <input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.toggleGstApplicable(this.checked)" class="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                      <span>GST registration is not applicable for this vendor (Exempt)</span>
+                    </label>
                   </div>
                 </div>
 
-                <!-- Hidden full input to preserve full compatibility with database & validation -->
-                <input type="hidden" id="v-gst" value="${vendor.gstNo || ''}" />
-                <div class="text-[11px] font-mono text-slate-600 mt-1 flex items-center justify-between">
-                  <span>Full GSTIN: <strong id="v-gst-full-display" class="text-blue-700 font-bold font-mono">${vendor.gstNo || (initialGstState + initialGstPan + initialGstSuffix) || '-'}</strong></span>
-                  <span id="v-gst-state-name" class="text-[10px] text-slate-500 italic font-sans">${initialInfo.name ? '(' + initialInfo.name + ')' : ''}</span>
-                </div>
-                
-                <label class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-slate-700 cursor-pointer">
-                  <input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.toggleGstApplicable(this.checked)" class="text-blue-600 rounded border-blue-400" />
-                  <span class="font-semibold text-blue-600">GST registration is not applicable for this vendor (Exempt)</span>
-                </label>
-
-                <div id="v-gst-file-box" class="${vendor.gstNotApplicable ? 'hidden' : ''} mt-2">
-                  <label class="block font-bold text-slate-700 mb-1 text-[11px]">
-                    Upload GST Certificate (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                <div id="v-gst-file-box" class="${vendor.gstNotApplicable ? 'hidden' : ''} mt-3 pt-3 border-t border-slate-200/80">
+                  <label class="block text-xs font-bold text-slate-800 mb-1.5">
+                    Upload GST Certificate (PDF/Image) <span class="text-rose-600">*</span>
                   </label>
                   <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs ${vendor.gstCertificateFile ? 'hidden' : ''}" />
                   ${vendor.gstCertificateFile ? `
