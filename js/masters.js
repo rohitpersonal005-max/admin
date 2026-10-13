@@ -1099,8 +1099,8 @@ window.CMS_MASTERS = {
     const calculatedDate = this.calculateAlertDate(expDate, days);
 
     if (hiddenAlertInput) hiddenAlertInput.value = calculatedDate;
-    if (previewText) previewText.innerText = expDate ? this.formatDisplayDate(calculatedDate) : 'Set expiry date first';
-    if (summaryText) summaryText.innerText = expDate ? '(' + days + ' days before expiry)' : '';
+    if (previewText) previewText.innerText = expDate ? this.formatDisplayDate(calculatedDate) : 'Select date above';
+    if (summaryText) summaryText.innerText = '(' + days + 'd prior)';
   },
 
   onQuoteDateOrDaysChange(el) {
@@ -1117,9 +1117,9 @@ window.CMS_MASTERS = {
 
     if (hiddenAlertInp) hiddenAlertInp.value = calculatedDate;
     if (preview) {
-      const text = expDate ? this.formatDisplayDate(calculatedDate) : 'Set date';
+      const text = expDate ? this.formatDisplayDate(calculatedDate) : '—';
       preview.innerText = 'Alert: ' + text;
-      preview.title = expDate ? 'Alert triggers on ' + text + ' (' + days + ' days before expiry)' : 'Set valid till date';
+      preview.title = expDate ? 'Alert: ' + text + ' (' + days + 'd prior)' : 'Set valid till date';
     }
   },
 
@@ -1135,8 +1135,8 @@ window.CMS_MASTERS = {
     const calculatedDate = this.calculateAlertDate(expDate, days);
 
     if (hiddenAlertInp) hiddenAlertInp.value = calculatedDate;
-    if (preview) preview.innerText = expDate ? this.formatDisplayDate(calculatedDate) : 'Set valid till date first';
-    if (summary) summary.innerText = expDate ? '(' + days + ' days before expiry)' : '';
+    if (preview) preview.innerText = expDate ? this.formatDisplayDate(calculatedDate) : 'Select date above';
+    if (summary) summary.innerText = '(' + days + 'd prior)';
   },
 
   addVendorQuotationRow(qData = null) {
@@ -1183,13 +1183,17 @@ window.CMS_MASTERS = {
         </div>
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="block font-bold text-amber-900 text-[10px]">Alert Days Prior</label>
-            <span class="text-[9px] text-amber-700 font-medium">Days</span>
+            <label class="block font-bold text-slate-800 text-[10px]">Alert Prior (Days)</label>
+            <span class="q-alert-preview text-[10px] text-slate-600 font-mono font-semibold truncate" title="Alert: ${computedQuoteAlertDisplay}">Alert: ${computedQuoteAlertDisplay}</span>
           </div>
-          <div class="flex items-center gap-1.5">
-            <input type="number" min="1" max="365" class="q-alert-days w-16 font-mono font-bold text-center px-1.5 py-1.5 border border-amber-300 bg-amber-50/60 rounded text-xs text-amber-900 focus:outline-none" value="${qAlertDays}" placeholder="15" oninput="CMS_MASTERS.onQuoteDateOrDaysChange(this)" onchange="CMS_MASTERS.onQuoteDateOrDaysChange(this)" />
+          <div class="flex items-center gap-1">
+            <input type="number" min="1" max="365" class="q-alert-days w-16 font-mono font-bold text-center px-1.5 py-1.5 border border-slate-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" value="${qAlertDays}" placeholder="15" oninput="CMS_MASTERS.onQuoteDateOrDaysChange(this)" onchange="CMS_MASTERS.onQuoteDateOrDaysChange(this)" />
             <input type="hidden" class="q-alert" value="${computedQuoteAlertIso}" />
-            <span class="q-alert-preview text-[10px] text-amber-800 font-mono font-bold truncate" title="Alert starts on ${computedQuoteAlertDisplay}">Alert: ${computedQuoteAlertDisplay}</span>
+            <div class="inline-flex rounded border border-slate-200 bg-slate-50 p-0.5">
+              <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=7; CMS_MASTERS.onQuoteDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[9px] font-medium text-slate-600 hover:text-blue-600 hover:bg-white rounded transition">7d</button>
+              <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=15; CMS_MASTERS.onQuoteDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[9px] font-medium text-slate-600 hover:text-blue-600 hover:bg-white rounded transition">15d</button>
+              <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=30; CMS_MASTERS.onQuoteDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[9px] font-medium text-slate-600 hover:text-blue-600 hover:bg-white rounded transition">30d</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1248,7 +1252,7 @@ window.CMS_MASTERS = {
     const validTill = certData && typeof certData === 'object' ? (certData.validTill || '') : '';
     const certAlertDays = (certData && typeof certData === 'object' && certData.alertDays !== undefined && certData.alertDays !== '') ? certData.alertDays : 15;
     const computedCertAlertIso = (certData && certData.alertDate) ? certData.alertDate : (validTill ? CMS_MASTERS.calculateAlertDate(validTill, certAlertDays) : '');
-    const computedCertAlertDisplay = validTill ? CMS_MASTERS.formatDisplayDate(computedCertAlertIso) : 'Set expiry date first';
+    const computedCertAlertDisplay = validTill ? CMS_MASTERS.formatDisplayDate(computedCertAlertIso) : 'Select date above';
     const formNo = certData && typeof certData === 'object' ? (certData.formNo || '') : '';
     const certificateNo = certData && typeof certData === 'object' ? (certData.certificateNo || '') : '';
     const fileName = certData && typeof certData === 'object' ? (certData.fileName || '') : '';
@@ -1316,35 +1320,34 @@ window.CMS_MASTERS = {
               </label>
             </div>
           </div>
-          <div id="expiry_box_${rowId}" class="cert-expiry-box ${hasValidity ? '' : 'hidden'} mt-2.5 p-2.5 bg-amber-50/40 border border-amber-200/80 rounded space-y-2">
+          <div id="expiry_box_${rowId}" class="cert-expiry-box ${hasValidity ? '' : 'hidden'} mt-2.5 p-2.5 bg-slate-50 border border-slate-200 rounded space-y-2 text-xs">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div class="bg-blue-50/40 border border-blue-200 p-2 rounded-sm">
-                <label class="block text-[10px] font-bold text-slate-700 mb-1">Valid Till / Expiry Date *</label>
-                <input type="date" min="${today}" class="cert-expiry-input w-full px-2 py-1.5 border border-slate-300 rounded bg-white text-xs font-mono outline-none focus:border-blue-500" value="${validTill}" onchange="CMS_MASTERS.onCertDateOrDaysChange(this)" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" />
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-700 mb-1">Valid Till / Expiry Date <span class="text-rose-600 font-bold">*</span></label>
+                <input type="date" min="${today}" class="cert-expiry-input w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs font-mono outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" value="${validTill}" onchange="CMS_MASTERS.onCertDateOrDaysChange(this)" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" />
               </div>
-              <div class="bg-amber-50/60 border border-amber-200 p-2 rounded-sm">
+              <div>
                 <div class="flex items-center justify-between mb-1">
-                  <label class="block text-[10px] font-bold text-amber-900">Alert Before Expiry</label>
-                  <span class="text-[9px] text-amber-700 font-medium">Days prior</span>
+                  <label class="block text-[11px] font-semibold text-slate-700">Alert Prior</label>
+                  <span class="text-[10px] text-slate-400 font-medium">Days</span>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <input type="number" min="1" max="365" class="cert-alert-days w-16 text-center font-bold font-mono px-1.5 py-1.5 border border-amber-300 bg-white rounded text-xs text-amber-900 focus:outline-none" value="${certAlertDays}" placeholder="15" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" onchange="CMS_MASTERS.onCertDateOrDaysChange(this)" />
-                  <span class="text-xs text-slate-500">days</span>
-                  <div class="flex items-center gap-1 ml-auto">
-                    <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=7; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[9px] font-semibold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 rounded">7d</button>
-                    <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=15; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[9px] font-semibold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 rounded">15d</button>
-                    <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=30; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[9px] font-semibold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 rounded">30d</button>
+                  <input type="number" min="1" max="365" class="cert-alert-days w-16 text-center font-bold font-mono px-2 py-1.5 border border-slate-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" value="${certAlertDays}" placeholder="15" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" onchange="CMS_MASTERS.onCertDateOrDaysChange(this)" />
+                  <div class="inline-flex rounded border border-slate-200 bg-white p-0.5 shadow-2xs">
+                    <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=7; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">7d</button>
+                    <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=15; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">15d</button>
+                    <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=30; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="flex items-center justify-between px-2.5 py-1.5 bg-amber-100/70 border border-amber-300/80 rounded text-[11px] text-amber-900">
-              <span class="flex items-center gap-1.5 font-medium">
-                <i data-lucide="bell" class="w-3.5 h-3.5 text-amber-600 shrink-0"></i>
-                <span>Alert triggers on:</span>
-                <strong class="cert-alert-preview-text font-mono font-bold text-amber-950">${computedCertAlertDisplay}</strong>
-              </span>
-              <span class="cert-alert-days-summary text-[10px] text-amber-700 italic">(${certAlertDays} days before expiry)</span>
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-white border border-slate-200 rounded text-xs text-slate-700 shadow-2xs">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <i data-lucide="bell" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                <span class="text-slate-500 font-medium text-[11px] whitespace-nowrap">Alert Date:</span>
+                <strong class="cert-alert-preview-text font-mono font-semibold text-slate-800 text-[11px] truncate">${computedCertAlertDisplay}</strong>
+              </div>
+              <span class="cert-alert-days-summary text-[10px] text-slate-500 whitespace-nowrap ml-2">(${certAlertDays}d prior)</span>
             </div>
             <input type="hidden" class="cert-alert-input" value="${computedCertAlertIso}" />
           </div>
@@ -2058,34 +2061,34 @@ window.CMS_MASTERS = {
                   <input type="checkbox" id="v-limited" ${vendor.approvedForLimitedPeriod ? 'checked' : ''} onchange="document.getElementById('v-limited-date-box').classList.toggle('hidden', !this.checked)" class="text-blue-600 rounded" />
                   <span>Vendor is approved for limited period.</span>
                 </label>
-                <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2.5 p-3 bg-amber-50/50 border border-amber-200 rounded space-y-2">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div id="v-limited-date-box" class="${vendor.approvedForLimitedPeriod ? '' : 'hidden'} mt-2.5 p-2.5 bg-slate-50 border border-slate-200 rounded space-y-2 text-xs">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
-                      <label class="block text-[11px] font-bold text-slate-700 mb-1">Approval Valid Till *</label>
-                      <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs font-mono bg-white" />
+                      <label class="block text-[11px] font-semibold text-slate-700 mb-1">Approval Valid Till <span class="text-rose-600 font-bold">*</span></label>
+                      <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs font-mono outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                     </div>
                     <div>
                       <div class="flex items-center justify-between mb-1">
-                        <label class="block text-[11px] font-bold text-amber-900">Alert Before Expiry</label>
-                        <span class="text-[10px] text-amber-700 font-medium">Days prior</span>
+                        <label class="block text-[11px] font-semibold text-slate-700">Alert Prior</label>
+                        <span class="text-[10px] text-slate-400 font-medium">Days</span>
                       </div>
-                      <div class="flex items-center gap-2">
-                        <input type="number" min="1" max="365" id="v-approval-alert-days" value="${vendor.approvalAlertDays || 15}" placeholder="15" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" class="w-20 px-2 py-1.5 border border-amber-300 bg-white rounded-sm text-center font-bold font-mono text-xs text-amber-900 focus:ring-1 focus:ring-amber-500 outline-none" />
-                        <span class="text-xs text-slate-500">days</span>
-                        <div class="flex items-center gap-1 ml-auto">
-                          <button type="button" onclick="document.getElementById('v-approval-alert-days').value=15; CMS_MASTERS.onLimitedApprovalDateOrDaysChange();" class="px-1.5 py-0.5 text-[9px] font-semibold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 rounded">15d</button>
-                          <button type="button" onclick="document.getElementById('v-approval-alert-days').value=30; CMS_MASTERS.onLimitedApprovalDateOrDaysChange();" class="px-1.5 py-0.5 text-[9px] font-semibold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 rounded">30d</button>
+                      <div class="flex items-center gap-1.5">
+                        <input type="number" min="1" max="365" id="v-approval-alert-days" value="${vendor.approvalAlertDays || 15}" placeholder="15" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" class="w-16 text-center font-bold font-mono px-2 py-1.5 border border-slate-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+                        <div class="inline-flex rounded border border-slate-200 bg-white p-0.5 shadow-2xs">
+                          <button type="button" onclick="document.getElementById('v-approval-alert-days').value=7; CMS_MASTERS.onLimitedApprovalDateOrDaysChange();" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">7d</button>
+                          <button type="button" onclick="document.getElementById('v-approval-alert-days').value=15; CMS_MASTERS.onLimitedApprovalDateOrDaysChange();" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">15d</button>
+                          <button type="button" onclick="document.getElementById('v-approval-alert-days').value=30; CMS_MASTERS.onLimitedApprovalDateOrDaysChange();" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="flex items-center justify-between px-2.5 py-1.5 bg-amber-100/70 border border-amber-300/80 rounded text-[11px] text-amber-900">
-                    <span class="flex items-center gap-1.5 font-medium">
-                      <i data-lucide="bell" class="w-3.5 h-3.5 text-amber-600 shrink-0"></i>
-                      <span>Alert triggers on:</span>
-                      <strong id="v-approval-alert-preview" class="font-mono font-bold text-amber-950">${CMS_MASTERS.formatDisplayDate(vendor.approvalAlertDate || (vendor.approvalValidTill ? CMS_MASTERS.calculateAlertDate(vendor.approvalValidTill, vendor.approvalAlertDays || 15) : ''))}</strong>
-                    </span>
-                    <span id="v-approval-alert-days-summary" class="text-[10px] text-amber-700 italic">(${vendor.approvalAlertDays || 15} days before expiry)</span>
+                  <div class="flex items-center justify-between px-2.5 py-1.5 bg-white border border-slate-200 rounded text-xs text-slate-700 shadow-2xs">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                      <i data-lucide="bell" class="w-3.5 h-3.5 text-slate-400 shrink-0"></i>
+                      <span class="text-slate-500 font-medium text-[11px] whitespace-nowrap">Alert Date:</span>
+                      <strong id="v-approval-alert-preview" class="font-mono font-semibold text-slate-800 text-[11px] truncate">${vendor.approvalValidTill ? CMS_MASTERS.formatDisplayDate(vendor.approvalAlertDate || CMS_MASTERS.calculateAlertDate(vendor.approvalValidTill, vendor.approvalAlertDays || 15)) : 'Select date above'}</strong>
+                    </div>
+                    <span id="v-approval-alert-days-summary" class="text-[10px] text-slate-500 whitespace-nowrap ml-2">(${vendor.approvalAlertDays || 15}d prior)</span>
                   </div>
                   <input type="hidden" id="v-approval-alert-date" value="${vendor.approvalAlertDate || (vendor.approvalValidTill ? CMS_MASTERS.calculateAlertDate(vendor.approvalValidTill, vendor.approvalAlertDays || 15) : '')}" />
                 </div>
