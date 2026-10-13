@@ -151,6 +151,7 @@ window.CMS_APP = {
 
             // Hide the native "Choose File" input so the Delete button & status take its place
             inputEl.classList.add('hidden');
+            inputEl.style.display = 'none';
 
             // 2. Add professional inline box showing document name and "Document Submitted" below it with Delete option
             const actionContainer = document.createElement('div');
@@ -194,6 +195,7 @@ window.CMS_APP = {
                 if (inputEl.dataset) inputEl.dataset.current = '';
                 // Unhide the native Choose File input button
                 inputEl.classList.remove('hidden');
+                inputEl.style.display = '';
                 // Also remove any existing on-record badge in the same container
                 const parent = inputEl.closest('div');
                 if (parent) {

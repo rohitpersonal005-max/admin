@@ -991,6 +991,11 @@ input[type="file"] {
   cursor: pointer;
 }
 
+input[type="file"].hidden,
+input[type="file"][hidden] {
+  display: none !important;
+}
+
 input[type="file"]::file-selector-button {
   margin-right: 10px;
   padding: 5px 12px;

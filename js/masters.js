@@ -1236,8 +1236,27 @@ window.CMS_MASTERS = {
       </div>
       <div>
         <label class="block font-bold text-slate-700 mb-1 text-[10px]">Upload Quotation Copy (PDF / Image)</label>
-        <input type="file" class="q-file text-xs" accept=".pdf,image/*" />
-        ${doc ? `<span class="block text-[10px] text-emerald-700 font-mono mt-0.5">Attached on record: ${doc}</span>` : ''}
+        <div class="q-file-wrapper relative w-full">
+          <input type="file" class="q-file text-xs w-full ${doc ? 'hidden' : ''}" ${doc ? 'style="display:none;"' : ''} accept=".pdf,image/*" data-current="${doc}" />
+          ${doc ? `
+            <div class="file-on-record-label doc-upload-box text-xs">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-semibold text-slate-800 truncate" title="${doc}">${doc}</div>
+                <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
+                  <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
+                  <span>Document Submitted</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" onclick="CMS_APP.previewFile('${doc}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+                <button type="button" onclick="const p=this.closest('.q-file-wrapper'); const fi=p.querySelector('.q-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden'); fi.style.display='';} this.closest('.file-on-record-label').remove();" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>` : ''}
+        </div>
       </div>
     `;
     container.appendChild(row);
@@ -1359,9 +1378,26 @@ window.CMS_MASTERS = {
             <label class="block text-[11px] font-bold text-slate-700 mb-1">
               5. Upload Certificate Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
             </label>
-            <div class="flex items-center gap-2">
-              <input type="file" accept=".pdf,image/*" class="cert-file-input text-[11px]" data-current="${fileName}" />
-              ${fileName ? `<span class="text-[10px] text-emerald-700 font-mono truncate max-w-[120px]" title="${fileName}">${fileName}</span>` : ''}
+            <div class="cert-file-wrapper relative w-full">
+              <input type="file" accept=".pdf,image/*" class="cert-file-input text-xs w-full ${fileName ? 'hidden' : ''}" ${fileName ? 'style="display:none;"' : ''} data-current="${fileName}" />
+              ${fileName ? `
+                <div class="file-on-record-label doc-upload-box text-xs">
+                  <div class="min-w-0 flex-1">
+                    <div class="text-xs font-semibold text-slate-800 truncate" title="${fileName}">${fileName}</div>
+                    <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
+                      <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
+                      <span>Document Submitted</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" onclick="CMS_APP.previewFile('${fileName}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
+                      <i data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                    <button type="button" onclick="const p=this.closest('.cert-file-wrapper'); const fi=p.querySelector('.cert-file-input'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden'); fi.style.display='';} this.closest('.file-on-record-label').remove();" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
+                      <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>` : ''}
             </div>
           </div>
           <div>
@@ -1908,7 +1944,7 @@ window.CMS_MASTERS = {
                   <label class="block text-xs font-bold text-slate-800 mb-1.5">
                     Upload PAN Card Copy (PDF/Image) <span class="text-rose-600">*</span>
                   </label>
-                  <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs ${vendor.panCardFile ? 'hidden' : ''}" />
+                  <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs ${vendor.panCardFile ? 'hidden' : ''}" ${vendor.panCardFile ? 'style="display:none;"' : ''} />
                   ${vendor.panCardFile ? `
                     <div class="file-on-record-label doc-upload-box text-xs">
                       <div class="min-w-0 flex-1">
@@ -1988,7 +2024,7 @@ window.CMS_MASTERS = {
                   <label class="block text-xs font-bold text-slate-800 mb-1.5">
                     Upload GST Certificate (PDF/Image) <span class="text-rose-600">*</span>
                   </label>
-                  <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs ${vendor.gstCertificateFile ? 'hidden' : ''}" />
+                  <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs ${vendor.gstCertificateFile ? 'hidden' : ''}" ${vendor.gstCertificateFile ? 'style="display:none;"' : ''} />
                   ${vendor.gstCertificateFile ? `
                     <div class="file-on-record-label doc-upload-box text-xs">
                       <div class="min-w-0 flex-1">
