@@ -2641,7 +2641,7 @@ window.CMS_MASTERS = {
   openVendorModal(vendorId = null) {
     const role = window.CMS_STORE.getRole();
     if (role === 'Admin') {
-      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Vendor registration must be initiated by User.', 'warning');
+      return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Vendor registration must be initiated by User.', 'warning');
     }
     const isEdit = Boolean(vendorId);
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
@@ -3135,9 +3135,13 @@ window.CMS_MASTERS = {
             <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
           </div>
           <div class="flex items-center justify-between w-full"><div id="v-autosave-status" class="flex-1 text-xs text-emerald-600 font-semibold italic"></div><div class="flex gap-2.5">
-            <button id="v-prev-btn" type="button" onclick="CMS_MASTERS.prevVendorTab()" class="hidden px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded-sm transition">Previous Step</button>
-            <button id="v-next-btn" type="button" onclick="CMS_MASTERS.nextVendorTab()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition">Next Step <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i></button>
-            <button id="v-submit-btn" type="button" onclick="CMS_MASTERS.saveVendor('${vendorId || ''}')" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
+            <button id="v-prev-btn" type="button" onclick="CMS_MASTERS.prevVendorTab()" class="hidden px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded-sm transition text-xs">Previous Step</button>
+            <button id="v-next-btn" type="button" onclick="CMS_MASTERS.nextVendorTab()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition text-xs">Next Step <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i></button>
+            <button id="v-draft-btn" type="button" onclick="CMS_MASTERS.saveVendorDraft()" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-sm transition flex items-center gap-1.5 text-xs">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>Save Draft</span>
+            </button>
+            <button id="v-submit-btn" type="button" onclick="CMS_MASTERS.saveVendor('${vendorId || ''}', true)" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs">
               <i data-lucide="send" class="w-4 h-4"></i>
               <span>Submit for Admin Approval</span>
             </button>
@@ -3173,13 +3177,13 @@ window.CMS_MASTERS = {
                 
                 // If no active ID, generate one and update the submit button so future saves use it!
                 if (!activeId) {
-                  activeId = 'V-' + Date.now();
-                  if (btn) btn.setAttribute('onclick', `CMS_MASTERS.saveVendor('${activeId}')`);
-                  vendorForm.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${activeId}');`);
+                  activeId = 'VEN-' + String(Math.floor(Date.now() / 1000)).padStart(3, '0');
+                  if (btn) btn.setAttribute('onclick', `CMS_MASTERS.saveVendor('${activeId}', true)`);
+                  vendorForm.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${activeId}', true);`);
                 }
                 
                 // Save quietly as draft
-                CMS_MASTERS.saveVendor(activeId, false);
+                CMS_MASTERS.saveVendor(activeId, false, false);
                 const statusEl = document.getElementById('v-autosave-status');
                 if (statusEl) {
                    statusEl.innerText = 'Draft auto-saved at ' + new Date().toLocaleTimeString();
@@ -3217,10 +3221,7 @@ window.CMS_MASTERS = {
         const qList = vendor.quotedItems || [];
         if (qList.length === 0 && (vendor.quotedMaterialId || vendor.quotedMaterialName || vendor.quotationNo)) {
           CMS_MASTERS.addVendorQuotationRow({
-            quotationNo: vendor.
-          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays, limAlertFreq,
-          quotationNo,
-
+            quotationNo: vendor.quotationNo,
             quotationDate: vendor.quotationDate,
             quotationValidTill: vendor.quotationValidTill,
             materialId: vendor.quotedMaterialId,
@@ -3305,10 +3306,20 @@ window.CMS_MASTERS = {
   },
 
   saveAndSubmitVendor(vendorId) {
-    this.saveVendor(vendorId, true);
+    this.saveVendor(vendorId, true, false);
   },
 
-  saveVendor(vendorId = null, directSubmit = true) {
+  saveVendorDraft() {
+    const btn = document.getElementById('v-submit-btn');
+    let activeId = null;
+    if (btn) {
+      const match = btn.getAttribute('onclick')?.match(/'([^']*)'/);
+      if (match && match[1]) activeId = match[1];
+    }
+    this.saveVendor(activeId, false, true);
+  },
+
+  saveVendor(vendorId = null, directSubmit = true, isManualDraft = false) {
     const store = window.CMS_STORE;
     const currentUser = store.getCurrentUser();
     if (currentUser && currentUser.role === 'Admin') {
@@ -3337,7 +3348,7 @@ window.CMS_MASTERS = {
         }
         return;
       }
-    const isEdit = Boolean(vendorId);
+    const isEdit = Boolean(vendorId && store.data.vendors.some(v => v.id === vendorId));
     const existingVendor = isEdit ? store.data.vendors.find(v => v.id === vendorId) : null;
     const today = new Date().toISOString().split('T')[0];
 
@@ -3376,8 +3387,8 @@ window.CMS_MASTERS = {
 
     const gstFileInput = document.getElementById('v-gst-file');
     const panFileInput = document.getElementById('v-pan-file');
-    let gstCertificateFile = (gstFileInput && gstFileInput.files[0]) ? gstFileInput.files[0].name : (existingVendor?.gstCertificateFile || '');
-    let panCardFile = (panFileInput && panFileInput.files[0]) ? panFileInput.files[0].name : (existingVendor?.panCardFile || '');
+    let gstCertificateFile = (gstFileInput?.files?.[0]) ? gstFileInput.files[0].name : (existingVendor?.gstCertificateFile || '');
+    let panCardFile = (panFileInput?.files?.[0]) ? panFileInput.files[0].name : (existingVendor?.panCardFile || '');
 
     // Fallback document filenames for records if user did not pick a local disk file
     if (!gstNotApplicable && gstNo && !gstCertificateFile) {
@@ -3395,7 +3406,7 @@ window.CMS_MASTERS = {
     const branchName = document.getElementById('v-branch-name')?.value.trim() || '';
     
     const bankFileInput = document.getElementById('v-bank-file');
-      let bankDoc = (bankFileInput && bankFileInput.files[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
+      let bankDoc = (bankFileInput?.files?.[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
       
       if (directSubmit && (!bankDoc || !bankDocTitle)) {
           window.CMS_APP.toast('Supporting Bank Document and its Document Type are mandatory.', 'error');
@@ -3411,7 +3422,7 @@ window.CMS_MASTERS = {
       if (!qno && !matName) continue;
       
       const fileInput = row.querySelector('.q-file');
-      let docName = (fileInput && fileInput.files[0]) ? fileInput.files[0].name : '';
+      let docName = (fileInput?.files?.[0]) ? fileInput.files[0].name : '';
       if (!docName) {
           const span = row.querySelector('span.text-emerald-700');
           if (span && span.innerText.includes('Attached on record: ')) {
@@ -3590,7 +3601,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       const alertDays = parseInt(row.querySelector('.cert-alert-days')?.value, 10) || 15;
       const alertDate = row.querySelector('.cert-alert-input')?.value || (expiry ? CMS_MASTERS.calculateAlertDate(expiry, alertDays) : '');
       const fileInput = row.querySelector('.cert-file-input');
-      let fileName = (fileInput && fileInput.files[0]) ? fileInput.files[0].name : (fileInput?.dataset.current || '');
+      let fileName = (fileInput?.files?.[0]) ? fileInput.files[0].name : (fileInput?.dataset.current || '');
 
       // Skip blank rows if user didn't enter agency or number
       if (!reg && !certNo) continue;
@@ -3640,23 +3651,26 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           quotationNo,
  quotationDate, quotationValidTill, quotationDoc, 
           quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
-          approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate, approvalAlertDays, approvalAlertDate,
+          approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate, limAlertFreq,
           isBlocked, blockReason, quotedItems,
           certificates,
-          status: directSubmit ? 'Pending Approval' : store.data.vendors[idx].status,
+          status: directSubmit ? 'Pending Approval' : (store.data.vendors[idx].status || 'Draft'),
           updatedAt: new Date().toISOString(),
           // Clear previous rejection remarks upon resubmission
           checkerMistakeRemark: directSubmit ? '' : store.data.vendors[idx].checkerMistakeRemark
         };
       }
     } else {
-      // Sequence-based unique Vendor ID
-      const existingIds = new Set(store.data.vendors.map(v => v.id));
-      let nextNum = Math.floor(Date.now() / 1000);
-      let newId = 'VEN-' + String(nextNum).padStart(3, '0');
-      while (existingIds.has(newId)) {
-        nextNum++;
+      // Sequence-based unique Vendor ID or use passed vendorId (e.g. from draft auto-save)
+      let newId = vendorId;
+      if (!newId) {
+        const existingIds = new Set(store.data.vendors.map(v => v.id));
+        let nextNum = Math.floor(Date.now() / 1000);
         newId = 'VEN-' + String(nextNum).padStart(3, '0');
+        while (existingIds.has(newId)) {
+          nextNum++;
+          newId = 'VEN-' + String(nextNum).padStart(3, '0');
+        }
       }
 
       store.data.vendors.push({
@@ -3669,19 +3683,21 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         gstNo, panNo,
         gstCertificateFile, panCardFile,
         bankName, accountName, accountNo, ifscCode, branchName, bankDoc,
-        
-          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
-          quotationNo,
- quotationDate, quotationValidTill, quotationDoc,
+        gstDocTitle, panDocTitle, bankDocTitle, limAlertDays, limAlertFreq,
+        quotationNo, quotationDate, quotationValidTill, quotationDoc,
         quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
-        approvedForLimitedPeriod, approvalValidTill,
+        approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate,
         isBlocked, blockReason, quotedItems,
         certificates,
         status: directSubmit ? 'Pending Approval' : 'Draft',
         createdAt: new Date().toISOString(),
-        createdBy: currentUser.id,
-        createdByName: currentUser.name
+        createdBy: currentUser ? currentUser.id : 'system',
+        createdByName: currentUser ? currentUser.name : 'Store Staff'
       });
+
+      const btn = document.getElementById('v-submit-btn');
+      if (btn) btn.setAttribute('onclick', `CMS_MASTERS.saveVendor('${newId}', true)`);
+      if (form) form.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${newId}', true);`);
     }
 
     // Automatically synchronize quotation and quoted material with catalog
@@ -3733,9 +3749,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
               sgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
               cgst: stateInfo.taxMode === 'IGST' ? 0 : 9,
               igst: stateInfo.taxMode === 'IGST' ? 18 : 0,
-              quotationNo: q.
-          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
-          quotationNo,
+              quotationNo: q.quotationNo,
 
               quotationDate: q.quotationDate || today,
               quotationRate: q.rate,
@@ -3767,6 +3781,11 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       store.save(); // full UI update
       window.CMS_APP.closeModal();
       window.CMS_APP.toast('Vendor credentials and statutory certificates submitted for Admin approval!', 'success');
+      window.CMS_APP.refreshView();
+    } else if (isManualDraft) {
+      store.save();
+      window.CMS_APP.closeModal();
+      window.CMS_APP.toast('Vendor draft saved to workspace successfully!', 'success');
       window.CMS_APP.refreshView();
     } else {
       // Quiet background save for drafts: update localStorage directly without triggering global UI rebuilds
@@ -4397,10 +4416,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             ${((m.vendors && m.vendors.length > 0) ? m.vendors : [
-              ...(m.vendor1Id ? [{ vendorId: m.vendor1Id, vendorName: m.vendor1Name, rate: m.vendor1Rate, quotationNo: m.
-          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
-          quotationNo,
- effectiveFrom: m.vendor1RateEffectiveFrom, isPrimary: true }] : []),
+              ...(m.vendor1Id ? [{ vendorId: m.vendor1Id, vendorName: m.vendor1Name, rate: m.vendor1Rate, quotationNo: m.quotationNo, effectiveFrom: m.vendor1RateEffectiveFrom, isPrimary: true }] : []),
               ...(m.vendor2Id ? [{ vendorId: m.vendor2Id, vendorName: m.vendor2Name, rate: m.vendor2Rate, quotationNo: '', effectiveFrom: m.vendor2RateEffectiveFrom, isPrimary: false }] : [])
             ]).map((v, i) => `
               <div class="p-3.5 border-2 ${v.isPrimary ? 'border-blue-300 bg-slate-50/50' : 'border-slate-200 bg-slate-50'} rounded-sm space-y-1.5">
@@ -4870,6 +4886,10 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         <!-- Form Actions -->
         <div class="pt-4 border-t border-slate-200 flex justify-end gap-2.5">
           <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">Cancel</button>
+          <button type="button" onclick="CMS_MASTERS.saveConsumable('${matId || ''}', false)" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-sm transition flex items-center gap-1.5 text-xs">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Save Draft</span>
+          </button>
           <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Save to Master & Submit</span>
@@ -5023,12 +5043,12 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     const pmVendor = document.getElementById('m-pm-vendor')?.value.trim() || '';
     const nextPmDate = document.getElementById('m-pm-next-date')?.value || '';
 
-    const consumerConfirmed = document.getElementById('m-conf').checked;
-    const confirmedBy = document.getElementById('m-conf-by').value.trim();
-    const confirmationDate = document.getElementById('m-conf-date').value;
-    const confirmationRemarks = document.getElementById('m-conf-remarks').value.trim();
+    const consumerConfirmed = document.getElementById('m-conf')?.checked || false;
+    const confirmedBy = document.getElementById('m-conf-by')?.value.trim() || '';
+    const confirmationDate = document.getElementById('m-conf-date')?.value || '';
+    const confirmationRemarks = document.getElementById('m-conf-remarks')?.value.trim() || '';
 
-    const avgMonthlyConsumption = parseFloat(document.getElementById('m-monthly').value) || 0;
+    const avgMonthlyConsumption = parseFloat(document.getElementById('m-monthly')?.value) || 0;
     const initStockEl = document.getElementById('m-init-stock');
     const initialStock = initStockEl ? (parseFloat(initStockEl.value) || 0) : 0;
 
@@ -5037,7 +5057,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       return;
     }
 
-    if (matId) {
+    const isEdit = Boolean(matId && store.data.consumables.some(m => m.id === matId));
+    if (isEdit) {
       const idx = store.data.consumables.findIndex(m => m.id === matId);
       if (idx !== -1) {
         store.data.consumables[idx] = {
@@ -5047,10 +5068,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           categoryName: category ? category.name : store.data.consumables[idx].categoryName,
           materialName, unit, brand, supplierProductCode, hsnCode,
           gstSlabId, taxMode, sgst, cgst, igst,
-          
-          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
           quotationNo,
- quotationDate, quotationRate, mrpBooked,
+          quotationDate, quotationRate, mrpBooked,
           assetTag, serialNo, custodianDept,
           hasWarranty, warrantyPeriod, warrantyValidTill, warrantyVendor,
           hasPm, pmFrequency, repairmanName, repairmanContact, repairmanAgency, pmVendor, nextPmDate,
@@ -5059,13 +5078,13 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           vendor2Id: v2Id, vendor2Name: v2 ? v2.name : (secondaryVendor.vendorName || ''), vendor2Rate: v2Rate, vendor2RateEffectiveFrom: v2RateEffectiveFrom,
           consumerConfirmed, confirmedBy, confirmationDate, confirmationRemarks,
           avgMonthlyConsumption,
-          status: directSubmit ? 'Pending Approval' : store.data.consumables[idx].status,
+          status: directSubmit ? 'Pending Approval' : (store.data.consumables[idx].status || 'Draft'),
           updatedAt: new Date().toISOString()
         };
       }
     } else {
       const prefix = inventoryType === 'Fixed' ? 'MAT-FIX-' : 'MAT-';
-      const newId = prefix + String(Date.now()).slice(-6);
+      const newId = matId || (prefix + String(Date.now()).slice(-6));
       store.data.consumables.push({
         id: newId,
         inventoryType,
@@ -5073,10 +5092,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         categoryName: category ? category.name : 'General',
         materialName, unit, brand, supplierProductCode, hsnCode,
         gstSlabId, taxMode, sgst, cgst, igst,
-        
-          gstDocTitle, panDocTitle, bankDocTitle, limAlertDays,
-          quotationNo,
- quotationDate, quotationRate, mrpBooked,
+        quotationNo,
+        quotationDate, quotationRate, mrpBooked,
         assetTag: assetTag || (inventoryType === 'Fixed' ? `AST-${newId}` : ''),
         serialNo, custodianDept,
         hasWarranty, warrantyPeriod, warrantyValidTill, warrantyVendor,
@@ -5204,7 +5221,24 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     window.CMS_APP.refreshView();
   },
 
-  deleteConsumable(matId) { window.CMS_APP.toast("Master deletion is disabled for statutory audit integrity.", "error"); },
+  deleteConsumable(matId) {
+    const store = window.CMS_STORE;
+    const item = store.data.consumables.find(m => m.id === matId);
+    if (!item) return;
+    if (['Draft', 'Pending Approval', 'Pending', 'Revision Required'].includes(item.status)) {
+      if (confirm('Delete this draft material/quotation? This action cannot be undone.')) {
+        const idx = store.data.consumables.findIndex(m => m.id === matId);
+        if (idx !== -1) {
+          store.data.consumables.splice(idx, 1);
+          store.save();
+          window.CMS_APP.toast('Draft material deleted successfully.', 'success');
+          window.CMS_APP.refreshView();
+        }
+      }
+    } else {
+      window.CMS_APP.toast("Master deletion is disabled for statutory audit integrity.", "error");
+    }
+  },
 
   // ==========================================
   // GST / IGST SLAB MASTER
