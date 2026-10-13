@@ -376,7 +376,10 @@ window.CMS_APP = {
         link.classList.remove('bg-slate-900', 'text-white', 'shadow-sm');
         link.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
         link.classList.remove('text-slate-300', 'hover:bg-slate-800', 'hover:text-white');
-        if (icon) icon.classList.remove('text-white');
+        if (icon) {
+          icon.classList.remove('text-slate-500', 'text-blue-600', 'text-blue-400', 'text-amber-400', 'text-sky-400', 'text-emerald-400', 'text-rose-400', 'text-purple-400', 'text-cyan-400', 'text-teal-400');
+          icon.classList.add('text-white');
+        }
         if (span) span.classList.remove('text-white');
       }
     });

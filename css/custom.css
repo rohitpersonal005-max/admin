@@ -433,7 +433,8 @@ body {
 }
 
 #sidebar .nav-link[data-route="dashboard"].bg-blue-600 i {
-  color: #63420b !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 #sidebar nav > div > div:first-child {
@@ -442,12 +443,12 @@ body {
 }
 
 #sidebar nav > div > div:first-child span {
-  color: var(--accent-cyan) !important;
+  color: #ffffff !important;
   letter-spacing: 0.09em;
 }
 
 #sidebar nav > div > div:first-child i {
-  color: var(--accent-cyan) !important;
+  color: #ffffff !important;
 }
 
 header {
@@ -1022,3 +1023,21 @@ input[type="file"]::file-selector-button:hover {
   overflow: hidden;
 }
 
+
+/* Forced bright white sidebar icons and section titles */
+#sidebar nav i,
+#sidebar nav svg,
+#sidebar .nav-link i,
+#sidebar .nav-link svg,
+#sidebar button i,
+#sidebar button svg,
+#sidebar span i,
+#sidebar span svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+#sidebar nav button span,
+#sidebar nav div span[class*="tracking-wider"] {
+  color: #ffffff !important;
+}

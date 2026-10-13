@@ -46,8 +46,8 @@
   
       
   <!-- Custom Stylesheet -->
-  <link rel="stylesheet" href="css/custom.css?v=1791874931672" />
-  <link rel="stylesheet" href="css/enterprise.css?v=1791874931672" />
+  <link rel="stylesheet" href="css/custom.css?v=1791878109558" />
+  <link rel="stylesheet" href="css/enterprise.css?v=1791878109558" />
   
   
 
@@ -69,15 +69,15 @@
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white text-slate-600 border-r border-slate-200 flex flex-col transition-transform duration-200 ease-in-out md:static md:translate-x-0 -translate-x-full">
       <!-- Brand Logo Header -->
       <div class="px-5 py-3.5 flex flex-col items-center justify-center border-b border-slate-200 bg-white shrink-0">
-        <img src="assets/adminutes_logo.jpg??v=1791874931672" alt="Adminutes" class="h-12 w-auto object-contain transition-all" />
+        <img src="assets/adminutes_logo.jpg??v=1791878109558" alt="Adminutes" class="h-12 w-auto object-contain transition-all" />
         <span class="text-base font-semibold tracking-tight text-slate-800 mt-1">Adminutes</span>
       </div>
 
       
       <!-- Mobile Close (hidden on desktop) -->
       <div class="md:hidden p-3 flex justify-end border-b border-slate-200">
-        <button onclick="CMS_APP.toggleMobileSidebar()" class="text-slate-500 hover:text-white p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
+        <button onclick="CMS_APP.toggleMobileSidebar()" class="text-white hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5 text-white"></i>
         </button>
       </div>
 
@@ -87,18 +87,18 @@
                 <!-- 0. HOME -->
         <div id="nav-admin-home" class="mb-2">
           <a href="#home" data-route="home" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-            <i data-lucide="home" class="w-4 h-4 text-slate-500"></i>
+            <i data-lucide="home" class="w-4 h-4 text-white"></i>
             <span>Home</span>
           </a>
         </div>
         <!-- 1. DASHBOARD -->
         <div>
           <a href="#dashboard" data-route="dashboard" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-            <i data-lucide="layout-grid" class="w-4 h-4 text-slate-500"></i>
+            <i data-lucide="layout-grid" class="w-4 h-4 text-white"></i>
             <span>Executive Dashboard</span>
           </a>
           <a href="#draft-workspace" data-route="draft-workspace" class="nav-link flex items-center gap-2.5 px-2.5 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium mt-0.5">
-            <i data-lucide="file-clock" class="w-4 h-4 text-amber-400"></i>
+            <i data-lucide="file-clock" class="w-4 h-4 text-white"></i>
             <span>Draft Workspace</span>
           </a>
         </div>
@@ -106,26 +106,26 @@
         <!-- 2. STOCK & ASSET CARE (2ND IN LIST) -->
         <div class="pt-0.5">
           <button type="button" onclick="document.getElementById('menu-inventory').classList.toggle('hidden'); document.getElementById('icon-inventory').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
-            <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1 pointer-events-none">
-              <i data-lucide="package" class="w-3 h-3 text-emerald-400"></i> Reports
+            <span class="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1 pointer-events-none">
+              <i data-lucide="package" class="w-3 h-3 text-white"></i> Reports
             </span>
-            <i id="icon-inventory" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
+            <i id="icon-inventory" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-inventory" class="space-y-0.5 pl-1.5 ml-2 transition-all">
             <a href="#consumer-inventory" data-route="consumer-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="package" class="w-4 h-4 text-emerald-400"></i>
+              <i data-lucide="package" class="w-4 h-4 text-white"></i>
               <span>Consumable Materials</span>
             </a>
             <a href="#fixed-inventory" data-route="fixed-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="cpu" class="w-4 h-4 text-blue-400"></i>
+              <i data-lucide="cpu" class="w-4 h-4 text-white"></i>
               <span>Fixed Assets & PM</span>
             </a>
             <a href="#stock-status" data-route="stock-status" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="bar-chart-3" class="w-4 h-4 text-teal-400"></i>
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-white"></i>
               <span>Stock Status & Buffers</span>
             </a>
             <a href="#stock-ledger" data-route="stock-ledger" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="list" class="w-4 h-4 text-slate-500"></i>
+              <i data-lucide="list" class="w-4 h-4 text-white"></i>
               <span>Stock Ledger Trail</span>
             </a>
           </div>
@@ -134,26 +134,26 @@
         <!-- 3. SETUP & CATALOG (3RD) -->
         <div class="pt-0.5">
           <button type="button" onclick="document.getElementById('menu-transactions').classList.toggle('hidden'); document.getElementById('icon-transactions').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
-            <span class="text-[10px] uppercase font-bold text-blue-400 tracking-wider flex items-center gap-1 pointer-events-none">
-              <i data-lucide="folder" class="w-3 h-3 text-blue-400"></i> Setup
+            <span class="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1 pointer-events-none">
+              <i data-lucide="folder" class="w-3 h-3 text-white"></i> Setup
             </span>
-            <i id="icon-transactions" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
+            <i id="icon-transactions" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-transactions" class="space-y-0.5 pl-1.5 ml-2 transition-all">
             <a href="#vendors" data-route="vendors" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="building" class="w-4 h-4 text-slate-500"></i>
+              <i data-lucide="building" class="w-4 h-4 text-white"></i>
               <span>Vendor</span>
             </a>
             <a href="#categories" data-route="categories" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="folder" class="w-4 h-4 text-slate-500"></i>
+              <i data-lucide="folder" class="w-4 h-4 text-white"></i>
               <span>Consumable Category</span>
             </a>
             <a href="#consumables" data-route="consumables" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="box" class="w-4 h-4 text-slate-500"></i>
+              <i data-lucide="box" class="w-4 h-4 text-white"></i>
               <span>Material</span>
             </a>
             <a href="#gst-slabs" data-route="gst-slabs" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="percent" class="w-4 h-4 text-slate-500"></i>
+              <i data-lucide="percent" class="w-4 h-4 text-white"></i>
               <span>GST / IGST Slabs</span>
             </a>
           </div>
@@ -162,42 +162,42 @@
         <!-- 4. STORE OPERATIONS & MOVEMENT (4TH - MOVED BELOW) -->
         <div class="pt-0.5">
           <button type="button" onclick="document.getElementById('menu-reports').classList.toggle('hidden'); document.getElementById('icon-reports').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
-            <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center gap-1 pointer-events-none">
-              <i data-lucide="sliders" class="w-3 h-3 text-amber-400"></i> Transaction
+            <span class="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1 pointer-events-none">
+              <i data-lucide="sliders" class="w-3 h-3 text-white"></i> Transaction
             </span>
-            <i id="icon-reports" data-lucide="chevron-down" class="w-4 h-4 text-slate-500 transition-transform duration-200 pointer-events-none"></i>
+            <i id="icon-reports" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
           </button>
           <div id="menu-reports" class="space-y-0.5 pl-1.5 ml-2 transition-all">
             <a href="#receipts" data-route="receipts" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="arrow-down-left" class="w-4 h-4 text-amber-400"></i>
+              <i data-lucide="arrow-down-left" class="w-4 h-4 text-white"></i>
               <span>Goods Inward (Auto Material)</span>
             </a>
             <a href="#requests" data-route="requests" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="git-pull-request" class="w-4 h-4 text-sky-400"></i>
+              <i data-lucide="git-pull-request" class="w-4 h-4 text-white"></i>
               <span>Dept Push / Pull Requests</span>
             </a>
             <a href="#issuances" data-route="issuances" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="receipt" class="w-4 h-4 text-emerald-400"></i>
+              <i data-lucide="receipt" class="w-4 h-4 text-white"></i>
               <span>Store Issuance Slip</span>
             </a>
             <a href="#returns" data-route="returns" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="rotate-ccw" class="w-4 h-4 text-rose-400"></i>
+              <i data-lucide="rotate-ccw" class="w-4 h-4 text-white"></i>
               <span>Return to Store</span>
             </a>
             <a href="#stock-adjustments" data-route="stock-adjustments" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="sliders" class="w-4 h-4 text-purple-400"></i>
+              <i data-lucide="sliders" class="w-4 h-4 text-white"></i>
               <span>Stock Adjustment (+/-)</span>
             </a>
             <a href="#challan-conversion" data-route="challan-conversion" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="refresh-cw" class="w-4 h-4 text-cyan-400"></i>
+              <i data-lucide="refresh-cw" class="w-4 h-4 text-white"></i>
               <span>Challan to Invoice</span>
             </a>
             <a href="#po-generation" data-route="po-generation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="shopping-cart" class="w-4 h-4 text-blue-600"></i>
+              <i data-lucide="shopping-cart" class="w-4 h-4 text-white"></i>
               <span>Purchase Order (PO)</span>
             </a>
             <a href="#reconciliation" data-route="reconciliation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="clipboard" class="w-4 h-4 text-slate-500"></i>
+              <i data-lucide="clipboard" class="w-4 h-4 text-white"></i>
               <span>Stock Reconciliation</span>
             </a>
           </div>
@@ -206,14 +206,14 @@
         <!-- 5. GOVERNANCE & APPROVALS (5TH) — visible only to authorized Checker -->
         <div class="pt-0.5 hidden" id="nav-governance-section">
           <div class="px-2.5 mb-1 flex items-center justify-between">
-            <span class="text-[10px] uppercase font-bold text-purple-400 tracking-wider flex items-center gap-1">
-              <i data-lucide="shield" class="w-3 h-3 text-purple-400"></i> Governance & Audit
+            <span class="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1">
+              <i data-lucide="shield" class="w-3 h-3 text-white"></i> Governance & Audit
             </span>
           </div>
           <div class="space-y-0.5 pl-1.5 ml-2">
             <a href="#pending-approvals" data-route="pending-approvals" class="nav-link flex items-center justify-between px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <div class="flex items-center gap-2.5">
-                <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+                <i data-lucide="shield-check" class="w-4 h-4 text-white"></i>
                 <span>Approval Hub</span>
               </div>
               <span id="pending-approvals-counter" class="hidden bg-amber-500 text-slate-950 font-bold px-1.5 py-0.2 rounded text-[10px]">
@@ -429,18 +429,18 @@
   
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-  <script src="js/store.js?v=1791877400000"></script>
-  <script src="js/auth.js?v=1791877400000"></script>
-  <script src="js/print_templates.js?v=1791877400000"></script>
-  <script src="js/masters.js?v=1791877400000"></script>
-  <script src="js/transactions.js?v=1791877400000"></script>
-  <script src="js/po_generator.js?v=1791877400000"></script>
-  <script src="js/reconciliation.js?v=1791877400000"></script>
-  <script src="js/reports.js?v=1791877400000"></script>
-  <script src="js/dashboard.js?v=1791877400000"></script>
-  <script src="js/drafts.js?v=1791877400000"></script>
-  <script src="js/home.js?v=1791877400000"></script>
-  <script src="js/app.js?v=1791877400000"></script>
+  <script src="js/store.js?v=1791878109558"></script>
+  <script src="js/auth.js?v=1791878109558"></script>
+  <script src="js/print_templates.js?v=1791878109558"></script>
+  <script src="js/masters.js?v=1791878109558"></script>
+  <script src="js/transactions.js?v=1791878109558"></script>
+  <script src="js/po_generator.js?v=1791878109558"></script>
+  <script src="js/reconciliation.js?v=1791878109558"></script>
+  <script src="js/reports.js?v=1791878109558"></script>
+  <script src="js/dashboard.js?v=1791878109558"></script>
+  <script src="js/drafts.js?v=1791878109558"></script>
+  <script src="js/home.js?v=1791878109558"></script>
+  <script src="js/app.js?v=1791878109558"></script>
 <script>console.log('AGENT FIXES LOADED AT ' + new Date().toISOString());</script>
 </body>
 </html>
