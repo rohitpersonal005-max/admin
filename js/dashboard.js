@@ -128,6 +128,30 @@ window.CMS_DASHBOARD = {
   },
 
   
+  formatDateStr(isoDate) {
+    if (!isoDate) return 'N/A';
+    try {
+      const parts = isoDate.split('-');
+      if (parts.length === 3) {
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+    } catch(e) {}
+    return isoDate;
+  },
+
+  getDaysDiff(targetIsoDate, todayIso) {
+    if (!targetIsoDate) return 0;
+    try {
+      const d1 = new Date(targetIsoDate + 'T00:00:00');
+      const d2 = new Date(todayIso + 'T00:00:00');
+      const diffTime = d1.getTime() - d2.getTime();
+      return Math.round(diffTime / (1000 * 60 * 60 * 24));
+    } catch(e) {
+      return 0;
+    }
+  },
+
   getAlertsHtml() {
     const store = window.CMS_STORE.data;
     const today = new Date().toISOString().split('T')[0];
@@ -159,46 +183,98 @@ window.CMS_DASHBOARD = {
       }
 
       // Check Expiries (Certificates)
-      if (v.status === 'Approved' && v.certificates) {
+      if (v.status === 'Approved' && Array.isArray(v.certificates)) {
         v.certificates.forEach(cert => {
           if (cert.alertDate && cert.alertDate <= today) {
-            const isExpired = cert.validTill && cert.validTill < today;
+            const expIso = cert.validTill || '';
+            const diffDays = expIso ? this.getDaysDiff(expIso, today) : 0;
+            const isExpired = diffDays < 0;
+            const isToday = diffDays === 0;
+            const expFormatted = this.formatDateStr(expIso);
+            const certName = cert.regulator || cert.documentName || cert.name || 'Statutory/Regulatory Certificate';
+            const alertDaysNote = cert.alertDays ? ` (${cert.alertDays}d prior alert)` : '';
+
+            let timeText = '';
+            if (isExpired) {
+              timeText = `Expired on ${expFormatted} (${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago)`;
+            } else if (isToday) {
+              timeText = `Expires TODAY (${expFormatted})`;
+            } else {
+              timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
+            }
+
             alerts.push({
-              type: isExpired ? 'critical' : 'warning',
-              title: 'Certificate ' + (isExpired ? 'Expired' : 'Expiring'),
-              message: `${v.name}: ${cert.regulator || 'Certificate'} is ${isExpired ? 'expired' : 'expiring soon'}.`,
-              icon: 'file-warning'
+              type: isExpired || isToday ? 'critical' : 'warning',
+              title: `Certificate ${isExpired ? 'Expired' : 'Expiring Soon'}: ${certName}`,
+              message: `Vendor: <strong>${v.name}</strong> • ${timeText}${alertDaysNote}.`,
+              icon: isExpired ? 'file-x' : 'file-warning'
             });
           }
         });
       }
       
       // Check Expiries (Quotations)
-      if (v.status === 'Approved' && v.quotedItems) {
+      if (v.status === 'Approved' && Array.isArray(v.quotedItems)) {
         v.quotedItems.forEach(q => {
           if (q.alertDate && q.alertDate <= today) {
-            const isExpired = q.validTill && q.validTill < today;
+            const expIso = q.validTill || q.quotationValidTill || '';
+            const diffDays = expIso ? this.getDaysDiff(expIso, today) : 0;
+            const isExpired = diffDays < 0;
+            const isToday = diffDays === 0;
+            const expFormatted = this.formatDateStr(expIso);
+            const qRef = q.quotationNo ? `Ref ${q.quotationNo}` : (q.materialName ? `for ${q.materialName}` : 'Quotation');
+            const alertDaysNote = q.alertDays ? ` (${q.alertDays}d prior alert)` : '';
+
+            let timeText = '';
+            if (isExpired) {
+              timeText = `Expired on ${expFormatted} (${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago)`;
+            } else if (isToday) {
+              timeText = `Expires TODAY (${expFormatted})`;
+            } else {
+              timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
+            }
+
             alerts.push({
-              type: isExpired ? 'critical' : 'warning',
-              title: 'Quotation ' + (isExpired ? 'Expired' : 'Expiring'),
-              message: `${v.name}: Quotation ${q.quotationNo || ''} is ${isExpired ? 'expired' : 'expiring soon'}.`,
-              icon: 'file-warning'
+              type: isExpired || isToday ? 'critical' : 'warning',
+              title: `Commercial Quotation ${isExpired ? 'Expired' : 'Expiring Soon'}: ${qRef}`,
+              message: `Vendor: <strong>${v.name}</strong> • ${timeText}${alertDaysNote}.`,
+              icon: isExpired ? 'alert-octagon' : 'file-warning'
             });
           }
         });
       }
       
-      // Limited Period
+      // Limited Period Approval
       if (v.status === 'Approved' && v.approvedForLimitedPeriod && v.approvalAlertDate && v.approvalAlertDate <= today) {
-         const isExpired = v.approvalValidTill && v.approvalValidTill < today;
-         alerts.push({
-            type: isExpired ? 'critical' : 'warning',
-            title: 'Vendor Approval ' + (isExpired ? 'Expired' : 'Expiring'),
-            message: `${v.name} limited approval is ${isExpired ? 'expired' : 'expiring soon'}.`,
-            icon: 'shield-alert'
-         });
+        const expIso = v.approvalValidTill || '';
+        const diffDays = expIso ? this.getDaysDiff(expIso, today) : 0;
+        const isExpired = diffDays < 0;
+        const isToday = diffDays === 0;
+        const expFormatted = this.formatDateStr(expIso);
+        const alertDaysNote = v.approvalAlertDays ? ` (${v.approvalAlertDays}d prior alert)` : '';
+
+        let timeText = '';
+        if (isExpired) {
+          timeText = `Expired on ${expFormatted} (${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago)`;
+        } else if (isToday) {
+          timeText = `Expires TODAY (${expFormatted})`;
+        } else {
+          timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
+        }
+
+        alerts.push({
+          type: isExpired || isToday ? 'critical' : 'warning',
+          title: `Vendor Approval ${isExpired ? 'Expired' : 'Expiring Soon'}`,
+          message: `Vendor: <strong>${v.name}</strong> • Limited period approval ${timeText}${alertDaysNote}.`,
+          icon: 'shield-alert'
+        });
       }
     });
+
+    const bellInd = document.getElementById('bell-indicator');
+    if (bellInd) {
+      bellInd.style.display = alerts.length > 0 ? 'block' : 'none';
+    }
 
     if (alerts.length === 0) return '';
 
