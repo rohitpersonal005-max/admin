@@ -3648,11 +3648,11 @@ window.CMS_MASTERS = {
       <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-slate-400 hover:text-red-600 transition" title="Remove row"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
       <div class="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-3 pr-6">
         <div>
-          <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Ref No</label>
+          <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Ref No <span class="text-rose-600 font-bold">*</span></label>
           <input type="text" class="q-no w-full font-mono uppercase font-bold text-blue-600 px-2.5 py-1.5 border border-blue-300 rounded text-xs bg-white" value="${no}" placeholder="e.g. QT-101" />
         </div>
         <div>
-          <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Date</label>
+          <label class="block font-bold text-slate-800 mb-1 text-[10px]">Quotation Date <span class="text-rose-600 font-bold">*</span></label>
           <input type="date" class="q-date w-full font-mono px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${dt}" max="${today}" onchange="CMS_MASTERS.onQuotationDateChange(this)" />
         </div>
         <div>
@@ -3681,7 +3681,7 @@ window.CMS_MASTERS = {
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 mt-2">
         <div class="sm:col-span-6">
-          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Select Existing Material</label>
+          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Select Existing Material <span class="text-rose-600 font-bold">*</span></label>
           <select class="q-mat-id w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white" onchange="const o=this.options[this.selectedIndex]; if(!o.value)return; const r=this.closest('.quote-row'); r.querySelector('.q-mat-name').value=o.dataset.name; r.querySelector('.q-rate').value=o.dataset.rate; r.querySelector('.q-mrp').value=o.dataset.mrp; r.querySelector('.q-unit').value=o.dataset.unit; r.querySelector('.q-hsn').value=o.dataset.hsn;">
             <option value="">-- Choose Existing Material --</option>
             ${(window.CMS_STORE.data.consumables || []).map(m => `<option value="${m.id}" data-name="${m.materialName}" data-rate="${m.quotationRate || m.vendor1Rate || 0}" data-mrp="${m.mrpBooked || ''}" data-unit="${m.unit || 'Nos'}" data-hsn="${m.hsnCode || ''}" ${matId === m.id ? 'selected' : ''}>[${m.inventoryType || 'Consumer'}] ${m.materialName} - Code: ${m.id}</option>`).join('')}
@@ -3694,7 +3694,7 @@ window.CMS_MASTERS = {
           </button>
         </div>
         <div class="col-span-12 sm:col-span-6 flex flex-col justify-end">
-          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Approved Rate</label>
+          <label class="block font-semibold text-slate-700 mb-1 text-[10px]">Approved Rate <span class="text-rose-600 font-bold">*</span></label>
           <input type="number" step="0.01" class="q-rate w-full font-mono font-bold text-blue-600 px-2.5 py-1.5 border border-slate-300 rounded text-xs" value="${rate}" placeholder="0.00" onchange="CMS_MASTERS.checkRateVsMrp(this)" />
         </div>
         <div class="col-span-12 sm:col-span-6 flex flex-col justify-end">
@@ -3717,7 +3717,7 @@ window.CMS_MASTERS = {
         </div>
       </div>
       <div>
-        <label class="block font-bold text-slate-700 mb-1 text-[10px]">Upload Quotation Copy (PDF / Image)</label>
+        <label class="block font-bold text-slate-700 mb-1 text-[10px]">Upload Quotation Copy (PDF / Image) <span class="text-rose-600 font-bold">*</span></label>
         <div class="q-file-wrapper relative w-full">
           <input type="file" class="q-file hidden" data-cms-dropzone="true" accept=".pdf,image/*" data-current="${doc || ''}" onchange="CMS_MASTERS.onRowDropzoneFileChange(this)" />
           
@@ -5050,7 +5050,10 @@ window.CMS_MASTERS = {
       if (sizeEl) sizeEl.textContent = '(' + sizeStr + ')';
       preview.classList.remove('hidden');
     }
-    if (dropzone) dropzone.classList.add('hidden');
+    if (dropzone) {
+      dropzone.classList.remove('border-rose-500', 'bg-rose-50');
+      dropzone.classList.add('hidden');
+    }
 
     try {
       const reader = new FileReader();
@@ -5151,7 +5154,10 @@ window.CMS_MASTERS = {
       if (sizeEl) sizeEl.textContent = '(' + sizeStr + ')';
       preview.classList.remove('hidden');
     }
-    if (dropzone) dropzone.classList.add('hidden');
+    if (dropzone) {
+      dropzone.classList.remove('border-rose-500', 'bg-rose-50');
+      dropzone.classList.add('hidden');
+    }
 
     try {
       const reader = new FileReader();
@@ -5247,6 +5253,7 @@ window.CMS_MASTERS = {
         const clearHandler = () => el.classList.remove('border-rose-500', 'bg-rose-50');
         el.addEventListener('input', clearHandler, { once: true });
         el.addEventListener('change', clearHandler, { once: true });
+        el.addEventListener('click', clearHandler, { once: true });
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (typeof el.focus === 'function') el.focus();
       }
@@ -5442,9 +5449,14 @@ window.CMS_MASTERS = {
     if (step === 3) {
       // 3. Commercial Quotations & Approved Materials
       const quoteRows = document.querySelectorAll('#v-quotations-container .quote-row');
-      for (const row of quoteRows) {
+      if (quoteRows.length === 0) {
+        const quoteBox = document.getElementById('v-quotations-container');
+        return highlightError(quoteBox, 'Please add at least one commercial quotation with rate and quotation copy document.');
+      }
+      for (let idx = 0; idx < quoteRows.length; idx++) {
+        const row = quoteRows[idx];
         const qnoInput = row.querySelector('.q-no');
-        const matSelect = row.querySelector('.q-mat-select');
+        const matSelect = row.querySelector('.q-mat-id');
         const matInput = row.querySelector('.q-mat-name');
         const qno = qnoInput?.value.trim() || '';
         const matName = matInput?.value.trim() || '';
@@ -5457,9 +5469,15 @@ window.CMS_MASTERS = {
         const qRateInput = row.querySelector('.q-rate');
         const rate = parseFloat(qRateInput?.value || '0');
 
-        if (qno || matName || qDate || rate > 0) {
-          if (!qno) return highlightError(qnoInput, 'Quotation Number is mandatory for the quotation row.');
-          if (!matName) return highlightError(matSelect || matInput, 'Please choose or enter the quoted Material / Consumable.');
+        const qFileInput = row.querySelector('.q-file');
+        const hasQFile = Boolean(
+          (qFileInput?.files && qFileInput.files.length > 0) ||
+          (qFileInput?.dataset?.current && qFileInput.dataset.removed !== 'true')
+        );
+
+        if (idx === 0 || qno || matName || qDate || rate > 0 || hasQFile) {
+          if (!qno) return highlightError(qnoInput, 'Quotation Ref Number is mandatory.');
+          if (!matName) return highlightError(matSelect || qnoInput, 'Please choose or enter the quoted Material / Consumable.');
           if (!qDate) return highlightError(qDateInput, 'Quotation Date is mandatory.');
           if (qDate > today) return highlightError(qDateInput, 'Quotation Date cannot be in the future.');
           if (qEff && qEff < qDate) return highlightError(qEffInput, 'Effective Date cannot be older than Quotation Date.');
@@ -5471,6 +5489,10 @@ window.CMS_MASTERS = {
             return highlightError(qValidInput, 'Quotation Valid Till Date cannot be in the past.');
           }
           if (!rate || rate <= 0) return highlightError(qRateInput, 'Please enter a valid quoted Unit Rate (greater than 0).');
+          if (!hasQFile) {
+            const dropzone = row.querySelector('.q-dropzone');
+            return highlightError(dropzone, `Please upload the Quotation Copy document (PDF or Image) for Quotation "${qno}".`);
+          }
         }
       }
 
@@ -5713,11 +5735,25 @@ window.CMS_MASTERS = {
           await window.CMS_FILE_STORE.saveFile(fileInput.files[0].name, dataUrl);
         }
       }
+      if (!docName && fileInput?.dataset?.current && fileInput.dataset.removed !== 'true') {
+        docName = fileInput.dataset.current;
+      }
       if (!docName) {
           const span = row.querySelector('span.text-emerald-700');
           if (span && span.innerText.includes('Attached on record: ')) {
               docName = span.innerText.split('Attached on record: ')[1].trim();
           }
+      }
+      
+      if (directSubmit && !docName) {
+        window.CMS_APP.toast(`Quotation Copy document (PDF or Image) is mandatory for Quotation "${qno || '1'}".`, 'error');
+        this.switchVendorTab(3);
+        const dropzone = row.querySelector('.q-dropzone');
+        if (dropzone) {
+          dropzone.classList.add('border-rose-500', 'bg-rose-50');
+          dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
       }
       
       
@@ -5762,6 +5798,11 @@ window.CMS_MASTERS = {
 
     }
     
+    if (directSubmit && quotedItems.length === 0) {
+      window.CMS_APP.toast('At least one commercial quotation with rate and uploaded quotation copy document is required.', 'error');
+      this.switchVendorTab(3);
+      return;
+    }
     const quotationNo = quotedItems.length > 0 ? quotedItems[0].quotationNo : '';
     const quotationDate = quotedItems.length > 0 ? quotedItems[0].quotationDate : '';
     const quotationValidTill = quotedItems.length > 0 ? quotedItems[0].quotationValidTill : '';

@@ -1057,6 +1057,11 @@ th {
   border-color: #2563eb;
 }
 
+.cms-dropzone.border-rose-500 {
+  border-color: #f43f5e !important;
+  background-color: #fff1f2 !important;
+}
+
 .cms-file-card {
   display: flex;
   align-items: center;
