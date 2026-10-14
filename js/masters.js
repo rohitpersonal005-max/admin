@@ -1568,33 +1568,97 @@ window.CMS_MASTERS = {
     const gstPan = cleanGst.length >= 12 ? cleanGst.substring(2, 12) : (v.panNo || '-');
     const gstSuffix = cleanGst.length >= 15 ? cleanGst.substring(12, 15) : (cleanGst.length > 12 ? cleanGst.substring(12) : '-');
 
-    // Document renderer helper
-    const renderDocPreview = (filename, title, docType) => {
-      if (!filename) {
-        return `<div class="text-[10px] text-slate-400 italic">No document attached</div>`;
+    // Build sequential attachments list matching the registration wizard steps:
+    // Step 2: Statutory & Regulatory -> PAN, GST, Certificates
+    // Step 3: Commercial Quotations
+    // Step 4: Bank Details -> Bank Proof Mandate
+    const attachments = [];
+    const seenFiles = new Set();
+
+    const addAttachment = (item) => {
+      if (!item || !item.filename) return;
+      const fn = String(item.filename).trim();
+      if (!fn) return;
+      if (seenFiles.has(fn)) {
+        const existing = attachments.find(a => a.filename === fn);
+        if (existing && item.extraRef && !existing.extraRef?.includes(item.extraRef)) {
+          existing.extraRef = existing.extraRef ? `${existing.extraRef}, ${item.extraRef}` : item.extraRef;
+        }
+        return;
       }
-      if (isPrint) {
-        return `
-          <div class="mt-1 p-1.5 border border-slate-300 bg-slate-50 text-[10px] rounded flex items-center justify-between">
-            <span class="font-medium text-slate-800 truncate"><strong class="font-bold">${title}:</strong> ${filename}</span>
-            <span class="text-[9px] uppercase font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-1 py-0.2 rounded ml-2 shrink-0">Attached On Record</span>
-          </div>
-        `;
-      }
-      return `
-        <div class="mt-2 mb-3 border border-slate-200 p-2.5 bg-slate-50 rounded">
-          <div class="text-[11px] font-bold text-slate-700 mb-1.5 flex items-center justify-between">
-            <span>${title}: <span class="font-mono font-normal text-slate-600">${filename}</span></span>
-            <span class="text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded uppercase">Submitted Document</span>
-          </div>
-          <div class="doc-preview-container" data-filename="${filename}" data-doctype="${docType || ''}">
-            <div class="text-xs text-slate-400 italic py-2 flex items-center gap-1.5">
-              <span class="animate-pulse">Loading inline document preview...</span>
-            </div>
-          </div>
-        </div>
-      `;
+      seenFiles.add(fn);
+      attachments.push({
+        ...item,
+        filename: fn
+      });
     };
+
+    // 1. Step 2: PAN Card
+    if (v.panCardFile) {
+      addAttachment({
+        filename: v.panCardFile,
+        title: v.panDocTitle || 'PAN Card Copy',
+        category: 'Statutory Identification (PAN)',
+        docType: 'pan'
+      });
+    }
+
+    // 2. Step 2: GST Certificate
+    if (v.gstCertificateFile) {
+      addAttachment({
+        filename: v.gstCertificateFile,
+        title: v.gstDocTitle || 'GST Registration Certificate',
+        category: 'Statutory GSTIN Registration',
+        docType: 'gst'
+      });
+    }
+
+    // 3. Step 2: Regulatory & Compliance Certificates
+    certs.forEach((c) => {
+      if (c && c.fileName) {
+        const certTitle = c.documentName || c.docTitle || (c.regulator ? (c.regulator + (c.certificateNo ? ` (${c.certificateNo})` : '')) : 'Regulatory License');
+        addAttachment({
+          filename: c.fileName,
+          title: certTitle,
+          category: 'Regulatory Compliance / License',
+          docType: 'cert'
+        });
+      }
+    });
+
+    // 4. Step 3: Commercial Quotation Documents
+    quotes.forEach((q) => {
+      if (q && q.doc) {
+        const qTitle = q.docTitle || (q.quotationNo ? `Quotation Ref: ${q.quotationNo}` : (q.materialName ? `Quotation - ${q.materialName}` : 'Commercial Quotation'));
+        addAttachment({
+          filename: q.doc,
+          title: qTitle,
+          category: 'Commercial Quotation',
+          docType: 'quote',
+          extraRef: q.materialName || q.materialId || ''
+        });
+      }
+    });
+
+    // 5. Step 4: Bank Supporting Document
+    if (v.bankDoc) {
+      addAttachment({
+        filename: v.bankDoc,
+        title: v.bankDocTitle || 'Cancelled Cheque / Bank Statement',
+        category: 'Banking Mandate & Remittance Proof',
+        docType: 'bank'
+      });
+    }
+
+    const getAnnexureSeq = (filename) => {
+      if (!filename) return null;
+      const idx = attachments.findIndex(a => a.filename === filename);
+      return idx !== -1 ? idx + 1 : null;
+    };
+
+    const panSeq = getAnnexureSeq(v.panCardFile);
+    const gstSeq = getAnnexureSeq(v.gstCertificateFile);
+    const bankSeq = getAnnexureSeq(v.bankDoc);
 
     return `
       <div id="vendor-paper-form" data-vendor-id="${v.id}" class="space-y-5 text-xs bg-white ${isPrint ? 'p-2' : 'p-6 border border-slate-200 shadow-sm'} text-slate-800">
@@ -1633,7 +1697,7 @@ window.CMS_MASTERS = {
         <div class="border border-slate-300 rounded overflow-hidden">
           <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
             <span>1. Organization & General Business Particulars</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 1 of 6</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 1 of 8</span>
           </div>
           <table class="w-full text-xs border-collapse">
             <tbody>
@@ -1675,7 +1739,7 @@ window.CMS_MASTERS = {
         <div class="border border-slate-300 rounded overflow-hidden">
           <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
             <span>2. Statutory Tax & Identification Credentials</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 2 of 6</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 2 of 8</span>
           </div>
           <table class="w-full text-xs border-collapse">
             <tbody>
@@ -1684,7 +1748,20 @@ window.CMS_MASTERS = {
                 <td class="w-1/4 p-2 border-r border-slate-200">
                   <div class="font-mono font-bold text-sm text-slate-900">${v.panNotApplicable ? 'EXEMPT / NOT APPLICABLE' : (v.panNo || 'Not Recorded')}</div>
                   <div class="text-[10px] text-slate-500">${v.panNotApplicable ? 'Exempt under IT Rules' : 'Income Tax Department PAN'}</div>
-                  ${renderDocPreview(v.panCardFile, v.panDocTitle || 'PAN Card Copy', 'pan')}
+                  <div class="mt-1.5 pt-1.5 border-t border-slate-200 text-[10px]">
+                    <div class="flex items-center justify-between">
+                      <span class="text-slate-500 font-medium">Attached Proof:</span>
+                      ${v.panCardFile ? `
+                        <span class="text-[9px] font-bold text-blue-800 bg-blue-100 border border-blue-200 px-1.5 py-0.2 rounded font-mono">
+                          Annexure Doc #${panSeq}
+                        </span>
+                      ` : ''}
+                    </div>
+                    ${v.panCardFile ? `
+                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${v.panCardFile}">${v.panCardFile}</div>
+                      <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
+                    ` : `<div class="text-slate-400 italic mt-0.5">${v.panNotApplicable ? 'Not Applicable (Exempt)' : 'No document attached'}</div>`}
+                  </div>
                 </td>
                 <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">GSTIN Registration No.</td>
                 <td class="w-1/4 p-2">
@@ -1692,7 +1769,20 @@ window.CMS_MASTERS = {
                   ${!v.gstNotApplicable && v.gstNo ? `
                     <div class="text-[10px] text-slate-500 font-mono mt-0.5">State: <strong>${gstState}</strong> | PAN: <strong>${gstPan}</strong> | Suffix: <strong>${gstSuffix}</strong></div>
                   ` : `<div class="text-[10px] text-slate-500">Exempt from GST under threshold/category</div>`}
-                  ${renderDocPreview(v.gstCertificateFile, v.gstDocTitle || 'GST Registration Certificate', 'gst')}
+                  <div class="mt-1.5 pt-1.5 border-t border-slate-200 text-[10px]">
+                    <div class="flex items-center justify-between">
+                      <span class="text-slate-500 font-medium">Attached Certificate:</span>
+                      ${v.gstCertificateFile ? `
+                        <span class="text-[9px] font-bold text-blue-800 bg-blue-100 border border-blue-200 px-1.5 py-0.2 rounded font-mono">
+                          Annexure Doc #${gstSeq}
+                        </span>
+                      ` : ''}
+                    </div>
+                    ${v.gstCertificateFile ? `
+                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${v.gstCertificateFile}">${v.gstCertificateFile}</div>
+                      <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
+                    ` : `<div class="text-slate-400 italic mt-0.5">${v.gstNotApplicable ? 'Not Applicable (Exempt)' : 'No document attached'}</div>`}
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -1703,7 +1793,7 @@ window.CMS_MASTERS = {
         <div class="border border-slate-300 rounded overflow-hidden">
           <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
             <span>3. Banking & Remittance Particulars (PFMS / RTGS / NEFT)</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 3 of 6</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 3 of 8</span>
           </div>
           <table class="w-full text-xs border-collapse">
             <tbody>
@@ -1724,8 +1814,21 @@ window.CMS_MASTERS = {
                 <td class="p-2 font-mono font-bold text-slate-900 border-r border-slate-200">${v.ifscCode || '-'}</td>
                 <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Bank Verification Proof</td>
                 <td class="p-2">
-                  <div class="text-[11px] font-medium text-slate-800">${v.bankDocTitle || 'Cancelled Cheque / Bank Statement'}</div>
-                  ${renderDocPreview(v.bankDoc, v.bankDocTitle || 'Bank Document', 'bank')}
+                  <div class="text-[11px] font-bold text-slate-800">${v.bankDocTitle || 'Cancelled Cheque / Bank Statement'}</div>
+                  <div class="mt-1 pt-1 border-t border-slate-200 text-[10px]">
+                    <div class="flex items-center justify-between">
+                      <span class="text-slate-500 font-medium">Document File:</span>
+                      ${v.bankDoc ? `
+                        <span class="text-[9px] font-bold text-blue-800 bg-blue-100 border border-blue-200 px-1.5 py-0.2 rounded font-mono">
+                          Annexure Doc #${bankSeq}
+                        </span>
+                      ` : ''}
+                    </div>
+                    ${v.bankDoc ? `
+                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${v.bankDoc}">${v.bankDoc}</div>
+                      <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
+                    ` : `<div class="text-slate-400 italic mt-0.5">No document attached</div>`}
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -1736,7 +1839,7 @@ window.CMS_MASTERS = {
         <div class="border border-slate-300 rounded overflow-hidden">
           <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
             <span>4. Commercial Quotations & Approved Material Catalog</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 4 of 6 (${quotes.length} Items)</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 4 of 8 (${quotes.length} Items)</span>
           </div>
           ${quotes.length === 0 ? `
             <div class="p-4 text-center text-slate-400 italic text-xs">No commercial quotations or approved materials recorded.</div>
@@ -1756,33 +1859,37 @@ window.CMS_MASTERS = {
                 </tr>
               </thead>
               <tbody>
-                ${quotes.map((q, idx) => `
-                  <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
-                    <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${idx + 1}</td>
-                    <td class="p-2 border-r border-slate-200">
-                      <div class="font-bold text-slate-900">${q.materialName || q.materialId || '-'}</div>
-                      <div class="text-[10px] text-slate-500 font-mono">${q.materialId || ''}</div>
-                    </td>
-                    <td class="p-2 border-r border-slate-200 text-center font-mono">${q.hsn || '-'}</td>
-                    <td class="p-2 border-r border-slate-200 text-center font-semibold">${q.unit || 'Nos'}</td>
-                    <td class="p-2 border-r border-slate-200 text-right font-mono font-bold text-slate-900">₹${Number(q.rate || 0).toFixed(2)}</td>
-                    <td class="p-2 border-r border-slate-200 text-right font-mono text-slate-600">${q.mrpNotApplicable || !q.mrp ? 'N/A' : '₹' + Number(q.mrp).toFixed(2)}</td>
-                    <td class="p-2 border-r border-slate-200">
-                      <div class="font-semibold text-slate-800">${q.quotationNo || 'Direct Quote'}</div>
-                      <div class="text-[10px] text-slate-500 font-mono">Date: ${formatDate(q.quotationDate)}</div>
-                    </td>
-                    <td class="p-2 border-r border-slate-200">
-                      <div class="text-[10px] text-slate-700">Valid Till: <strong class="font-mono">${formatDate(q.validTill || q.quotationValidTill)}</strong></div>
-                      ${q.alertDays ? `<div class="text-[9px] text-slate-500">Alert: ${q.alertDays}d prior (${formatDate(q.alertDate)})</div>` : ''}
-                    </td>
-                    <td class="p-2">
-                      ${q.doc ? `
-                        <div class="text-[10px] text-slate-700 font-mono truncate" title="${q.doc}">${q.doc}</div>
-                        ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${q.doc}')" class="text-[10px] text-blue-600 hover:underline">View File</button>` : ''}
-                      ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
-                    </td>
-                  </tr>
-                `).join('')}
+                ${quotes.map((q, idx) => {
+                  const qSeq = getAnnexureSeq(q.doc);
+                  return `
+                    <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
+                      <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${idx + 1}</td>
+                      <td class="p-2 border-r border-slate-200">
+                        <div class="font-bold text-slate-900">${q.materialName || q.materialId || '-'}</div>
+                        <div class="text-[10px] text-slate-500 font-mono">${q.materialId || ''}</div>
+                      </td>
+                      <td class="p-2 border-r border-slate-200 text-center font-mono">${q.hsn || '-'}</td>
+                      <td class="p-2 border-r border-slate-200 text-center font-semibold">${q.unit || 'Nos'}</td>
+                      <td class="p-2 border-r border-slate-200 text-right font-mono font-bold text-slate-900">₹${Number(q.rate || 0).toFixed(2)}</td>
+                      <td class="p-2 border-r border-slate-200 text-right font-mono text-slate-600">${q.mrpNotApplicable || !q.mrp ? 'N/A' : '₹' + Number(q.mrp).toFixed(2)}</td>
+                      <td class="p-2 border-r border-slate-200">
+                        <div class="font-semibold text-slate-800">${q.quotationNo || 'Direct Quote'}</div>
+                        <div class="text-[10px] text-slate-500 font-mono">Date: ${formatDate(q.quotationDate)}</div>
+                      </td>
+                      <td class="p-2 border-r border-slate-200">
+                        <div class="text-[10px] text-slate-700">Valid Till: <strong class="font-mono">${formatDate(q.validTill || q.quotationValidTill)}</strong></div>
+                        ${q.alertDays ? `<div class="text-[9px] text-slate-500">Alert: ${q.alertDays}d prior (${formatDate(q.alertDate)})</div>` : ''}
+                      </td>
+                      <td class="p-2">
+                        ${q.doc ? `
+                          <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${q.doc}">${q.doc}</div>
+                          ${qSeq ? `<div class="text-[9px] text-blue-700 font-bold">Annexure #${qSeq}</div>` : ''}
+                          ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${q.doc}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
+                        ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
               </tbody>
             </table>
           `}
@@ -1792,7 +1899,7 @@ window.CMS_MASTERS = {
         <div class="border border-slate-300 rounded overflow-hidden">
           <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
             <span>5. Regulatory Licenses & Quality Accreditations</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 5 of 6 (${certs.length} Certificates)</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 5 of 8 (${certs.length} Certificates)</span>
           </div>
           ${certs.length === 0 ? `
             <div class="p-4 text-center text-slate-400 italic text-xs">No regulatory compliance certificates or quality accreditations recorded.</div>
@@ -1811,23 +1918,27 @@ window.CMS_MASTERS = {
                 </tr>
               </thead>
               <tbody>
-                ${certs.map((c, idx) => `
-                  <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
-                    <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${idx + 1}</td>
-                    <td class="p-2 border-r border-slate-200 font-bold text-slate-900">${c.regulator || c.name || 'Statutory Certificate'}</td>
-                    <td class="p-2 border-r border-slate-200 text-center font-mono text-slate-600">${c.formNo || '-'}</td>
-                    <td class="p-2 border-r border-slate-200 font-mono font-medium text-slate-800">${c.certificateNo || '-'}</td>
-                    <td class="p-2 border-r border-slate-200 text-center font-semibold ${c.hasValidity ? 'text-amber-800' : 'text-emerald-800'}">${c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
-                    <td class="p-2 border-r border-slate-200 font-mono">${c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
-                    <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">${c.hasValidity && c.alertDate ? formatDate(c.alertDate) : '-'}</td>
-                    <td class="p-2">
-                      ${c.fileName ? `
-                        <div class="text-[10px] text-slate-700 font-mono truncate" title="${c.fileName}">${c.fileName}</div>
-                        ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${c.fileName}')" class="text-[10px] text-blue-600 hover:underline">View File</button>` : ''}
-                      ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
-                    </td>
-                  </tr>
-                `).join('')}
+                ${certs.map((c, idx) => {
+                  const cSeq = getAnnexureSeq(c.fileName);
+                  return `
+                    <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
+                      <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${idx + 1}</td>
+                      <td class="p-2 border-r border-slate-200 font-bold text-slate-900">${c.regulator || c.name || 'Statutory Certificate'}</td>
+                      <td class="p-2 border-r border-slate-200 text-center font-mono text-slate-600">${c.formNo || '-'}</td>
+                      <td class="p-2 border-r border-slate-200 font-mono font-medium text-slate-800">${c.certificateNo || '-'}</td>
+                      <td class="p-2 border-r border-slate-200 text-center font-semibold ${c.hasValidity ? 'text-amber-800' : 'text-emerald-800'}">${c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
+                      <td class="p-2 border-r border-slate-200 font-mono">${c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
+                      <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">${c.hasValidity && c.alertDate ? formatDate(c.alertDate) : '-'}</td>
+                      <td class="p-2">
+                        ${c.fileName ? `
+                          <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${c.fileName}">${c.fileName}</div>
+                          ${cSeq ? `<div class="text-[9px] text-blue-700 font-bold">Annexure #${cSeq}</div>` : ''}
+                          ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${c.fileName}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
+                        ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
               </tbody>
             </table>
           `}
@@ -1837,7 +1948,7 @@ window.CMS_MASTERS = {
         <div class="border border-slate-300 rounded overflow-hidden">
           <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
             <span>6. Administrative Governance, Sanction & Audit Trail</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 6 of 6</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 6 of 8</span>
           </div>
           <table class="w-full text-xs border-collapse">
             <tbody>
@@ -1888,6 +1999,11 @@ window.CMS_MASTERS = {
 
         <!-- 7. Undertaking & Tri-Partite Authorization Signatures -->
         <div class="border border-slate-300 rounded p-4 bg-slate-50/50 space-y-4">
+          <div class="bg-slate-100 -mx-4 -mt-4 mb-3 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>7. Undertaking & Tri-Partite Authorization Signatures</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 7 of 8</span>
+          </div>
+
           <div class="text-[11px] text-slate-600 leading-relaxed italic border-b border-slate-200 pb-2.5">
             <strong>Statutory Undertaking:</strong> We hereby solemnly affirm and certify that all particulars, statutory registrations, bank credentials, and commercial quotations recorded in this registration form are true, correct, and legally valid. Any misrepresentation shall render this empanelment immediately null and void.
           </div>
@@ -1926,6 +2042,93 @@ window.CMS_MASTERS = {
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 8. Attached Supporting Documents & Statutory Scans (Annexures) -->
+        <div class="border border-slate-300 rounded overflow-hidden mt-6 ${isPrint ? 'break-before-page' : ''}">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span>8. Attached Supporting Documents & Statutory Scans (Annexures)</span>
+              <span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">${attachments.length} ${attachments.length === 1 ? 'Attachment' : 'Attachments'}</span>
+            </div>
+            <span class="text-[10px] text-slate-500 font-normal">Section 8 of 8</span>
+          </div>
+
+          ${attachments.length === 0 ? `
+            <div class="p-6 text-center text-slate-400 italic text-xs bg-white">
+              No physical or digital supporting documents attached with this vendor registration.
+            </div>
+          ` : `
+            <div class="p-4 bg-white space-y-6">
+              <div class="text-[11px] text-slate-600 leading-relaxed bg-slate-50 border border-slate-200 rounded p-2.5">
+                <strong>Sequential Document Annexures:</strong> All supporting statutory records, regulatory accreditations, commercial quotes, and bank verification mandates are appended below in the exact sequential order of their upload during registration.
+              </div>
+
+              ${attachments.map((att, index) => {
+                const seq = index + 1;
+                const cachedData = options.fileCache ? options.fileCache[att.filename] : null;
+                const isImage = cachedData ? (cachedData.startsWith('data:image') || cachedData.match(/\.(png|jpg|jpeg|gif)$/i)) : att.filename.match(/\.(png|jpg|jpeg|gif)$/i);
+
+                return `
+                  <div class="border border-slate-300 rounded bg-white overflow-hidden shadow-2xs ${isPrint ? 'break-inside-avoid my-4' : ''}">
+                    <!-- Document Header Bar with User Title -->
+                    <div class="bg-slate-100 px-3 py-2 border-b border-slate-300 flex flex-wrap items-center justify-between gap-2">
+                      <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="inline-flex items-center justify-center w-6 h-6 bg-slate-800 text-white text-[11px] font-bold rounded-full shrink-0 font-mono">
+                          ${seq}
+                        </span>
+                        <div>
+                          <div class="text-xs font-bold text-slate-900 tracking-tight uppercase flex items-center gap-2">
+                            <span>${att.title}</span>
+                          </div>
+                          <div class="text-[10px] text-slate-500 font-mono mt-0.5 flex items-center gap-2">
+                            <span>Filename: <strong class="text-slate-800">${att.filename}</strong></span>
+                            ${att.extraRef ? `<span class="text-slate-400">| Covers: ${att.extraRef}</span>` : ''}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[9px] uppercase font-bold text-blue-800 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded">
+                          ${att.category}
+                        </span>
+                        <span class="text-[10px] font-mono font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                          Annexure #${seq}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Document Body / Scan Preview -->
+                    <div class="p-3 bg-white">
+                      ${isPrint ? `
+                        ${isImage && cachedData ? `
+                          <div class="text-center py-2">
+                            <img src="${cachedData}" alt="${att.title}" class="max-w-full max-h-[750px] mx-auto border border-slate-300 rounded object-contain shadow-xs" />
+                          </div>
+                        ` : `
+                          <div class="p-3.5 border border-slate-200 bg-slate-50 rounded text-xs flex items-center justify-between">
+                            <div class="space-y-0.5">
+                              <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                                <span class="font-mono text-blue-900">[Attached Digital Document: ${att.filename}]</span>
+                              </div>
+                              <div class="text-[10px] text-slate-500">Official document scan verified and held in digital vault. Electronic record reference: CMS/VRF/${v.id}/ANNEX-${seq}.</div>
+                            </div>
+                            <span class="text-[9px] uppercase font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-1 rounded shrink-0">Attached On Record</span>
+                          </div>
+                        `}
+                      ` : `
+                        <div class="doc-preview-container" data-filename="${att.filename}" data-doctype="${att.docType}" data-title="${att.title}">
+                          <div class="text-xs text-slate-400 italic py-4 flex items-center justify-center gap-2 bg-slate-50 rounded border border-slate-200">
+                            <span class="animate-pulse">Loading document preview (${att.filename})...</span>
+                          </div>
+                        </div>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `}
         </div>
 
         <!-- Document Footer -->
@@ -1970,6 +2173,14 @@ window.CMS_MASTERS = {
     th, td {
       vertical-align: top;
     }
+    .break-before-page {
+      page-break-before: always;
+      break-before: page;
+    }
+    .break-inside-avoid {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     @media print {
       .no-print {
         display: none !important;
@@ -2002,10 +2213,37 @@ window.CMS_MASTERS = {
 </html>`;
   },
 
-  openVendorPrintWindow(vendorId) {
+  async openVendorPrintWindow(vendorId) {
     const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
     if (!v) return;
-    const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true });
+
+    // Prefetch files into fileCache for standalone print window
+    const fileCache = {};
+    const filesToLoad = [];
+    if (v.panCardFile) filesToLoad.push(v.panCardFile);
+    if (v.gstCertificateFile) filesToLoad.push(v.gstCertificateFile);
+    if (v.bankDoc) filesToLoad.push(v.bankDoc);
+    if (Array.isArray(v.certificates)) {
+      v.certificates.forEach(c => { if (c && c.fileName) filesToLoad.push(c.fileName); });
+    }
+    if (Array.isArray(v.quotedItems)) {
+      v.quotedItems.forEach(q => { if (q && q.doc) filesToLoad.push(q.doc); });
+    }
+
+    for (const f of filesToLoad) {
+      if (f && !fileCache[f]) {
+        let dataUrl = null;
+        if (window.CMS_FILE_STORE) {
+          dataUrl = await window.CMS_FILE_STORE.getFile(f);
+        }
+        if (!dataUrl) {
+          dataUrl = localStorage.getItem('CMS_FILE_' + f);
+        }
+        if (dataUrl) fileCache[f] = dataUrl;
+      }
+    }
+
+    const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true, fileCache });
     const fullPrintDoc = this.buildVendorPrintDocument(v, paperHtml);
     const win = window.open('', '_blank', 'width=1000,height=900');
     if (win) {
@@ -2076,48 +2314,52 @@ window.CMS_MASTERS = {
         }
         if (dataUrl) {
           if (dataUrl.startsWith('data:image') || dataUrl.match(/\.(png|jpg|jpeg|gif)$/i)) {
-            container.innerHTML = `<img src="${dataUrl}" class="w-full max-w-lg mb-4 border border-slate-200 shadow-sm" alt="${filename}" />`;
+            container.innerHTML = `
+              <div class="text-center py-2">
+                <img src="${dataUrl}" class="max-w-full max-h-[600px] mx-auto border border-slate-200 rounded shadow-xs object-contain" alt="${filename}" />
+                <div class="mt-2 flex justify-end">
+                  <button type="button" onclick="CMS_APP.previewFile('${filename}')" class="px-2.5 py-1 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition inline-flex items-center gap-1 cursor-pointer">
+                    <i data-lucide="maximize-2" class="w-3 h-3"></i> Full Screen
+                  </button>
+                </div>
+              </div>`;
           } else if (dataUrl.startsWith('data:application/pdf') || dataUrl.match(/\.pdf$/i) || dataUrl.includes('supabase')) {
-            container.innerHTML = `<iframe src="${dataUrl}" class="w-full h-96 border border-slate-200 shadow-sm"></iframe>`;
+            container.innerHTML = `
+              <div class="w-full">
+                <iframe src="${dataUrl}" class="w-full h-96 border border-slate-200 rounded shadow-xs"></iframe>
+                <div class="mt-2 flex justify-end">
+                  <button type="button" onclick="CMS_APP.previewFile('${filename}')" class="px-2.5 py-1 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition inline-flex items-center gap-1 cursor-pointer">
+                    <i data-lucide="external-link" class="w-3 h-3"></i> Open PDF in Tab
+                  </button>
+                </div>
+              </div>`;
           } else {
-            container.innerHTML = `<div class="text-xs text-amber-600 italic">Unsupported document format. Cannot preview inline.</div>`;
+            container.innerHTML = `<div class="text-xs text-amber-600 italic p-3 bg-amber-50 rounded border border-amber-200">Unsupported document format (${filename}). Cannot preview inline.</div>`;
           }
+          if (window.lucide) window.lucide.createIcons();
         } else {
+          const docTitle = container.getAttribute('data-title') || filename;
           const isGst = filename.includes('GST_Certificate') || filename.includes('GST');
           const isPan = filename.includes('PAN_Card') || filename.includes('PAN');
+          const isBank = filename.includes('Bank') || filename.includes('Cheque') || filename.includes('Passbook');
           const gstNum = v.gstNo || filename.replace(/_GST_Certificate\.pdf/i, '');
           const panNum = v.panNo || filename.replace(/_PAN_Card\.pdf/i, '');
-          
-          if (isGst || isPan) {
-            container.innerHTML = `
-              <div class="p-3 bg-amber-50 border border-amber-200 rounded text-xs space-y-1.5">
-                <div class="flex items-center gap-1.5 font-bold text-amber-900">
-                  <i data-lucide="info" class="w-3.5 h-3.5 text-amber-600"></i>
-                  <span>Electronic Statutory Record (${isGst ? 'GSTIN: ' + gstNum : 'PAN: ' + panNum})</span>
-                </div>
-                <p class="text-[11px] text-amber-800">Physical document scan was not attached during registration. Statutory credentials were submitted electronically.</p>
-                <div class="pt-1">
-                  <label class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-50 border border-amber-300 text-amber-900 rounded font-bold text-[11px] cursor-pointer shadow-xs transition">
-                    <i data-lucide="upload" class="w-3 h-3 text-amber-700"></i>
-                    <span>Attach & Upload Document Now</span>
-                    <input type="file" accept=".pdf,image/*" class="hidden" onchange="CMS_MASTERS.uploadMissingDoc('${v.id}', '${isGst ? 'gst' : 'pan'}', this)" />
-                  </label>
-                </div>
+          const docType = container.getAttribute('data-doctype') || (isGst ? 'gst' : isPan ? 'pan' : isBank ? 'bank' : filename);
+
+          container.innerHTML = `
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded text-xs flex items-center justify-between">
+              <div>
+                <span class="font-bold text-slate-800">${docTitle}</span>
+                <span class="text-slate-500 font-mono ml-2">(${filename})</span>
+                <div class="text-[10px] text-slate-400 mt-0.5">Physical document scan was not cached locally.</div>
               </div>
-            `;
-            if (window.lucide) window.lucide.createIcons();
-          } else {
-            container.innerHTML = `
-              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded text-xs text-slate-500 flex items-center justify-between">
-                <span>Document not cached locally (<strong>${filename}</strong>)</span>
-                <label class="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-300 rounded font-bold text-[11px] text-slate-700 cursor-pointer hover:bg-slate-50 transition">
-                  <i data-lucide="upload" class="w-3 h-3 text-blue-600"></i> Upload File
-                  <input type="file" accept=".pdf,image/*" class="hidden" onchange="CMS_MASTERS.uploadMissingDoc('${v.id}', '${filename}', this)" />
-                </label>
-              </div>
-            `;
-            if (window.lucide) window.lucide.createIcons();
-          }
+              <label class="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-300 rounded font-bold text-[11px] text-slate-700 cursor-pointer hover:bg-slate-50 transition shadow-2xs shrink-0">
+                <i data-lucide="upload" class="w-3 h-3 text-blue-600"></i> Upload File
+                <input type="file" accept=".pdf,image/*" class="hidden" onchange="CMS_MASTERS.uploadMissingDoc('${v.id}', '${docType}', this)" />
+              </label>
+            </div>
+          `;
+          if (window.lucide) window.lucide.createIcons();
         }
       });
     }, 100);
@@ -2230,7 +2472,7 @@ window.CMS_MASTERS = {
     }
   },
 
-  downloadVendorForm(vendorId = null) {
+  async downloadVendorForm(vendorId = null) {
     const formEl = document.getElementById('vendor-paper-form');
     const targetId = vendorId || (formEl ? formEl.getAttribute('data-vendor-id') : null);
     const v = (targetId && window.CMS_STORE && window.CMS_STORE.data && window.CMS_STORE.data.vendors)
@@ -2242,7 +2484,33 @@ window.CMS_MASTERS = {
       return;
     }
 
-    const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true });
+    // Prefetch files into fileCache for standalone print
+    const fileCache = {};
+    const filesToLoad = [];
+    if (v.panCardFile) filesToLoad.push(v.panCardFile);
+    if (v.gstCertificateFile) filesToLoad.push(v.gstCertificateFile);
+    if (v.bankDoc) filesToLoad.push(v.bankDoc);
+    if (Array.isArray(v.certificates)) {
+      v.certificates.forEach(c => { if (c && c.fileName) filesToLoad.push(c.fileName); });
+    }
+    if (Array.isArray(v.quotedItems)) {
+      v.quotedItems.forEach(q => { if (q && q.doc) filesToLoad.push(q.doc); });
+    }
+
+    for (const f of filesToLoad) {
+      if (f && !fileCache[f]) {
+        let dataUrl = null;
+        if (window.CMS_FILE_STORE) {
+          dataUrl = await window.CMS_FILE_STORE.getFile(f);
+        }
+        if (!dataUrl) {
+          dataUrl = localStorage.getItem('CMS_FILE_' + f);
+        }
+        if (dataUrl) fileCache[f] = dataUrl;
+      }
+    }
+
+    const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true, fileCache });
     const fullPrintDoc = this.buildVendorPrintDocument(v, paperHtml);
 
     // Primary: Open dedicated print window (standard established pattern in CMS_PRINT)
