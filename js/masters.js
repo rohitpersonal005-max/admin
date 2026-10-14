@@ -1244,7 +1244,7 @@ window.CMS_MASTERS = {
     return sortedList.map(v => {
       const isBlocked = Boolean(v.isBlocked);
       const isPending = v.status === 'Pending Approval';
-      const isRevision = v.status === 'Revision Required';
+      const isRevision = v.status === 'Revision Required' || v.status === 'Rejected';
       const isApproved = v.status === 'Approved' || Boolean(v.isApproved);
       const stateInfo = this.getStateInfo(v.addressState);
 
@@ -1345,13 +1345,18 @@ window.CMS_MASTERS = {
             ` : ''}
 
             <!-- Checker Governance Actions: Sanction or Reject with Mistake Remark -->
-            ${(isPending || isRevision) && role === 'Admin' ? `
+            ${isPending && role === 'Admin' ? `
               <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition shadow-sm" title="Sanction Vendor">
                 Approve
               </button>
               <button onclick="CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-sm transition" title="Reject / Return for Revision">
                 Reject
               </button>
+            ` : isRevision && role === 'Admin' ? `
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm" title="${v.checkerMistakeRemark ? `Reported Mistake: ${v.checkerMistakeRemark}` : 'Admin Rejected'}">
+                <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
+                <span>Admin Rejected</span>
+              </span>
             ` : ''}
 
             <!-- Ban / Blacklist with confirmation prompt (Checker only) -->
@@ -3155,7 +3160,7 @@ window.CMS_MASTERS = {
               <span>${v.status === 'Revision Required' ? 'Edit & Fix Form' : 'Edit Form'}</span>
             </button>
           ` : ''}
-          ${(v.status === 'Pending Approval' || v.status === 'Revision Required') && role === 'Admin' ? `
+          ${v.status === 'Pending Approval' && role === 'Admin' ? `
             <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorRejectModal('${v.id}');" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition inline-flex items-center gap-1.5 text-xs">
               <i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i>
               <span>Reject / Return</span>
@@ -3164,6 +3169,11 @@ window.CMS_MASTERS = {
               <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
               <span>Sanction / Approve</span>
             </button>
+          ` : (v.status === 'Revision Required' || v.status === 'Rejected') && role === 'Admin' ? `
+            <span class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm" title="${v.checkerMistakeRemark ? `Reported Mistake: ${v.checkerMistakeRemark}` : 'Admin Rejected'}">
+              <i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i>
+              <span>Admin Rejected</span>
+            </span>
           ` : ''}
           <button onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-sm transition text-xs">
             Close
@@ -6975,13 +6985,18 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
       </button>
     ` : ''}
-                        ${(m.status === 'Pending Approval' || m.status === 'Revision Required') && role === 'Admin' ? `
+                        ${m.status === 'Pending Approval' && role === 'Admin' ? `
       <button onclick="CMS_MASTERS.openConsumableSanctionModal('${m.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition shadow-sm" title="Sanction Material">
         Approve
       </button>
       <button onclick="CMS_MASTERS.openConsumableRejectModal('${m.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-sm transition" title="Reject / Request Revision">
         Reject
       </button>
+    ` : (m.status === 'Revision Required' || m.status === 'Rejected') && role === 'Admin' ? `
+      <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm" title="${m.checkerMistakeRemark ? `Reported Mistake: ${m.checkerMistakeRemark}` : 'Admin Rejected'}">
+        <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
+        <span>Admin Rejected</span>
+      </span>
     ` : ''}
                         
                       </td>
