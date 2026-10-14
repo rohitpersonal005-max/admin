@@ -1638,12 +1638,80 @@ window.CMS_MASTERS = {
             container.innerHTML = `<div class="text-xs text-amber-600 italic">Unsupported document format. Cannot preview inline.</div>`;
           }
         } else {
-          container.innerHTML = `<div class="text-xs text-slate-400 italic">Document not available.</div>`;
+          const isGst = filename.includes('GST_Certificate') || filename.includes('GST');
+          const isPan = filename.includes('PAN_Card') || filename.includes('PAN');
+          const gstNum = v.gstNo || filename.replace(/_GST_Certificate\.pdf/i, '');
+          const panNum = v.panNo || filename.replace(/_PAN_Card\.pdf/i, '');
+          
+          if (isGst || isPan) {
+            container.innerHTML = `
+              <div class="p-3 bg-amber-50 border border-amber-200 rounded text-xs space-y-1.5">
+                <div class="flex items-center gap-1.5 font-bold text-amber-900">
+                  <i data-lucide="info" class="w-3.5 h-3.5 text-amber-600"></i>
+                  <span>Electronic Statutory Record (${isGst ? 'GSTIN: ' + gstNum : 'PAN: ' + panNum})</span>
+                </div>
+                <p class="text-[11px] text-amber-800">Physical document scan was not attached during registration. Statutory credentials were submitted electronically.</p>
+                <div class="pt-1">
+                  <label class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-slate-50 border border-amber-300 text-amber-900 rounded font-bold text-[11px] cursor-pointer shadow-xs transition">
+                    <i data-lucide="upload" class="w-3 h-3 text-amber-700"></i>
+                    <span>Attach & Upload Document Now</span>
+                    <input type="file" accept=".pdf,image/*" class="hidden" onchange="CMS_MASTERS.uploadMissingDoc('${v.id}', '${isGst ? 'gst' : 'pan'}', this)" />
+                  </label>
+                </div>
+              </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+          } else {
+            container.innerHTML = `
+              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded text-xs text-slate-500 flex items-center justify-between">
+                <span>Document not cached locally (<strong>${filename}</strong>)</span>
+                <label class="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-300 rounded font-bold text-[11px] text-slate-700 cursor-pointer hover:bg-slate-50 transition">
+                  <i data-lucide="upload" class="w-3 h-3 text-blue-600"></i> Upload File
+                  <input type="file" accept=".pdf,image/*" class="hidden" onchange="CMS_MASTERS.uploadMissingDoc('${v.id}', '${filename}', this)" />
+                </label>
+              </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+          }
         }
       });
     }, 100);
 
     if (window.lucide) window.lucide.createIcons();
+  },
+
+
+  async uploadMissingDoc(vendorId, docType, fileInput) {
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = e.target.result;
+      const store = window.CMS_STORE;
+      const v = store.data.vendors.find(i => i.id === vendorId);
+      if (!v) return;
+
+      if (window.CMS_FILE_STORE) {
+        await window.CMS_FILE_STORE.saveFile(file.name, dataUrl);
+      }
+
+      if (docType === 'gst') {
+        v.gstCertificateFile = file.name;
+      } else if (docType === 'pan') {
+        v.panCardFile = file.name;
+      } else if (docType === 'bank') {
+        v.bankDoc = file.name;
+      } else {
+        if (v.gstCertificateFile === docType) v.gstCertificateFile = file.name;
+        if (v.panCardFile === docType) v.panCardFile = file.name;
+        if (v.bankDoc === docType) v.bankDoc = file.name;
+      }
+
+      store.save();
+      window.CMS_APP.toast('Document uploaded and synchronized with cloud successfully!', 'success');
+      CMS_MASTERS.viewVendorProfile(vendorId);
+    };
+    reader.readAsDataURL(file);
   },
 
   toggleMrp(checkbox) {
@@ -3390,13 +3458,7 @@ window.CMS_MASTERS = {
     let gstCertificateFile = (gstFileInput?.files?.[0]) ? gstFileInput.files[0].name : (existingVendor?.gstCertificateFile || '');
     let panCardFile = (panFileInput?.files?.[0]) ? panFileInput.files[0].name : (existingVendor?.panCardFile || '');
 
-    // Fallback document filenames for records if user did not pick a local disk file
-    if (!gstNotApplicable && gstNo && !gstCertificateFile) {
-      gstCertificateFile = `${gstNo}_GST_Certificate.pdf`;
-    }
-    if (!panNotApplicable && panNo && !panCardFile) {
-      panCardFile = `${panNo}_PAN_Card.pdf`;
-    }
+    // If no physical file was chosen from disk, keep empty or preserve existing - do not invent fake filenames
 
     // Bank Details
     const bankName = document.getElementById('v-bank-name')?.value.trim() || '';

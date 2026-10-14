@@ -33,49 +33,59 @@ window.CMS_FILE_STORE = {
     this.cache.set(name, dataUrl);
     try {
       const db = await this.getDB();
-      if (!db) return;
-      return new Promise((resolve) => {
+      if (db) {
         const tx = db.transaction('files', 'readwrite');
         const store = tx.objectStore('files');
-        const putReq = store.put(dataUrl, name);
-        putReq.onsuccess = () => resolve(true);
-        putReq.onerror = () => {
-          console.warn('IndexedDB put error:', putReq.error);
-          resolve(false);
-        };
-      });
+        store.put(dataUrl, name);
+      }
     } catch (err) {
       console.warn('IndexedDB save failed, safely kept in memory cache:', err);
+    }
+    // Synchronize to cloud database (Supabase) via CMS_STORE.data.files
+    if (window.CMS_STORE && window.CMS_STORE.data) {
+      if (!window.CMS_STORE.data.files) window.CMS_STORE.data.files = {};
+      window.CMS_STORE.data.files[name] = dataUrl;
+      if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
+        window.CMS_SUPABASE.from('master_tenants').update({ cms_db: window.CMS_STORE.data }).eq('id', window.CMS_TENANT_ID).then(() => {});
+      }
     }
   },
 
   async getFile(name) {
     if (!name) return null;
     if (this.cache.has(name)) return this.cache.get(name);
+    // 1. Check cloud-synced store.data.files
+    if (window.CMS_STORE && window.CMS_STORE.data && window.CMS_STORE.data.files && window.CMS_STORE.data.files[name]) {
+      const val = window.CMS_STORE.data.files[name];
+      this.cache.set(name, val);
+      return val;
+    }
+    // 2. Check IndexedDB
     try {
       const db = await this.getDB();
-      if (!db) {
-        return localStorage.getItem('CMS_FILE_' + name) || null;
+      if (db) {
+        const val = await new Promise((resolve) => {
+          const tx = db.transaction('files', 'readonly');
+          const store = tx.objectStore('files');
+          const req = store.get(name);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+        if (val) {
+          this.cache.set(name, val);
+          return val;
+        }
       }
-      return new Promise((resolve) => {
-        const tx = db.transaction('files', 'readonly');
-        const store = tx.objectStore('files');
-        const req = store.get(name);
-        req.onsuccess = () => {
-          let val = req.result;
-          if (!val) {
-            try { val = localStorage.getItem('CMS_FILE_' + name); } catch(e){}
-          }
-          if (val) this.cache.set(name, val);
-          resolve(val || null);
-        };
-        req.onerror = () => {
-          try { resolve(localStorage.getItem('CMS_FILE_' + name)); } catch(e){ resolve(null); }
-        };
-      });
-    } catch (err) {
-      try { return localStorage.getItem('CMS_FILE_' + name) || null; } catch(e){ return null; }
-    }
+    } catch (err) {}
+    // 3. Check localStorage
+    try {
+      const val = localStorage.getItem('CMS_FILE_' + name);
+      if (val) {
+        this.cache.set(name, val);
+        return val;
+      }
+    } catch (e) {}
+    return null;
   },
 
   async deleteFile(name) {

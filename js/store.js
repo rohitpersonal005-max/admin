@@ -1087,6 +1087,12 @@ class Store {
           consumables: (val.consumables || []).map(normalizeConsumable)
         };
         
+        // Hydrate CMS_FILE_STORE cache from cloud-synced files
+        if (this.data.files && window.CMS_FILE_STORE) {
+          Object.entries(this.data.files).forEach(([fname, fdata]) => {
+            window.CMS_FILE_STORE.cache.set(fname, fdata);
+          });
+        }
         // Preserve userRole if it existed locally so UI stays correct for the current user
         this.data.userRole = this.getRole();
         localStorage.setItem(getStorageKey(), JSON.stringify(this.data));
