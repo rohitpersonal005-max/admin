@@ -1245,7 +1245,7 @@ window.CMS_MASTERS = {
       const isBlocked = Boolean(v.isBlocked);
       const isPending = v.status === 'Pending Approval';
       const isRevision = v.status === 'Revision Required';
-      const isApproved = v.status === 'Approved';
+      const isApproved = v.status === 'Approved' || Boolean(v.isApproved);
       const stateInfo = this.getStateInfo(v.addressState);
 
       return `
@@ -1336,8 +1336,8 @@ window.CMS_MASTERS = {
             </button>
 
             <!-- Maker Edit Button (Only User can edit) -->
-            <!-- Maker Edit Button & Prominent Revise Button -->
-            ${(isRevision || !isApproved || role === 'Maker' || role === 'User' || role === 'Admin') ? `
+            <!-- Maker Edit Button & Prominent Revise Button (Only shown when not approved) -->
+            ${(!isApproved && (isPending || isRevision || v.status === 'Draft')) ? `
               <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Modify Vendor'}">
                 <i data-lucide="${isRevision ? 'edit-3' : 'pencil'}" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-slate-600'}"></i>
                 ${isRevision ? '<span>Edit & Fix</span>' : ''}
@@ -3060,7 +3060,7 @@ window.CMS_MASTERS = {
         </div>
 
         <div class="flex items-center gap-2">
-          ${(v.status === 'Revision Required' || !v.isApproved || role === 'Maker' || role === 'User' || role === 'Admin') ? `
+          ${(!v.isApproved && v.status !== 'Approved' && (v.status === 'Pending Approval' || v.status === 'Revision Required' || v.status === 'Draft')) ? `
             <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorModal('${v.id}');" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
               <i data-lucide="edit-3" class="w-4 h-4 text-white"></i>
               <span>${v.status === 'Revision Required' ? 'Edit & Fix Form' : 'Edit Form'}</span>
@@ -4222,6 +4222,14 @@ window.CMS_MASTERS = {
   openVendorModal(vendorId = null) {
     const role = window.CMS_STORE.getRole();
     const isEdit = Boolean(vendorId);
+    if (isEdit) {
+      const existingVendor = window.CMS_STORE.data.vendors.find(v => v.id === vendorId);
+      if (existingVendor && (existingVendor.status === 'Approved' || existingVendor.isApproved)) {
+        window.CMS_APP.toast('Approved vendor records are locked and cannot be edited.', 'info');
+        this.viewVendorProfile(vendorId);
+        return;
+      }
+    }
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
       name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: 'Delhi', addressCountry: 'India', addressPinCode: '',
       gstNo: '', panNo: '', gstNotApplicable: false, panNotApplicable: false, certificates: [], contactNo: '', email: '',
