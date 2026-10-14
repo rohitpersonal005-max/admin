@@ -2647,6 +2647,7 @@ window.CMS_MASTERS = {
                       <td class="p-2 border-r border-slate-200">
                         <div class="text-[10px] text-slate-700">Valid Till: <strong class="font-mono">${formatDate(q.validTill || q.quotationValidTill)}</strong></div>
                         ${q.alertDays ? `<div class="text-[9px] text-slate-500">Alert: ${q.alertDays}d prior (${formatDate(q.alertDate)})</div>` : ''}
+                        <div class="text-[9px] ${q.sendEmailNotification !== false ? 'text-emerald-700 font-semibold' : 'text-slate-400'}">Mail to Vendor: ${q.sendEmailNotification !== false ? 'Yes' : 'No'}</div>
                       </td>
                       <td class="p-2">
                         ${qDoc ? `
@@ -2697,7 +2698,10 @@ window.CMS_MASTERS = {
                       <td class="p-2 border-r border-slate-200 font-mono font-medium text-slate-800">${(c && c.certificateNo) || '-'}</td>
                       <td class="p-2 border-r border-slate-200 text-center font-semibold text-slate-900">${c && c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
                       <td class="p-2 border-r border-slate-200 font-mono">${c && c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
-                      <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">${c && c.hasValidity && c.alertDate ? formatDate(c.alertDate) : '-'}</td>
+                      <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">
+                        ${c && c.hasValidity && c.alertDate ? formatDate(c.alertDate) : '-'}
+                        ${c && c.hasValidity ? `<div class="text-[9px] ${c.sendEmailNotification !== false ? 'text-emerald-700 font-semibold' : 'text-slate-400'}">Mail: ${c.sendEmailNotification !== false ? 'Yes' : 'No'}</div>` : ''}
+                      </td>
                       <td class="p-2">
                         ${cFile ? `
                           <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${cFile}">${cFile}</div>
@@ -3719,9 +3723,11 @@ window.CMS_MASTERS = {
     const no = qData ? (qData.quotationNo || '') : '';
     const dt = qData ? (qData.quotationDate || '') : '';
     const exp = qData ? (qData.validTill || qData.quotationValidTill || '') : '';
-    const qAlertDays = (qData && qData.alertDays !== undefined && qData.alertDays !== '') ? qData.alertDays : 15;
+    const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
+    const qAlertDays = (qData && qData.alertDays !== undefined && qData.alertDays !== '') ? qData.alertDays : minAlertPolicy;
     const computedQuoteAlertIso = (qData && qData.alertDate) ? qData.alertDate : (exp ? CMS_MASTERS.calculateAlertDate(exp, qAlertDays) : '');
     const computedQuoteAlertDisplay = exp ? CMS_MASTERS.formatDisplayDate(computedQuoteAlertIso) : 'Set date';
+    const qSendEmail = qData && qData.sendEmailNotification !== undefined ? Boolean(qData.sendEmailNotification) : true;
     const eff = qData ? (qData.effectiveFrom || '') : '';
     const matId = qData ? (qData.materialId || '') : '';
     const matName = qData ? (qData.materialName || '') : '';
@@ -3767,6 +3773,27 @@ window.CMS_MASTERS = {
               <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=30; CMS_MASTERS.onQuoteDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[9px] font-medium text-slate-600 hover:text-blue-600 hover:bg-white rounded transition">30d</button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Ask User: Send quotation expiry notification to vendor via mail? -->
+      <div class="p-2.5 bg-blue-50/60 border border-blue-200 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs mt-2">
+        <div class="flex items-center gap-2">
+          <i data-lucide="mail" class="w-4 h-4 text-blue-600 shrink-0"></i>
+          <div>
+            <div class="text-[11px] font-bold text-slate-800">Send quotation expiry notification to vendor via mail?</div>
+            <div class="text-[10px] text-slate-500">If Yes, automated email will be sent to vendor to renew/revise the quotation before validity expires.</div>
+          </div>
+        </div>
+        <div class="inline-flex items-center gap-2 bg-white px-2 py-1 rounded border border-slate-200 shrink-0">
+          <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
+            <input type="radio" name="quote_mail_${rowId}" value="yes" class="q-send-mail-radio text-blue-600" ${qSendEmail ? 'checked' : ''} />
+            <span class="text-emerald-700">Yes (Send Mail)</span>
+          </label>
+          <label class="inline-flex items-center gap-1 cursor-pointer font-medium text-slate-500 text-xs">
+            <input type="radio" name="quote_mail_${rowId}" value="no" class="q-send-mail-radio text-slate-400" ${!qSendEmail ? 'checked' : ''} />
+            <span>No</span>
+          </label>
         </div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 mt-2">
@@ -3852,9 +3879,11 @@ window.CMS_MASTERS = {
     const regulator = certData ? (typeof certData === 'object' ? (certData.regulator || certData.name || '') : certData) : '';
     const hasValidity = certData ? (typeof certData === 'object' ? Boolean(certData.hasValidity) : false) : false;
     const validTill = certData && typeof certData === 'object' ? (certData.validTill || '') : '';
-    const certAlertDays = (certData && typeof certData === 'object' && certData.alertDays !== undefined && certData.alertDays !== '') ? certData.alertDays : 15;
+    const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
+    const certAlertDays = (certData && typeof certData === 'object' && certData.alertDays !== undefined && certData.alertDays !== '') ? certData.alertDays : minAlertPolicy;
     const computedCertAlertIso = (certData && certData.alertDate) ? certData.alertDate : (validTill ? CMS_MASTERS.calculateAlertDate(validTill, certAlertDays) : '');
     const computedCertAlertDisplay = validTill ? CMS_MASTERS.formatDisplayDate(computedCertAlertIso) : 'Select date above';
+    const certSendEmail = certData && typeof certData === 'object' && certData.sendEmailNotification !== undefined ? Boolean(certData.sendEmailNotification) : true;
     const formNo = certData && typeof certData === 'object' ? (certData.formNo || '') : '';
     const certificateNo = certData && typeof certData === 'object' ? (certData.certificateNo || '') : '';
     const fileName = certData && typeof certData === 'object' ? (certData.fileName || '') : '';
@@ -3952,6 +3981,27 @@ window.CMS_MASTERS = {
               <span class="cert-alert-days-summary text-[10px] text-slate-500 whitespace-nowrap ml-2">(${certAlertDays}d prior)</span>
             </div>
             <input type="hidden" class="cert-alert-input" value="${computedCertAlertIso}" />
+
+            <!-- Ask User: Send expiry notification to vendor via mail? -->
+            <div class="p-2.5 bg-white border border-blue-200 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+              <div class="flex items-center gap-2">
+                <i data-lucide="mail" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                <div>
+                  <div class="text-[11px] font-bold text-slate-800">Send expiry notification to vendor via mail?</div>
+                  <div class="text-[10px] text-slate-500">If Yes, automated email will be sent from Admin Gmail requesting updated document before expiry.</div>
+                </div>
+              </div>
+              <div class="inline-flex items-center gap-2 bg-slate-50 px-2 py-1 rounded border border-slate-200 shrink-0">
+                <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
+                  <input type="radio" name="cert_mail_${rowId}" value="yes" class="cert-send-mail-radio text-blue-600" ${certSendEmail ? 'checked' : ''} />
+                  <span class="text-emerald-700">Yes (Send Mail)</span>
+                </label>
+                <label class="inline-flex items-center gap-1 cursor-pointer font-medium text-slate-500 text-xs">
+                  <input type="radio" name="cert_mail_${rowId}" value="no" class="cert-send-mail-radio text-slate-400" ${!certSendEmail ? 'checked' : ''} />
+                  <span>No</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -4817,6 +4867,27 @@ window.CMS_MASTERS = {
                     <span id="v-approval-alert-days-summary" class="text-[10px] text-slate-500 whitespace-nowrap ml-2">(${vendor.approvalAlertDays || 15}d prior)</span>
                   </div>
                   <input type="hidden" id="v-approval-alert-date" value="${vendor.approvalAlertDate || (vendor.approvalValidTill ? CMS_MASTERS.calculateAlertDate(vendor.approvalValidTill, vendor.approvalAlertDays || 15) : '')}" />
+
+                  <!-- Ask User: Send approval expiry notification to vendor via mail? -->
+                  <div class="p-2 bg-white border border-blue-200 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+                    <div class="flex items-center gap-2">
+                      <i data-lucide="mail" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
+                      <div>
+                        <div class="text-[11px] font-bold text-slate-800">Send approval expiry notification to vendor via mail?</div>
+                        <div class="text-[10px] text-slate-500">Notify vendor to submit compliance updates before approval period ends.</div>
+                      </div>
+                    </div>
+                    <div class="inline-flex items-center gap-2 bg-slate-50 px-2 py-0.5 rounded border border-slate-200 shrink-0">
+                      <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
+                        <input type="radio" name="v_approval_mail_opt" value="yes" id="v-approval-mail-yes" ${vendor.approvalSendEmailNotification !== false ? 'checked' : ''} class="text-blue-600" />
+                        <span class="text-emerald-700">Yes</span>
+                      </label>
+                      <label class="inline-flex items-center gap-1 cursor-pointer font-medium text-slate-500 text-xs">
+                        <input type="radio" name="v_approval_mail_opt" value="no" id="v-approval-mail-no" ${vendor.approvalSendEmailNotification === false ? 'checked' : ''} class="text-slate-400" />
+                        <span>No</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -5872,6 +5943,7 @@ window.CMS_MASTERS = {
         const mrpNa = row.querySelector('.q-mrp-na')?.checked;
         // MRP vs Rate strict blocking removed; handled by confirm prompt onchange.
 
+      const qSendMail = row.querySelector('.q-send-mail-radio:checked')?.value !== 'no';
       quotedItems.push({
         quotationNo: qno,
         quotationDate: qDate,
@@ -5880,6 +5952,7 @@ window.CMS_MASTERS = {
           alertDate: row.querySelector('.q-alert')?.value || '',
         alertDays: parseInt(row.querySelector('.q-alert-days')?.value, 10) || 15,
           alertFreq: row.querySelector('.q-freq') ? row.querySelector('.q-freq').value : 'Daily',
+        sendEmailNotification: qSendMail,
         materialId: row.querySelector('.q-mat-id')?.value || '',
         materialName: matName,
         rate: row.querySelector('.q-rate')?.value || 0,
@@ -5915,6 +5988,7 @@ window.CMS_MASTERS = {
     const approvalValidTill = approvedForLimitedPeriod ? (document.getElementById('v-approval-valid-till')?.value || '') : '';
     const approvalAlertDays = approvedForLimitedPeriod ? (parseInt(document.getElementById('v-approval-alert-days')?.value, 10) || 15) : 15;
     const approvalAlertDate = approvedForLimitedPeriod ? (document.getElementById('v-approval-alert-date')?.value || CMS_MASTERS.calculateAlertDate(approvalValidTill, approvalAlertDays)) : '';
+    const approvalSendEmailNotification = approvedForLimitedPeriod ? (document.getElementById('v-approval-mail-yes')?.checked !== false) : true;
     const isBlocked = document.getElementById('v-blocked')?.checked || false;
     const blockReason = isBlocked ? (document.getElementById('v-block-reason')?.value.trim() || 'Blocked by administrator') : '';
 
@@ -6049,14 +6123,17 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         fileName = `${reg.replace(/\s+/g, '_')}_${certNo || 'Certificate'}.pdf`;
       }
 
-            certificates.push({
+      const certSendMail = row.querySelector('.cert-send-mail-radio:checked')?.value !== 'no';
+      certificates.push({
         regulator: reg,
         name: reg,
         formNo,
         certificateNo: certNo,
         hasValidity: hasVal,
         validTill: expiry,
+        alertDays,
         alertDate,
+        sendEmailNotification: certSendMail,
         documentName: docName,
         docTitle: docName,
         fileName
@@ -6083,7 +6160,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           quotationNo,
  quotationDate, quotationValidTill, quotationDoc, 
           quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
-          approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate, limAlertFreq,
+          approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate, approvalSendEmailNotification, limAlertFreq,
           isBlocked, blockReason, quotedItems,
           certificates,
           certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || store.data.vendors[idx].certificateFile || '',
@@ -6119,7 +6196,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         gstDocTitle, panDocTitle, bankDocTitle, limAlertDays, limAlertFreq,
         quotationNo, quotationDate, quotationValidTill, quotationDoc,
         quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
-        approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate,
+        approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate, approvalSendEmailNotification,
         isBlocked, blockReason, quotedItems,
         certificates,
         certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || '',

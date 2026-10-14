@@ -182,17 +182,23 @@ window.CMS_DASHBOARD = {
         });
       }
 
+      const notifSettings = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings() : { minAlertDays: 15 };
+
       // Check Expiries (Certificates)
       if (v.status === 'Approved' && Array.isArray(v.certificates)) {
         v.certificates.forEach(cert => {
-          if (cert.alertDate && cert.alertDate <= today) {
-            const expIso = cert.validTill || '';
-            const diffDays = expIso ? this.getDaysDiff(expIso, today) : 0;
+          const expIso = cert.validTill || '';
+          const diffDays = expIso ? this.getDaysDiff(expIso, today) : 0;
+          const effectiveAlertDays = Math.max(cert.alertDays || 15, notifSettings.minAlertDays || 15);
+          const isAlertDue = (cert.alertDate && cert.alertDate <= today) || (expIso && diffDays <= effectiveAlertDays);
+
+          if (isAlertDue) {
             const isExpired = diffDays < 0;
             const isToday = diffDays === 0;
             const expFormatted = this.formatDateStr(expIso);
             const certName = cert.regulator || cert.documentName || cert.name || 'Statutory/Regulatory Certificate';
             const alertDaysNote = cert.alertDays ? ` (${cert.alertDays}d prior alert)` : '';
+            const sendMailEnabled = cert.sendEmailNotification !== false;
 
             let timeText = '';
             if (isExpired) {
@@ -203,11 +209,29 @@ window.CMS_DASHBOARD = {
               timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
             }
 
+            const actionHtml = sendMailEnabled ? `
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded">
+                  <i data-lucide="mail-check" class="w-3 h-3 text-emerald-700"></i> Vendor Email: Enabled
+                </span>
+                <button type="button" onclick="CMS_APP.closeModal(); CMS_NOTIFICATIONS.openEmailComposer('${v.id}', '${cert.certificateNo || cert.name}', 'certificate');" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded transition shadow-xs cursor-pointer">
+                  <i data-lucide="send" class="w-3 h-3"></i> Send Notice via Gmail
+                </button>
+              </div>
+            ` : `
+              <div class="mt-1.5">
+                <span class="inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                  Vendor Email Notice: Disabled in Setup
+                </span>
+              </div>
+            `;
+
             alerts.push({
               type: isExpired || isToday ? 'critical' : 'warning',
               title: `Certificate ${isExpired ? 'Expired' : 'Expiring Soon'}: ${certName}`,
               message: `Vendor: <strong>${v.name}</strong> • ${timeText}${alertDaysNote}.`,
-              icon: isExpired ? 'file-x' : 'file-warning'
+              icon: isExpired ? 'file-x' : 'file-warning',
+              actionHtml
             });
           }
         });
@@ -216,14 +240,18 @@ window.CMS_DASHBOARD = {
       // Check Expiries (Quotations)
       if (v.status === 'Approved' && Array.isArray(v.quotedItems)) {
         v.quotedItems.forEach(q => {
-          if (q.alertDate && q.alertDate <= today) {
-            const expIso = q.validTill || q.quotationValidTill || '';
-            const diffDays = expIso ? this.getDaysDiff(expIso, today) : 0;
+          const expIso = q.validTill || q.quotationValidTill || '';
+          const diffDays = expIso ? this.getDaysDiff(expIso, today) : 0;
+          const effectiveAlertDays = Math.max(q.alertDays || 15, notifSettings.minAlertDays || 15);
+          const isAlertDue = (q.alertDate && q.alertDate <= today) || (expIso && diffDays <= effectiveAlertDays);
+
+          if (isAlertDue) {
             const isExpired = diffDays < 0;
             const isToday = diffDays === 0;
             const expFormatted = this.formatDateStr(expIso);
             const qRef = q.quotationNo ? `Ref ${q.quotationNo}` : (q.materialName ? `for ${q.materialName}` : 'Quotation');
             const alertDaysNote = q.alertDays ? ` (${q.alertDays}d prior alert)` : '';
+            const sendMailEnabled = q.sendEmailNotification !== false;
 
             let timeText = '';
             if (isExpired) {
@@ -234,40 +262,82 @@ window.CMS_DASHBOARD = {
               timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
             }
 
+            const actionHtml = sendMailEnabled ? `
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded">
+                  <i data-lucide="mail-check" class="w-3 h-3 text-emerald-700"></i> Vendor Email: Enabled
+                </span>
+                <button type="button" onclick="CMS_APP.closeModal(); CMS_NOTIFICATIONS.openEmailComposer('${v.id}', '${q.quotationNo || q.materialName}', 'quotation');" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded transition shadow-xs cursor-pointer">
+                  <i data-lucide="send" class="w-3 h-3"></i> Send Notice via Gmail
+                </button>
+              </div>
+            ` : `
+              <div class="mt-1.5">
+                <span class="inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                  Vendor Email Notice: Disabled in Setup
+                </span>
+              </div>
+            `;
+
             alerts.push({
               type: isExpired || isToday ? 'critical' : 'warning',
               title: `Commercial Quotation ${isExpired ? 'Expired' : 'Expiring Soon'}: ${qRef}`,
               message: `Vendor: <strong>${v.name}</strong> • ${timeText}${alertDaysNote}.`,
-              icon: isExpired ? 'alert-octagon' : 'file-warning'
+              icon: isExpired ? 'alert-octagon' : 'file-warning',
+              actionHtml
             });
           }
         });
       }
       
       // Limited Period Approval
-      if (v.status === 'Approved' && v.approvedForLimitedPeriod && v.approvalAlertDate && v.approvalAlertDate <= today) {
+      if (v.status === 'Approved' && v.approvedForLimitedPeriod) {
         const expIso = v.approvalValidTill || '';
         const diffDays = expIso ? this.getDaysDiff(expIso, today) : 0;
-        const isExpired = diffDays < 0;
-        const isToday = diffDays === 0;
-        const expFormatted = this.formatDateStr(expIso);
-        const alertDaysNote = v.approvalAlertDays ? ` (${v.approvalAlertDays}d prior alert)` : '';
+        const effectiveAlertDays = Math.max(v.approvalAlertDays || 15, notifSettings.minAlertDays || 15);
+        const isAlertDue = (v.approvalAlertDate && v.approvalAlertDate <= today) || (expIso && diffDays <= effectiveAlertDays);
 
-        let timeText = '';
-        if (isExpired) {
-          timeText = `Expired on ${expFormatted} (${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago)`;
-        } else if (isToday) {
-          timeText = `Expires TODAY (${expFormatted})`;
-        } else {
-          timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
+        if (isAlertDue) {
+          const isExpired = diffDays < 0;
+          const isToday = diffDays === 0;
+          const expFormatted = this.formatDateStr(expIso);
+          const alertDaysNote = v.approvalAlertDays ? ` (${v.approvalAlertDays}d prior alert)` : '';
+          const sendMailEnabled = v.approvalSendEmailNotification !== false;
+
+          let timeText = '';
+          if (isExpired) {
+            timeText = `Expired on ${expFormatted} (${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} ago)`;
+          } else if (isToday) {
+            timeText = `Expires TODAY (${expFormatted})`;
+          } else {
+            timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
+          }
+
+          const actionHtml = sendMailEnabled ? `
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded">
+                <i data-lucide="mail-check" class="w-3 h-3 text-emerald-700"></i> Vendor Email: Enabled
+              </span>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_NOTIFICATIONS.openEmailComposer('${v.id}', '${v.id}', 'approval');" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded transition shadow-xs cursor-pointer">
+                <i data-lucide="send" class="w-3 h-3"></i> Send Notice via Gmail
+              </button>
+            </div>
+          ` : `
+            <div class="mt-1.5">
+              <span class="inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                Vendor Email Notice: Disabled in Setup
+              </span>
+            </div>
+          `;
+
+          alerts.push({
+            type: isExpired || isToday ? 'critical' : 'warning',
+            title: `Vendor Approval ${isExpired ? 'Expired' : 'Expiring Soon'}`,
+            message: `Vendor: <strong>${v.name}</strong> • Limited period approval ${timeText}${alertDaysNote}.`,
+            icon: 'shield-alert',
+            actionHtml
+          });
         }
-
-        alerts.push({
-          type: isExpired || isToday ? 'critical' : 'warning',
-          title: `Vendor Approval ${isExpired ? 'Expired' : 'Expiring Soon'}`,
-          message: `Vendor: <strong>${v.name}</strong> • Limited period approval ${timeText}${alertDaysNote}.`,
-          icon: 'shield-alert'
-        });
       }
     });
 
@@ -291,9 +361,10 @@ window.CMS_DASHBOARD = {
       return `
         <div class="flex items-start gap-3 p-3 ${colors} border rounded-md shadow-sm">
           <i data-lucide="${a.icon}" class="w-5 h-5 shrink-0 ${iconColor} mt-0.5"></i>
-          <div>
+          <div class="flex-1 min-w-0">
             <h4 class="text-sm font-bold">${a.title}</h4>
             <p class="text-xs mt-0.5 opacity-90">${a.message}</p>
+            ${a.actionHtml || ''}
           </div>
         </div>
       `;

@@ -1004,7 +1004,10 @@ function normalizeVendor(vendor) {
     rejectedByName: vendor.rejectedByName || '',
     rejectedAt: vendor.rejectedAt || '',
     quotationDoc: vendor.quotationDoc || (vendor.quotedItems && vendor.quotedItems[0] && (vendor.quotedItems[0].doc || vendor.quotedItems[0].file)) || '',
-    quotedItems: Array.isArray(vendor.quotedItems) ? vendor.quotedItems : [],
+    quotedItems: (Array.isArray(vendor.quotedItems) ? vendor.quotedItems : []).map(q => ({
+      ...q,
+      sendEmailNotification: q.sendEmailNotification !== false
+    })),
     quotationNo: vendor.quotationNo || '',
     quotationDate: vendor.quotationDate || '',
     quotationValidTill: vendor.quotationValidTill || '',
@@ -1015,9 +1018,12 @@ function normalizeVendor(vendor) {
     quotedMaterialHsn: vendor.quotedMaterialHsn || '',
     approvedForLimitedPeriod: Boolean(vendor.approvedForLimitedPeriod),
     approvalValidTill: vendor.approvalValidTill || '',
+    approvalAlertDays: vendor.approvalAlertDays || 15,
+    approvalAlertDate: vendor.approvalAlertDate || '',
+    approvalSendEmailNotification: vendor.approvalSendEmailNotification !== false,
     certificates: (vendor.certificates || []).map((certificate, index) => {
       if (typeof certificate === 'string') {
-        return { regulator: 'ISO', name: certificate, formNo: '', certificateNo: `LEGACY-${index + 1}`, hasValidity: false, validTill: '', fileName: legacyFile };
+        return { regulator: 'ISO', name: certificate, formNo: '', certificateNo: `LEGACY-${index + 1}`, hasValidity: false, validTill: '', fileName: legacyFile, sendEmailNotification: true };
       }
       return {
         ...certificate,
@@ -1025,7 +1031,8 @@ function normalizeVendor(vendor) {
         name: certificate.name || certificate.regulator || 'ISO',
         formNo: certificate.formNo || '',
         certificateNo: certificate.certificateNo || `LEGACY-${index + 1}`,
-        fileName: certificate.fileName || legacyFile
+        fileName: certificate.fileName || legacyFile,
+        sendEmailNotification: certificate.sendEmailNotification !== false
       };
     })
   };

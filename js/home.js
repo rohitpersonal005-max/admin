@@ -211,6 +211,9 @@ window.CMS_HOME = {
     const currentUser = window.CMS_STORE.getCurrentUser() || {};
     const users = window.CMS_STORE.getUsers() || [];
     const roles = this.getCustomRoles();
+    const notifSettings = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings() : { minAlertDays: 15, senderGmail: '', autoSendVendorEmail: true };
+    const expiringItems = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getAllExpiringItems() : [];
+    const emailLogs = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getEmailLogs() : [];
     
     if (!this.companyInfo.name || this.companyInfo.name.toLowerCase().includes('adminutes')) {
       const tenantComp = (window.CMS_TENANT_NAME || localStorage.getItem('CMS_TENANT_NAME_CACHE') || '').trim();
@@ -531,7 +534,199 @@ window.CMS_HOME = {
               `).join('')}
             </tbody>
           </table>
+      <!-- Document Expiry & Notification Email Settings -->
+      <div class="mt-6 stat-card p-5 bg-white border border-slate-200 rounded-sm shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200 shrink-0">
+              <i data-lucide="bell-ring" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-800 text-base">Document Expiry Notification & Vendor Email Settings</h3>
+              <p class="text-xs text-slate-500">Configure minimum alert lead time and the sender Gmail for automated vendor document change & renewal requests.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-sm flex items-center gap-1">
+              <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Notification Engine Active
+            </span>
+          </div>
         </div>
+
+        <form id="home-notif-settings-form" onsubmit="event.preventDefault(); CMS_NOTIFICATIONS.handleAdminSaveSettings();" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 1. Minimum Alert Time -->
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-bold text-slate-800">
+                  Minimum Alert Time (Days Prior) <span class="text-rose-600">*</span>
+                </label>
+                <span class="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
+                  System Policy
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-500">
+                Minimum notification threshold days before any document or quotation expires. Alerts will trigger at least this many days in advance.
+              </p>
+              <div class="flex items-center gap-2 pt-1">
+                <input type="number" id="home-notif-min-days" min="1" max="365" value="${notifSettings.minAlertDays || 15}" required class="w-24 px-3 py-2 border border-slate-300 rounded font-mono font-bold text-sm text-center bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <span class="text-xs font-bold text-slate-700">Days Prior</span>
+                <div class="flex items-center gap-1 ml-auto">
+                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 7;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition">7d</button>
+                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 15;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition">15d</button>
+                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 30;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition">30d</button>
+                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 60;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition">60d</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Sender Gmail -->
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-2.5">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-bold text-slate-800">
+                  Sender Gmail Address <span class="text-rose-600">*</span>
+                </label>
+                <span class="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded">
+                  Outgoing Sender
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-500">
+                The official Gmail from which document change and renewal notification emails will be sent to the vendor.
+              </p>
+              <div class="relative pt-1">
+                <input type="email" id="home-notif-sender-gmail" required value="${notifSettings.senderGmail || ''}" placeholder="e.g. procurement.compliance@gmail.com" class="w-full pl-3 pr-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions & Save -->
+          <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
+            <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500"></i>
+              <span>Vendors with "Send email notification: Yes" on their validity dates will receive notices via this Gmail.</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="CMS_NOTIFICATIONS.openSampleEmailPreviewModal()" class="px-3.5 py-2 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-sm border border-slate-300 transition flex items-center gap-1.5">
+                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Preview Sample Email
+              </button>
+              <button type="submit" class="px-5 py-2 text-xs font-bold bg-slate-900 hover:bg-black text-white rounded-sm shadow-sm transition flex items-center gap-1.5">
+                <i data-lucide="save" class="w-3.5 h-3.5 text-white"></i> Save Notification Settings
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Live Vendor Expiry Alerts & Email Dispatch Monitor -->
+        <div class="mt-4 pt-4 border-t border-slate-200">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="clock" class="w-4 h-4 text-slate-600"></i>
+              <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Active Vendor Document Expiry Monitor</h4>
+            </div>
+            <span class="text-xs font-semibold text-slate-500">${expiringItems.length} record(s) monitored</span>
+          </div>
+
+          ${expiringItems.length === 0 ? `
+            <div class="p-6 text-center bg-slate-50 border border-slate-200 rounded text-xs text-slate-500">
+              <i data-lucide="shield-check" class="w-6 h-6 text-emerald-600 mx-auto mb-1.5"></i>
+              All vendor certificates, statutory documents, and commercial quotations are fully compliant and within valid dates.
+            </div>
+          ` : `
+            <div class="overflow-x-auto rounded border border-slate-200">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                  <tr>
+                    <th class="py-2.5 px-3">Vendor</th>
+                    <th class="py-2.5 px-3">Document / Detail</th>
+                    <th class="py-2.5 px-3">Valid Till</th>
+                    <th class="py-2.5 px-3">Expiry Status</th>
+                    <th class="py-2.5 px-3">Mail to Vendor?</th>
+                    <th class="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${expiringItems.map(item => {
+                    const isExp = item.diff < 0;
+                    const isToday = item.diff === 0;
+                    const expBadge = isExp ? 'bg-rose-100 text-rose-800 font-bold' : (item.isDue ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-700');
+                    const expText = isExp ? `Expired ${Math.abs(item.diff)}d ago` : (isToday ? 'Expires Today' : `${item.diff}d remaining`);
+                    return `
+                      <tr class="hover:bg-slate-50/80 transition">
+                        <td class="py-2.5 px-3">
+                          <div class="font-bold text-slate-800">${item.vendorName}</div>
+                          <div class="text-[10px] text-slate-500 font-mono">${item.vendorEmail || 'No email on file'}</div>
+                        </td>
+                        <td class="py-2.5 px-3">
+                          <div class="font-semibold text-slate-800">${item.name}</div>
+                          <div class="text-[10px] text-slate-500 font-mono">${item.refNo ? 'Ref: ' + item.refNo : item.typeName}</div>
+                        </td>
+                        <td class="py-2.5 px-3 font-mono font-medium">${CMS_NOTIFICATIONS.formatDisplayDate(item.validTill)}</td>
+                        <td class="py-2.5 px-3">
+                          <span class="inline-block px-2 py-0.5 rounded text-[10px] ${expBadge}">${expText}</span>
+                        </td>
+                        <td class="py-2.5 px-3">
+                          ${item.sendEmailNotification ? `
+                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                              <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> Yes (Mail Active)
+                            </span>
+                          ` : `
+                            <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                              No (Disabled)
+                            </span>
+                          `}
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                          <button type="button" onclick="CMS_NOTIFICATIONS.openEmailComposer('${item.vendorId}', '${item.refNo || item.name}', '${item.type}')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded transition shadow-2xs">
+                            <i data-lucide="send" class="w-3 h-3"></i> Send Notice via Gmail
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </div>
+
+        <!-- Dispatched Notification Emails Log -->
+        ${emailLogs.length > 0 ? `
+          <div class="mt-4 pt-4 border-t border-slate-200">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <i data-lucide="history" class="w-4 h-4 text-slate-600"></i>
+                <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider">Recent Dispatched Vendor Notices</h4>
+              </div>
+              <span class="text-[11px] text-slate-500 font-mono">${emailLogs.length} logged notice(s)</span>
+            </div>
+            <div class="overflow-x-auto rounded border border-slate-200">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                  <tr>
+                    <th class="py-2 px-3">Time</th>
+                    <th class="py-2 px-3">Recipient Vendor</th>
+                    <th class="py-2 px-3">Document</th>
+                    <th class="py-2 px-3">From Gmail</th>
+                    <th class="py-2 px-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 font-mono text-[11px]">
+                  ${emailLogs.slice(0, 5).map(log => `
+                    <tr class="hover:bg-slate-50 transition">
+                      <td class="py-2 px-3 text-slate-500">${new Date(log.timestamp).toLocaleDateString('en-GB')} ${new Date(log.timestamp).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}</td>
+                      <td class="py-2 px-3 font-sans font-bold text-slate-800">${log.vendorName} (${log.vendorEmail})</td>
+                      <td class="py-2 px-3 font-sans text-slate-700">${log.docName}</td>
+                      <td class="py-2 px-3 text-purple-700">${log.senderGmail}</td>
+                      <td class="py-2 px-3">
+                        <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">${log.status}</span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ` : ''}
       </div>
       ` : ''}
     `;
