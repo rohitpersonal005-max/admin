@@ -879,6 +879,42 @@ th {
     display: none !important;
   }
 
+  /* When printing a modal (e.g. Vendor Registration Paper Form), hide background content completely */
+  body:has(#modal-container.show-print) #sidebar,
+  body:has(#modal-container.show-print) aside,
+  body:has(#modal-container.show-print) header,
+  body:has(#modal-container.show-print) #view-container,
+  body.modal-printing #sidebar,
+  body.modal-printing header,
+  body.modal-printing #view-container {
+    display: none !important;
+  }
+
+  #modal-container.show-print {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  #modal-container.show-print #modal-card {
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  #modal-container.show-print #modal-card > div:first-child,
+  #modal-container.show-print .print\:hidden,
+  #modal-container.show-print button {
+    display: none !important;
+  }
+
   body {
     background: white !important;
     color: black !important;

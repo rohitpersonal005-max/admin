@@ -1060,7 +1060,8 @@ window.CMS_APP = {
     const container = document.getElementById('modal-container');
     if (!container) return;
     container.classList.add('hidden');
-    container.classList.remove('flex');
+    container.classList.remove('flex', 'show-print');
+    document.body.classList.remove('modal-printing');
     document.body.style.overflow = 'auto';
   },
 
