@@ -1434,11 +1434,22 @@ window.CMS_APP = {
     this.openModal(`Viewing Document: ${docType}`, content, 'max-w-2xl');
   },
 
-  promptSanctionApproval({ title, id, entityType, summaryHtml, documents = [], onConfirm }) {
+  promptSanctionApproval({ title, id, entityType, summaryHtml, documents = [], onConfirm, onDelete }) {
     const isChecker = window.CMS_STORE.isApprover();
     if (!isChecker) {
       this.toast('Only Store In-Charge (Col. Anita Sharma) can sanction approvals.', 'error');
       return;
+    }
+
+    let deleteActionStr = '';
+    if (onDelete) {
+      deleteActionStr = (typeof onDelete === 'string' && (onDelete.startsWith('()') || onDelete.startsWith('function'))) ? `(${onDelete})()` : onDelete;
+    } else if (entityType === 'vendor') {
+      deleteActionStr = `CMS_MASTERS.deleteVendor('${id}')`;
+    } else if (entityType === 'consumable') {
+      deleteActionStr = `CMS_MASTERS.deleteConsumable('${id}')`;
+    } else if (entityType === 'receipt') {
+      deleteActionStr = `CMS_TRANSACTIONS.deleteReceipt('${id}')`;
     }
 
     const docItems = (documents || []).filter(d => Boolean(d && d.fileName));
@@ -1486,14 +1497,24 @@ window.CMS_APP = {
           </label>
         </div>
 
-        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200">
-          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
-            Cancel
-          </button>
-          <button type="button" id="sanction-confirm-btn" onclick="const cb = document.getElementById('sanction-final-checkbox'); if(cb && !cb.checked) { return CMS_APP.toast('Please check the confirmation box above to proceed.', 'error'); } CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5">
-            <i data-lucide="check-circle" class="w-4 h-4"></i>
-            <span>Confirm Sanction & Approve</span>
-          </button>
+        <div class="flex items-center justify-between gap-2.5 pt-2 border-t border-slate-200">
+          <div>
+            ${deleteActionStr ? `
+              <button type="button" onclick="CMS_APP.closeModal(); ${deleteActionStr};" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition text-xs flex items-center gap-1.5 shadow-2xs" title="Delete Draft Record">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
+                <span>Delete</span>
+              </button>
+            ` : ''}
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
+              Cancel
+            </button>
+            <button type="button" id="sanction-confirm-btn" onclick="const cb = document.getElementById('sanction-final-checkbox'); if(cb && !cb.checked) { return CMS_APP.toast('Please check the confirmation box above to proceed.', 'error'); } CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>Confirm Sanction & Approve</span>
+            </button>
+          </div>
         </div>
       </div>
     `;

@@ -126,13 +126,16 @@ window.CMS_DRAFTS = {
               <div class="text-xs text-slate-600 mt-2 truncate">${item.addressDistrict ? (item.addressDistrict + ', ') : ''}${item.addressState || 'India'}</div>
               <div class="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-slate-100">
                 <span class="text-[11px] text-slate-400 font-mono">ID: ${item.id}</span>
-                <div class="flex gap-1.5 shrink-0">
+                <div class="flex items-center gap-1.5 shrink-0">
                   ${role === 'User' ? `
                     <button onclick="CMS_MASTERS.openVendorModal('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 rounded border border-purple-200 transition">Edit Draft</button>
-                    <button onclick="CMS_MASTERS.deleteVendor('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition">Delete</button>
                   ` : `
                     <button onclick="CMS_MASTERS.openVendorSanctionModal('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded border border-slate-300 transition">Review & Sanction</button>
                   `}
+                  <button onclick="CMS_MASTERS.deleteVendor('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition flex items-center gap-1" title="Delete Draft Vendor">
+                    <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
+                    <span>Delete</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -165,13 +168,16 @@ window.CMS_DRAFTS = {
               <div class="text-xs text-slate-600 mt-2">Rate: <strong class="font-mono text-slate-900">₹${Number(item.quotationRate || item.vendor1Rate || 0).toFixed(2)}</strong> · MRP: <strong class="font-mono text-slate-900">₹${Number(item.mrpBooked || 0).toFixed(2)}</strong></div>
               <div class="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-slate-100">
                 <span class="text-[11px] text-slate-400 font-mono">ID: ${item.id}</span>
-                <div class="flex gap-1.5 shrink-0">
+                <div class="flex items-center gap-1.5 shrink-0">
                   ${role === 'User' ? `
                     <button onclick="CMS_MASTERS.openConsumableModal('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded border border-blue-200 transition">Edit Draft</button>
-                    <button onclick="CMS_MASTERS.deleteConsumable('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition">Delete</button>
                   ` : `
                     <button onclick="CMS_APP.navigateTo('pending-approvals')" class="px-2.5 py-1 text-[11px] font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded border border-slate-300 transition">Review</button>
                   `}
+                  <button onclick="CMS_MASTERS.deleteConsumable('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition flex items-center gap-1" title="Delete Draft Quotation / Material">
+                    <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
+                    <span>Delete</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -204,13 +210,16 @@ window.CMS_DRAFTS = {
               <div class="text-xs text-slate-600 mt-2">Amount: <strong class="font-mono text-slate-900">₹${Number(item.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</strong> · ${this.formatDate(item.docDate || item.createdAt)}</div>
               <div class="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-slate-100">
                 <span class="text-[11px] text-slate-400 font-mono">ID: ${item.id}</span>
-                <div class="flex gap-1.5 shrink-0">
+                <div class="flex items-center gap-1.5 shrink-0">
                   ${role === 'User' ? `
                     <button onclick="CMS_TRANSACTIONS.openReceiptModal('${item.type || 'Invoice'}', '${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-200 transition">Edit</button>
-                    <button onclick="CMS_TRANSACTIONS.deleteReceipt('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition">Delete</button>
                   ` : `
                     <button onclick="CMS_APP.navigateTo('pending-approvals')" class="px-2.5 py-1 text-[11px] font-semibold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded border border-slate-300 transition">Review</button>
                   `}
+                  <button onclick="CMS_TRANSACTIONS.deleteReceipt('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition flex items-center gap-1" title="Delete Draft Invoice / Receipt">
+                    <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
+                    <span>Delete</span>
+                  </button>
                 </div>
               </div>
             </div>

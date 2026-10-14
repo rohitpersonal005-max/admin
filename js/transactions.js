@@ -339,11 +339,18 @@ window.CMS_TRANSACTIONS = {
   },
 
   deleteReceipt(receiptId) {
-    if (confirm('Delete this receipt entry?')) {
-      const store = window.CMS_STORE;
-      store.data.receipts = store.data.receipts.filter(r => r.id !== receiptId);
+    const store = window.CMS_STORE;
+    const r = store.data.receipts.find(item => item.id === receiptId);
+    if (!r) return;
+    if (r.status === 'Approved') {
+      window.CMS_APP.toast('Master deletion is disabled for approved receipts.', 'error');
+      return;
+    }
+    const docLabel = r.docNo || r.receiptNo || r.id;
+    if (confirm(`Delete draft receipt "${docLabel}"? This action cannot be undone.`)) {
+      store.data.receipts = store.data.receipts.filter(item => item.id !== receiptId);
       store.save();
-      window.CMS_APP.toast('Receipt deleted!', 'info');
+      window.CMS_APP.toast(`Draft receipt "${docLabel}" deleted successfully.`, 'info');
       window.CMS_APP.refreshView();
     }
   },

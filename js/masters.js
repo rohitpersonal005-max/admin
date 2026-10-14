@@ -3494,6 +3494,67 @@ window.CMS_MASTERS = {
     this.assembleGst();
   },
 
+  onIfscInput(input, isBlur = false) {
+    if (!input) input = document.getElementById('v-ifsc');
+    if (!input) return;
+
+    // Strict limit: uppercase alphanumeric only, maximum 11 characters
+    input.value = (input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11);
+    const val = input.value;
+    const len = val.length;
+
+    const errorEl = document.getElementById('v-ifsc-error');
+    const counterEl = document.getElementById('v-ifsc-counter');
+
+    if (counterEl) {
+      counterEl.textContent = `${len}/11`;
+      if (len === 11) {
+        counterEl.className = 'text-[10px] font-mono font-bold text-emerald-600';
+      } else if (len > 0) {
+        counterEl.className = 'text-[10px] font-mono font-bold text-rose-600';
+      } else {
+        counterEl.className = 'text-[10px] font-mono font-semibold text-slate-400';
+      }
+    }
+
+    if (len === 11) {
+      // Exactly 11 characters: Valid!
+      input.classList.remove('border-rose-500', 'bg-rose-50', 'bg-rose-50/50', 'text-rose-900', 'ring-1', 'ring-rose-500', 'focus:ring-rose-500', 'focus:border-rose-500');
+      input.classList.add('border-emerald-500', 'bg-emerald-50/20');
+      if (errorEl) {
+        errorEl.classList.add('hidden');
+        errorEl.innerHTML = '';
+      }
+    } else if (len > 0 && len < 11) {
+      // Less than 11 digits/characters entered: Red error mistake
+      input.classList.remove('border-slate-300', 'border-emerald-500', 'bg-emerald-50/20', 'focus:ring-blue-500', 'focus:border-blue-500');
+      input.classList.add('border-rose-500', 'bg-rose-50/50', 'text-rose-900', 'ring-1', 'ring-rose-500', 'focus:ring-rose-500', 'focus:border-rose-500');
+      if (errorEl) {
+        errorEl.classList.remove('hidden');
+        errorEl.innerHTML = `<i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-600 shrink-0"></i><span>IFSC Code must be exactly 11 characters (less digits entered: ${len}/11).</span>`;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    } else if (len === 0) {
+      // Empty input
+      input.classList.remove('border-emerald-500', 'bg-emerald-50/20');
+      if (isBlur) {
+        input.classList.add('border-rose-500', 'bg-rose-50/50', 'text-rose-900', 'ring-1', 'ring-rose-500');
+        if (errorEl) {
+          errorEl.classList.remove('hidden');
+          errorEl.innerHTML = `<i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-600 shrink-0"></i><span>Bank IFSC Code is mandatory (exactly 11 characters).</span>`;
+          if (window.lucide) window.lucide.createIcons();
+        }
+      } else {
+        input.classList.remove('border-rose-500', 'bg-rose-50/50', 'text-rose-900', 'ring-1', 'ring-rose-500');
+        input.classList.add('border-slate-300');
+        if (errorEl) {
+          errorEl.classList.add('hidden');
+          errorEl.innerHTML = '';
+        }
+      }
+    }
+  },
+
   onStateChange(stateName) {
     if (stateName) {
       const s = this.indianStates.find(item => item.name.toLowerCase() === String(stateName || '').toLowerCase());
@@ -3650,8 +3711,9 @@ window.CMS_MASTERS = {
     try {
       const d = new Date(expiryDateStr + 'T00:00:00');
       if (isNaN(d.getTime())) return '';
+      const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
       const numDays = parseInt(days, 10);
-      const safeDays = (isNaN(numDays) || numDays < 0) ? 0 : numDays;
+      const safeDays = (isNaN(numDays) || numDays < minAlertPolicy) ? minAlertPolicy : numDays;
       d.setDate(d.getDate() - safeDays);
       return d.toISOString().split('T')[0];
     } catch(e) {
@@ -3671,7 +3733,7 @@ window.CMS_MASTERS = {
     return isoDateStr;
   },
 
-  onCertDateOrDaysChange(el) {
+  onCertDateOrDaysChange(el, isBlur = false) {
     const box = el.closest('.cert-expiry-box');
     if (!box) return;
     const expiryInput = box.querySelector('.cert-expiry-input');
@@ -3683,14 +3745,37 @@ window.CMS_MASTERS = {
 
     const expDate = expiryInput ? expiryInput.value : '';
     const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
-    const days = daysInput ? (parseInt(daysInput.value, 10) || minAlertPolicy) : minAlertPolicy;
-    const calculatedDate = this.calculateAlertDate(expDate, days);
+    let days = daysInput ? parseInt(daysInput.value, 10) : minAlertPolicy;
 
+    if (daysInput) {
+      if (isBlur) {
+        if (isNaN(days) || days < minAlertPolicy) {
+          if (daysInput.value !== '' && parseInt(daysInput.value, 10) < minAlertPolicy) {
+            if (window.CMS_APP && window.CMS_APP.toast) {
+              window.CMS_APP.toast(`Alert days cannot be less than Admin benchmark (${minAlertPolicy} days). Reset to ${minAlertPolicy} days.`, 'warning');
+            }
+          }
+          daysInput.value = minAlertPolicy;
+          days = minAlertPolicy;
+        }
+      }
+      if (isNaN(days) || days < minAlertPolicy) {
+        daysInput.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-700');
+        daysInput.classList.remove('border-blue-300', 'bg-white', 'text-slate-800');
+        days = minAlertPolicy;
+        if (summaryText) summaryText.innerHTML = `<span class="text-rose-600 font-bold">(Min ${minAlertPolicy}d)</span>`;
+      } else {
+        daysInput.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
+        daysInput.classList.add('border-blue-300', 'bg-white', 'text-slate-800');
+        if (summaryText) summaryText.innerText = '(' + days + 'd prior)';
+      }
+    }
+
+    const calculatedDate = this.calculateAlertDate(expDate, days);
     if (hiddenAlertInput) hiddenAlertInput.value = calculatedDate;
     const formatted = expDate ? this.formatDisplayDate(calculatedDate) : 'Select date above';
     if (previewText) previewText.innerText = formatted;
     if (dispatchText) dispatchText.innerText = formatted;
-    if (summaryText) summaryText.innerText = '(' + days + 'd prior)';
   },
 
   onCertMailRadioToggle(rowId, enabled) {
@@ -3703,7 +3788,7 @@ window.CMS_MASTERS = {
     if (window.lucide) window.lucide.createIcons();
   },
 
-  onQuoteDateOrDaysChange(el) {
+  onQuoteDateOrDaysChange(el, isBlur = false) {
     const row = el.closest('.quote-row');
     if (!row) return;
     const validInp = row.querySelector('.q-valid');
@@ -3716,9 +3801,33 @@ window.CMS_MASTERS = {
 
     const expDate = validInp ? validInp.value : '';
     const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
-    const days = daysInp ? (parseInt(daysInp.value, 10) || minAlertPolicy) : minAlertPolicy;
-    const calculatedDate = this.calculateAlertDate(expDate, days);
+    let days = daysInp ? parseInt(daysInp.value, 10) : minAlertPolicy;
 
+    if (daysInp) {
+      if (isBlur) {
+        if (isNaN(days) || days < minAlertPolicy) {
+          if (daysInp.value !== '' && parseInt(daysInp.value, 10) < minAlertPolicy) {
+            if (window.CMS_APP && window.CMS_APP.toast) {
+              window.CMS_APP.toast(`Alert days cannot be less than Admin benchmark (${minAlertPolicy} days). Reset to ${minAlertPolicy} days.`, 'warning');
+            }
+          }
+          daysInp.value = minAlertPolicy;
+          days = minAlertPolicy;
+        }
+      }
+      if (isNaN(days) || days < minAlertPolicy) {
+        daysInp.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-700');
+        daysInp.classList.remove('border-blue-300', 'bg-white', 'text-slate-800');
+        days = minAlertPolicy;
+        if (summaryText) summaryText.innerHTML = `<span class="text-rose-600 font-bold">(Min ${minAlertPolicy}d)</span>`;
+      } else {
+        daysInp.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
+        daysInp.classList.add('border-blue-300', 'bg-white', 'text-slate-800');
+        if (summaryText) summaryText.innerText = '(' + days + 'd prior)';
+      }
+    }
+
+    const calculatedDate = this.calculateAlertDate(expDate, days);
     if (hiddenAlertInp) hiddenAlertInp.value = calculatedDate;
     const formatted = expDate ? this.formatDisplayDate(calculatedDate) : 'Select date';
     if (preview) {
@@ -3727,7 +3836,6 @@ window.CMS_MASTERS = {
     }
     if (previewText) previewText.innerText = formatted;
     if (dispatchText) dispatchText.innerText = formatted;
-    if (summaryText) summaryText.innerText = '(' + days + 'd prior)';
   },
 
   onQuoteMailRadioToggle(rowId, enabled) {
@@ -3740,7 +3848,7 @@ window.CMS_MASTERS = {
     if (window.lucide) window.lucide.createIcons();
   },
 
-  onLimitedApprovalDateOrDaysChange() {
+  onLimitedApprovalDateOrDaysChange(isBlur = false) {
     const validInp = document.getElementById('v-approval-valid-till');
     const daysInp = document.getElementById('v-approval-alert-days');
     const hiddenAlertInp = document.getElementById('v-approval-alert-date');
@@ -3750,14 +3858,37 @@ window.CMS_MASTERS = {
 
     const expDate = validInp ? validInp.value : '';
     const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
-    const days = daysInp ? (parseInt(daysInp.value, 10) || minAlertPolicy) : minAlertPolicy;
-    const calculatedDate = this.calculateAlertDate(expDate, days);
+    let days = daysInp ? parseInt(daysInp.value, 10) : minAlertPolicy;
 
+    if (daysInp) {
+      if (isBlur) {
+        if (isNaN(days) || days < minAlertPolicy) {
+          if (daysInp.value !== '' && parseInt(daysInp.value, 10) < minAlertPolicy) {
+            if (window.CMS_APP && window.CMS_APP.toast) {
+              window.CMS_APP.toast(`Alert days cannot be less than Admin benchmark (${minAlertPolicy} days). Reset to ${minAlertPolicy} days.`, 'warning');
+            }
+          }
+          daysInp.value = minAlertPolicy;
+          days = minAlertPolicy;
+        }
+      }
+      if (isNaN(days) || days < minAlertPolicy) {
+        daysInp.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-700');
+        daysInp.classList.remove('border-blue-300', 'bg-white', 'text-slate-800');
+        days = minAlertPolicy;
+        if (summary) summary.innerHTML = `<span class="text-rose-600 font-bold">(Min ${minAlertPolicy}d)</span>`;
+      } else {
+        daysInp.classList.remove('border-rose-500', 'bg-rose-50', 'text-rose-700');
+        daysInp.classList.add('border-blue-300', 'bg-white', 'text-slate-800');
+        if (summary) summary.innerText = '(' + days + 'd prior)';
+      }
+    }
+
+    const calculatedDate = this.calculateAlertDate(expDate, days);
     if (hiddenAlertInp) hiddenAlertInp.value = calculatedDate;
     const formatted = expDate ? this.formatDisplayDate(calculatedDate) : 'Select date above';
     if (preview) preview.innerText = formatted;
     if (dispatch) dispatch.innerText = formatted;
-    if (summary) summary.innerText = '(' + days + 'd prior)';
   },
 
   onApprovalMailRadioToggle(enabled) {
@@ -3814,14 +3945,11 @@ window.CMS_MASTERS = {
         </div>
       </div>
 
-      <!-- Ask User: Send quotation expiry notification to vendor via mail? -->
-      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs mt-2">
+      <!-- Ask User: Alert Notification -->
+      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded flex items-center justify-between gap-2 shadow-2xs mt-2">
         <div class="flex items-center gap-2">
-          <i data-lucide="mail" class="w-4 h-4 text-blue-600 shrink-0"></i>
-          <div>
-            <div class="text-[11px] font-bold text-slate-800">Send quotation expiry notification to vendor via mail?</div>
-            <div class="text-[10px] text-slate-500">If Yes, automated email will be sent to vendor to renew/revise the quotation before validity expires.</div>
-          </div>
+          <i data-lucide="bell" class="w-4 h-4 text-blue-600 shrink-0"></i>
+          <span class="text-xs font-bold text-slate-800">Alert Notification</span>
         </div>
         <div class="inline-flex items-center gap-2 bg-white px-2 py-1 rounded border border-slate-200 shrink-0">
           <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
@@ -3840,7 +3968,7 @@ window.CMS_MASTERS = {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
           <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
             <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
-            <span>Number of Days Fixation for Quotation Mail Notification</span>
+            <span>Number of Days Fixation</span>
           </div>
           <span class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded shadow-2xs">
             Admin Fixed Minimum: ${minAlertPolicy} Days
@@ -3854,11 +3982,11 @@ window.CMS_MASTERS = {
               <span class="text-[10px] text-slate-400 font-medium">Days</span>
             </div>
             <div class="flex items-center gap-1.5">
-              <input type="number" min="${minAlertPolicy}" max="365" class="q-alert-days w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" value="${qAlertDays}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onQuoteDateOrDaysChange(this)" onchange="CMS_MASTERS.onQuoteDateOrDaysChange(this)" />
+              <input type="number" min="${minAlertPolicy}" max="365" class="q-alert-days w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" value="${qAlertDays}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onQuoteDateOrDaysChange(this)" onchange="CMS_MASTERS.onQuoteDateOrDaysChange(this, true)" onblur="CMS_MASTERS.onQuoteDateOrDaysChange(this, true)" />
               <div class="inline-flex rounded border border-blue-200 bg-white p-0.5 shadow-2xs">
-                <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=${minAlertPolicy}; CMS_MASTERS.onQuoteDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
-                <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=30; CMS_MASTERS.onQuoteDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>
-                <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=60; CMS_MASTERS.onQuoteDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>
+                <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=${minAlertPolicy}; CMS_MASTERS.onQuoteDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
+                ${minAlertPolicy < 30 ? `<button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=30; CMS_MASTERS.onQuoteDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>` : ''}
+                ${minAlertPolicy < 60 ? `<button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=60; CMS_MASTERS.onQuoteDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>` : ''}
               </div>
             </div>
           </div>
@@ -3874,18 +4002,13 @@ window.CMS_MASTERS = {
             </div>
           </div>
         </div>
-
-        <div class="text-[10px] text-blue-800 flex items-center gap-1.5 pt-0.5">
-          <i data-lucide="info" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
-          <span>When quotation validity enters this fixed window (${qAlertDays} days), automated notice will be sent to the vendor. Cannot be fixed less than ${minAlertPolicy} days.</span>
-        </div>
       </div>
 
       <!-- Message when No is chosen -->
       <div class="quote-no-mail-section ${!qSendEmail ? '' : 'hidden'} p-2.5 bg-slate-100 border border-slate-200 rounded text-[11px] text-slate-600 flex items-center gap-2 mt-2">
         <i data-lucide="bell-off" class="w-4 h-4 text-slate-400 shrink-0"></i>
         <div>
-          <span class="font-bold text-slate-700">Vendor Mail Notification Disabled.</span> Expiry alert will only be displayed on the Admin & User compliance dashboard without emailing the vendor.
+          <span class="font-bold text-slate-700">Vendor Mail Disabled.</span> Dashboard alert only.
         </div>
       </div>
 
@@ -4052,14 +4175,11 @@ window.CMS_MASTERS = {
               <input type="date" min="${today}" class="cert-expiry-input w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs font-mono outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" value="${validTill}" onchange="CMS_MASTERS.onCertDateOrDaysChange(this)" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" />
             </div>
 
-            <!-- 2. Question: Send expiry notification to vendor via mail? -->
-            <div class="p-2.5 bg-white border border-slate-200 rounded flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+            <!-- 2. Question: Alert Notification -->
+            <div class="p-2.5 bg-white border border-slate-200 rounded flex items-center justify-between gap-2 shadow-2xs">
               <div class="flex items-center gap-2">
-                <i data-lucide="mail" class="w-4 h-4 text-blue-600 shrink-0"></i>
-                <div>
-                  <div class="text-[11px] font-bold text-slate-800">Send expiry notification to vendor via mail?</div>
-                  <div class="text-[10px] text-slate-500">System will dispatch renewal/change notice from configured Admin Gmail prior to expiry.</div>
-                </div>
+                <i data-lucide="bell" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                <span class="text-xs font-bold text-slate-800">Alert Notification</span>
               </div>
               <div class="inline-flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded border border-slate-200 shrink-0">
                 <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
@@ -4078,7 +4198,7 @@ window.CMS_MASTERS = {
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
                 <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
                   <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
-                  <span>Number of Days Fixation for Mail Notification</span>
+                  <span>Number of Days Fixation</span>
                 </div>
                 <span class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded shadow-2xs">
                   Admin Fixed Minimum: ${minAlertPolicy} Days
@@ -4092,11 +4212,11 @@ window.CMS_MASTERS = {
                     <span class="text-[10px] text-slate-400 font-medium">Days</span>
                   </div>
                   <div class="flex items-center gap-1.5">
-                    <input type="number" min="${minAlertPolicy}" max="365" class="cert-alert-days w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" value="${certAlertDays}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" onchange="CMS_MASTERS.onCertDateOrDaysChange(this)" />
+                    <input type="number" min="${minAlertPolicy}" max="365" class="cert-alert-days w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" value="${certAlertDays}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" onchange="CMS_MASTERS.onCertDateOrDaysChange(this, true)" onblur="CMS_MASTERS.onCertDateOrDaysChange(this, true)" />
                     <div class="inline-flex rounded border border-blue-200 bg-white p-0.5 shadow-2xs">
-                      <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=${minAlertPolicy}; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
-                      <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=30; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>
-                      <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=60; CMS_MASTERS.onCertDateOrDaysChange(inp);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>
+                      <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=${minAlertPolicy}; CMS_MASTERS.onCertDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
+                      ${minAlertPolicy < 30 ? `<button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=30; CMS_MASTERS.onCertDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>` : ''}
+                      ${minAlertPolicy < 60 ? `<button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=60; CMS_MASTERS.onCertDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>` : ''}
                     </div>
                   </div>
                 </div>
@@ -4112,18 +4232,13 @@ window.CMS_MASTERS = {
                   </div>
                 </div>
               </div>
-
-              <div class="text-[10px] text-blue-800 flex items-center gap-1.5 pt-0.5">
-                <i data-lucide="info" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
-                <span>When valid till date enters this fixed window (${certAlertDays} days), automated notice will be sent to the vendor. Cannot be fixed less than ${minAlertPolicy} days.</span>
-              </div>
             </div>
 
             <!-- 4. Message when No is chosen -->
             <div class="cert-no-mail-section ${!certSendEmail ? '' : 'hidden'} p-2.5 bg-slate-100 border border-slate-200 rounded text-[11px] text-slate-600 flex items-center gap-2">
               <i data-lucide="bell-off" class="w-4 h-4 text-slate-400 shrink-0"></i>
               <div>
-                <span class="font-bold text-slate-700">Vendor Mail Notification Disabled.</span> Expiry alert will only be displayed on the Admin & User compliance dashboard without emailing the vendor.
+                <span class="font-bold text-slate-700">Vendor Mail Disabled.</span> Dashboard alert only.
               </div>
             </div>
 
@@ -4971,14 +5086,11 @@ window.CMS_MASTERS = {
                     <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs font-mono outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                   </div>
 
-                  <!-- 2. Question: Send approval expiry notification to vendor via mail? -->
-                  <div class="p-2.5 bg-white border border-slate-200 rounded flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-2xs">
+                  <!-- 2. Question: Alert Notification -->
+                  <div class="p-2.5 bg-white border border-slate-200 rounded flex items-center justify-between gap-2 shadow-2xs">
                     <div class="flex items-center gap-2">
-                      <i data-lucide="mail" class="w-4 h-4 text-blue-600 shrink-0"></i>
-                      <div>
-                        <div class="text-[11px] font-bold text-slate-800">Send approval expiry notification to vendor via mail?</div>
-                        <div class="text-[10px] text-slate-500">Notify vendor to submit compliance updates before approval period ends.</div>
-                      </div>
+                      <i data-lucide="bell" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                      <span class="text-xs font-bold text-slate-800">Alert Notification</span>
                     </div>
                     <div class="inline-flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded border border-slate-200 shrink-0">
                       <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
@@ -4997,7 +5109,7 @@ window.CMS_MASTERS = {
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
                       <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
                         <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
-                        <span>Number of Days Fixation for Approval Mail Notification</span>
+                        <span>Number of Days Fixation</span>
                       </div>
                       <span class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded shadow-2xs">
                         Admin Fixed Minimum: ${minAlertPolicy} Days
@@ -5011,11 +5123,11 @@ window.CMS_MASTERS = {
                           <span class="text-[10px] text-slate-400 font-medium">Days</span>
                         </div>
                         <div class="flex items-center gap-1.5">
-                          <input type="number" min="${minAlertPolicy}" max="365" id="v-approval-alert-days" value="${vendor.approvalAlertDays || minAlertPolicy}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" class="w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+                          <input type="number" min="${minAlertPolicy}" max="365" id="v-approval-alert-days" value="${vendor.approvalAlertDays || minAlertPolicy}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true)" onblur="CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true)" class="w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
                           <div class="inline-flex rounded border border-blue-200 bg-white p-0.5 shadow-2xs">
-                            <button type="button" onclick="document.getElementById('v-approval-alert-days').value=${minAlertPolicy}; CMS_MASTERS.onLimitedApprovalDateOrDaysChange();" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
-                            <button type="button" onclick="document.getElementById('v-approval-alert-days').value=30; CMS_MASTERS.onLimitedApprovalDateOrDaysChange();" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>
-                            <button type="button" onclick="document.getElementById('v-approval-alert-days').value=60; CMS_MASTERS.onLimitedApprovalDateOrDaysChange();" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>
+                            <button type="button" onclick="document.getElementById('v-approval-alert-days').value=${minAlertPolicy}; CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
+                            ${minAlertPolicy < 30 ? `<button type="button" onclick="document.getElementById('v-approval-alert-days').value=30; CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>` : ''}
+                            ${minAlertPolicy < 60 ? `<button type="button" onclick="document.getElementById('v-approval-alert-days').value=60; CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>` : ''}
                           </div>
                         </div>
                       </div>
@@ -5031,18 +5143,13 @@ window.CMS_MASTERS = {
                         </div>
                       </div>
                     </div>
-
-                    <div class="text-[10px] text-blue-800 flex items-center gap-1.5 pt-0.5">
-                      <i data-lucide="info" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
-                      <span>When approval validity enters this fixed window (${vendor.approvalAlertDays || minAlertPolicy} days), automated notice will be sent to the vendor. Cannot be fixed less than ${minAlertPolicy} days.</span>
-                    </div>
                   </div>
 
                   <!-- 4. Message when No is chosen -->
                   <div id="v-approval-no-mail-section" class="${vendor.approvalSendEmailNotification === false ? '' : 'hidden'} p-2.5 bg-slate-100 border border-slate-200 rounded text-[11px] text-slate-600 flex items-center gap-2">
                     <i data-lucide="bell-off" class="w-4 h-4 text-slate-400 shrink-0"></i>
                     <div>
-                      <span class="font-bold text-slate-700">Vendor Mail Notification Disabled.</span> Expiry alert will only be displayed on the Admin & User compliance dashboard without emailing the vendor.
+                      <span class="font-bold text-slate-700">Vendor Mail Disabled.</span> Dashboard alert only.
                     </div>
                   </div>
 
@@ -5088,8 +5195,14 @@ window.CMS_MASTERS = {
                 <input type="text" id="v-account-no" autocomplete="new-password" required minlength="5" maxlength="22" value="${vendor.accountNo || ''}" class="w-full font-mono px-3 py-1.5 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Account Number" />
               </div>
               <div>
-                <label class="block font-bold text-slate-700 mb-1">IFSC Code (11 Chars) <span class="text-rose-600 font-bold">*</span></label>
-                <input type="text" id="v-ifsc" autocomplete="new-password" required maxlength="11" value="${vendor.ifscCode || ''}" oninput="this.value = this.value.toUpperCase();" class="w-full font-mono uppercase px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC0001234" />
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block font-bold text-slate-700 text-xs">IFSC Code (11 Chars) <span class="text-rose-600 font-bold">*</span></label>
+                  <span id="v-ifsc-counter" class="text-[10px] font-mono font-bold ${(vendor.ifscCode || '').length === 11 ? 'text-emerald-600' : (vendor.ifscCode || '').length > 0 ? 'text-rose-600' : 'text-slate-400'}">${(vendor.ifscCode || '').length}/11</span>
+                </div>
+                <input type="text" id="v-ifsc" autocomplete="new-password" required maxlength="11" minlength="11" value="${vendor.ifscCode || ''}" oninput="CMS_MASTERS.onIfscInput(this)" onblur="CMS_MASTERS.onIfscInput(this, true)" class="w-full font-mono uppercase px-3 py-1.5 border ${(vendor.ifscCode || '').length === 11 ? 'border-emerald-500 bg-emerald-50/20' : (vendor.ifscCode || '').length > 0 ? 'border-rose-500 bg-rose-50/50 ring-1 ring-rose-500 text-rose-900' : 'border-slate-300'} rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="e.g. HDFC0001234" />
+                <div id="v-ifsc-error" class="${(vendor.ifscCode && vendor.ifscCode.length !== 11) ? '' : 'hidden'} text-rose-600 font-bold text-[10px] mt-1 flex items-center gap-1">
+                  ${(vendor.ifscCode && vendor.ifscCode.length !== 11) ? `<i data-lucide="alert-circle" class="w-3.5 h-3.5 text-rose-600 shrink-0"></i><span>IFSC Code must be exactly 11 characters (less digits entered: ${vendor.ifscCode.length}/11).</span>` : ''}
+                </div>
               </div>
               <div>
                 <label class="block font-bold text-slate-700 mb-1">Branch Name</label>
@@ -5755,7 +5868,11 @@ window.CMS_MASTERS = {
           const certAlertDaysInput = row.querySelector('.cert-alert-days');
           const certAlertDaysVal = certAlertDaysInput ? (parseInt(certAlertDaysInput.value, 10) || 0) : minAlertPolicy;
           if (hasVal && certAlertDaysVal < minAlertPolicy) {
-            return highlightError(certAlertDaysInput, `Number of days fixation for ${reg} cannot be less than the Admin fixed minimum of ${minAlertPolicy} days.`);
+            if (certAlertDaysInput) {
+              certAlertDaysInput.value = minAlertPolicy;
+              CMS_MASTERS.onCertDateOrDaysChange(certAlertDaysInput, true);
+            }
+            return highlightError(certAlertDaysInput, `Number of days fixation for ${reg} cannot be less than Admin benchmark (${minAlertPolicy} days).`);
           }
 
           const certFileInput = row.querySelector('.cert-file-input');
@@ -5820,7 +5937,11 @@ window.CMS_MASTERS = {
             const qAlertDaysInput = row.querySelector('.q-alert-days');
             const qAlertDaysVal = qAlertDaysInput ? (parseInt(qAlertDaysInput.value, 10) || 0) : minAlertPolicy;
             if (qAlertDaysVal < minAlertPolicy) {
-              return highlightError(qAlertDaysInput, `Number of days fixation for Quotation "${qno}" cannot be less than the Admin fixed minimum of ${minAlertPolicy} days.`);
+              if (qAlertDaysInput) {
+                qAlertDaysInput.value = minAlertPolicy;
+                CMS_MASTERS.onQuoteDateOrDaysChange(qAlertDaysInput, true);
+              }
+              return highlightError(qAlertDaysInput, `Number of days fixation for Quotation "${qno}" cannot be less than Admin benchmark (${minAlertPolicy} days).`);
             }
           }
           if (!rate || rate <= 0) return highlightError(qRateInput, 'Please enter a valid quoted Unit Rate (greater than 0).');
@@ -5841,7 +5962,11 @@ window.CMS_MASTERS = {
         const limAlertDaysInput = document.getElementById('v-approval-alert-days');
         const limAlertDaysVal = limAlertDaysInput ? (parseInt(limAlertDaysInput.value, 10) || 0) : minAlertPolicy;
         if (limAlertDaysVal < minAlertPolicy) {
-          return highlightError(limAlertDaysInput, `Number of days fixation for Limited Period Approval cannot be less than the Admin fixed minimum of ${minAlertPolicy} days.`);
+          if (limAlertDaysInput) {
+            limAlertDaysInput.value = minAlertPolicy;
+            CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true);
+          }
+          return highlightError(limAlertDaysInput, `Number of days fixation for Limited Period Approval cannot be less than Admin benchmark (${minAlertPolicy} days).`);
         }
       }
 
@@ -5876,10 +6001,12 @@ window.CMS_MASTERS = {
       const ifsc = document.getElementById('v-ifsc');
       const ifscVal = ifsc ? ifsc.value.trim().toUpperCase() : '';
       if (!ifscVal) {
-        return highlightError(ifsc, 'Bank IFSC Code is mandatory.');
+        CMS_MASTERS.onIfscInput(ifsc, true);
+        return highlightError(ifsc, 'Bank IFSC Code is mandatory (must be exactly 11 characters).');
       }
-      if (ifscVal.length < 8 || ifscVal.length > 11) {
-        return highlightError(ifsc, `Bank IFSC Code must be valid (e.g. HDFC0001234). Currently: "${ifscVal}".`);
+      if (ifscVal.length !== 11) {
+        CMS_MASTERS.onIfscInput(ifsc, true);
+        return highlightError(ifsc, `Bank IFSC Code must be exactly 11 characters (currently "${ifscVal}" - ${ifscVal.length} chars). No less than or greater number accepted.`);
       }
 
       const bankTitle = document.getElementById('v-bank-title');
@@ -6245,8 +6372,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       if (!accountNo || accountNo.length < 5 || accountNo.length > 22) {
       if (directSubmit) return window.CMS_APP.toast(`Bank Account Number must be between 5 and 22 digits (currently ${accountNo.length} digits).`, 'error');
     }
-    if (!ifscCode || ifscCode.length < 8 || ifscCode.length > 11) {
-      if (directSubmit) return window.CMS_APP.toast(`Bank IFSC Code must be valid (e.g. HDFC0001234). Currently: "${ifscCode}".`, 'error');
+    if (!ifscCode || ifscCode.length !== 11) {
+      if (directSubmit) return window.CMS_APP.toast(`Bank IFSC Code must be exactly 11 characters (e.g. HDFC0001234). Currently: "${ifscCode}" (${ifscCode.length} chars).`, 'error');
     }
 
     // Limited period approval validation
@@ -6553,7 +6680,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       entityType: 'vendor',
       summaryHtml,
       documents: docs,
-      onConfirm: `() => CMS_MASTERS.approveVendor('${vendorId}')`
+      onConfirm: `() => CMS_MASTERS.approveVendor('${vendorId}')`,
+      onDelete: `() => CMS_MASTERS.deleteVendor('${vendorId}')`
     });
   },
 
@@ -6597,13 +6725,20 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
   },
 
   deleteVendor(vendorId) {
-    if (confirm('Delete this draft vendor? This action cannot be undone.')) {
-      const store = window.CMS_STORE;
-      const idx = store.data.vendors.findIndex(v => v.id === vendorId);
+    const store = window.CMS_STORE;
+    const v = store.data.vendors.find(i => i.id === vendorId);
+    if (!v) return;
+    if (v.status === 'Approved') {
+      window.CMS_APP.toast('Master deletion is disabled for approved vendors.', 'error');
+      return;
+    }
+    const name = v.name || v.id;
+    if (confirm(`Delete draft vendor "${name}"? This action cannot be undone.`)) {
+      const idx = store.data.vendors.findIndex(i => i.id === vendorId);
       if (idx !== -1) {
         store.data.vendors.splice(idx, 1);
         store.save();
-        window.CMS_APP.toast('Draft vendor deleted successfully.', 'success');
+        window.CMS_APP.toast(`Draft vendor "${name}" deleted successfully.`, 'success');
         window.CMS_APP.refreshView();
       }
     }
@@ -7901,7 +8036,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       entityType: 'consumable',
       summaryHtml,
       documents: docs,
-      onConfirm: `() => CMS_MASTERS.approveConsumable('${matId}')`
+      onConfirm: `() => CMS_MASTERS.approveConsumable('${matId}')`,
+      onDelete: `() => CMS_MASTERS.deleteConsumable('${matId}')`
     });
   },
 
