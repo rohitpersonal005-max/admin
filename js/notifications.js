@@ -25,6 +25,7 @@ window.CMS_NOTIFICATIONS = {
 
     return {
       minAlertDays: (settings && settings.minAlertDays !== undefined && settings.minAlertDays !== '') ? Math.max(1, parseInt(settings.minAlertDays, 10)) : 15,
+      fixedAlertDays: (settings && (settings.fixedAlertDays || settings.minAlertDays) !== undefined) ? Math.max(1, parseInt(settings.fixedAlertDays || settings.minAlertDays, 10)) : 15,
       senderGmail: (settings && settings.senderGmail) ? settings.senderGmail.trim() : (compEmail || userEmail || ''),
       autoSendVendorEmail: (settings && settings.autoSendVendorEmail !== undefined) ? Boolean(settings.autoSendVendorEmail) : true
     };
@@ -48,6 +49,7 @@ window.CMS_NOTIFICATIONS = {
 
     const newSettings = {
       minAlertDays: days,
+      fixedAlertDays: days,
       senderGmail: email,
       autoSendVendorEmail: Boolean(autoSend),
       updatedAt: new Date().toISOString()
@@ -63,7 +65,7 @@ window.CMS_NOTIFICATIONS = {
     }
 
     if (window.CMS_APP) {
-      window.CMS_APP.toast(`Notification settings saved! Minimum alert: ${days} days, Sender Gmail: ${email}`, 'success');
+      window.CMS_APP.toast(`Alert days fixation saved! Fixed lead time: ${days} days, Sender Gmail: ${email}`, 'success');
     }
     return true;
   },

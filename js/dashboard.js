@@ -197,7 +197,7 @@ window.CMS_DASHBOARD = {
             const isToday = diffDays === 0;
             const expFormatted = this.formatDateStr(expIso);
             const certName = cert.regulator || cert.documentName || cert.name || 'Statutory/Regulatory Certificate';
-            const alertDaysNote = cert.alertDays ? ` (${cert.alertDays}d prior alert)` : '';
+            const alertDaysNote = cert.alertDays ? ` (${cert.alertDays}d fixed alert lead time)` : '';
             const sendMailEnabled = cert.sendEmailNotification !== false;
 
             let timeText = '';
@@ -250,7 +250,7 @@ window.CMS_DASHBOARD = {
             const isToday = diffDays === 0;
             const expFormatted = this.formatDateStr(expIso);
             const qRef = q.quotationNo ? `Ref ${q.quotationNo}` : (q.materialName ? `for ${q.materialName}` : 'Quotation');
-            const alertDaysNote = q.alertDays ? ` (${q.alertDays}d prior alert)` : '';
+            const alertDaysNote = q.alertDays ? ` (${q.alertDays}d fixed alert lead time)` : '';
             const sendMailEnabled = q.sendEmailNotification !== false;
 
             let timeText = '';
@@ -301,7 +301,7 @@ window.CMS_DASHBOARD = {
           const isExpired = diffDays < 0;
           const isToday = diffDays === 0;
           const expFormatted = this.formatDateStr(expIso);
-          const alertDaysNote = v.approvalAlertDays ? ` (${v.approvalAlertDays}d prior alert)` : '';
+          const alertDaysNote = v.approvalAlertDays ? ` (${v.approvalAlertDays}d fixed alert lead time)` : '';
           const sendMailEnabled = v.approvalSendEmailNotification !== false;
 
           let timeText = '';

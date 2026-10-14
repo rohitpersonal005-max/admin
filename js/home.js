@@ -534,7 +534,7 @@ window.CMS_HOME = {
               `).join('')}
             </tbody>
           </table>
-      <!-- Document Expiry & Notification Email Settings -->
+      <!-- Document Expiry & Notification Email Settings (Number of Days Fixation) -->
       <div class="mt-6 stat-card p-5 bg-white border border-slate-200 rounded-sm shadow-sm space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
           <div class="flex items-center gap-2.5">
@@ -542,8 +542,8 @@ window.CMS_HOME = {
               <i data-lucide="bell-ring" class="w-5 h-5"></i>
             </div>
             <div>
-              <h3 class="font-bold text-slate-800 text-base">Document Expiry Notification & Vendor Email Settings</h3>
-              <p class="text-xs text-slate-500">Configure minimum alert lead time and the sender Gmail for automated vendor document change & renewal requests.</p>
+              <h3 class="font-bold text-slate-800 text-base">Alert Days Fixation & Vendor Expiry Email Settings</h3>
+              <p class="text-xs text-slate-500">Fix the minimum alert lead time policy for the entire system, and configure the sender Gmail for automated vendor document change & renewal notices.</p>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
@@ -555,27 +555,27 @@ window.CMS_HOME = {
 
         <form id="home-notif-settings-form" onsubmit="event.preventDefault(); CMS_NOTIFICATIONS.handleAdminSaveSettings();" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- 1. Minimum Alert Time -->
+            <!-- 1. Number of Days Fixation (Minimum Alert Time Policy) -->
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-2.5">
               <div class="flex items-center justify-between">
                 <label class="block text-xs font-bold text-slate-800">
-                  Minimum Alert Time (Days Prior) <span class="text-rose-600">*</span>
+                  Number of Days Fixation (Minimum Alert Policy) <span class="text-rose-600">*</span>
                 </label>
                 <span class="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
-                  System Policy
+                  Fixed Policy Threshold
                 </span>
               </div>
               <p class="text-[11px] text-slate-500">
-                Minimum notification threshold days before any document or quotation expires. Alerts will trigger at least this many days in advance.
+                Fixes the baseline minimum days prior to valid till date for all alerts and vendor emails. In Vendor Setup, notification lead time cannot be fixed lower than this threshold.
               </p>
               <div class="flex items-center gap-2 pt-1">
                 <input type="number" id="home-notif-min-days" min="1" max="365" value="${notifSettings.minAlertDays || 15}" required class="w-24 px-3 py-2 border border-slate-300 rounded font-mono font-bold text-sm text-center bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
                 <span class="text-xs font-bold text-slate-700">Days Prior</span>
                 <div class="flex items-center gap-1 ml-auto">
-                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 7;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition">7d</button>
-                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 15;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition">15d</button>
-                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 30;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition">30d</button>
-                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 60;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition">60d</button>
+                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 7;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition" title="Fix at 7 Days">Fix 7d</button>
+                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 15;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition" title="Fix at 15 Days">Fix 15d</button>
+                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 30;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition" title="Fix at 30 Days">Fix 30d</button>
+                  <button type="button" onclick="document.getElementById('home-notif-min-days').value = 60;" class="px-2 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 rounded transition" title="Fix at 60 Days">Fix 60d</button>
                 </div>
               </div>
             </div>
@@ -591,7 +591,7 @@ window.CMS_HOME = {
                 </span>
               </div>
               <p class="text-[11px] text-slate-500">
-                The official Gmail from which document change and renewal notification emails will be sent to the vendor.
+                The official Gmail from which document change and renewal notification emails will be dispatched to the vendor.
               </p>
               <div class="relative pt-1">
                 <input type="email" id="home-notif-sender-gmail" required value="${notifSettings.senderGmail || ''}" placeholder="e.g. procurement.compliance@gmail.com" class="w-full pl-3 pr-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
@@ -603,14 +603,14 @@ window.CMS_HOME = {
           <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
             <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
               <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500"></i>
-              <span>Vendors with "Send email notification: Yes" on their validity dates will receive notices via this Gmail.</span>
+              <span>Vendors with "Send email notification: Yes" on their validity dates will receive notices via this Gmail according to their fixed days.</span>
             </div>
             <div class="flex items-center gap-2">
               <button type="button" onclick="CMS_NOTIFICATIONS.openSampleEmailPreviewModal()" class="px-3.5 py-2 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-sm border border-slate-300 transition flex items-center gap-1.5">
                 <i data-lucide="eye" class="w-3.5 h-3.5"></i> Preview Sample Email
               </button>
               <button type="submit" class="px-5 py-2 text-xs font-bold bg-slate-900 hover:bg-black text-white rounded-sm shadow-sm transition flex items-center gap-1.5">
-                <i data-lucide="save" class="w-3.5 h-3.5 text-white"></i> Save Notification Settings
+                <i data-lucide="save" class="w-3.5 h-3.5 text-white"></i> Save & Fix Notification Days
               </button>
             </div>
           </div>
@@ -639,6 +639,7 @@ window.CMS_HOME = {
                     <th class="py-2.5 px-3">Vendor</th>
                     <th class="py-2.5 px-3">Document / Detail</th>
                     <th class="py-2.5 px-3">Valid Till</th>
+                    <th class="py-2.5 px-3">Fixed Lead Time</th>
                     <th class="py-2.5 px-3">Expiry Status</th>
                     <th class="py-2.5 px-3">Mail to Vendor?</th>
                     <th class="py-2.5 px-3 text-right">Action</th>
@@ -662,12 +663,17 @@ window.CMS_HOME = {
                         </td>
                         <td class="py-2.5 px-3 font-mono font-medium">${CMS_NOTIFICATIONS.formatDisplayDate(item.validTill)}</td>
                         <td class="py-2.5 px-3">
+                          <span class="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[10px] whitespace-nowrap">
+                            ${item.alertDays} Days Fixation
+                          </span>
+                        </td>
+                        <td class="py-2.5 px-3">
                           <span class="inline-block px-2 py-0.5 rounded text-[10px] ${expBadge}">${expText}</span>
                         </td>
                         <td class="py-2.5 px-3">
                           ${item.sendEmailNotification ? `
                             <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                              <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> Yes (Mail Active)
+                              <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Yes (Mail Active)
                             </span>
                           ` : `
                             <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
