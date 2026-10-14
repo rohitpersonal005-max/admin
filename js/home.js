@@ -212,13 +212,28 @@ window.CMS_HOME = {
     const users = window.CMS_STORE.getUsers() || [];
     const roles = this.getCustomRoles();
     
-    if (!this.companyInfo.name) {
+    if (!this.companyInfo.name || this.companyInfo.name.toLowerCase().includes('adminutes')) {
+      const tenantComp = (window.CMS_TENANT_NAME || localStorage.getItem('CMS_TENANT_NAME_CACHE') || '').trim();
       this.companyInfo = {
-        name: 'Adminutes Enterprises',
-        address: '123 Enterprise Way, Business District',
-        gstin: '29ABCDE1234F1Z5',
-        contact: 'contact@adminutes.corp'
+        name: (!tenantComp.toLowerCase().includes('adminutes') ? tenantComp : ''),
+        address: '',
+        taluka: '',
+        district: '',
+        state: '',
+        stateCode: '',
+        pin: '',
+        country: 'India',
+        gstin: '',
+        pan: '',
+        contact: '',
+        email: (currentUser.email && !currentUser.email.toLowerCase().includes('adminutes')) ? currentUser.email : ''
       };
+      try {
+        const stored = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}');
+        if (stored.name && stored.name.toLowerCase().includes('adminutes')) {
+          localStorage.setItem('CMS_COMPANY_INFO', JSON.stringify(this.companyInfo));
+        }
+      } catch (e) {}
     }
 
     let html = `
@@ -354,7 +369,7 @@ window.CMS_HOME = {
 <form id="company-edit-mode" onsubmit="event.preventDefault(); CMS_HOME.saveCompany();" class="hidden space-y-4 border border-blue-100 p-4 rounded-lg bg-blue-50/30">
             <div>
               <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Company Name <span class="text-rose-600">*</span></label>
-              <input type="text" id="home-comp-name" value="${this.companyInfo.name || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-sm" required placeholder="e.g. Adminutes Enterprises" />
+              <input type="text" id="home-comp-name" value="${this.companyInfo.name || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-sm" required placeholder="e.g. Registered Business / Enterprise Name" />
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Street / Building Address <span class="text-rose-600">*</span></label>

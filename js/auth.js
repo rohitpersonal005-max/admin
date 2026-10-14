@@ -44,6 +44,7 @@ window.CMS_AUTH = {
 
       const tenantData = tenants[0];
       window.CMS_TENANT_ID = tenantData.id; localStorage.setItem('CMS_TENANT_ID_CACHE', tenantData.id);
+      window.CMS_TENANT_NAME = tenantData.company_name; localStorage.setItem('CMS_TENANT_NAME_CACHE', tenantData.company_name);
       window.CMS_TENANT_SEATS = tenantData.seat_limit || 10;
       console.log("Welcome to tenant:", tenantData.company_name);
         if (window.CMS_STORE) { await window.CMS_STORE.loadFromCloud(); const saasAdmin = { id: user.id, name: tenantData.admin_username || tenantData.company_name + ' Admin', email: user.email, role: 'Admin', department: tenantData.company_name, pin: null }; const existingUsers = window.CMS_STORE.getUsers();
@@ -81,7 +82,8 @@ window.CMS_AUTH = {
       if (error || !tenants || tenants.length === 0) throw new Error("Workspace not found.");
       
       const tenantData = tenants[0];
-      window.CMS_TENANT_ID = tenantData.id;
+      window.CMS_TENANT_ID = tenantData.id; localStorage.setItem('CMS_TENANT_ID_CACHE', tenantData.id);
+      window.CMS_TENANT_NAME = tenantData.company_name; localStorage.setItem('CMS_TENANT_NAME_CACHE', tenantData.company_name);
       window.CMS_TENANT_SEATS = tenantData.seat_limit || 10;
       
       if (window.CMS_STORE) {

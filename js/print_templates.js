@@ -5,7 +5,57 @@
  */
 
 window.CMS_PRINT = {
+  getCompanyHeaderInfo() {
+    let companyInfo = {};
+    try {
+      if (window.CMS_HOME && window.CMS_HOME.companyInfo) {
+        companyInfo = window.CMS_HOME.companyInfo;
+      } else {
+        companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}') || {};
+      }
+    } catch (e) {
+      companyInfo = {};
+    }
+    const currentUser = (window.CMS_STORE && window.CMS_STORE.getCurrentUser) ? window.CMS_STORE.getCurrentUser() : null;
+    let rawName = (companyInfo.name || '').trim();
+    if (rawName.toLowerCase().includes('adminutes')) rawName = '';
+    let tenantName = (window.CMS_TENANT_NAME || (typeof localStorage !== 'undefined' ? localStorage.getItem('CMS_TENANT_NAME_CACHE') : '') || '').trim();
+    if (tenantName.toLowerCase().includes('adminutes')) tenantName = '';
+    let storeCompName = (window.CMS_STORE && window.CMS_STORE.data && (window.CMS_STORE.data.companyName || window.CMS_STORE.data.companyInfo?.name) || '').trim();
+    if (storeCompName.toLowerCase().includes('adminutes')) storeCompName = '';
+
+    const name = rawName || tenantName || storeCompName || (currentUser && currentUser.name ? `${currentUser.name}'s Organization` : 'Central Store Operations');
+    
+    let rawAddress = (companyInfo.address || '').trim();
+    if (rawAddress.toLowerCase().includes('enterprise way') || rawAddress.toLowerCase().includes('adminutes')) rawAddress = '';
+    const addressParts = [
+      rawAddress,
+      companyInfo.taluka,
+      companyInfo.district,
+      companyInfo.state ? (companyInfo.state + (companyInfo.pin ? ' - ' + companyInfo.pin : '')) : companyInfo.pin,
+      companyInfo.country || ''
+    ].filter(Boolean);
+    const address = addressParts.join(', ');
+
+    let gstin = (companyInfo.gstin || '').trim();
+    if (gstin.toLowerCase().includes('29abcde1234f1z5') || gstin.toLowerCase().includes('07aaace0101c1z4')) gstin = '';
+
+    let email = (companyInfo.email || '').trim();
+    if (email.toLowerCase().includes('adminutes')) email = '';
+    if (!email && currentUser && currentUser.email && !currentUser.email.toLowerCase().includes('adminutes')) {
+      email = currentUser.email;
+    }
+
+    let contact = (companyInfo.contact || '').trim();
+    if (contact.toLowerCase().includes('adminutes')) contact = '';
+
+    const logo = (companyInfo.logo && !companyInfo.logo.includes('adminutes_logo')) ? companyInfo.logo : (companyInfo.logoUrl && !companyInfo.logoUrl.includes('adminutes_logo') ? companyInfo.logoUrl : null);
+
+    return { name, address, gstin, email, contact, logo };
+  },
+
   printIssueSlip(issue) {
+    const comp = this.getCompanyHeaderInfo();
     const store = window.CMS_STORE ? window.CMS_STORE.data : null;
     const mat = (store && store.consumables) ? store.consumables.find(m => m.id === issue.materialId) : null;
     
@@ -31,11 +81,11 @@ window.CMS_PRINT = {
         <div class="border-b-2 border-slate-900 pb-4 mb-6">
           <div class="flex justify-between items-start">
             <div class="flex items-center gap-3">
-              <img src="assets/adminutes_logo.jpg?v=2" alt="Adminutes Logo" class="h-12 w-auto rounded object-contain border border-slate-300 shadow-xs" />
+              ${comp.logo ? `<img src="${comp.logo}" alt="Company Logo" class="h-12 w-auto rounded object-contain border border-slate-300 shadow-xs" />` : ''}
               <div>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 uppercase">ADMINUTES CENTRAL STORES</h1>
-                <p class="text-xs text-slate-600">Enterprise Consumable Management ERP</p>
-                <p class="text-xs text-slate-500">Facility Operations, Fixed Assets & Logistics Wing</p>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 uppercase">${comp.name}</h1>
+                <p class="text-xs text-slate-600">Enterprise Consumable Management System</p>
+                <p class="text-xs text-slate-500">${comp.address || 'Facility Operations, Fixed Assets & Logistics Wing'}</p>
               </div>
             </div>
             <div class="text-right">
@@ -150,7 +200,7 @@ window.CMS_PRINT = {
 
         <!-- Footer note -->
         <div class="mt-8 text-center text-[10px] text-slate-400">
-          Generated via Adminutes ERP • Available Stock checked & certified on issue
+          Consumable Management System • Available Stock checked & certified on issue
         </div>
       </div>
     `;
@@ -158,15 +208,21 @@ window.CMS_PRINT = {
   },
 
   printPurchaseOrder(po) {
+    const comp = this.getCompanyHeaderInfo();
     const html = `
       <div class="print-slip-box font-sans p-8 max-w-4xl mx-auto border-2 border-slate-900 bg-white">
         <!-- Header -->
         <div class="border-b-2 border-slate-900 pb-4 mb-6">
           <div class="flex justify-between items-start">
-            <div>
-              <h1 class="text-3xl font-semibold text-slate-900 tracking-tight">ADMINUTES ENTERPRISES LTD</h1>
-              <p class="text-xs text-slate-600">Central Procurement & Material Management Department</p>
-              <p class="text-xs text-slate-500">GSTIN: 07AAACE0101C1Z4 | Email: purchase@adminutes.com</p>
+            <div class="flex items-center gap-3">
+              ${comp.logo ? `<img src="${comp.logo}" alt="Company Logo" class="h-12 w-auto rounded object-contain border border-slate-300 shadow-xs" />` : ''}
+              <div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 uppercase">${comp.name}</h1>
+                <p class="text-xs text-slate-600">Central Procurement & Material Management Department</p>
+                ${(comp.gstin || comp.email) ? `
+                  <p class="text-xs text-slate-500">${comp.gstin ? 'GSTIN: ' + comp.gstin : ''}${comp.gstin && comp.email ? ' | ' : ''}${comp.email ? 'Email: ' + comp.email : ''}</p>
+                ` : ''}
+              </div>
             </div>
             <div class="text-right">
               <span class="inline-block px-3 py-1 bg-blue-700 text-white font-bold text-sm tracking-wider uppercase">
@@ -273,6 +329,7 @@ window.CMS_PRINT = {
   },
 
   printReconciliationSheet(recon) {
+    const comp = this.getCompanyHeaderInfo();
     const rows = (recon.items || []).map((item, idx) => `
       <tr class="border-b border-slate-300">
         <td class="p-2 border-r border-slate-300 text-center font-mono">${idx + 1}</td>
@@ -290,9 +347,12 @@ window.CMS_PRINT = {
     const html = `
       <div class="print-slip-box font-sans p-8 max-w-4xl mx-auto border-2 border-slate-900 bg-white">
         <div class="border-b-2 border-slate-900 pb-3 mb-4 flex justify-between items-start">
-          <div>
-            <h1 class="text-2xl font-semibold uppercase text-slate-900">ADMINUTES - STOCK VERIFICATION & RECONCILIATION AUDIT</h1>
-            <p class="text-xs text-slate-600">Category: <span class="font-bold">${recon.categoryName}</span> | Audit No: <span class="font-mono font-bold text-blue-800">${recon.reconciliationNo}</span></p>
+          <div class="flex items-center gap-3">
+            ${comp.logo ? `<img src="${comp.logo}" alt="Company Logo" class="h-10 w-auto rounded object-contain border border-slate-300 shadow-xs" />` : ''}
+            <div>
+              <h1 class="text-2xl font-semibold uppercase text-slate-900">${comp.name} - STOCK AUDIT</h1>
+              <p class="text-xs text-slate-600">Category: <span class="font-bold">${recon.categoryName}</span> | Audit No: <span class="font-mono font-bold text-blue-800">${recon.reconciliationNo}</span></p>
+            </div>
           </div>
           <div class="text-right">
             <span class="inline-block px-3 py-1 bg-purple-800 text-white font-bold text-xs uppercase">AUDIT CERTIFIED</span>
@@ -340,6 +400,7 @@ window.CMS_PRINT = {
   },
 
   printPmCertificate(serviceRecord) {
+    const comp = this.getCompanyHeaderInfo();
     const store = window.CMS_STORE ? window.CMS_STORE.data : null;
     const mat = serviceRecord.material || (store && store.consumables ? store.consumables.find(m => m.id === serviceRecord.materialId) : null) || {};
     
@@ -360,10 +421,10 @@ window.CMS_PRINT = {
             <div>
               <div class="flex items-center gap-2">
                 <span class="w-7 h-7 rounded bg-purple-800 text-white font-bold flex items-center justify-center text-sm">PM</span>
-                <h1 class="text-2xl font-bold tracking-tight text-slate-900 uppercase">ADMINUTES ASSET CARE</h1>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 uppercase">${comp.name} - ASSET CARE</h1>
               </div>
               <p class="text-xs text-slate-600 mt-1">Preventive Maintenance & Equipment Health Verification System</p>
-              <p class="text-xs text-slate-500">Plant, Fixed Assets & Facilities Engineering Division</p>
+              <p class="text-xs text-slate-500">${comp.address || 'Plant, Fixed Assets & Facilities Engineering Division'}</p>
             </div>
             <div class="text-right">
               <span class="inline-block px-3 py-1 bg-purple-900 text-white font-bold text-xs tracking-wider uppercase rounded">
@@ -445,12 +506,12 @@ window.CMS_PRINT = {
           <div>
             <div class="h-10 mb-1 border-b border-slate-400"></div>
             <p class="font-bold text-slate-900">Store Manager</p>
-            <p class="text-slate-500">Adminutes Asset Authority</p>
+            <p class="text-slate-500">Store Asset Authority</p>
           </div>
         </div>
 
         <div class="mt-8 text-center text-[10px] text-slate-400">
-          Adminutes ERP • Asset Health & Preventive Maintenance Certification • Document Ref: ${jobCardNo}
+          Consumable Management ERP • Asset Health & Preventive Maintenance Certification • Document Ref: ${jobCardNo}
         </div>
       </div>
     `;

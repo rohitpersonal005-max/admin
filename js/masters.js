@@ -1672,7 +1672,7 @@ window.CMS_MASTERS = {
     // Admin Company Information (from Settings / Company Profile)
     let companyInfo = {};
     try {
-      if (window.CMS_HOME && window.CMS_HOME.companyInfo && window.CMS_HOME.companyInfo.name) {
+      if (window.CMS_HOME && window.CMS_HOME.companyInfo) {
         companyInfo = window.CMS_HOME.companyInfo;
       } else {
         companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}') || {};
@@ -1681,27 +1681,55 @@ window.CMS_MASTERS = {
       companyInfo = {};
     }
 
-    const adminCompName = (companyInfo.name || '').trim()
-      || window.CMS_TENANT_NAME
-      || (window.CMS_STORE && window.CMS_STORE.data && (window.CMS_STORE.data.companyName || window.CMS_STORE.data.companyInfo?.name))
-      || 'Adminutes Enterprises';
+    const currentUser = (window.CMS_STORE && window.CMS_STORE.getCurrentUser) ? window.CMS_STORE.getCurrentUser() : null;
+
+    // Purge any dummy "Adminutes" default
+    let rawName = (companyInfo.name || '').trim();
+    if (rawName.toLowerCase().includes('adminutes')) rawName = '';
+
+    let tenantName = (window.CMS_TENANT_NAME || (typeof localStorage !== 'undefined' ? localStorage.getItem('CMS_TENANT_NAME_CACHE') : '') || '').trim();
+    if (tenantName.toLowerCase().includes('adminutes')) tenantName = '';
+
+    let storeCompName = (window.CMS_STORE && window.CMS_STORE.data && (window.CMS_STORE.data.companyName || window.CMS_STORE.data.companyInfo?.name) || '').trim();
+    if (storeCompName.toLowerCase().includes('adminutes')) storeCompName = '';
+
+    const userDept = (currentUser && currentUser.department && !currentUser.department.toLowerCase().includes('adminutes')) ? currentUser.department : '';
+    const userName = (currentUser && currentUser.name && !currentUser.name.toLowerCase().includes('adminutes')) ? currentUser.name : '';
+
+    const adminCompName = rawName || tenantName || storeCompName || userDept || (userName ? `${userName}'s Organization` : 'Central Store Operations');
+
+    let rawAddress = (companyInfo.address || '').trim();
+    if (rawAddress.toLowerCase().includes('enterprise way') || rawAddress.toLowerCase().includes('adminutes')) rawAddress = '';
 
     const adminAddressParts = [
-      companyInfo.address,
+      rawAddress,
       companyInfo.taluka,
       companyInfo.district,
       companyInfo.state ? (companyInfo.state + (companyInfo.pin ? ' - ' + companyInfo.pin : '')) : companyInfo.pin,
-      companyInfo.country || 'India'
+      companyInfo.country || ''
     ].filter(Boolean);
 
-    const adminAddressStr = adminAddressParts.length > 0
-      ? adminAddressParts.join(', ')
-      : '123 Enterprise Way, Business District, New Delhi - 110001, India';
+    const adminAddressStr = adminAddressParts.length > 0 ? adminAddressParts.join(', ') : '';
 
-    const adminGstin = (companyInfo.gstin || '').trim();
-    const adminPan = (companyInfo.pan || '').trim() || (adminGstin.length >= 12 ? adminGstin.substring(2, 12) : '');
-    const adminContact = (companyInfo.contact || '').trim();
-    const adminEmail = (companyInfo.email || '').trim();
+    let adminGstin = (companyInfo.gstin || '').trim();
+    if (adminGstin.toLowerCase().includes('29abcde1234f1z5')) adminGstin = '';
+
+    let adminPan = (companyInfo.pan || '').trim();
+    if (!adminPan && adminGstin && adminGstin.length >= 12) {
+      adminPan = adminGstin.substring(2, 12);
+    }
+
+    let adminContact = (companyInfo.contact || '').trim();
+    if (adminContact.toLowerCase().includes('adminutes')) adminContact = '';
+
+    let adminEmail = (companyInfo.email || '').trim();
+    if (adminEmail.toLowerCase().includes('adminutes')) adminEmail = '';
+    if (!adminEmail && currentUser && currentUser.email && !currentUser.email.toLowerCase().includes('adminutes')) {
+      adminEmail = currentUser.email;
+    }
+
+    // Only show custom user logo if uploaded; never show Adminutes logo
+    const customLogo = (companyInfo.logo && !companyInfo.logo.includes('adminutes_logo')) ? companyInfo.logo : (companyInfo.logoUrl && !companyInfo.logoUrl.includes('adminutes_logo') ? companyInfo.logoUrl : null);
 
     return `
       <div id="vendor-paper-form" data-vendor-id="${v.id}" class="space-y-5 text-xs bg-white ${isPrint ? 'p-2' : 'p-6 border border-slate-200 shadow-sm'} text-slate-800">
@@ -1710,12 +1738,16 @@ window.CMS_MASTERS = {
         <div class="border-b-2 border-slate-900 pb-4 mb-4">
           <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div class="flex items-start gap-3.5 max-w-xl">
-              <img src="assets/adminutes_logo.jpg?v=2" alt="Company Logo" class="h-14 w-auto rounded border border-slate-300 object-contain shadow-2xs mt-0.5 shrink-0" onerror="this.style.display='none'" />
+              ${customLogo ? `
+                <img src="${customLogo}" alt="Company Logo" class="h-14 w-auto rounded border border-slate-300 object-contain shadow-2xs mt-0.5 shrink-0" onerror="this.style.display='none'" />
+              ` : ''}
               <div>
                 <h1 class="text-xl font-black tracking-tight text-slate-900 uppercase leading-snug">${adminCompName}</h1>
-                <div class="text-[11px] text-slate-600 mt-1 leading-normal font-medium">
-                  ${adminAddressStr}
-                </div>
+                ${adminAddressStr ? `
+                  <div class="text-[11px] text-slate-600 mt-1 leading-normal font-medium">
+                    ${adminAddressStr}
+                  </div>
+                ` : ''}
                 ${(adminGstin || adminPan) ? `
                   <div class="text-[11px] text-slate-700 mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono">
                     ${adminGstin ? `<span>GSTIN: <strong class="text-slate-900 font-bold">${adminGstin}</strong></span>` : ''}
@@ -2204,7 +2236,7 @@ window.CMS_MASTERS = {
   buildVendorPrintDocument(v, paperHtml) {
     let companyInfo = {};
     try {
-      if (window.CMS_HOME && window.CMS_HOME.companyInfo && window.CMS_HOME.companyInfo.name) {
+      if (window.CMS_HOME && window.CMS_HOME.companyInfo) {
         companyInfo = window.CMS_HOME.companyInfo;
       } else {
         companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}') || {};
@@ -2212,10 +2244,21 @@ window.CMS_MASTERS = {
     } catch (e) {
       companyInfo = {};
     }
-    const adminCompName = (companyInfo.name || '').trim()
-      || window.CMS_TENANT_NAME
-      || (window.CMS_STORE && window.CMS_STORE.data && (window.CMS_STORE.data.companyName || window.CMS_STORE.data.companyInfo?.name))
-      || 'Adminutes Enterprises';
+
+    const currentUser = (window.CMS_STORE && window.CMS_STORE.getCurrentUser) ? window.CMS_STORE.getCurrentUser() : null;
+    let rawName = (companyInfo.name || '').trim();
+    if (rawName.toLowerCase().includes('adminutes')) rawName = '';
+
+    let tenantName = (window.CMS_TENANT_NAME || (typeof localStorage !== 'undefined' ? localStorage.getItem('CMS_TENANT_NAME_CACHE') : '') || '').trim();
+    if (tenantName.toLowerCase().includes('adminutes')) tenantName = '';
+
+    let storeCompName = (window.CMS_STORE && window.CMS_STORE.data && (window.CMS_STORE.data.companyName || window.CMS_STORE.data.companyInfo?.name) || '').trim();
+    if (storeCompName.toLowerCase().includes('adminutes')) storeCompName = '';
+
+    const userDept = (currentUser && currentUser.department && !currentUser.department.toLowerCase().includes('adminutes')) ? currentUser.department : '';
+    const userName = (currentUser && currentUser.name && !currentUser.name.toLowerCase().includes('adminutes')) ? currentUser.name : '';
+
+    const adminCompName = rawName || tenantName || storeCompName || userDept || (userName ? `${userName}'s Organization` : 'Central Store Operations');
 
     const cleanTitle = `Vendor_Registration_Form_${v.id}_${(v.name || 'Vendor').replace(/\s+/g, '_')}`;
     return `<!DOCTYPE html>
