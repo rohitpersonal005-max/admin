@@ -193,6 +193,11 @@ window.CMS_APP = {
               await window.CMS_FILE_STORE.saveFile(file.name, ev.target.result);
             }
 
+            // If input uses the modern CMS Dropzone system, skip creating legacy action container
+            if (inputEl.dataset && inputEl.dataset.cmsDropzone === 'true') {
+              return;
+            }
+
             // Remove any existing action container for this input
             const existingAction = inputEl.parentElement ? inputEl.parentElement.querySelector('.file-action-container') : null;
             if (existingAction) existingAction.remove();

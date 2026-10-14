@@ -3713,25 +3713,36 @@ window.CMS_MASTERS = {
       <div>
         <label class="block font-bold text-slate-700 mb-1 text-[10px]">Upload Quotation Copy (PDF / Image)</label>
         <div class="q-file-wrapper relative w-full">
-          <input type="file" class="q-file text-xs w-full ${doc ? 'hidden' : ''}" ${doc ? 'style="display:none;"' : ''} accept=".pdf,image/*" data-current="${doc}" />
-          ${doc ? `
-            <div class="file-on-record-label doc-upload-box text-xs">
+          <input type="file" class="q-file hidden" data-cms-dropzone="true" accept=".pdf,image/*" data-current="${doc || ''}" onchange="CMS_MASTERS.onRowDropzoneFileChange(this)" />
+          
+          <!-- Dropzone -->
+          <div onclick="this.closest('.q-file-wrapper').querySelector('.q-file').click()"
+               ondragover="event.preventDefault(); this.classList.add('border-blue-500', 'bg-blue-50/50');"
+               ondragleave="this.classList.remove('border-blue-500', 'bg-blue-50/50');"
+               ondrop="CMS_MASTERS.handleRowFileDrop(event, this)"
+               class="q-dropzone ${doc ? 'hidden' : ''} cms-dropzone group p-2.5">
+            <i data-lucide="upload-cloud" class="w-4 h-4 text-blue-600"></i>
+            <span class="text-xs font-bold text-slate-700 group-hover:text-blue-700">Click to Browse or Drag Quotation File</span>
+          </div>
+
+          <!-- Attached Card -->
+          <div class="q-card-preview ${doc ? '' : 'hidden'} cms-file-card p-2">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <i data-lucide="file-text" class="w-4 h-4 text-slate-600 shrink-0"></i>
               <div class="min-w-0 flex-1">
-                <div class="text-xs font-semibold text-slate-800 truncate" title="${doc}">${doc}</div>
-                <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
-                  <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
-                  <span>Document Submitted</span>
+                <div class="text-xs font-bold text-slate-900 truncate file-name-display" title="${doc || ''}">${doc || ''}</div>
+                <div class="flex items-center gap-1 mt-0.5">
+                  <span class="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">Attached</span>
+                  <span class="text-[9px] text-slate-400 file-size-display"></span>
                 </div>
               </div>
-              <div class="flex items-center gap-1 shrink-0">
-                <button type="button" onclick="CMS_APP.previewFile('${doc}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
-                  <i data-lucide="eye" class="w-4 h-4"></i>
-                </button>
-                <button type="button" onclick="const p=this.closest('.q-file-wrapper'); const fi=p.querySelector('.q-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden'); fi.style.display='';} this.closest('.file-on-record-label').remove();" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                  <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-              </div>
-            </div>` : ''}
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" onclick="CMS_MASTERS.previewRowDoc(this, '${doc || ''}')" class="px-2 py-0.5 text-[10px] font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded border border-slate-200 cursor-pointer" title="Preview">View</button>
+              <button type="button" onclick="this.closest('.q-file-wrapper').querySelector('.q-file').click()" class="px-2 py-0.5 text-[10px] font-semibold text-blue-700 hover:bg-blue-50 rounded border border-blue-200 cursor-pointer" title="Replace">Change</button>
+              <button type="button" onclick="CMS_MASTERS.clearRowDoc(this)" class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-rose-600 cursor-pointer" title="Remove"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -3855,25 +3866,36 @@ window.CMS_MASTERS = {
               5. Upload Certificate Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
             </label>
             <div class="cert-file-wrapper relative w-full">
-              <input type="file" accept=".pdf,image/*" class="cert-file-input text-xs w-full ${fileName ? 'hidden' : ''}" ${fileName ? 'style="display:none;"' : ''} data-current="${fileName}" />
-              ${fileName ? `
-                <div class="file-on-record-label doc-upload-box text-xs">
+              <input type="file" accept=".pdf,image/*" class="cert-file-input hidden" data-cms-dropzone="true" data-current="${fileName || ''}" onchange="CMS_MASTERS.onRowDropzoneFileChange(this)" />
+              
+              <!-- Dropzone -->
+              <div onclick="this.closest('.cert-file-wrapper').querySelector('.cert-file-input').click()"
+                   ondragover="event.preventDefault(); this.classList.add('border-blue-500', 'bg-blue-50/50');"
+                   ondragleave="this.classList.remove('border-blue-500', 'bg-blue-50/50');"
+                   ondrop="CMS_MASTERS.handleRowFileDrop(event, this)"
+                   class="cert-dropzone ${fileName ? 'hidden' : ''} cms-dropzone group p-2.5">
+                <i data-lucide="upload-cloud" class="w-4 h-4 text-blue-600"></i>
+                <span class="text-xs font-bold text-slate-700 group-hover:text-blue-700">Click to Browse or Drag Certificate</span>
+              </div>
+
+              <!-- Attached Card -->
+              <div class="cert-card-preview ${fileName ? '' : 'hidden'} cms-file-card p-2">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <i data-lucide="file-text" class="w-4 h-4 text-slate-600 shrink-0"></i>
                   <div class="min-w-0 flex-1">
-                    <div class="text-xs font-semibold text-slate-800 truncate" title="${fileName}">${fileName}</div>
-                    <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
-                      <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
-                      <span>Document Submitted</span>
+                    <div class="text-xs font-bold text-slate-900 truncate file-name-display" title="${fileName || ''}">${fileName || ''}</div>
+                    <div class="flex items-center gap-1 mt-0.5">
+                      <span class="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded">Attached</span>
+                      <span class="text-[9px] text-slate-400 file-size-display"></span>
                     </div>
                   </div>
-                  <div class="flex items-center gap-1 shrink-0">
-                    <button type="button" onclick="CMS_APP.previewFile('${fileName}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
-                      <i data-lucide="eye" class="w-4 h-4"></i>
-                    </button>
-                    <button type="button" onclick="const p=this.closest('.cert-file-wrapper'); const fi=p.querySelector('.cert-file-input'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden'); fi.style.display='';} this.closest('.file-on-record-label').remove();" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                      <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                  </div>
-                </div>` : ''}
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" onclick="CMS_MASTERS.previewRowDoc(this, '${fileName || ''}')" class="px-2 py-0.5 text-[10px] font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded border border-slate-200 cursor-pointer" title="Preview">View</button>
+                  <button type="button" onclick="this.closest('.cert-file-wrapper').querySelector('.cert-file-input').click()" class="px-2 py-0.5 text-[10px] font-semibold text-blue-700 hover:bg-blue-50 rounded border border-blue-200 cursor-pointer" title="Replace">Change</button>
+                  <button type="button" onclick="CMS_MASTERS.clearRowDoc(this)" class="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-rose-600 cursor-pointer" title="Remove"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                </div>
+              </div>
             </div>
           </div>
           <div>
@@ -4430,28 +4452,63 @@ window.CMS_MASTERS = {
                 </div>
 
                 <div id="v-pan-file-box" class="${vendor.panNotApplicable ? 'hidden' : ''} mt-3 pt-3 border-t border-slate-200/80">
-                  <label class="block text-xs font-bold text-slate-800 mb-1.5">
-                    Upload PAN Card Copy (PDF/Image) <span class="text-rose-600">*</span>
-                  </label>
-                  <input type="file" id="v-pan-file" accept=".pdf,image/*" class="text-xs ${vendor.panCardFile ? 'hidden' : ''}" ${vendor.panCardFile ? 'style="display:none;"' : ''} />
-                  ${vendor.panCardFile ? `
-                    <div class="file-on-record-label doc-upload-box text-xs">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-bold text-slate-800">
+                      Upload PAN Card Copy (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                    </label>
+                    <span class="text-[10px] text-slate-500 font-medium">Max 10MB</span>
+                  </div>
+
+                  <!-- Hidden native file input -->
+                  <input type="file" id="v-pan-file" accept=".pdf,image/*" class="hidden" data-cms-dropzone="true" data-current="${vendor.panCardFile || ''}" onchange="CMS_MASTERS.onDropzoneFileChange(this, 'v-pan-card-preview', 'v-pan-dropzone')" />
+
+                  <!-- 1. Dropzone (visible when no file attached) -->
+                  <div id="v-pan-dropzone" onclick="document.getElementById('v-pan-file').click()"
+                       ondragover="event.preventDefault(); this.classList.add('border-blue-500', 'bg-blue-50/50');"
+                       ondragleave="this.classList.remove('border-blue-500', 'bg-blue-50/50');"
+                       ondrop="CMS_MASTERS.handleFileDrop(event, 'v-pan-file', 'v-pan-card-preview', 'v-pan-dropzone')"
+                       class="${vendor.panCardFile ? 'hidden' : ''} cms-dropzone group">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center shrink-0 transition">
+                      <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                    </div>
+                    <div class="text-left min-w-0">
+                      <div class="text-xs font-bold text-slate-800 group-hover:text-blue-700 transition">
+                        Click to Browse or Drag File Here
+                      </div>
+                      <div class="text-[10px] text-slate-500">Attach scanned PAN card copy (PDF, JPG, PNG)</div>
+                    </div>
+                  </div>
+
+                  <!-- 2. Attached File Card (visible when file is attached) -->
+                  <div id="v-pan-card-preview" class="${vendor.panCardFile ? '' : 'hidden'} cms-file-card">
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                      <div class="w-7 h-7 rounded bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                      </div>
                       <div class="min-w-0 flex-1">
-                        <div class="text-xs font-semibold text-slate-800 truncate" title="${vendor.panCardFile}">${vendor.panCardFile}</div>
-                        <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
-                          <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
-                          <span>Document Submitted</span>
+                        <div class="text-xs font-bold text-slate-900 truncate file-name-display" title="${vendor.panCardFile || ''}">${vendor.panCardFile || ''}</div>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                          <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+                            <i data-lucide="check" class="w-2.5 h-2.5"></i> Attached
+                          </span>
+                          <span class="text-[10px] text-slate-400 file-size-display"></span>
                         </div>
                       </div>
-                      <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="CMS_APP.previewFile('${vendor.panCardFile}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
-                          <i data-lucide="eye" class="w-4 h-4"></i>
-                        </button>
-                        <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-pan-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                          <i data-lucide="x" class="w-4 h-4"></i>
-                        </button>
-                      </div>
-                    </div>` : ''}
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <button type="button" onclick="CMS_MASTERS.previewAttachedDoc('v-pan-file', '${vendor.panCardFile || ''}')" class="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded border border-slate-200 transition flex items-center gap-1 cursor-pointer" title="Preview Document">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                        <span>View</span>
+                      </button>
+                      <button type="button" onclick="document.getElementById('v-pan-file').click()" class="px-2 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-50 rounded border border-blue-200 transition flex items-center gap-1 cursor-pointer" title="Replace File">
+                        <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                        <span>Change</span>
+                      </button>
+                      <button type="button" onclick="CMS_MASTERS.clearAttachedDoc('v-pan-file', 'v-pan-card-preview', 'v-pan-dropzone')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer" title="Remove Document">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -4510,28 +4567,63 @@ window.CMS_MASTERS = {
                 </div>
 
                 <div id="v-gst-file-box" class="${vendor.gstNotApplicable ? 'hidden' : ''} mt-3 pt-3 border-t border-slate-200/80">
-                  <label class="block text-xs font-bold text-slate-800 mb-1.5">
-                    Upload GST Certificate (PDF/Image) <span class="text-rose-600">*</span>
-                  </label>
-                  <input type="file" id="v-gst-file" accept=".pdf,image/*" class="text-xs ${vendor.gstCertificateFile ? 'hidden' : ''}" ${vendor.gstCertificateFile ? 'style="display:none;"' : ''} />
-                  ${vendor.gstCertificateFile ? `
-                    <div class="file-on-record-label doc-upload-box text-xs">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-bold text-slate-800">
+                      Upload GST Certificate (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                    </label>
+                    <span class="text-[10px] text-slate-500 font-medium">Max 10MB</span>
+                  </div>
+
+                  <!-- Hidden native file input -->
+                  <input type="file" id="v-gst-file" accept=".pdf,image/*" class="hidden" data-cms-dropzone="true" data-current="${vendor.gstCertificateFile || ''}" onchange="CMS_MASTERS.onDropzoneFileChange(this, 'v-gst-card-preview', 'v-gst-dropzone')" />
+
+                  <!-- 1. Dropzone (visible when no file attached) -->
+                  <div id="v-gst-dropzone" onclick="document.getElementById('v-gst-file').click()"
+                       ondragover="event.preventDefault(); this.classList.add('border-blue-500', 'bg-blue-50/50');"
+                       ondragleave="this.classList.remove('border-blue-500', 'bg-blue-50/50');"
+                       ondrop="CMS_MASTERS.handleFileDrop(event, 'v-gst-file', 'v-gst-card-preview', 'v-gst-dropzone')"
+                       class="${vendor.gstCertificateFile ? 'hidden' : ''} cms-dropzone group">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center shrink-0 transition">
+                      <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                    </div>
+                    <div class="text-left min-w-0">
+                      <div class="text-xs font-bold text-slate-800 group-hover:text-blue-700 transition">
+                        Click to Browse or Drag File Here
+                      </div>
+                      <div class="text-[10px] text-slate-500">Attach scanned GST registration certificate (PDF, JPG, PNG)</div>
+                    </div>
+                  </div>
+
+                  <!-- 2. Attached File Card (visible when file is attached) -->
+                  <div id="v-gst-card-preview" class="${vendor.gstCertificateFile ? '' : 'hidden'} cms-file-card">
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                      <div class="w-7 h-7 rounded bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                      </div>
                       <div class="min-w-0 flex-1">
-                        <div class="text-xs font-semibold text-slate-800 truncate" title="${vendor.gstCertificateFile}">${vendor.gstCertificateFile}</div>
-                        <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
-                          <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
-                          <span>Document Submitted</span>
+                        <div class="text-xs font-bold text-slate-900 truncate file-name-display" title="${vendor.gstCertificateFile || ''}">${vendor.gstCertificateFile || ''}</div>
+                        <div class="flex items-center gap-1.5 mt-0.5">
+                          <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+                            <i data-lucide="check" class="w-2.5 h-2.5"></i> Attached
+                          </span>
+                          <span class="text-[10px] text-slate-400 file-size-display"></span>
                         </div>
                       </div>
-                      <div class="flex items-center gap-1 shrink-0">
-                        <button type="button" onclick="CMS_APP.previewFile('${vendor.gstCertificateFile}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
-                          <i data-lucide="eye" class="w-4 h-4"></i>
-                        </button>
-                        <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-gst-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                          <i data-lucide="x" class="w-4 h-4"></i>
-                        </button>
-                      </div>
-                    </div>` : ''}
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <button type="button" onclick="CMS_MASTERS.previewAttachedDoc('v-gst-file', '${vendor.gstCertificateFile || ''}')" class="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded border border-slate-200 transition flex items-center gap-1 cursor-pointer" title="Preview Document">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                        <span>View</span>
+                      </button>
+                      <button type="button" onclick="document.getElementById('v-gst-file').click()" class="px-2 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-50 rounded border border-blue-200 transition flex items-center gap-1 cursor-pointer" title="Replace File">
+                        <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                        <span>Change</span>
+                      </button>
+                      <button type="button" onclick="CMS_MASTERS.clearAttachedDoc('v-gst-file', 'v-gst-card-preview', 'v-gst-dropzone')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer" title="Remove Document">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4665,36 +4757,73 @@ window.CMS_MASTERS = {
                 <input type="text" id="v-branch-name" autocomplete="new-password" value="${vendor.branchName || ''}" class="w-full px-3 py-1.5 border border-slate-300 rounded-sm px-3 py-1.5 focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Branch Name" />
               </div>
             </div>
-            <div class="mt-2 pt-2 border-t border-slate-200">
-              <label class="block font-bold text-slate-700 mb-1 text-[11px]">Upload Supporting Document <span class="text-rose-600 font-bold">*</span></label>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                  <input type="file" id="v-bank-file" accept=".pdf,image/*" class="text-xs ${vendor.bankDoc ? 'hidden' : ''}" ${!vendor.bankDoc ? 'required' : ''} />
-                  ${vendor.bankDoc ? `
-                  <div class="file-on-record-label doc-upload-box text-xs">
-                    <div class="min-w-0 flex-1">
-                      <div class="text-xs font-semibold text-slate-800 truncate" title="${vendor.bankDoc}">${vendor.bankDoc}</div>
-                      <div class="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
-                        <i data-lucide="check" class="w-3 h-3 text-slate-500"></i>
-                        <span>Document Submitted</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-1 shrink-0">
-                      <button type="button" onclick="CMS_APP.previewFile('${vendor.bankDoc}')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="View file">
-                        <i data-lucide="eye" class="w-4 h-4"></i>
-                      </button>
-                      <button type="button" onclick="this.closest('.file-on-record-label').remove(); const fi=document.getElementById('v-bank-file'); if(fi){fi.value=''; fi.dataset.current=''; fi.classList.remove('hidden');} CMS_APP.toast('Document removed. Choose file button restored.', 'info');" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-sm transition cursor-pointer" title="Remove document">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                      </button>
-                    </div>
-                  </div>` : ''}
-                  <select id="v-bank-title" class="w-full sm:w-64 mt-1.5 sm:mt-0 px-2 py-1 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
-                    <option value="" ${!vendor.bankDocTitle ? 'selected' : ''}>-- Select Document Type --</option>
+            <div class="mt-3 pt-3 border-t border-slate-200">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
+                <label class="block font-bold text-slate-800 text-xs">
+                  Upload Supporting Bank Document <span class="text-rose-600 font-bold">*</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <label class="text-[11px] font-bold text-slate-600">Document Type: <span class="text-rose-600 font-bold">*</span></label>
+                  <select id="v-bank-title" required class="px-2 py-1 text-xs border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium">
+                    <option value="" ${!vendor.bankDocTitle ? 'selected' : ''}>-- Select Type --</option>
                     <option value="Cancelled Cheque" ${vendor.bankDocTitle === 'Cancelled Cheque' ? 'selected' : ''}>Cancelled Cheque</option>
                     <option value="Passbook" ${vendor.bankDocTitle === 'Passbook' ? 'selected' : ''}>Passbook</option>
                     <option value="Bank Statement" ${vendor.bankDocTitle === 'Bank Statement' ? 'selected' : ''}>Bank Statement</option>
                     <option value="Other Bank Document" ${vendor.bankDocTitle === 'Other Bank Document' ? 'selected' : ''}>Other Bank Document</option>
                   </select>
                 </div>
+              </div>
+
+              <!-- Hidden native file input -->
+              <input type="file" id="v-bank-file" accept=".pdf,image/*" class="hidden" data-cms-dropzone="true" data-current="${vendor.bankDoc || ''}" onchange="CMS_MASTERS.onDropzoneFileChange(this, 'v-bank-card-preview', 'v-bank-dropzone')" />
+
+              <!-- 1. Dropzone (visible when no file attached) -->
+              <div id="v-bank-dropzone" onclick="document.getElementById('v-bank-file').click()"
+                   ondragover="event.preventDefault(); this.classList.add('border-blue-500', 'bg-blue-50/50');"
+                   ondragleave="this.classList.remove('border-blue-500', 'bg-blue-50/50');"
+                   ondrop="CMS_MASTERS.handleFileDrop(event, 'v-bank-file', 'v-bank-card-preview', 'v-bank-dropzone')"
+                   class="${vendor.bankDoc ? 'hidden' : ''} cms-dropzone group">
+                <div class="w-8 h-8 rounded-full bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center shrink-0 transition">
+                  <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                </div>
+                <div class="text-left min-w-0">
+                  <div class="text-xs font-bold text-slate-800 group-hover:text-blue-700 transition">
+                    Click to Browse or Drag File Here
+                  </div>
+                  <div class="text-[10px] text-slate-500">Attach Cancelled Cheque / Bank Passbook / Bank Statement (PDF, JPG, PNG)</div>
+                </div>
+              </div>
+
+              <!-- 2. Attached File Card (visible when file is attached) -->
+              <div id="v-bank-card-preview" class="${vendor.bankDoc ? '' : 'hidden'} cms-file-card">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
+                  <div class="w-7 h-7 rounded bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-xs font-bold text-slate-900 truncate file-name-display" title="${vendor.bankDoc || ''}">${vendor.bankDoc || ''}</div>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+                        <i data-lucide="check" class="w-2.5 h-2.5"></i> Attached
+                      </span>
+                      <span class="text-[10px] text-slate-400 file-size-display"></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" onclick="CMS_MASTERS.previewAttachedDoc('v-bank-file', '${vendor.bankDoc || ''}')" class="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded border border-slate-200 transition flex items-center gap-1 cursor-pointer" title="Preview Document">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                    <span>View</span>
+                  </button>
+                  <button type="button" onclick="document.getElementById('v-bank-file').click()" class="px-2 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-50 rounded border border-blue-200 transition flex items-center gap-1 cursor-pointer" title="Replace File">
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                    <span>Change</span>
+                  </button>
+                  <button type="button" onclick="CMS_MASTERS.clearAttachedDoc('v-bank-file', 'v-bank-card-preview', 'v-bank-dropzone')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer" title="Remove Document">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -4874,6 +5003,212 @@ window.CMS_MASTERS = {
     }
   },
 
+  // -------------------------------------------------------------
+  // Universal Dropzone & File Management Subsystem for Masters
+  // -------------------------------------------------------------
+  async onDropzoneFileChange(input, previewCardId, dropzoneId) {
+    if (!input || !input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const preview = document.getElementById(previewCardId);
+    const dropzone = document.getElementById(dropzoneId);
+
+    if (input.dataset) {
+      delete input.dataset.removed;
+      input.dataset.current = file.name;
+    }
+
+    const sizeStr = file.size > 1024 * 1024 
+      ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' 
+      : Math.round(file.size / 1024) + ' KB';
+
+    if (preview) {
+      const nameEl = preview.querySelector('.file-name-display');
+      const sizeEl = preview.querySelector('.file-size-display');
+      if (nameEl) {
+        nameEl.textContent = file.name;
+        nameEl.title = file.name;
+      }
+      if (sizeEl) sizeEl.textContent = '(' + sizeStr + ')';
+      preview.classList.remove('hidden');
+    }
+    if (dropzone) dropzone.classList.add('hidden');
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        if (window.CMS_FILE_STORE) {
+          await window.CMS_FILE_STORE.saveFile(file.name, ev.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn('Repository file save error:', err);
+    }
+
+    if (window.CMS_APP && window.CMS_APP.toast) {
+      window.CMS_APP.toast(`Document ready: ${file.name}`, 'success');
+    }
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  handleFileDrop(event, inputId, previewCardId, dropzoneId) {
+    event.preventDefault();
+    if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.files = event.dataTransfer.files;
+        this.onDropzoneFileChange(input, previewCardId, dropzoneId);
+      }
+    }
+  },
+
+  previewAttachedDoc(inputId, fallbackName) {
+    const input = document.getElementById(inputId);
+    if (input && input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (window.CMS_APP && window.CMS_APP.previewFile) {
+          window.CMS_APP.previewFile(file.name, e.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+    const name = fallbackName || input?.dataset?.current;
+    if (name && window.CMS_APP && window.CMS_APP.previewFile) {
+      window.CMS_APP.previewFile(name);
+    } else {
+      if (window.CMS_APP && window.CMS_APP.toast) {
+        window.CMS_APP.toast('No document file attached to preview.', 'warning');
+      }
+    }
+  },
+
+  clearAttachedDoc(inputId, previewCardId, dropzoneId) {
+    const input = document.getElementById(inputId);
+    if (input) {
+      input.value = '';
+      if (input.dataset) {
+        input.dataset.current = '';
+        input.dataset.removed = 'true';
+      }
+    }
+    const preview = document.getElementById(previewCardId);
+    const dropzone = document.getElementById(dropzoneId);
+    if (preview) preview.classList.add('hidden');
+    if (dropzone) dropzone.classList.remove('hidden');
+    if (window.CMS_APP && window.CMS_APP.toast) {
+      window.CMS_APP.toast('Document removed. Choose new file to upload.', 'info');
+    }
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  async onRowDropzoneFileChange(input) {
+    if (!input || !input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const wrapper = input.closest('.cert-file-wrapper, .q-file-wrapper');
+    if (!wrapper) return;
+
+    if (input.dataset) {
+      delete input.dataset.removed;
+      input.dataset.current = file.name;
+    }
+
+    const sizeStr = file.size > 1024 * 1024 
+      ? (file.size / (1024 * 1024)).toFixed(1) + ' MB' 
+      : Math.round(file.size / 1024) + ' KB';
+
+    const preview = wrapper.querySelector('.cert-card-preview, .q-card-preview');
+    const dropzone = wrapper.querySelector('.cert-dropzone, .q-dropzone');
+
+    if (preview) {
+      const nameEl = preview.querySelector('.file-name-display');
+      const sizeEl = preview.querySelector('.file-size-display');
+      if (nameEl) {
+        nameEl.textContent = file.name;
+        nameEl.title = file.name;
+      }
+      if (sizeEl) sizeEl.textContent = '(' + sizeStr + ')';
+      preview.classList.remove('hidden');
+    }
+    if (dropzone) dropzone.classList.add('hidden');
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        if (window.CMS_FILE_STORE) {
+          await window.CMS_FILE_STORE.saveFile(file.name, ev.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn('Row file repository save error:', err);
+    }
+
+    if (window.CMS_APP && window.CMS_APP.toast) {
+      window.CMS_APP.toast(`Document attached: ${file.name}`, 'success');
+    }
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  handleRowFileDrop(event, dropzoneEl) {
+    event.preventDefault();
+    const wrapper = dropzoneEl.closest('.cert-file-wrapper, .q-file-wrapper');
+    if (!wrapper) return;
+    const input = wrapper.querySelector('.cert-file-input, .q-file');
+    if (input && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      input.files = event.dataTransfer.files;
+      this.onRowDropzoneFileChange(input);
+    }
+  },
+
+  previewRowDoc(btn, fallbackName) {
+    const wrapper = btn.closest('.cert-file-wrapper, .q-file-wrapper');
+    if (!wrapper) return;
+    const input = wrapper.querySelector('.cert-file-input, .q-file');
+    if (input && input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (window.CMS_APP && window.CMS_APP.previewFile) {
+          window.CMS_APP.previewFile(file.name, e.target.result);
+        }
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+    const name = fallbackName || input?.dataset?.current;
+    if (name && window.CMS_APP && window.CMS_APP.previewFile) {
+      window.CMS_APP.previewFile(name);
+    } else {
+      if (window.CMS_APP && window.CMS_APP.toast) {
+        window.CMS_APP.toast('No document file attached to preview.', 'warning');
+      }
+    }
+  },
+
+  clearRowDoc(btn) {
+    const wrapper = btn.closest('.cert-file-wrapper, .q-file-wrapper');
+    if (!wrapper) return;
+    const input = wrapper.querySelector('.cert-file-input, .q-file');
+    if (input) {
+      input.value = '';
+      if (input.dataset) {
+        input.dataset.current = '';
+        input.dataset.removed = 'true';
+      }
+    }
+    const preview = wrapper.querySelector('.cert-card-preview, .q-card-preview');
+    const dropzone = wrapper.querySelector('.cert-dropzone, .q-dropzone');
+    if (preview) preview.classList.add('hidden');
+    if (dropzone) dropzone.classList.remove('hidden');
+    if (window.CMS_APP && window.CMS_APP.toast) {
+      window.CMS_APP.toast('Document removed. Choose new file to upload.', 'info');
+    }
+    if (window.lucide) window.lucide.createIcons();
+  },
+
   saveAndSubmitVendor(vendorId) {
     this.saveVendor(vendorId, true, false);
   },
@@ -4970,8 +5305,23 @@ window.CMS_MASTERS = {
 
     const gstFileInput = document.getElementById('v-gst-file');
     const panFileInput = document.getElementById('v-pan-file');
-    let gstCertificateFile = (gstFileInput?.files?.[0]) ? gstFileInput.files[0].name : (existingVendor?.gstCertificateFile || '');
-    let panCardFile = (panFileInput?.files?.[0]) ? panFileInput.files[0].name : (existingVendor?.panCardFile || '');
+    let gstCertificateFile = '';
+    if (gstFileInput?.files?.[0]) {
+      gstCertificateFile = gstFileInput.files[0].name;
+    } else if (gstFileInput?.dataset?.current && gstFileInput.dataset.removed !== 'true') {
+      gstCertificateFile = gstFileInput.dataset.current;
+    } else if (gstFileInput?.dataset?.removed !== 'true' && existingVendor?.gstCertificateFile) {
+      gstCertificateFile = existingVendor.gstCertificateFile;
+    }
+
+    let panCardFile = '';
+    if (panFileInput?.files?.[0]) {
+      panCardFile = panFileInput.files[0].name;
+    } else if (panFileInput?.dataset?.current && panFileInput.dataset.removed !== 'true') {
+      panCardFile = panFileInput.dataset.current;
+    } else if (panFileInput?.dataset?.removed !== 'true' && existingVendor?.panCardFile) {
+      panCardFile = existingVendor.panCardFile;
+    }
 
     // Asynchronously read and persist uploaded PAN and GST documents directly into backend repository
     if (panFileInput?.files?.[0]) {
@@ -4987,6 +5337,18 @@ window.CMS_MASTERS = {
       }
     }
 
+    if (directSubmit && !panNotApplicable && !panCardFile) {
+      window.CMS_APP.toast('Please upload a copy of the PAN Card in Step 2.', 'error');
+      this.switchVendorTab(2);
+      return;
+    }
+
+    if (directSubmit && !gstNotApplicable && !gstCertificateFile) {
+      window.CMS_APP.toast('Please upload a copy of the GST Registration Certificate in Step 2.', 'error');
+      this.switchVendorTab(2);
+      return;
+    }
+
     // Bank Details
     const bankName = document.getElementById('v-bank-name')?.value.trim() || '';
     const accountName = document.getElementById('v-account-name')?.value.trim() || name;
@@ -4995,7 +5357,14 @@ window.CMS_MASTERS = {
     const branchName = document.getElementById('v-branch-name')?.value.trim() || '';
     
     const bankFileInput = document.getElementById('v-bank-file');
-    let bankDoc = (bankFileInput?.files?.[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
+    let bankDoc = '';
+    if (bankFileInput?.files?.[0]) {
+      bankDoc = bankFileInput.files[0].name;
+    } else if (bankFileInput?.dataset?.current && bankFileInput.dataset.removed !== 'true') {
+      bankDoc = bankFileInput.dataset.current;
+    } else if (bankFileInput?.dataset?.removed !== 'true' && existingVendor?.bankDoc) {
+      bankDoc = existingVendor.bankDoc;
+    }
 
     // Asynchronously read and persist uploaded Bank document directly into backend repository
     if (bankFileInput?.files?.[0]) {
@@ -5005,11 +5374,11 @@ window.CMS_MASTERS = {
       }
     }
       
-      if (directSubmit && (!bankDoc || !bankDocTitle)) {
-          window.CMS_APP.toast('Supporting Bank Document and its Document Type are mandatory.', 'error');
-          this.switchVendorTab(4);
-          return;
-        }
+    if (directSubmit && (!bankDoc || !bankDocTitle)) {
+      window.CMS_APP.toast('Supporting Bank Document and its Document Type are mandatory.', 'error');
+      this.switchVendorTab(4);
+      return;
+    }
 
     const quoteRows = document.querySelectorAll('#v-quotations-container .quote-row');
     const quotedItems = [];
