@@ -1336,8 +1336,8 @@ window.CMS_MASTERS = {
             </button>
 
             <!-- Maker Edit Button (Only User can edit) -->
-            <!-- Maker Edit Button & Prominent Revise Button (Only shown when not approved) -->
-            ${(!isApproved && (isPending || isRevision || v.status === 'Draft')) ? `
+            <!-- Maker Edit Button & Prominent Revise Button (Only shown to Maker/User when not approved) -->
+            ${(role !== 'Admin' && !isApproved && (isPending || isRevision || v.status === 'Draft')) ? `
               <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Modify Vendor'}">
                 <i data-lucide="${isRevision ? 'edit-3' : 'pencil'}" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-slate-600'}"></i>
                 ${isRevision ? '<span>Edit & Fix</span>' : ''}
@@ -3035,13 +3035,19 @@ window.CMS_MASTERS = {
             <div>
               <div class="font-bold text-amber-950 uppercase tracking-wide text-xs">Returned by Approver for Revision & Correction</div>
               <div class="text-amber-900 text-xs mt-0.5"><strong>Reviewer Mistake Remark:</strong> <span class="bg-amber-100 px-1.5 py-0.5 rounded font-mono font-bold text-amber-950">"${v.checkerMistakeRemark || 'Admin returned for revision'}"</span></div>
-              <div class="text-amber-700 text-[11px] mt-1">Please review the remarks, click "Edit & Correct Form", update the relevant details across the wizard tabs, and re-submit for approval.</div>
+              ${role !== 'Admin' ? `
+                <div class="text-amber-700 text-[11px] mt-1">Please review the remarks, click "Edit & Correct Form", update the relevant details across the wizard tabs, and re-submit for approval.</div>
+              ` : `
+                <div class="text-amber-700 text-[11px] mt-1">Vendor record returned to maker for correction and resubmission.</div>
+              `}
             </div>
           </div>
-          <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorModal('${v.id}')" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 cursor-pointer shrink-0 text-xs">
-            <i data-lucide="edit-3" class="w-4 h-4 text-white"></i>
-            <span>Edit & Correct Form</span>
-          </button>
+          ${role !== 'Admin' ? `
+            <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorModal('${v.id}')" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 cursor-pointer shrink-0 text-xs">
+              <i data-lucide="edit-3" class="w-4 h-4 text-white"></i>
+              <span>Edit & Correct Form</span>
+            </button>
+          ` : ''}
         </div>
       ` : ''}
 
@@ -3060,7 +3066,7 @@ window.CMS_MASTERS = {
         </div>
 
         <div class="flex items-center gap-2">
-          ${(!v.isApproved && v.status !== 'Approved' && (v.status === 'Pending Approval' || v.status === 'Revision Required' || v.status === 'Draft')) ? `
+          ${(role !== 'Admin' && !v.isApproved && v.status !== 'Approved' && (v.status === 'Pending Approval' || v.status === 'Revision Required' || v.status === 'Draft')) ? `
             <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorModal('${v.id}');" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
               <i data-lucide="edit-3" class="w-4 h-4 text-white"></i>
               <span>${v.status === 'Revision Required' ? 'Edit & Fix Form' : 'Edit Form'}</span>
@@ -4223,6 +4229,11 @@ window.CMS_MASTERS = {
     const role = window.CMS_STORE.getRole();
     const isEdit = Boolean(vendorId);
     if (isEdit) {
+      if (role === 'Admin') {
+        window.CMS_APP.toast('Approvers / Admins cannot edit vendor forms. Please review and Approve or Return for Revision.', 'info');
+        this.viewVendorProfile(vendorId);
+        return;
+      }
       const existingVendor = window.CMS_STORE.data.vendors.find(v => v.id === vendorId);
       if (existingVendor && (existingVendor.status === 'Approved' || existingVendor.isApproved)) {
         window.CMS_APP.toast('Approved vendor records are locked and cannot be edited.', 'info');
