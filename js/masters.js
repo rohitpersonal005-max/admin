@@ -4247,10 +4247,22 @@ window.CMS_MASTERS = {
       }, 50);
 
     // Global step state for this modal
+    window.CMS_MASTERS.editingVendorId = vendorId || null;
     window.CMS_MASTERS.currentVendorStep = 1;
 
     // Attach step functions
     window.CMS_MASTERS.switchVendorTab = function(step) {
+      const currentStep = window.CMS_MASTERS.currentVendorStep || 1;
+      
+      // When moving forward, validate all steps from currentStep up to step - 1
+      if (step > currentStep) {
+        for (let s = currentStep; s < step; s++) {
+          if (!window.CMS_MASTERS.validateVendorStep(s)) {
+            return; // Stop and keep user on the invalid step
+          }
+        }
+      }
+
       for (let i = 1; i <= 4; i++) {
         const tab = document.getElementById('v-step-' + i);
         const btn = document.getElementById('v-tab-btn-' + i);
@@ -4275,31 +4287,19 @@ window.CMS_MASTERS = {
       if (submitBtn) submitBtn.classList.toggle('hidden', step !== 4);
       
       window.CMS_MASTERS.currentVendorStep = step;
+
+      // Scroll modal body to top smoothly on step change
+      const modalBox = document.querySelector('#cms-modal .max-h-\\[85vh\\]') || document.querySelector('#cms-modal .overflow-y-auto') || document.querySelector('#cms-modal');
+      if (modalBox) modalBox.scrollTop = 0;
     };
 
     window.CMS_MASTERS.nextVendorTab = function() {
-      const currentStepDiv = document.getElementById('v-step-' + window.CMS_MASTERS.currentVendorStep);
-      let isValid = true;
-      if (currentStepDiv) {
-        const inputs = currentStepDiv.querySelectorAll('input, select, textarea');
-        let firstInvalid = null;
-        for (const input of inputs) {
-          input.classList.remove('border-rose-500', 'bg-rose-50');
-          if (!input.checkValidity()) {
-            isValid = false;
-            input.classList.add('border-rose-500', 'bg-rose-50');
-            if (!firstInvalid) firstInvalid = input;
-          }
-        }
-        if (!isValid) {
-          window.CMS_APP.toast('Please complete all highlighted mandatory fields before proceeding.', 'error');
-          if (firstInvalid) firstInvalid.reportValidity();
-          return; 
-        }
+      const currentStep = window.CMS_MASTERS.currentVendorStep || 1;
+      if (!window.CMS_MASTERS.validateVendorStep(currentStep)) {
+        return; // Validation failed, do not advance
       }
-
-      if (window.CMS_MASTERS.currentVendorStep < 4) {
-        window.CMS_MASTERS.switchVendorTab(window.CMS_MASTERS.currentVendorStep + 1);
+      if (currentStep < 4) {
+        window.CMS_MASTERS.switchVendorTab(currentStep + 1);
       }
     };
 
@@ -5209,6 +5209,319 @@ window.CMS_MASTERS = {
     if (window.lucide) window.lucide.createIcons();
   },
 
+  validateVendorStep(step) {
+    const store = window.CMS_STORE;
+    const vendorId = window.CMS_MASTERS.editingVendorId || document.getElementById('v-submit-btn')?.getAttribute('onclick')?.match(/'([^']*)'/)?.[1] || '';
+    const existingVendor = vendorId ? store.data.vendors.find(v => v.id === vendorId) : null;
+    const today = new Date().toISOString().split('T')[0];
+
+    const stepDiv = document.getElementById('v-step-' + step);
+    if (stepDiv) {
+      stepDiv.querySelectorAll('.border-rose-500, .bg-rose-50, .border-rose-400').forEach(el => {
+        el.classList.remove('border-rose-500', 'bg-rose-50', 'border-rose-400');
+      });
+    }
+
+    const highlightError = (el, message) => {
+      if (el) {
+        el.classList.add('border-rose-500', 'bg-rose-50');
+        const clearHandler = () => el.classList.remove('border-rose-500', 'bg-rose-50');
+        el.addEventListener('input', clearHandler, { once: true });
+        el.addEventListener('change', clearHandler, { once: true });
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof el.focus === 'function') el.focus();
+      }
+      if (window.CMS_APP && window.CMS_APP.toast) {
+        window.CMS_APP.toast(message, 'error');
+      }
+      return false;
+    };
+
+    if (step === 1) {
+      // 1. Organization & Business Address
+      const constitution = document.getElementById('v-constitution');
+      if (!constitution || !constitution.value.trim()) {
+        return highlightError(constitution, 'Please select the Constitution Type.');
+      }
+
+      const name = document.getElementById('v-name');
+      if (!name || !name.value.trim()) {
+        return highlightError(name, 'Vendor / Supplier Company Name is mandatory.');
+      }
+
+      const country = document.getElementById('v-country');
+      if (!country || !country.value.trim()) {
+        return highlightError(country, 'Please select Nationality / Country of vendor.');
+      }
+
+      const isIndia = (country.value || 'India').includes('India');
+
+      const state = document.getElementById('v-state');
+      if (!state || !state.value.trim()) {
+        return highlightError(state, 'Please select the State / Province.');
+      }
+
+      const distSelect = document.getElementById('v-district');
+      const distOther = document.getElementById('v-district-other');
+      let distVal = distSelect ? distSelect.value.trim() : '';
+      if (distVal === 'Other' && distOther) {
+        distVal = distOther.value.trim();
+        if (!distVal) {
+          return highlightError(distOther, 'Please specify the District name for "Other".');
+        }
+      }
+      if (!distVal) {
+        return highlightError(distSelect, 'District is mandatory.');
+      }
+
+      const address = document.getElementById('v-address');
+      if (!address || !address.value.trim()) {
+        return highlightError(address, 'Street / Building Address is mandatory.');
+      }
+
+      const pin = document.getElementById('v-pin');
+      const pinVal = pin ? pin.value.trim() : '';
+      if (!pinVal) {
+        return highlightError(pin, 'PIN Code is mandatory.');
+      }
+      if (isIndia && !/^[0-9]{6}$/.test(pinVal)) {
+        return highlightError(pin, `PIN Code must be exactly 6 numeric digits (currently "${pinVal}"). Example: 110020.`);
+      }
+
+      const contact = document.getElementById('v-contact');
+      const rawContact = contact ? contact.value.trim() : '';
+      const cleanPhone = rawContact.replace(/[^0-9]/g, '');
+      if (!cleanPhone) {
+        return highlightError(contact, 'Phone number is mandatory.');
+      }
+      if (cleanPhone.length < 10) {
+        return highlightError(contact, `Phone number must contain at least 10 numeric digits (currently ${cleanPhone.length} digits).`);
+      }
+
+      const email = document.getElementById('v-email');
+      const emailVal = email ? email.value.trim() : '';
+      if (!emailVal) {
+        return highlightError(email, 'Email Address is mandatory.');
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+        return highlightError(email, 'Please enter a valid email address (e.g. vendor@domain.com).');
+      }
+
+      return true;
+    }
+
+    if (step === 2) {
+      // 2. Statutory PAN & GSTIN Identification + Regulatory Certificates
+      const panNa = document.getElementById('v-pan-na')?.checked || false;
+      const panInput = document.getElementById('v-pan');
+      const panVal = panInput ? panInput.value.trim().toUpperCase() : '';
+
+      if (!panNa) {
+        if (!panVal) {
+          return highlightError(panInput, 'PAN Card Number is mandatory. If exempt, check "PAN card is not applicable".');
+        }
+        if (panVal.length !== 10) {
+          return highlightError(panInput, `PAN Number must be exactly 10 characters (currently ${panVal.length} characters). Example: AABCA1234F.`);
+        }
+        if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panVal)) {
+          return highlightError(panInput, 'PAN format must be 5 letters, 4 digits, and 1 letter (e.g. AABCA1234F).');
+        }
+
+        const panFileInput = document.getElementById('v-pan-file');
+        const hasPanFile = Boolean(
+          (panFileInput?.files && panFileInput.files.length > 0) ||
+          (panFileInput?.dataset?.current && panFileInput.dataset.removed !== 'true') ||
+          (panFileInput?.dataset?.removed !== 'true' && existingVendor?.panCardFile)
+        );
+        if (!hasPanFile) {
+          const dropzone = document.getElementById('v-pan-dropzone');
+          return highlightError(dropzone, 'Please upload a scanned copy of the PAN Card (PDF or Image).');
+        }
+      }
+
+      const gstNa = document.getElementById('v-gst-na')?.checked || false;
+      const gstInput = document.getElementById('v-gst');
+      const sCode = document.getElementById('v-gst-state')?.value.trim() || '';
+      const pCode = document.getElementById('v-gst-pan')?.value.trim().toUpperCase() || '';
+      const sufCode = document.getElementById('v-gst-suffix')?.value.trim().toUpperCase() || '';
+      let fullGst = (sCode + pCode + sufCode).toUpperCase();
+      if (gstInput && gstInput.value) {
+        fullGst = gstInput.value.trim().toUpperCase();
+      }
+
+      if (!gstNa) {
+        if (!fullGst || fullGst.length === 0) {
+          const target = document.getElementById('v-gst-suffix') || gstInput;
+          return highlightError(target, 'GSTIN Number is mandatory. If vendor is unregistered/exempt, check the GST exemption box.');
+        }
+        if (fullGst.length !== 15) {
+          const target = document.getElementById('v-gst-suffix') || gstInput;
+          return highlightError(target, `GSTIN must be exactly 15 characters (currently ${fullGst.length} characters). Example: 07AABCA1234F1Z5.`);
+        }
+        if (!/^[0-9A-Z]{15}$/.test(fullGst)) {
+          const target = document.getElementById('v-gst-suffix') || gstInput;
+          return highlightError(target, 'GSTIN must be 15 alphanumeric characters without spaces or symbols.');
+        }
+
+        // Duplicate GSTIN check
+        const duplicateGst = store.data.vendors.find(v => v.id !== vendorId && v.gstNo && v.gstNo.toUpperCase() === fullGst);
+        if (duplicateGst) {
+          const target = document.getElementById('v-gst-suffix') || gstInput;
+          return highlightError(target, `Duplicate GSTIN! "${duplicateGst.name}" (${duplicateGst.id}) is already registered with GSTIN ${fullGst}.`);
+        }
+
+        const gstFileInput = document.getElementById('v-gst-file');
+        const hasGstFile = Boolean(
+          (gstFileInput?.files && gstFileInput.files.length > 0) ||
+          (gstFileInput?.dataset?.current && gstFileInput.dataset.removed !== 'true') ||
+          (gstFileInput?.dataset?.removed !== 'true' && existingVendor?.gstCertificateFile)
+        );
+        if (!hasGstFile) {
+          const dropzone = document.getElementById('v-gst-dropzone');
+          return highlightError(dropzone, 'Please upload the GST Registration Certificate (PDF or Image).');
+        }
+      }
+
+      // Regulatory Certificates Check
+      const certRows = document.querySelectorAll('#v-cert-container .cert-row');
+      for (const row of certRows) {
+        let reg = row.querySelector('.cert-regulator-select')?.value || '';
+        const regSelect = row.querySelector('.cert-regulator-select');
+        if (reg === 'Other') {
+          const otherInput = row.querySelector('.cert-regulator-other-input');
+          const otherVal = otherInput?.value.trim();
+          if (!otherVal) return highlightError(otherInput, 'Please specify the regulatory agency name for "Other".');
+          reg = otherVal;
+        }
+        const certInput = row.querySelector('.cert-number-input');
+        const certNo = certInput?.value.trim() || '';
+        const hasVal = row.querySelector('input[type="radio"]:checked')?.value === 'yes';
+        const expiryInput = row.querySelector('.cert-expiry-input');
+        const expiry = hasVal ? (expiryInput?.value || '') : '';
+
+        if (reg || certNo) {
+          if (!reg) return highlightError(regSelect, 'Please select a Regulatory / Certification Agency.');
+          if (!certNo) return highlightError(certInput, `License / Certificate Number is mandatory for ${reg}.`);
+          if (hasVal && !expiry) return highlightError(expiryInput, `Expiry date is mandatory for ${reg} (${certNo}).`);
+          if (hasVal && expiry < today) return highlightError(expiryInput, `Expiry date for ${reg} cannot be in the past.`);
+
+          const certFileInput = row.querySelector('.cert-file-input');
+          const hasCertFile = Boolean(
+            (certFileInput?.files && certFileInput.files.length > 0) ||
+            (certFileInput?.dataset?.current && certFileInput.dataset.removed !== 'true')
+          );
+          if (!hasCertFile) {
+            const dropzone = row.querySelector('.cert-dropzone');
+            return highlightError(dropzone, `Please upload the certificate document copy for ${reg} (${certNo}).`);
+          }
+        }
+      }
+
+      return true;
+    }
+
+    if (step === 3) {
+      // 3. Commercial Quotations & Approved Materials
+      const quoteRows = document.querySelectorAll('#v-quotations-container .quote-row');
+      for (const row of quoteRows) {
+        const qnoInput = row.querySelector('.q-no');
+        const matSelect = row.querySelector('.q-mat-select');
+        const matInput = row.querySelector('.q-mat-name');
+        const qno = qnoInput?.value.trim() || '';
+        const matName = matInput?.value.trim() || '';
+        const qDateInput = row.querySelector('.q-date');
+        const qDate = qDateInput?.value || '';
+        const qEffInput = row.querySelector('.q-eff');
+        const qEff = qEffInput?.value || '';
+        const qValidInput = row.querySelector('.q-valid');
+        const qValid = qValidInput?.value || '';
+        const qRateInput = row.querySelector('.q-rate');
+        const rate = parseFloat(qRateInput?.value || '0');
+
+        if (qno || matName || qDate || rate > 0) {
+          if (!qno) return highlightError(qnoInput, 'Quotation Number is mandatory for the quotation row.');
+          if (!matName) return highlightError(matSelect || matInput, 'Please choose or enter the quoted Material / Consumable.');
+          if (!qDate) return highlightError(qDateInput, 'Quotation Date is mandatory.');
+          if (qDate > today) return highlightError(qDateInput, 'Quotation Date cannot be in the future.');
+          if (qEff && qEff < qDate) return highlightError(qEffInput, 'Effective Date cannot be older than Quotation Date.');
+          const compareBase = qEff || qDate;
+          if (qValid && compareBase && qValid < compareBase) {
+            return highlightError(qValidInput, 'Valid Till / Expiry Date cannot be older than ' + (qEff ? 'Effective' : 'Quotation') + ' Date.');
+          }
+          if (qValid && qValid < today) {
+            return highlightError(qValidInput, 'Quotation Valid Till Date cannot be in the past.');
+          }
+          if (!rate || rate <= 0) return highlightError(qRateInput, 'Please enter a valid quoted Unit Rate (greater than 0).');
+        }
+      }
+
+      const limited = document.getElementById('v-limited')?.checked || false;
+      if (limited) {
+        const validTillInput = document.getElementById('v-approval-valid-till');
+        const validTill = validTillInput?.value || '';
+        if (!validTill) return highlightError(validTillInput, 'Approval Expiry Date is mandatory when limited period approval is checked.');
+        if (validTill < today) return highlightError(validTillInput, 'Approval Expiry Date cannot be in the past.');
+      }
+
+      return true;
+    }
+
+    if (step === 4) {
+      // 4. Bank Details & Supporting Document
+      const bankName = document.getElementById('v-bank-name');
+      if (!bankName || !bankName.value.trim()) {
+        return highlightError(bankName, 'Bank Name is mandatory.');
+      }
+
+      const accName = document.getElementById('v-account-name');
+      const accNameVal = accName ? accName.value.trim() : '';
+      if (!accNameVal) {
+        return highlightError(accName, 'Account Beneficiary Name is mandatory.');
+      }
+      if (/[^a-zA-Z\s.\-&]/.test(accNameVal)) {
+        return highlightError(accName, 'Bank Account Name cannot contain numbers or special symbols.');
+      }
+
+      const accNo = document.getElementById('v-account-no');
+      const accNoVal = accNo ? accNo.value.trim() : '';
+      if (!accNoVal) {
+        return highlightError(accNo, 'Bank Account Number is mandatory.');
+      }
+      if (accNoVal.length < 5 || accNoVal.length > 22) {
+        return highlightError(accNo, `Bank Account Number must be between 5 and 22 digits (currently ${accNoVal.length} digits).`);
+      }
+
+      const ifsc = document.getElementById('v-ifsc');
+      const ifscVal = ifsc ? ifsc.value.trim().toUpperCase() : '';
+      if (!ifscVal) {
+        return highlightError(ifsc, 'Bank IFSC Code is mandatory.');
+      }
+      if (ifscVal.length < 8 || ifscVal.length > 11) {
+        return highlightError(ifsc, `Bank IFSC Code must be valid (e.g. HDFC0001234). Currently: "${ifscVal}".`);
+      }
+
+      const bankTitle = document.getElementById('v-bank-title');
+      if (!bankTitle || !bankTitle.value.trim()) {
+        return highlightError(bankTitle, 'Please select the Supporting Bank Document Type (e.g. Cancelled Cheque / Passbook).');
+      }
+
+      const bankFileInput = document.getElementById('v-bank-file');
+      const hasBankDoc = Boolean(
+        (bankFileInput?.files && bankFileInput.files.length > 0) ||
+        (bankFileInput?.dataset?.current && bankFileInput.dataset.removed !== 'true') ||
+        (bankFileInput?.dataset?.removed !== 'true' && existingVendor?.bankDoc)
+      );
+      if (!hasBankDoc) {
+        const dropzone = document.getElementById('v-bank-dropzone');
+        return highlightError(dropzone, 'Please upload the supporting Bank Document (Cancelled Cheque or Passbook).');
+      }
+
+      return true;
+    }
+
+    return true;
+  },
+
   saveAndSubmitVendor(vendorId) {
     this.saveVendor(vendorId, true, false);
   },
@@ -5236,28 +5549,14 @@ window.CMS_MASTERS = {
     const store = window.CMS_STORE;
     const currentUser = store.getCurrentUser();
     
-    const form = document.getElementById('vendor-form');
-      if (directSubmit && form && !form.checkValidity()) {
-        const inputs = form.querySelectorAll('input, select, textarea');
-        let firstInvalid = null;
-        for (const input of inputs) {
-          input.classList.remove('border-rose-500', 'bg-rose-50');
-          if (!input.checkValidity()) {
-            input.classList.add('border-rose-500', 'bg-rose-50');
-            if (!firstInvalid) firstInvalid = input;
-          }
+    if (directSubmit) {
+      for (let s = 1; s <= 4; s++) {
+        if (!this.validateVendorStep(s)) {
+          this.switchVendorTab(s);
+          return;
         }
-        if (firstInvalid) {
-          window.CMS_APP.toast('Submission blocked. Please fill all highlighted mandatory fields.', 'error');
-          const stepDiv = firstInvalid.closest('[id^="v-step-"]');
-          if (stepDiv) {
-            const stepNum = parseInt(stepDiv.id.replace('v-step-', ''), 10);
-            this.switchVendorTab(stepNum);
-          }
-          firstInvalid.reportValidity();
-        }
-        return;
       }
+    }
     const isEdit = Boolean(vendorId && store.data.vendors.some(v => v.id === vendorId));
     const existingVendor = isEdit ? store.data.vendors.find(v => v.id === vendorId) : null;
     const today = new Date().toISOString().split('T')[0];
