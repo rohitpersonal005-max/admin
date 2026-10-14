@@ -1382,7 +1382,8 @@ window.CMS_MASTERS = {
               </div>
               <span>Vendor Master</span>
             </h2>
-            
+          </div>
+
           ${role !== 'Admin' ? `
             <div class="flex flex-wrap items-center gap-2.5">
               <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition text-xs cursor-pointer">
