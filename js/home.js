@@ -594,6 +594,66 @@ window.CMS_HOME = {
     
     window.CMS_APP.toast('User deleted successfully.', 'success');
     this.render();
+  },
+
+  onStateChange(stateName) {
+    if (window.CMS_MASTERS && window.CMS_MASTERS.indianStates) {
+      const s = window.CMS_MASTERS.indianStates.find(item => item.name === stateName);
+      const codeInput = document.getElementById('home-comp-state-code');
+      if (codeInput && s) {
+        codeInput.value = s.code;
+      }
+    }
+  },
+
+  saveCompany() {
+    const name = document.getElementById('home-comp-name')?.value.trim();
+    const address = document.getElementById('home-comp-address')?.value.trim();
+    const taluka = document.getElementById('home-comp-taluka')?.value.trim();
+    const district = document.getElementById('home-comp-district')?.value.trim();
+    const state = document.getElementById('home-comp-state')?.value;
+    const stateCode = document.getElementById('home-comp-state-code')?.value.trim();
+    const pin = document.getElementById('home-comp-pin')?.value.trim();
+    const countryCode = document.getElementById('home-comp-country-code')?.value || '+91';
+    const contact = document.getElementById('home-comp-contact')?.value.trim();
+    const email = document.getElementById('home-comp-email')?.value.trim();
+    const gstin = document.getElementById('home-comp-gstin')?.value.trim().toUpperCase();
+    const pan = document.getElementById('home-comp-pan')?.value.trim().toUpperCase();
+    const cert = document.getElementById('home-comp-cert')?.value.trim();
+    const license = document.getElementById('home-comp-license')?.value.trim();
+
+    if (!name) return window.CMS_APP.toast('Company name is required', 'error');
+
+    const updated = {
+      ...this.companyInfo,
+      name,
+      address,
+      taluka,
+      district,
+      state,
+      stateCode,
+      pin,
+      country: 'India',
+      countryCode,
+      contact: contact ? `${countryCode} ${contact}` : (this.companyInfo.contact || ''),
+      email,
+      gstin,
+      pan,
+      cert,
+      license
+    };
+
+    this.companyInfo = updated;
+    localStorage.setItem('CMS_COMPANY_INFO', JSON.stringify(updated));
+
+    if (window.CMS_STORE && window.CMS_STORE.data) {
+      window.CMS_STORE.data.companyInfo = updated;
+      window.CMS_STORE.data.companyName = name;
+      window.CMS_STORE.save();
+    }
+
+    window.CMS_APP.toast('Admin company information saved successfully!', 'success');
+    this.render();
   }
 };
 

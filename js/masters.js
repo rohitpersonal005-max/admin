@@ -1660,21 +1660,72 @@ window.CMS_MASTERS = {
     const gstSeq = getAnnexureSeq(v.gstCertificateFile);
     const bankSeq = getAnnexureSeq(v.bankDoc);
 
+    // Admin Company Information (from Settings / Company Profile)
+    let companyInfo = {};
+    try {
+      if (window.CMS_HOME && window.CMS_HOME.companyInfo && window.CMS_HOME.companyInfo.name) {
+        companyInfo = window.CMS_HOME.companyInfo;
+      } else {
+        companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}') || {};
+      }
+    } catch (e) {
+      companyInfo = {};
+    }
+
+    const adminCompName = (companyInfo.name || '').trim()
+      || window.CMS_TENANT_NAME
+      || (window.CMS_STORE && window.CMS_STORE.data && (window.CMS_STORE.data.companyName || window.CMS_STORE.data.companyInfo?.name))
+      || 'Adminutes Enterprises';
+
+    const adminAddressParts = [
+      companyInfo.address,
+      companyInfo.taluka,
+      companyInfo.district,
+      companyInfo.state ? (companyInfo.state + (companyInfo.pin ? ' - ' + companyInfo.pin : '')) : companyInfo.pin,
+      companyInfo.country || 'India'
+    ].filter(Boolean);
+
+    const adminAddressStr = adminAddressParts.length > 0
+      ? adminAddressParts.join(', ')
+      : '123 Enterprise Way, Business District, New Delhi - 110001, India';
+
+    const adminGstin = (companyInfo.gstin || '').trim();
+    const adminPan = (companyInfo.pan || '').trim() || (adminGstin.length >= 12 ? adminGstin.substring(2, 12) : '');
+    const adminContact = (companyInfo.contact || '').trim();
+    const adminEmail = (companyInfo.email || '').trim();
+
     return `
       <div id="vendor-paper-form" data-vendor-id="${v.id}" class="space-y-5 text-xs bg-white ${isPrint ? 'p-2' : 'p-6 border border-slate-200 shadow-sm'} text-slate-800">
         
         <!-- Official Document Letterhead & Header -->
         <div class="border-b-2 border-slate-900 pb-4 mb-4">
           <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
-            <div class="flex items-center gap-3.5">
-              <img src="assets/adminutes_logo.jpg?v=2" alt="Adminutes Logo" class="h-14 w-auto rounded border border-slate-300 object-contain shadow-2xs" onerror="this.style.display='none'" />
+            <div class="flex items-start gap-3.5 max-w-xl">
+              <img src="assets/adminutes_logo.jpg?v=2" alt="Company Logo" class="h-14 w-auto rounded border border-slate-300 object-contain shadow-2xs mt-0.5 shrink-0" onerror="this.style.display='none'" />
               <div>
-                <h1 class="text-xl font-black tracking-tight text-slate-900 uppercase">ADMINUTES CENTRAL ENTERPRISE</h1>
-                <p class="text-xs font-bold text-slate-700">CONSUMABLE MANAGEMENT SYSTEM (CMS)</p>
-                <p class="text-[11px] text-slate-500">Facility Operations, Procurement, Fixed Assets & Statutory Wing</p>
+                <h1 class="text-xl font-black tracking-tight text-slate-900 uppercase leading-snug">${adminCompName}</h1>
+                <div class="text-[11px] text-slate-600 mt-1 leading-normal font-medium">
+                  ${adminAddressStr}
+                </div>
+                ${(adminGstin || adminPan) ? `
+                  <div class="text-[11px] text-slate-700 mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono">
+                    ${adminGstin ? `<span>GSTIN: <strong class="text-slate-900 font-bold">${adminGstin}</strong></span>` : ''}
+                    ${adminPan ? `<span>PAN: <strong class="text-slate-900 font-bold">${adminPan}</strong></span>` : ''}
+                  </div>
+                ` : ''}
+                ${(adminContact || adminEmail) ? `
+                  <div class="text-[11px] text-slate-600 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-sans">
+                    ${adminContact ? `<span>Contact: <strong class="font-mono text-slate-800">${adminContact}</strong></span>` : ''}
+                    ${adminEmail ? `<span>Email: <strong class="text-slate-800">${adminEmail}</strong></span>` : ''}
+                  </div>
+                ` : ''}
+                <div class="text-[10px] text-blue-900 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                  <span class="inline-block w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+                  <span>Central Procurement & Consumable Management System (CMS)</span>
+                </div>
               </div>
             </div>
-            <div class="text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-0 border-slate-300 pl-3 sm:pl-0">
+            <div class="text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-0 border-slate-300 pl-3 sm:pl-0 shrink-0">
               <span class="inline-block px-3 py-1 bg-slate-900 text-white font-bold text-[11px] tracking-wider uppercase rounded">
                 VENDOR EMPANELMENT & REGISTRATION FORM
               </span>
@@ -2133,7 +2184,7 @@ window.CMS_MASTERS = {
 
         <!-- Document Footer -->
         <div class="border-t border-slate-400 pt-2 flex justify-between items-center text-[10px] text-slate-500">
-          <span>Consumable Management System (CMS) | Official Empanelment Master Form</span>
+          <span>${adminCompName} | Central Procurement & Consumable Management System (CMS)</span>
           <span>Generated: ${new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
         </div>
 
@@ -2142,6 +2193,21 @@ window.CMS_MASTERS = {
   },
 
   buildVendorPrintDocument(v, paperHtml) {
+    let companyInfo = {};
+    try {
+      if (window.CMS_HOME && window.CMS_HOME.companyInfo && window.CMS_HOME.companyInfo.name) {
+        companyInfo = window.CMS_HOME.companyInfo;
+      } else {
+        companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}') || {};
+      }
+    } catch (e) {
+      companyInfo = {};
+    }
+    const adminCompName = (companyInfo.name || '').trim()
+      || window.CMS_TENANT_NAME
+      || (window.CMS_STORE && window.CMS_STORE.data && (window.CMS_STORE.data.companyName || window.CMS_STORE.data.companyInfo?.name))
+      || 'Adminutes Enterprises';
+
     const cleanTitle = `Vendor_Registration_Form_${v.id}_${(v.name || 'Vendor').replace(/\s+/g, '_')}`;
     return `<!DOCTYPE html>
 <html lang="en">
@@ -2195,7 +2261,7 @@ window.CMS_MASTERS = {
 </head>
 <body class="p-4 bg-white text-slate-800">
   <div class="no-print max-w-4xl mx-auto mb-4 flex justify-between items-center bg-slate-100 p-3 rounded border border-slate-300">
-    <span class="text-xs font-bold text-slate-700">Official Vendor Empanelment Form (${v.id} - ${v.name})</span>
+    <span class="text-xs font-bold text-slate-700">${adminCompName} - Official Vendor Empanelment Form (${v.id} - ${v.name})</span>
     <div class="flex gap-2">
       <button onclick="window.print()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs transition shadow-sm">
         Print / Save PDF
