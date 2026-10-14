@@ -1383,13 +1383,14 @@ window.CMS_MASTERS = {
               <span>Vendor Master</span>
             </h2>
             
-          </div>
-          <div class="flex flex-wrap items-center gap-2.5">
-            <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition text-xs cursor-pointer">
-              <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
-              <span>Register New Vendor</span>
-            </button>
-          </div>
+          ${role !== 'Admin' ? `
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition text-xs cursor-pointer">
+                <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
+                <span>Register New Vendor</span>
+              </button>
+            </div>
+          ` : ''}
         </div>
 
         <!-- Table Toolbar: Search & Filter -->
@@ -2405,10 +2406,10 @@ window.CMS_MASTERS = {
     const customLogo = (companyInfo.logo && !companyInfo.logo.includes('adminutes_logo')) ? companyInfo.logo : (companyInfo.logoUrl && !companyInfo.logoUrl.includes('adminutes_logo') ? companyInfo.logoUrl : null);
 
     return `
-      <div id="vendor-paper-form" data-vendor-id="${v.id}" class="space-y-5 text-xs bg-white p-6 border border-slate-300 shadow-sm text-slate-800">
+      <div id="vendor-paper-form" data-vendor-id="${v.id}" class="space-y-5 text-xs bg-white ${isPrint ? 'p-0 border-0 shadow-none' : 'p-6 border border-slate-300 shadow-sm'} text-slate-800">
         
         <!-- Official Document Letterhead & Header -->
-        <div class="border-b-2 border-slate-900 pb-4 mb-4">
+        <div class="${isPrint ? 'pb-4 mb-4' : 'border-b-2 border-slate-900 pb-4 mb-4'}">
           <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div class="flex items-start gap-3.5 max-w-xl">
               ${customLogo ? `
@@ -2876,11 +2877,13 @@ window.CMS_MASTERS = {
           `}
         </div>
 
-        <!-- Document Footer -->
-        <div class="border-t border-slate-400 pt-2 flex justify-between items-center text-[10px] text-slate-500">
-          <span>${adminCompName} | Central Procurement & Consumable Management System (CMS)</span>
-          <span>Generated: ${new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
-        </div>
+        ${isPrint ? '' : `
+          <!-- Document Footer -->
+          <div class="border-t border-slate-400 pt-2 flex justify-between items-center text-[10px] text-slate-500">
+            <span>${adminCompName} | Central Procurement & Consumable Management System (CMS)</span>
+            <span>Generated: ${new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+          </div>
+        `}
 
       </div>
     `;
@@ -2924,7 +2927,7 @@ window.CMS_MASTERS = {
   <style>
     @page {
       size: A4 portrait;
-      margin: 10mm 12mm;
+      margin: 0 !important;
     }
     * {
       box-sizing: border-box;
@@ -2959,7 +2962,7 @@ window.CMS_MASTERS = {
         display: none !important;
       }
       body {
-        padding: 0 !important;
+        padding: 10mm 12mm !important;
         margin: 0 !important;
         background: #ffffff !important;
         color: #000000 !important;
@@ -3295,13 +3298,24 @@ window.CMS_MASTERS = {
     const fileCache = {};
     const filesToLoad = [];
     if (v.panCardFile) filesToLoad.push(v.panCardFile);
+    if (v.panFile) filesToLoad.push(v.panFile);
     if (v.gstCertificateFile) filesToLoad.push(v.gstCertificateFile);
-    if (v.bankDoc) filesToLoad.push(v.bankDoc);
+    if (v.gstFile) filesToLoad.push(v.gstFile);
+    const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile));
+    if (bankDocFile) filesToLoad.push(bankDocFile);
+    if (v.certificateFile) filesToLoad.push(v.certificateFile);
+    if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
     if (Array.isArray(v.certificates)) {
-      v.certificates.forEach(c => { if (c && c.fileName) filesToLoad.push(c.fileName); });
+      v.certificates.forEach(c => {
+        const fn = c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc);
+        if (fn) filesToLoad.push(fn);
+      });
     }
     if (Array.isArray(v.quotedItems)) {
-      v.quotedItems.forEach(q => { if (q && q.doc) filesToLoad.push(q.doc); });
+      v.quotedItems.forEach(q => {
+        const fn = q && (q.doc || q.document || q.file || q.quotationDoc || q.fileName || q.filename);
+        if (fn) filesToLoad.push(fn);
+      });
     }
 
     for (const f of filesToLoad) {
@@ -4302,13 +4316,13 @@ window.CMS_MASTERS = {
 
   openVendorModal(vendorId = null) {
     const role = window.CMS_STORE.getRole();
+    if (role === 'Admin') {
+      window.CMS_APP.toast('Approvers / Admins cannot create or edit vendor registrations. Registration is handled by Store Staff (Maker).', 'info');
+      if (vendorId) this.viewVendorProfile(vendorId);
+      return;
+    }
     const isEdit = Boolean(vendorId);
     if (isEdit) {
-      if (role === 'Admin') {
-        window.CMS_APP.toast('Approvers / Admins cannot edit vendor forms. Please review and Approve or Return for Revision.', 'info');
-        this.viewVendorProfile(vendorId);
-        return;
-      }
       const existingVendor = window.CMS_STORE.data.vendors.find(v => v.id === vendorId);
       if (existingVendor && (existingVendor.status === 'Approved' || existingVendor.isApproved)) {
         window.CMS_APP.toast('Approved vendor records are locked and cannot be edited.', 'info');
@@ -5653,6 +5667,12 @@ window.CMS_MASTERS = {
   },
 
   async saveVendor(vendorId = null, directSubmit = true, isManualDraft = false) {
+    const store = window.CMS_STORE;
+    const role = store.getRole();
+    if (role === 'Admin') {
+      if (window.CMS_APP) window.CMS_APP.toast('Administrative Approvers (Checker) cannot create or modify vendor registrations.', 'error');
+      return;
+    }
     const readFileAsDataUrl = (file) => {
       return new Promise((resolve) => {
         if (!file) return resolve(null);
@@ -5662,7 +5682,6 @@ window.CMS_MASTERS = {
         reader.readAsDataURL(file);
       });
     };
-    const store = window.CMS_STORE;
     const currentUser = store.getCurrentUser();
     
     if (directSubmit) {
