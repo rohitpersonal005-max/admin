@@ -1191,7 +1191,31 @@ window.CMS_APP = {
 
     if (dataUrl) {
       if (isPdf) {
-        viewerHtml = `<iframe src="${dataUrl}" class="w-full h-[70vh] border-0 rounded bg-white"></iframe>`;
+        let vendorMatch = null;
+        let docType = null;
+        if (window.CMS_STORE && window.CMS_STORE.data && Array.isArray(window.CMS_STORE.data.vendors)) {
+          for (const v of window.CMS_STORE.data.vendors) {
+            if (v.panCardFile === fileName) { vendorMatch = v; docType = 'pan'; break; }
+            if (v.gstCertificateFile === fileName) { vendorMatch = v; docType = 'gst'; break; }
+            if (v.bankDoc === fileName) { vendorMatch = v; docType = 'bank'; break; }
+            if (Array.isArray(v.quotedItems) && v.quotedItems.some(q => q && q.doc === fileName)) { vendorMatch = v; docType = 'quote'; break; }
+            if (Array.isArray(v.certificates) && v.certificates.some(c => c && c.fileName === fileName)) { vendorMatch = v; docType = 'cert'; break; }
+          }
+        }
+
+        const cleanPdfUrl = dataUrl.includes('#') ? dataUrl : (dataUrl + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH');
+
+        if (vendorMatch && window.CMS_MASTERS && window.CMS_MASTERS.renderDocumentAnnexureContent) {
+          const att = {
+            filename: fileName,
+            title: fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' '),
+            docType: docType || 'cert',
+            category: docType === 'pan' ? 'Statutory PAN' : docType === 'gst' ? 'Statutory GSTIN' : docType === 'bank' ? 'Banking Mandate' : docType === 'quote' ? 'Commercial Quotation' : 'Compliance Certificate'
+          };
+          viewerHtml = window.CMS_MASTERS.renderDocumentAnnexureContent(att, dataUrl, 1, vendorMatch, { isPrint: false });
+        } else {
+          viewerHtml = `<iframe src="${cleanPdfUrl}" class="w-full h-[70vh] border-0 rounded bg-white shadow-xs"></iframe>`;
+        }
       } else {
         viewerHtml = `<div class="max-h-[70vh] overflow-auto flex items-center justify-center p-2"><img src="${dataUrl}" class="max-w-full max-h-[68vh] object-contain rounded shadow-xs" alt="${fileName}" /></div>`;
       }
@@ -1224,7 +1248,14 @@ window.CMS_APP = {
           ${viewerHtml}
         </div>
         <div class="px-5 py-3 border-t border-slate-200 bg-white flex justify-between items-center text-xs">
-          <span class="text-slate-500 text-[11px]">Previewing document</span>
+          <div>
+            ${dataUrl ? `
+              <a href="${dataUrl}" download="${fileName}" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold border border-slate-300 rounded text-xs transition inline-flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="download" class="w-3.5 h-3.5 text-slate-600"></i>
+                <span>Download Original File</span>
+              </a>
+            ` : '<span class="text-slate-500 text-[11px]">Previewing document</span>'}
+          </div>
           <button type="button" class="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-sm text-xs transition" onclick="this.closest('.fixed').remove()">Close</button>
         </div>
       </div>

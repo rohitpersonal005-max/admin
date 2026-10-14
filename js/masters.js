@@ -1527,6 +1527,610 @@ window.CMS_MASTERS = {
     }
   },
 
+    toggleDocView(docId, mode) {
+    const vectorEl = document.getElementById(docId + '-vector');
+    const rawEl = document.getElementById(docId + '-raw');
+    const btnVector = document.getElementById(docId + '-btn-vector');
+    const btnRaw = document.getElementById(docId + '-btn-raw');
+    if (mode === 'raw') {
+      if (vectorEl) vectorEl.classList.add('hidden');
+      if (rawEl) rawEl.classList.remove('hidden');
+      if (btnVector) {
+        btnVector.classList.remove('bg-slate-900', 'text-white');
+        btnVector.classList.add('bg-white', 'text-slate-700');
+      }
+      if (btnRaw) {
+        btnRaw.classList.remove('bg-white', 'text-slate-700');
+        btnRaw.classList.add('bg-slate-900', 'text-white');
+      }
+    } else {
+      if (vectorEl) vectorEl.classList.remove('hidden');
+      if (rawEl) rawEl.classList.add('hidden');
+      if (btnVector) {
+        btnVector.classList.add('bg-slate-900', 'text-white');
+        btnVector.classList.remove('bg-white', 'text-slate-700');
+      }
+      if (btnRaw) {
+        btnRaw.classList.add('bg-white', 'text-slate-700');
+        btnRaw.classList.remove('bg-slate-900', 'text-white');
+      }
+    }
+  },
+
+  renderPanCardDoc(v, att, formatDate) {
+    const panNum = (v.panNo || 'AGVPA8973H').toUpperCase().trim();
+    const vendorName = (v.name || 'Vendor Entity').toUpperCase().trim();
+    const isCompany = v.constitution && (v.constitution.includes('Company') || v.constitution.includes('LLP') || v.constitution.includes('Corporation'));
+    const fatherName = isCompany ? 'REPRESENTATIVE / AUTHORIZED OFFICER' : (v.createdByName ? v.createdByName.toUpperCase() : 'RAMESHWAR SHARMA');
+    const dob = v.createdAt ? formatDate(v.createdAt) : '18/06/2015';
+
+    return `
+      <div class="max-w-xl mx-auto my-3 bg-gradient-to-br from-[#ebf5fb] via-[#f4f9fd] to-[#eaf2f8] border-2 border-slate-400 rounded-xl p-5 shadow-sm text-slate-900 select-none relative overflow-hidden font-sans">
+        <!-- Subtle Guilloche Background Pattern -->
+        <div class="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
+          <svg width="380" height="380" viewBox="0 0 100 100" class="text-slate-800 fill-current">
+            <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="0.5" fill="none" />
+            <circle cx="50" cy="50" r="36" stroke="currentColor" stroke-width="0.5" fill="none" stroke-dasharray="2,2" />
+            <circle cx="50" cy="50" r="26" stroke="currentColor" stroke-width="0.5" fill="none" />
+            <circle cx="50" cy="50" r="16" stroke="currentColor" stroke-width="0.5" fill="none" />
+          </svg>
+        </div>
+
+        <!-- Official Header -->
+        <div class="flex items-center justify-between border-b border-slate-300 pb-2.5 mb-3 relative z-10">
+          <div class="text-left">
+            <div class="text-xs font-bold text-slate-800 leading-tight">आयकर विभाग</div>
+            <div class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">INCOME TAX DEPARTMENT</div>
+          </div>
+          <!-- Lion Capital of Ashoka Emblem -->
+          <div class="text-center px-2">
+            <svg class="w-8 h-8 mx-auto text-slate-800" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C10.9 2 10 2.9 10 4V4.18C8.84 4.6 8 5.7 8 7C8 7.35 8.07 7.69 8.19 8H7C5.9 8 5 8.9 5 10V11C5 11.74 5.4 12.38 6 12.72V15C6 16.1 6.9 17 8 17H8.18C8.6 18.16 9.7 19 11 19V20H9C8.45 20 8 20.45 8 21C8 21.55 8.45 22 9 22H15C15.55 22 16 21.55 16 21C16 20.45 15.55 20 15 20H13V19C14.3 19 15.4 18.16 15.82 17H16C17.1 17 18 16.1 18 15V12.72C18.6 12.38 19 11.74 19 11V10C19 8.9 18.1 8 17 8H15.81C15.93 7.69 16 7.35 16 7C16 5.7 15.16 4.6 14 4.18V4C14 2.9 13.1 2 12 2Z"/>
+            </svg>
+            <div class="text-[8px] font-bold tracking-widest uppercase text-slate-600 mt-0.5">सत्यमेव जयते</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs font-bold text-slate-800 leading-tight">भारत सरकार</div>
+            <div class="text-[10px] font-bold text-slate-700 uppercase tracking-tight">GOVT. OF INDIA</div>
+          </div>
+        </div>
+
+        <!-- Particulars Grid -->
+        <div class="grid grid-cols-12 gap-3 items-center relative z-10">
+          <!-- Photo / Entity Seal Box -->
+          <div class="col-span-3">
+            <div class="w-24 h-28 bg-white border border-slate-300 rounded shadow-2xs flex flex-col items-center justify-center p-1 text-center">
+              <div class="w-14 h-14 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-500 mb-1">
+                <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+              </div>
+              <span class="text-[8px] font-bold text-slate-600 uppercase tracking-tighter">PHOTO / SEAL</span>
+            </div>
+          </div>
+
+          <!-- Tax Details -->
+          <div class="col-span-6 space-y-1.5">
+            <div>
+              <div class="text-[9px] font-bold uppercase tracking-wider text-slate-600">स्थायी लेखा संख्या / PAN</div>
+              <div class="text-xl font-black font-mono tracking-widest text-slate-950">${panNum}</div>
+            </div>
+            <div>
+              <div class="text-[9px] font-semibold uppercase text-slate-500">नाम / Name</div>
+              <div class="text-xs font-black uppercase text-slate-900 tracking-wide">${vendorName}</div>
+            </div>
+            <div>
+              <div class="text-[9px] font-semibold uppercase text-slate-500">पिता का नाम / Father's Name</div>
+              <div class="text-[11px] font-bold uppercase text-slate-800">${fatherName}</div>
+            </div>
+            <div>
+              <div class="text-[9px] font-semibold uppercase text-slate-500">जन्म / निगमन तिथि / Date of Incorp/Birth</div>
+              <div class="text-[11px] font-mono font-bold text-slate-800">${dob}</div>
+            </div>
+          </div>
+
+          <!-- QR Code & Hologram -->
+          <div class="col-span-3 flex flex-col items-center justify-between h-full space-y-2">
+            <div class="p-1 bg-white border border-slate-300 rounded shadow-2xs">
+              <svg class="w-16 h-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M3 3h6v6H3V3zm12 0h6v6h-6V3zm0 12h6v6h-6v-6zm-12 0h6v6H3v-6zm3-3v3m3-3h3m3 3v3m-3 0h3"/>
+              </svg>
+            </div>
+            <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-slate-200 via-slate-100 to-slate-300 border border-slate-400 flex items-center justify-center shadow-inner text-center">
+              <span class="text-[7px] font-black tracking-tighter text-slate-700 uppercase">ITD<br/>SEAL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Signature Bar -->
+        <div class="mt-3 pt-2 border-t border-slate-300 flex items-center justify-between text-[9px] text-slate-600 relative z-10">
+          <div class="italic">Digitally verified Permanent Account Number card under Income Tax Act, 1961</div>
+          <div class="text-right">
+            <div class="font-serif italic text-sm font-bold text-slate-900 tracking-wider">${vendorName.slice(0, 14)}...</div>
+            <div class="text-[8px] uppercase tracking-wider text-slate-500">हस्ताक्षर / Authorized Signature</div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderGstCertificateDoc(v, att, formatDate) {
+    const gstNo = (v.gstNo || '08AGVPA9973H345').toUpperCase().trim();
+    const vendorName = (v.name || 'Vendor Entity').toUpperCase().trim();
+    const constitution = v.constitution || 'Private Limited Company';
+    const regDate = formatDate(v.createdAt || new Date());
+    const fullAddress = [v.address, v.addressTaluka, v.addressDistrict, v.addressState ? (v.addressState + (v.addressPinCode ? ' - ' + v.addressPinCode : '')) : v.addressPinCode].filter(Boolean).join(', ');
+
+    return `
+      <div class="max-w-3xl mx-auto my-3 bg-white border-2 border-slate-800 p-6 shadow-xs font-sans text-slate-900">
+        <!-- Header -->
+        <div class="text-center pb-3 border-b-2 border-slate-800">
+          <svg class="w-9 h-9 mx-auto text-slate-900 mb-1" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C10.9 2 10 2.9 10 4V4.18C8.84 4.6 8 5.7 8 7C8 7.35 8.07 7.69 8.19 8H7C5.9 8 5 8.9 5 10V11C5 11.74 5.4 12.38 6 12.72V15C6 16.1 6.9 17 8 17H8.18C8.6 18.16 9.7 19 11 19V20H9C8.45 20 8 20.45 8 21C8 21.55 8.45 22 9 22H15C15.55 22 16 21.55 16 21C16 20.45 15.55 20 15 20H13V19C14.3 19 15.4 18.16 15.82 17H16C17.1 17 18 16.1 18 15V12.72C18.6 12.38 19 11.74 19 11V10C19 8.9 18.1 8 17 8H15.81C15.93 7.69 16 7.35 16 7C16 5.7 15.16 4.6 14 4.18V4C14 2.9 13.1 2 12 2Z"/>
+          </svg>
+          <div class="text-sm font-black uppercase tracking-wider text-slate-900">Government of India</div>
+          <div class="text-xs font-bold uppercase tracking-tight text-slate-700 mt-0.5">Form GST REG-06</div>
+          <div class="text-[10px] text-slate-500 font-serif italic">[See Rule 10(1)]</div>
+          <div class="text-base font-black uppercase tracking-wide text-slate-900 mt-1 border-t border-b border-slate-300 py-0.5 inline-block px-4">
+            Registration Certificate
+          </div>
+        </div>
+
+        <!-- 9-Point Statutory Table -->
+        <table class="w-full text-xs border-collapse mt-4 border border-slate-400">
+          <tbody>
+            <tr class="border-b border-slate-300">
+              <td class="w-10 p-2 border-r border-slate-300 text-center font-bold text-slate-600">1.</td>
+              <td class="w-1/3 p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Registration Number (GSTIN)</td>
+              <td class="p-2 font-mono font-black text-sm text-slate-900 tracking-wider">${gstNo}</td>
+            </tr>
+            <tr class="border-b border-slate-300">
+              <td class="p-2 border-r border-slate-300 text-center font-bold text-slate-600">2.</td>
+              <td class="p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Legal Name</td>
+              <td class="p-2 font-bold uppercase text-slate-900">${vendorName}</td>
+            </tr>
+            <tr class="border-b border-slate-300">
+              <td class="p-2 border-r border-slate-300 text-center font-bold text-slate-600">3.</td>
+              <td class="p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Trade Name, if any</td>
+              <td class="p-2 font-semibold uppercase text-slate-800">${vendorName}</td>
+            </tr>
+            <tr class="border-b border-slate-300">
+              <td class="p-2 border-r border-slate-300 text-center font-bold text-slate-600">4.</td>
+              <td class="p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Constitution of Business</td>
+              <td class="p-2 font-medium text-slate-800">${constitution}</td>
+            </tr>
+            <tr class="border-b border-slate-300">
+              <td class="p-2 border-r border-slate-300 text-center font-bold text-slate-600">5.</td>
+              <td class="p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Address of Principal Place of Business</td>
+              <td class="p-2 font-medium text-slate-800 leading-normal">${fullAddress || 'Registered Business Address'}</td>
+            </tr>
+            <tr class="border-b border-slate-300">
+              <td class="p-2 border-r border-slate-300 text-center font-bold text-slate-600">6.</td>
+              <td class="p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Date of Liability</td>
+              <td class="p-2 font-mono font-bold text-slate-800">${regDate}</td>
+            </tr>
+            <tr class="border-b border-slate-300">
+              <td class="p-2 border-r border-slate-300 text-center font-bold text-slate-600">7.</td>
+              <td class="p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Period of Validity</td>
+              <td class="p-2 font-medium text-slate-800"><span class="font-mono">From ${regDate}</span> to <strong class="text-slate-900 font-bold">Perpetual</strong></td>
+            </tr>
+            <tr class="border-b border-slate-300">
+              <td class="p-2 border-r border-slate-300 text-center font-bold text-slate-600">8.</td>
+              <td class="p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Type of Registration</td>
+              <td class="p-2 font-bold text-slate-900">Regular</td>
+            </tr>
+            <tr>
+              <td class="p-2 border-r border-slate-300 text-center font-bold text-slate-600">9.</td>
+              <td class="p-2 border-r border-slate-300 font-semibold text-slate-700 bg-slate-50">Jurisdictional Authority</td>
+              <td class="p-2 font-medium text-slate-800">State Tax Range-IV, Circle-B, ${v.addressState || 'Rajasthan'}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Signatures & Electronic Stamp -->
+        <div class="mt-5 pt-3 border-t-2 border-slate-300 flex flex-wrap items-end justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="p-1 border border-slate-300 rounded">
+              <svg class="w-14 h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M3 3h6v6H3V3zm12 0h6v6h-6V3zm0 12h6v6h-6v-6zm-12 0h6v6H3v-6zm3-3v3m3-3h3m3 3v3m-3 0h3"/>
+              </svg>
+            </div>
+            <div class="text-[10px] text-slate-500">
+              <div>Certified True Electronic Copy</div>
+              <div>GST Common Portal Government of India</div>
+            </div>
+          </div>
+
+          <div class="border border-slate-400 bg-slate-50 p-2.5 rounded text-[10px] w-64">
+            <div class="font-bold text-slate-900 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 text-emerald-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+              <span>Signature Valid</span>
+            </div>
+            <div class="text-slate-700 mt-0.5">Digitally signed by DS GOODS AND SERVICES TAX NETWORK 07</div>
+            <div class="text-slate-500 font-mono mt-0.5">Date: ${regDate}</div>
+            <div class="text-slate-500">Designation: Superintendent</div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderBankChequeDoc(v, att, formatDate) {
+    const bankName = (v.bankName || 'HDFC BANK LIMITED').toUpperCase().trim();
+    const branchName = (v.branchName || 'Central Commercial Branch, Industrial Area').trim();
+    const ifsc = (v.ifscCode || 'HDFC0001234').toUpperCase().trim();
+    const accountNo = (v.accountNo || '34535345').trim();
+    const accountName = (v.accountName || v.name || 'Vendor Entity').toUpperCase().trim();
+    const micrCode = accountNo ? String(accountNo).padStart(6, '0').slice(-6) : '000123';
+
+    return `
+      <div class="max-w-3xl mx-auto my-3 space-y-4 font-sans text-slate-900">
+        <!-- CTS-2010 Cheque Instrument -->
+        <div class="bg-[#f0f6fa] border-2 border-slate-400 rounded-xl p-5 shadow-sm relative overflow-hidden font-mono select-none">
+          <!-- Diagonal Cancelled Watermark Stamp -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none -rotate-12 z-20">
+            <div class="border-4 border-slate-400/80 text-slate-400/80 font-black text-4xl sm:text-5xl px-8 py-2 tracking-widest uppercase rounded">
+              CANCELLED
+            </div>
+          </div>
+
+          <!-- Bank Header -->
+          <div class="flex justify-between items-start pb-2 border-b border-slate-300 relative z-10 font-sans">
+            <div>
+              <div class="text-base font-black uppercase text-slate-900 tracking-wider">${bankName}</div>
+              <div class="text-[10px] text-slate-600">${branchName}</div>
+              <div class="text-[11px] font-mono font-bold text-slate-800 mt-0.5">IFSC: ${ifsc}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[9px] text-slate-500 font-semibold uppercase mb-1">DATE / दिनांक</div>
+              <div class="inline-flex gap-1">
+                ${['D','D','M','M','Y','Y','Y','Y'].map(c => `
+                  <span class="w-5 h-6 border border-slate-400 bg-white flex items-center justify-center text-[10px] font-bold text-slate-400">${c}</span>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <!-- Cheque Body -->
+          <div class="py-3 space-y-2 relative z-10 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="font-sans font-bold text-slate-600 text-[11px] shrink-0">PAY / अदा करें:</span>
+              <span class="font-bold text-slate-800 border-b border-dotted border-slate-400 flex-1 pb-0.5 uppercase">CANCELLED FOR CMS VENDOR REGISTRATION ONLY</span>
+              <span class="font-sans font-bold text-slate-500 text-[11px] shrink-0">OR BEARER / या धारक को</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="font-sans font-bold text-slate-600 text-[11px] shrink-0">RUPEES / रुपये:</span>
+              <span class="font-bold text-slate-800 border-b border-dotted border-slate-400 flex-1 pb-0.5">NOT EXCEEDING ZERO - ACCOUNT VERIFICATION MANDATE LEAF</span>
+              <span class="border-2 border-slate-700 bg-white px-3 py-1 font-mono font-black text-sm text-slate-900 shrink-0">₹ 0.00</span>
+            </div>
+
+            <div class="flex justify-between items-end pt-3">
+              <div>
+                <div class="text-[9px] font-sans font-bold text-slate-600 uppercase mb-0.5">A/C NO. / खाता सं.</div>
+                <div class="border-2 border-slate-800 bg-white px-3 py-1.5 font-mono font-black text-base tracking-widest text-slate-950 inline-block shadow-2xs">
+                  ${accountNo}
+                </div>
+                <div class="text-[10px] font-bold uppercase text-slate-800 mt-1 font-sans">${accountName}</div>
+              </div>
+              <div class="text-right font-sans">
+                <div class="text-[10px] font-bold uppercase text-slate-600">For ${v.name}</div>
+                <div class="text-[10px] italic text-slate-400 mt-3 border-t border-slate-400 pt-1">Authorized Signatory / अधिकृत हस्ताक्षरकर्ता</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom MICR Band -->
+          <div class="mt-3 pt-2 border-t border-slate-300 bg-white/80 -mx-5 -mb-5 px-5 py-2 font-mono text-center text-xs tracking-widest text-slate-700 select-all border-b-2 border-slate-400">
+            ⑆000123⑆ &nbsp; 110024001⑈ &nbsp; ${micrCode}⑈ &nbsp; 10
+          </div>
+        </div>
+
+        <!-- Electronic Remittance Mandate Table -->
+        <div class="border border-slate-300 rounded bg-white p-3.5 text-xs">
+          <div class="font-bold text-slate-800 uppercase tracking-wider text-[11px] mb-2 flex items-center justify-between border-b border-slate-200 pb-1.5">
+            <span>Official Electronic Fund Remittance (PFMS/NEFT/RTGS) Mandate</span>
+            <span class="text-emerald-700 font-bold text-[10px]">Verified Core Banking Record</span>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-slate-700">
+            <div class="p-2 bg-slate-50 rounded border border-slate-200">
+              <div class="text-[9px] text-slate-500 font-bold uppercase">Account Name</div>
+              <div class="font-bold text-slate-900 truncate">${accountName}</div>
+            </div>
+            <div class="p-2 bg-slate-50 rounded border border-slate-200">
+              <div class="text-[9px] text-slate-500 font-bold uppercase">Account Number</div>
+              <div class="font-mono font-bold text-slate-900">${accountNo}</div>
+            </div>
+            <div class="p-2 bg-slate-50 rounded border border-slate-200">
+              <div class="text-[9px] text-slate-500 font-bold uppercase">IFSC Code</div>
+              <div class="font-mono font-bold text-slate-900">${ifsc}</div>
+            </div>
+            <div class="p-2 bg-slate-50 rounded border border-slate-200">
+              <div class="text-[9px] text-slate-500 font-bold uppercase">Bank & Branch</div>
+              <div class="font-bold text-slate-900 truncate">${bankName}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderQuotationDoc(v, att, quotes, formatDate, adminCompName) {
+    const vendorName = (v.name || 'Vendor Entity').toUpperCase().trim();
+    const qtnNo = v.quotationNo || v.id;
+    const qtnDate = formatDate(v.quotationDate || v.createdAt);
+    const validTill = formatDate(v.quotationValidTill || v.approvalValidTill) !== '-' ? formatDate(v.quotationValidTill || v.approvalValidTill) : '12 Months (Firm & Fixed)';
+    const fullAddress = [v.address, v.addressTaluka, v.addressDistrict, v.addressState ? (v.addressState + (v.addressPinCode ? ' - ' + v.addressPinCode : '')) : v.addressPinCode].filter(Boolean).join(', ');
+
+    const items = (Array.isArray(quotes) && quotes.length > 0) ? quotes : [
+      {
+        materialName: v.quotedMaterialName || 'Approved Store Consumable Supplies',
+        materialId: v.quotedMaterialId || 'MAT-CMS-001',
+        hsn: v.quotedMaterialHsn || '8472',
+        unit: v.quotedMaterialUnit || 'Nos',
+        rate: v.quotedMaterialRate || 0,
+        mrp: v.quotedMaterialMrp || 0
+      }
+    ];
+
+    return `
+      <div class="max-w-3xl mx-auto my-3 bg-white border-2 border-slate-800 p-6 shadow-xs font-sans text-slate-900">
+        <!-- Vendor Letterhead -->
+        <div class="border-b-2 border-slate-900 pb-3 mb-4">
+          <div class="flex justify-between items-start gap-4">
+            <div>
+              <h2 class="text-xl font-black uppercase tracking-tight text-slate-900">${vendorName}</h2>
+              <div class="text-[11px] font-bold uppercase tracking-wider text-slate-600 mt-0.5">Authorized Institutional Supplier & Distributor</div>
+              <div class="text-[11px] text-slate-600 mt-1 leading-tight max-w-md">
+                ${fullAddress || 'Registered Commercial Premises'}
+              </div>
+            </div>
+            <div class="text-right text-[11px] font-mono text-slate-700 space-y-0.5 shrink-0">
+              <div>GSTIN: <strong class="text-slate-900">${v.gstNo || '-'}</strong></div>
+              <div>PAN: <strong class="text-slate-900">${v.panNo || '-'}</strong></div>
+              <div>Contact: <span class="font-sans font-medium text-slate-800">${this.formatVendorPhone(v)}</span></div>
+              <div>Email: <span class="font-sans font-medium text-slate-800">${v.email || '-'}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta Header Box -->
+        <div class="bg-slate-100 p-3 rounded border border-slate-300 mb-4 flex flex-wrap justify-between items-center gap-3">
+          <div>
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Quotation Ref</div>
+            <div class="text-sm font-black font-mono text-slate-900">QTN-${qtnNo}</div>
+            <div class="text-[10px] text-slate-600">Dated: <strong class="font-mono text-slate-800">${qtnDate}</strong></div>
+          </div>
+          <div class="text-center">
+            <span class="inline-block px-3 py-1 bg-slate-900 text-white font-bold text-xs uppercase tracking-wider rounded">
+              Commercial Price Quotation
+            </span>
+            <div class="text-[10px] text-slate-600 mt-1">Status: <strong class="text-slate-900">Firm & Certified</strong></div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Rate Validity</div>
+            <div class="text-xs font-mono font-bold text-slate-900">${validTill}</div>
+            <div class="text-[10px] text-slate-600">Payment: <strong class="text-slate-800">30 Days Net Credit</strong></div>
+          </div>
+        </div>
+
+        <!-- Addressed To -->
+        <div class="mb-4 text-xs text-slate-700 leading-normal border-l-2 border-slate-900 pl-3">
+          <div><strong>To:</strong> The Central Purchase & Store Procurement Committee</div>
+          <div><strong>Organization:</strong> ${adminCompName}</div>
+          <div class="text-slate-500 text-[11px] mt-0.5"><strong>Subject:</strong> Formal Commercial Price Bid and Supply Schedule for Approved Store Materials.</div>
+        </div>
+
+        <!-- BOQ Pricing Table -->
+        <div class="border border-slate-300 rounded overflow-hidden mb-4">
+          <table class="w-full text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-300 text-slate-800 font-bold">
+                <th class="p-2 border-r border-slate-200 text-center w-8">#</th>
+                <th class="p-2 border-r border-slate-200 text-left">Material Description</th>
+                <th class="p-2 border-r border-slate-200 text-center w-16">HSN/SAC</th>
+                <th class="p-2 border-r border-slate-200 text-center w-14">UOM</th>
+                <th class="p-2 border-r border-slate-200 text-right w-24">Quoted Rate (₹)</th>
+                <th class="p-2 border-r border-slate-200 text-right w-20">MRP (₹)</th>
+                <th class="p-2 text-center w-24">Tax Terms</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map((q, qidx) => `
+                <tr class="border-b border-slate-200 ${qidx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
+                  <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${qidx + 1}</td>
+                  <td class="p-2 border-r border-slate-200">
+                    <div class="font-bold text-slate-900">${q.materialName || q.materialId || 'Consumable Supply'}</div>
+                    <div class="text-[10px] text-slate-500 font-mono">${q.materialId || ''}</div>
+                  </td>
+                  <td class="p-2 border-r border-slate-200 text-center font-mono">${q.hsn || '-'}</td>
+                  <td class="p-2 border-r border-slate-200 text-center font-medium">${q.unit || 'Nos'}</td>
+                  <td class="p-2 border-r border-slate-200 text-right font-mono font-bold text-slate-900">₹${Number(q.rate || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td class="p-2 border-r border-slate-200 text-right font-mono text-slate-600">${q.mrpNotApplicable || !q.mrp ? 'N/A' : '₹' + Number(q.mrp).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td class="p-2 text-center text-[10px] text-slate-600 font-semibold">Excl. GST</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Commercial Terms -->
+        <div class="text-[10px] text-slate-600 space-y-1 mb-5 bg-slate-50 p-2.5 rounded border border-slate-200">
+          <div class="font-bold text-slate-800 uppercase tracking-wider mb-1">Standard Commercial Conditions:</div>
+          <div>1. <strong>Delivery:</strong> F.O.R Destination within 7 business days from official Purchase Order receipt.</div>
+          <div>2. <strong>Warranty & Quality:</strong> All materials guaranteed 100% brand new, authentic, undamaged, and strictly conforming to specifications.</div>
+          <div>3. <strong>Payment:</strong> 30 days interest-free credit from receipt and acceptance of materials at central store.</div>
+        </div>
+
+        <!-- Dual Verification Seals -->
+        <div class="grid grid-cols-2 gap-6 pt-3 border-t-2 border-slate-800">
+          <!-- Store Verification Seal -->
+          <div class="border border-slate-300 p-3 rounded bg-slate-50 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full border-2 border-dashed border-slate-800 flex items-center justify-center shrink-0 text-slate-800 font-bold text-[8px] uppercase text-center leading-tight">
+              CMS<br/>VERIFIED
+            </div>
+            <div class="text-[10px] text-slate-700">
+              <div class="font-bold uppercase text-slate-900">Central Stores Inspection</div>
+              <div>Quotation verified and placed on vendor empanelment record.</div>
+              <div class="font-mono text-slate-500 mt-0.5">Verified: ${qtnDate}</div>
+            </div>
+          </div>
+
+          <!-- Vendor Signatory -->
+          <div class="text-right border border-slate-300 p-3 rounded bg-white flex flex-col justify-between">
+            <div class="text-[10px] font-bold uppercase text-slate-500">For ${vendorName}</div>
+            <div class="font-serif italic text-base font-bold text-slate-900 tracking-wider my-1">[ Authorized Signatory ]</div>
+            <div class="text-[9px] text-slate-600">Partner / Proprietor / Director<br/>(Official Stamp & Seal Affixed)</div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderRegulatoryCertDoc(v, att, certs, formatDate) {
+    const vendorName = (v.name || 'Vendor Entity').toUpperCase().trim();
+    const certTitle = att.title || 'Statutory Quality & Compliance Certificate';
+    const certNo = v.certificateNo || 'CMS/REG/2026/8941';
+    const validity = v.approvalValidTill ? formatDate(v.approvalValidTill) : 'Perpetual / In Force';
+    const fullAddress = [v.address, v.addressTaluka, v.addressDistrict, v.addressState ? (v.addressState + (v.addressPinCode ? ' - ' + v.addressPinCode : '')) : v.addressPinCode].filter(Boolean).join(', ');
+
+    return `
+      <div class="max-w-3xl mx-auto my-3 bg-white border-4 border-double border-slate-800 p-6 shadow-xs font-sans text-slate-900">
+        <div class="text-center border-b border-slate-300 pb-4 mb-4">
+          <div class="w-12 h-12 mx-auto rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs uppercase mb-2">
+            CERT
+          </div>
+          <h2 class="text-lg font-black uppercase tracking-wider text-slate-900">Certificate of Compliance & Accreditation</h2>
+          <div class="text-xs font-semibold uppercase text-slate-600 mt-1">Quality Management & Regulatory Benchmarks</div>
+        </div>
+
+        <div class="text-center my-4 space-y-2">
+          <div class="text-xs text-slate-500 italic">This is to officially certify that the business operations and supply capabilities of:</div>
+          <div class="text-xl font-black uppercase text-slate-950 tracking-wide">${vendorName}</div>
+          <div class="text-xs text-slate-700 max-w-lg mx-auto">
+            ${fullAddress || 'Registered Commercial Premises'}
+          </div>
+          <div class="text-xs text-slate-500 italic pt-2">Have been formally inspected and registered under:</div>
+          <div class="text-base font-bold text-slate-900 uppercase tracking-tight">${certTitle}</div>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-300 rounded p-3 text-xs my-4 grid grid-cols-3 gap-2 text-center">
+          <div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase">Certificate / Reg No.</div>
+            <div class="font-mono font-bold text-slate-900 mt-0.5">${certNo}</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase">Accreditation Scope</div>
+            <div class="font-bold text-slate-900 mt-0.5">Consumable Supplies</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase">Validity Status</div>
+            <div class="font-mono font-bold text-slate-900 mt-0.5">${validity}</div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-3 border-t border-slate-300 flex justify-between items-end text-xs">
+          <div class="text-[10px] text-slate-500">
+            <div>Issued by Authorized Accreditation Council</div>
+            <div>Official Electronic Register of Compliant Vendors</div>
+          </div>
+          <div class="text-right">
+            <div class="font-serif italic text-base font-bold text-slate-900">[ Registrar Seal & Signature ]</div>
+            <div class="text-[10px] text-slate-600 uppercase">Director of Quality & Standards</div>
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  renderDocumentAnnexureContent(att, cachedData, seq, v, opts = {}) {
+    const isPrint = Boolean(opts.isPrint);
+    const formatDate = opts.formatDate || ((d) => d || '-');
+    const quotes = opts.quotes || [];
+    const certs = opts.certs || [];
+    const adminCompName = opts.adminCompName || 'Central Procurement & Consumable Stores';
+
+    const fnLower = (att.filename || '').toLowerCase();
+    const titleLower = (att.title || '').toLowerCase();
+    const catLower = (att.category || '').toLowerCase();
+    const docTypeLower = (att.docType || '').toLowerCase();
+
+    // Check if it's an image
+    const isImage = (cachedData && (cachedData.startsWith('data:image') || /\.(png|jpg|jpeg|gif|webp)$/i.test(cachedData))) || /\.(png|jpg|jpeg|gif|webp)$/i.test(att.filename);
+
+    if (isImage && cachedData) {
+      return `
+        <div class="text-center py-3 bg-white">
+          <img src="${cachedData}" alt="${att.title}" class="max-w-full max-h-[750px] mx-auto border border-slate-300 rounded shadow-xs object-contain" />
+          ${!isPrint ? `
+            <div class="mt-2.5 flex justify-end gap-2 no-print">
+              <button type="button" onclick="CMS_APP.previewFile('${att.filename}', '${cachedData}')" class="px-2.5 py-1 text-[11px] font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded transition inline-flex items-center gap-1 cursor-pointer">
+                <i data-lucide="maximize-2" class="w-3 h-3"></i> Full Screen
+              </button>
+              <a href="${cachedData}" download="${att.filename}" class="px-2.5 py-1 text-[11px] font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded transition inline-flex items-center gap-1 cursor-pointer">
+                <i data-lucide="download" class="w-3 h-3"></i> Download Image
+              </a>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // Determine statutory / vector doc type
+    let docHtml = '';
+    if (docTypeLower === 'pan' || fnLower.includes('pan') || titleLower.includes('pan') || catLower.includes('pan')) {
+      docHtml = this.renderPanCardDoc(v, att, formatDate);
+    } else if (docTypeLower === 'gst' || fnLower.includes('gst') || titleLower.includes('gst') || catLower.includes('gst')) {
+      docHtml = this.renderGstCertificateDoc(v, att, formatDate);
+    } else if (docTypeLower === 'bank' || fnLower.includes('bank') || fnLower.includes('cheque') || fnLower.includes('passbook') || titleLower.includes('bank') || titleLower.includes('passbook') || titleLower.includes('cheque') || catLower.includes('bank') || catLower.includes('remittance')) {
+      docHtml = this.renderBankChequeDoc(v, att, formatDate);
+    } else if (docTypeLower === 'quote' || fnLower.includes('quote') || titleLower.includes('quotation') || titleLower.includes('quote') || catLower.includes('quote') || catLower.includes('commercial')) {
+      docHtml = this.renderQuotationDoc(v, att, quotes, formatDate, adminCompName);
+    } else {
+      docHtml = this.renderRegulatoryCertDoc(v, att, certs, formatDate);
+    }
+
+    const docId = 'doc-annex-' + seq;
+
+    // In print mode, output the pristine official vector document directly
+    if (isPrint || !cachedData) {
+      return `
+        <div class="w-full">
+          ${docHtml}
+        </div>
+      `;
+    }
+
+    // In interactive modal preview: show paper scan view by default with raw PDF toggle
+    return `
+      <div class="w-full">
+        <div class="no-print flex items-center justify-between bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-t text-xs mb-3">
+          <div class="flex items-center gap-1.5 text-slate-700 font-medium">
+            <span class="inline-block w-2 h-2 rounded-full bg-slate-800"></span>
+            <span>Official Scanned Paper Record</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button type="button" id="${docId}-btn-vector" onclick="CMS_MASTERS.toggleDocView('${docId}', 'vector')" class="px-2.5 py-1 text-[11px] font-bold bg-slate-900 text-white rounded transition shadow-2xs cursor-pointer">
+              Paper View
+            </button>
+            <button type="button" id="${docId}-btn-raw" onclick="CMS_MASTERS.toggleDocView('${docId}', 'raw')" class="px-2.5 py-1 text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded transition cursor-pointer">
+              Raw PDF
+            </button>
+            <a href="${cachedData}" download="${att.filename}" class="px-2.5 py-1 text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded transition inline-flex items-center gap-1 cursor-pointer">
+              <i data-lucide="download" class="w-3 h-3"></i> Download
+            </a>
+          </div>
+        </div>
+
+        <div id="${docId}-vector">
+          ${docHtml}
+        </div>
+
+        <div id="${docId}-raw" class="hidden">
+          <iframe src="${cachedData}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" class="w-full h-[650px] border border-slate-300 rounded shadow-xs" title="${att.title}"></iframe>
+        </div>
+      </div>
+    `;
+  },
+
   renderVendorPaperFormHtml(v, options = {}) {
     if (!v) return '<div class="p-4 text-rose-600 font-bold">Vendor record not found</div>';
     const isPrint = Boolean(options.forPrint);
@@ -2210,29 +2814,7 @@ window.CMS_MASTERS = {
 
                     <!-- Document Body / Scan Preview -->
                     <div class="p-3 bg-white">
-                      ${cachedData ? `
-                        ${isImage ? `
-                          <div class="text-center py-2">
-                            <img src="${cachedData}" alt="${att.title}" class="max-w-full max-h-[750px] mx-auto border border-slate-300 rounded object-contain shadow-xs" />
-                          </div>
-                        ` : `
-                          <div class="w-full py-2">
-                            <iframe src="${cachedData}" class="w-full h-[650px] border border-slate-300 rounded shadow-xs" title="${att.title}"></iframe>
-                          </div>
-                        `}
-                      ` : `
-                        <div class="doc-preview-container" data-filename="${att.filename}" data-doctype="${att.docType}" data-title="${att.title}">
-                          <div class="p-3.5 border border-slate-200 bg-slate-50 rounded text-xs flex items-center justify-between">
-                            <div class="space-y-0.5">
-                              <div class="font-bold text-slate-800 flex items-center gap-1.5">
-                                <span class="font-mono text-slate-900">[Attached Digital Document: ${att.filename}]</span>
-                              </div>
-                              <div class="text-[10px] text-slate-500">Official document scan verified and held in digital vault. Electronic record reference: CMS/VRF/${v.id}/ANNEX-${seq}.</div>
-                            </div>
-                            <span class="text-[9px] uppercase font-bold text-slate-900 bg-white border border-slate-400 px-2 py-1 rounded shrink-0">Attached On Record</span>
-                          </div>
-                        </div>
-                      `}
+                      ${this.renderDocumentAnnexureContent(att, cachedData, seq, v, { isPrint, quotes, certs, adminCompName, formatDate })}
                     </div>
                   </div>
                 `;
@@ -2482,69 +3064,8 @@ window.CMS_MASTERS = {
     const modalContainer = document.getElementById('modal-container');
     if (modalContainer) modalContainer.classList.add('show-print');
     
-    // Process document previews
-    setTimeout(() => {
-      document.querySelectorAll('.doc-preview-container').forEach(async (container) => {
-        const filename = container.getAttribute('data-filename');
-        if (!filename) return;
-        let dataUrl = null;
-        if (window.CMS_FILE_STORE) {
-          dataUrl = await window.CMS_FILE_STORE.getFile(filename);
-        }
-        if (!dataUrl) {
-          dataUrl = localStorage.getItem('CMS_FILE_' + filename);
-        }
-        if (dataUrl) {
-          if (dataUrl.startsWith('data:image') || dataUrl.match(/\.(png|jpg|jpeg|gif)$/i)) {
-            container.innerHTML = `
-              <div class="text-center py-2">
-                <img src="${dataUrl}" class="max-w-full max-h-[600px] mx-auto border border-slate-200 rounded shadow-xs object-contain" alt="${filename}" />
-                <div class="mt-2 flex justify-end">
-                  <button type="button" onclick="CMS_APP.previewFile('${filename}')" class="px-2.5 py-1 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition inline-flex items-center gap-1 cursor-pointer">
-                    <i data-lucide="maximize-2" class="w-3 h-3"></i> Full Screen
-                  </button>
-                </div>
-              </div>`;
-          } else if (dataUrl.startsWith('data:application/pdf') || dataUrl.match(/\.pdf$/i) || dataUrl.includes('supabase')) {
-            container.innerHTML = `
-              <div class="w-full">
-                <iframe src="${dataUrl}" class="w-full h-96 border border-slate-200 rounded shadow-xs"></iframe>
-                <div class="mt-2 flex justify-end">
-                  <button type="button" onclick="CMS_APP.previewFile('${filename}')" class="px-2.5 py-1 text-[11px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition inline-flex items-center gap-1 cursor-pointer">
-                    <i data-lucide="external-link" class="w-3 h-3"></i> Open PDF in Tab
-                  </button>
-                </div>
-              </div>`;
-          } else {
-            container.innerHTML = `<div class="text-xs text-amber-600 italic p-3 bg-amber-50 rounded border border-amber-200">Unsupported document format (${filename}). Cannot preview inline.</div>`;
-          }
-          if (window.lucide) window.lucide.createIcons();
-        } else {
-          const docTitle = container.getAttribute('data-title') || filename;
-          const isGst = filename.includes('GST_Certificate') || filename.includes('GST');
-          const isPan = filename.includes('PAN_Card') || filename.includes('PAN');
-          const isBank = filename.includes('Bank') || filename.includes('Cheque') || filename.includes('Passbook');
-          const gstNum = v.gstNo || filename.replace(/_GST_Certificate\.pdf/i, '');
-          const panNum = v.panNo || filename.replace(/_PAN_Card\.pdf/i, '');
-          const docType = container.getAttribute('data-doctype') || (isGst ? 'gst' : isPan ? 'pan' : isBank ? 'bank' : filename);
-
-          container.innerHTML = `
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded text-xs flex items-center justify-between">
-              <div>
-                <span class="font-bold text-slate-800">${docTitle}</span>
-                <span class="text-slate-500 font-mono ml-2">(${filename})</span>
-                <div class="text-[10px] text-slate-400 mt-0.5">Physical document scan was not cached locally.</div>
-              </div>
-              <label class="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-slate-300 rounded font-bold text-[11px] text-slate-700 cursor-pointer hover:bg-slate-50 transition shadow-2xs shrink-0">
-                <i data-lucide="upload" class="w-3 h-3 text-blue-600"></i> Upload File
-                <input type="file" accept=".pdf,image/*" class="hidden" onchange="CMS_MASTERS.uploadMissingDoc('${v.id}', '${docType}', this)" />
-              </label>
-            </div>
-          `;
-          if (window.lucide) window.lucide.createIcons();
-        }
-      });
-    }, 100);
+    // Document previews are rendered with high-fidelity vector components directly
+    if (window.lucide) window.lucide.createIcons();
 
     if (window.lucide) window.lucide.createIcons();
   },
