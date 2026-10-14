@@ -1987,9 +1987,10 @@ window.CMS_MASTERS = {
 
   renderRegulatoryCertDoc(v, att, certs, formatDate) {
     const vendorName = (v.name || 'Vendor Entity').toUpperCase().trim();
-    const certTitle = att.title || 'Statutory Quality & Compliance Certificate';
-    const certNo = v.certificateNo || 'CMS/REG/2026/8941';
-    const validity = v.approvalValidTill ? formatDate(v.approvalValidTill) : 'Perpetual / In Force';
+    const matchedCert = Array.isArray(certs) ? certs.find(c => (c && (c.fileName || c.filename || c.file || c.doc) === att.filename)) : null;
+    const certTitle = att.title || matchedCert?.documentName || matchedCert?.name || 'Statutory Quality & Compliance Certificate';
+    const certNo = matchedCert?.certificateNo || matchedCert?.formNo || v.certificateNo || 'CMS/REG/2026/8941';
+    const validity = matchedCert ? (matchedCert.hasValidity && matchedCert.validTill ? formatDate(matchedCert.validTill) : 'Perpetual / In Force') : (v.approvalValidTill ? formatDate(v.approvalValidTill) : 'Perpetual / In Force');
     const fullAddress = [v.address, v.addressTaluka, v.addressDistrict, v.addressState ? (v.addressState + (v.addressPinCode ? ' - ' + v.addressPinCode : '')) : v.addressPinCode].filter(Boolean).join(', ');
 
     return `
@@ -2156,7 +2157,7 @@ window.CMS_MASTERS = {
     // Normalize quotes list
     const quotes = (Array.isArray(v.quotedItems) && v.quotedItems.length > 0)
       ? v.quotedItems
-      : (v.quotationNo || v.quotedMaterialName)
+      : (v.quotationNo || v.quotedMaterialName || v.quotationDoc)
         ? [{
             quotationNo: v.quotationNo || 'Direct',
             quotationDate: v.quotationDate || '',
@@ -2204,20 +2205,26 @@ window.CMS_MASTERS = {
     // Step 3: Commercial Quotations
     // Step 4: Bank Details -> Bank Proof Mandate
     const attachments = [];
-    const seenFiles = new Set();
+    const seenSlots = new Set();
 
     const addAttachment = (item) => {
       if (!item || !item.filename) return;
       const fn = String(item.filename).trim();
       if (!fn) return;
-      if (seenFiles.has(fn)) {
-        const existing = attachments.find(a => a.filename === fn);
-        if (existing && item.extraRef && !existing.extraRef?.includes(item.extraRef)) {
-          existing.extraRef = existing.extraRef ? `${existing.extraRef}, ${item.extraRef}` : item.extraRef;
+
+      const slotKey = item.slotId || `${item.docType}_${fn}`;
+      if (seenSlots.has(slotKey)) return;
+
+      // Only merge if it's the exact same document type AND same filename (e.g. multiple line items in same quotation)
+      const existingInSameType = attachments.find(a => a.docType === item.docType && a.filename === fn);
+      if (existingInSameType) {
+        if (item.extraRef && !existingInSameType.extraRef?.includes(item.extraRef)) {
+          existingInSameType.extraRef = existingInSameType.extraRef ? `${existingInSameType.extraRef}, ${item.extraRef}` : item.extraRef;
         }
         return;
       }
-      seenFiles.add(fn);
+
+      seenSlots.add(slotKey);
       attachments.push({
         ...item,
         filename: fn
@@ -2225,9 +2232,11 @@ window.CMS_MASTERS = {
     };
 
     // 1. Step 2: PAN Card
-    if (v.panCardFile) {
+    const panFile = v.panCardFile || v.panFile || (v.panDetails && v.panDetails.file) || '';
+    if (panFile && !v.panNotApplicable) {
       addAttachment({
-        filename: v.panCardFile,
+        slotId: 'pan',
+        filename: panFile,
         title: v.panDocTitle || 'PAN Card Copy',
         category: 'Statutory Identification (PAN)',
         docType: 'pan'
@@ -2235,9 +2244,11 @@ window.CMS_MASTERS = {
     }
 
     // 2. Step 2: GST Certificate
-    if (v.gstCertificateFile) {
+    const gstFile = v.gstCertificateFile || v.gstFile || (v.gstDetails && v.gstDetails.file) || '';
+    if (gstFile && !v.gstNotApplicable) {
       addAttachment({
-        filename: v.gstCertificateFile,
+        slotId: 'gst',
+        filename: gstFile,
         title: v.gstDocTitle || 'GST Registration Certificate',
         category: 'Statutory GSTIN Registration',
         docType: 'gst'
@@ -2245,51 +2256,91 @@ window.CMS_MASTERS = {
     }
 
     // 3. Step 2: Regulatory & Compliance Certificates
-    certs.forEach((c) => {
-      if (c && c.fileName) {
-        const certTitle = c.documentName || c.docTitle || (c.regulator ? (c.regulator + (c.certificateNo ? ` (${c.certificateNo})` : '')) : 'Regulatory License');
+    let certDocAdded = false;
+    certs.forEach((c, idx) => {
+      const cFile = (c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc)) || (certs.length === 1 ? v.certificateFile : '');
+      if (cFile) {
+        const certTitle = (c && (c.documentName || c.docTitle)) || (c && c.regulator ? (c.regulator + (c.certificateNo ? ` (${c.certificateNo})` : '')) : (c && c.name ? c.name : 'Regulatory License'));
         addAttachment({
-          filename: c.fileName,
+          slotId: `cert_${idx}`,
+          filename: cFile,
           title: certTitle,
           category: 'Regulatory Compliance / License',
           docType: 'cert'
         });
+        certDocAdded = true;
       }
     });
 
+    if (!certDocAdded && v.certificateFile) {
+      addAttachment({
+        slotId: 'cert_top',
+        filename: v.certificateFile,
+        title: v.certificateDocTitle || 'Regulatory / MSME / ISO Certificate',
+        category: 'Regulatory Compliance / License',
+        docType: 'cert'
+      });
+    }
+
     // 4. Step 3: Commercial Quotation Documents
-    quotes.forEach((q) => {
-      if (q && q.doc) {
-        const qTitle = q.docTitle || (q.quotationNo ? `Quotation Ref: ${q.quotationNo}` : (q.materialName ? `Quotation - ${q.materialName}` : 'Commercial Quotation'));
+    let quoteDocAdded = false;
+    quotes.forEach((q, idx) => {
+      const qDoc = (q && (q.doc || q.document || q.file || q.quotationDoc || q.fileName || q.filename)) || (quotes.length === 1 ? v.quotationDoc : '');
+      if (qDoc) {
+        const qTitle = (q && q.docTitle) || (q && q.quotationNo ? `Quotation Ref: ${q.quotationNo}` : (q && q.materialName ? `Quotation - ${q.materialName}` : (v.quotationNo ? `Quotation Ref: ${v.quotationNo}` : 'Commercial Quotation')));
         addAttachment({
-          filename: q.doc,
+          slotId: `quote_${idx}`,
+          filename: qDoc,
           title: qTitle,
           category: 'Commercial Quotation',
           docType: 'quote',
-          extraRef: q.materialName || q.materialId || ''
+          extraRef: (q && (q.materialName || q.materialId)) || v.quotedMaterialName || ''
         });
+        quoteDocAdded = true;
       }
     });
 
-    // 5. Step 4: Bank Supporting Document
-    if (v.bankDoc) {
+    if (!quoteDocAdded && v.quotationDoc) {
       addAttachment({
-        filename: v.bankDoc,
-        title: v.bankDocTitle || 'Cancelled Cheque / Bank Statement',
+        slotId: 'quote_top',
+        filename: v.quotationDoc,
+        title: v.quotationDocTitle || (v.quotationNo ? `Quotation Ref: ${v.quotationNo}` : 'Commercial Quotation'),
+        category: 'Commercial Quotation',
+        docType: 'quote',
+        extraRef: v.quotedMaterialName || ''
+      });
+    }
+
+    // 5. Step 4: Bank Supporting Document
+    const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile)) || '';
+    if (bankDocFile) {
+      addAttachment({
+        slotId: 'bank',
+        filename: bankDocFile,
+        title: v.bankDocTitle || (v.bankDetails && v.bankDetails.bankDocTitle) || 'Cancelled Cheque / Bank Statement',
         category: 'Banking Mandate & Remittance Proof',
         docType: 'bank'
       });
     }
 
-    const getAnnexureSeq = (filename) => {
-      if (!filename) return null;
-      const idx = attachments.findIndex(a => a.filename === filename);
+    const getAnnexureSeq = (identifier, docType, slotId) => {
+      if (!identifier && !docType && !slotId) return null;
+      let idx = -1;
+      if (slotId) {
+        idx = attachments.findIndex(a => a.slotId === slotId);
+      }
+      if (idx === -1 && docType) {
+        idx = attachments.findIndex(a => a.docType === docType && (!identifier || a.filename === identifier));
+      }
+      if (idx === -1 && identifier) {
+        idx = attachments.findIndex(a => a.filename === identifier || a.slotId === identifier);
+      }
       return idx !== -1 ? idx + 1 : null;
     };
 
-    const panSeq = getAnnexureSeq(v.panCardFile);
-    const gstSeq = getAnnexureSeq(v.gstCertificateFile);
-    const bankSeq = getAnnexureSeq(v.bankDoc);
+    const panSeq = getAnnexureSeq(panFile, 'pan', 'pan');
+    const gstSeq = getAnnexureSeq(gstFile, 'gst', 'gst');
+    const bankSeq = getAnnexureSeq(bankDocFile, 'bank', 'bank');
 
     // Admin Company Information (from Settings / Company Profile)
     let companyInfo = {};
@@ -2398,7 +2449,7 @@ window.CMS_MASTERS = {
               </div>
               <div class="text-xs">
                 <span class="text-slate-500 font-medium">Status:</span>
-                <span class="font-bold ml-1 text-slate-900">${v.status.toUpperCase()}</span>
+                <span class="font-bold ml-1 text-slate-900">${(v.status || 'Pending Approval').toUpperCase()}</span>
               </div>
               <div class="text-[11px] text-slate-500 mt-0.5">
                 Date: <strong class="text-slate-700 font-mono">${formatDate(v.createdAt || new Date())}</strong>
@@ -2465,14 +2516,14 @@ window.CMS_MASTERS = {
                   <div class="mt-1.5 pt-1.5 border-t border-slate-200 text-[10px]">
                     <div class="flex items-center justify-between">
                       <span class="text-slate-500 font-medium">Attached Proof:</span>
-                      ${v.panCardFile ? `
+                      ${panFile ? `
                         <span class="text-[9px] font-bold text-slate-900 bg-white border border-slate-400 px-1.5 py-0.2 rounded font-mono">
                           Annexure Doc #${panSeq}
                         </span>
                       ` : ''}
                     </div>
-                    ${v.panCardFile ? `
-                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${v.panCardFile}">${v.panCardFile}</div>
+                    ${panFile ? `
+                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${panFile}">${panFile}</div>
                       <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
                     ` : `<div class="text-slate-400 italic mt-0.5">${v.panNotApplicable ? 'Not Applicable (Exempt)' : 'No document attached'}</div>`}
                   </div>
@@ -2486,14 +2537,14 @@ window.CMS_MASTERS = {
                   <div class="mt-1.5 pt-1.5 border-t border-slate-200 text-[10px]">
                     <div class="flex items-center justify-between">
                       <span class="text-slate-500 font-medium">Attached Certificate:</span>
-                      ${v.gstCertificateFile ? `
+                      ${gstFile ? `
                         <span class="text-[9px] font-bold text-slate-900 bg-white border border-slate-400 px-1.5 py-0.2 rounded font-mono">
                           Annexure Doc #${gstSeq}
                         </span>
                       ` : ''}
                     </div>
-                    ${v.gstCertificateFile ? `
-                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${v.gstCertificateFile}">${v.gstCertificateFile}</div>
+                    ${gstFile ? `
+                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${gstFile}">${gstFile}</div>
                       <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
                     ` : `<div class="text-slate-400 italic mt-0.5">${v.gstNotApplicable ? 'Not Applicable (Exempt)' : 'No document attached'}</div>`}
                   </div>
@@ -2528,18 +2579,18 @@ window.CMS_MASTERS = {
                 <td class="p-2 font-mono font-bold text-slate-900 border-r border-slate-200">${v.ifscCode || '-'}</td>
                 <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Bank Verification Proof</td>
                 <td class="p-2">
-                  <div class="text-[11px] font-bold text-slate-800">${v.bankDocTitle || 'Cancelled Cheque / Bank Statement'}</div>
+                  <div class="text-[11px] font-bold text-slate-800">${v.bankDocTitle || (v.bankDetails && v.bankDetails.bankDocTitle) || 'Cancelled Cheque / Bank Statement'}</div>
                   <div class="mt-1 pt-1 border-t border-slate-200 text-[10px]">
                     <div class="flex items-center justify-between">
                       <span class="text-slate-500 font-medium">Document File:</span>
-                      ${v.bankDoc ? `
+                      ${bankDocFile ? `
                         <span class="text-[9px] font-bold text-slate-900 bg-white border border-slate-400 px-1.5 py-0.2 rounded font-mono">
                           Annexure Doc #${bankSeq}
                         </span>
                       ` : ''}
                     </div>
-                    ${v.bankDoc ? `
-                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${v.bankDoc}">${v.bankDoc}</div>
+                    ${bankDocFile ? `
+                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${bankDocFile}">${bankDocFile}</div>
                       <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
                     ` : `<div class="text-slate-400 italic mt-0.5">No document attached</div>`}
                   </div>
@@ -2574,7 +2625,8 @@ window.CMS_MASTERS = {
               </thead>
               <tbody>
                 ${quotes.map((q, idx) => {
-                  const qSeq = getAnnexureSeq(q.doc);
+                  const qDoc = (q && (q.doc || q.document || q.file || q.quotationDoc || q.fileName || q.filename)) || (quotes.length === 1 ? v.quotationDoc : '');
+                  const qSeq = getAnnexureSeq(qDoc, 'quote', `quote_${idx}`);
                   return `
                     <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
                       <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${idx + 1}</td>
@@ -2595,10 +2647,10 @@ window.CMS_MASTERS = {
                         ${q.alertDays ? `<div class="text-[9px] text-slate-500">Alert: ${q.alertDays}d prior (${formatDate(q.alertDate)})</div>` : ''}
                       </td>
                       <td class="p-2">
-                        ${q.doc ? `
-                          <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${q.doc}">${q.doc}</div>
+                        ${qDoc ? `
+                          <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${qDoc}">${qDoc}</div>
                           ${qSeq ? `<div class="text-[9px] text-slate-900 font-bold">Annexure #${qSeq}</div>` : ''}
-                          ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${q.doc}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
+                          ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${qDoc}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
                         ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
                       </td>
                     </tr>
@@ -2633,21 +2685,22 @@ window.CMS_MASTERS = {
               </thead>
               <tbody>
                 ${certs.map((c, idx) => {
-                  const cSeq = getAnnexureSeq(c.fileName);
+                  const cFile = (c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc)) || (certs.length === 1 ? v.certificateFile : '');
+                  const cSeq = getAnnexureSeq(cFile, 'cert', `cert_${idx}`);
                   return `
                     <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
                       <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${idx + 1}</td>
-                      <td class="p-2 border-r border-slate-200 font-bold text-slate-900">${c.regulator || c.name || 'Statutory Certificate'}</td>
-                      <td class="p-2 border-r border-slate-200 text-center font-mono text-slate-600">${c.formNo || '-'}</td>
-                      <td class="p-2 border-r border-slate-200 font-mono font-medium text-slate-800">${c.certificateNo || '-'}</td>
-                      <td class="p-2 border-r border-slate-200 text-center font-semibold text-slate-900">${c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
-                      <td class="p-2 border-r border-slate-200 font-mono">${c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
-                      <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">${c.hasValidity && c.alertDate ? formatDate(c.alertDate) : '-'}</td>
+                      <td class="p-2 border-r border-slate-200 font-bold text-slate-900">${(c && (c.regulator || c.name)) || 'Statutory Certificate'}</td>
+                      <td class="p-2 border-r border-slate-200 text-center font-mono text-slate-600">${(c && c.formNo) || '-'}</td>
+                      <td class="p-2 border-r border-slate-200 font-mono font-medium text-slate-800">${(c && c.certificateNo) || '-'}</td>
+                      <td class="p-2 border-r border-slate-200 text-center font-semibold text-slate-900">${c && c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
+                      <td class="p-2 border-r border-slate-200 font-mono">${c && c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
+                      <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">${c && c.hasValidity && c.alertDate ? formatDate(c.alertDate) : '-'}</td>
                       <td class="p-2">
-                        ${c.fileName ? `
-                          <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${c.fileName}">${c.fileName}</div>
+                        ${cFile ? `
+                          <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${cFile}">${cFile}</div>
                           ${cSeq ? `<div class="text-[9px] text-slate-900 font-bold">Annexure #${cSeq}</div>` : ''}
-                          ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${c.fileName}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
+                          ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${cFile}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
                         ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
                       </td>
                     </tr>
@@ -2959,13 +3012,24 @@ window.CMS_MASTERS = {
     const fileCache = {};
     const filesToLoad = [];
     if (v.panCardFile) filesToLoad.push(v.panCardFile);
+    if (v.panFile) filesToLoad.push(v.panFile);
     if (v.gstCertificateFile) filesToLoad.push(v.gstCertificateFile);
-    if (v.bankDoc) filesToLoad.push(v.bankDoc);
+    if (v.gstFile) filesToLoad.push(v.gstFile);
+    const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile));
+    if (bankDocFile) filesToLoad.push(bankDocFile);
+    if (v.certificateFile) filesToLoad.push(v.certificateFile);
+    if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
     if (Array.isArray(v.certificates)) {
-      v.certificates.forEach(c => { if (c && c.fileName) filesToLoad.push(c.fileName); });
+      v.certificates.forEach(c => {
+        const fn = c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc);
+        if (fn) filesToLoad.push(fn);
+      });
     }
     if (Array.isArray(v.quotedItems)) {
-      v.quotedItems.forEach(q => { if (q && q.doc) filesToLoad.push(q.doc); });
+      v.quotedItems.forEach(q => {
+        const fn = q && (q.doc || q.document || q.file || q.quotationDoc || q.fileName || q.filename);
+        if (fn) filesToLoad.push(fn);
+      });
     }
 
     for (const f of filesToLoad) {
@@ -3002,13 +3066,24 @@ window.CMS_MASTERS = {
     const fileCache = {};
     const filesToLoad = [];
     if (v.panCardFile) filesToLoad.push(v.panCardFile);
+    if (v.panFile) filesToLoad.push(v.panFile);
     if (v.gstCertificateFile) filesToLoad.push(v.gstCertificateFile);
-    if (v.bankDoc) filesToLoad.push(v.bankDoc);
+    if (v.gstFile) filesToLoad.push(v.gstFile);
+    const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile));
+    if (bankDocFile) filesToLoad.push(bankDocFile);
+    if (v.certificateFile) filesToLoad.push(v.certificateFile);
+    if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
     if (Array.isArray(v.certificates)) {
-      v.certificates.forEach(c => { if (c && c.fileName) filesToLoad.push(c.fileName); });
+      v.certificates.forEach(c => {
+        const fn = c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc);
+        if (fn) filesToLoad.push(fn);
+      });
     }
     if (Array.isArray(v.quotedItems)) {
-      v.quotedItems.forEach(q => { if (q && q.doc) filesToLoad.push(q.doc); });
+      v.quotedItems.forEach(q => {
+        const fn = q && (q.doc || q.document || q.file || q.quotationDoc || q.fileName || q.filename);
+        if (fn) filesToLoad.push(fn);
+      });
     }
 
     for (const f of filesToLoad) {
@@ -5991,6 +6066,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate, limAlertFreq,
           isBlocked, blockReason, quotedItems,
           certificates,
+          certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || store.data.vendors[idx].certificateFile || '',
           status: directSubmit ? 'Pending Approval' : (store.data.vendors[idx].status || 'Draft'),
           updatedAt: new Date().toISOString(),
           // Clear previous rejection remarks upon resubmission
@@ -6026,6 +6102,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate,
         isBlocked, blockReason, quotedItems,
         certificates,
+        certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || '',
         status: directSubmit ? 'Pending Approval' : 'Draft',
         createdAt: new Date().toISOString(),
         createdBy: currentUser ? currentUser.id : 'system',
