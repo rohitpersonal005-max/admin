@@ -1939,62 +1939,67 @@ window.CMS_MASTERS = {
   },
 
   buildVendorPrintDocument(v, paperHtml) {
-    return `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <title>Vendor_Registration_Form_${v.id}_${(v.name || 'Vendor').replace(/\\s+/g, '_')}</title>
-        <script src="https://cdn.tailwindcss.com"><\\/script>
-        <style>
-          @page {
-            size: A4 portrait;
-            margin: 10mm 12mm;
-          }
-          body {
-            background: #ffffff !important;
-            color: #0f172a !important;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          table {
-            border-collapse: collapse !important;
-          }
-          @media print {
-            .no-print { display: none !important; }
-            body { padding: 0 !important; margin: 0 !important; }
-          }
-        </style>
-      </head>
-      <body class="p-4 bg-white text-slate-800">
-        <div class="no-print max-w-4xl mx-auto mb-4 flex justify-between items-center bg-slate-100 p-3 rounded border border-slate-300">
-          <span class="text-xs font-bold text-slate-700">Official Vendor Empanelment Form (${v.id} - ${v.name})</span>
-          <div class="flex gap-2">
-            <button onclick="window.print()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs transition shadow-sm">
-              Print / Save PDF
-            </button>
-            <button onclick="window.close()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition">
-              Close
-            </button>
-          </div>
-        </div>
+    const cleanTitle = `Vendor_Registration_Form_${v.id}_${(v.name || 'Vendor').replace(/\s+/g, '_')}`;
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${cleanTitle}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      margin: 0;
+      padding: 16px;
+    }
+    table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+    }
+    th, td {
+      vertical-align: top;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+      }
+    }
+  </style>
+</head>
+<body class="p-4 bg-white text-slate-800">
+  <div class="no-print max-w-4xl mx-auto mb-4 flex justify-between items-center bg-slate-100 p-3 rounded border border-slate-300">
+    <span class="text-xs font-bold text-slate-700">Official Vendor Empanelment Form (${v.id} - ${v.name})</span>
+    <div class="flex gap-2">
+      <button onclick="window.print()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs transition shadow-sm">
+        Print / Save PDF
+      </button>
+      <button onclick="window.close()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition">
+        Close Window
+      </button>
+    </div>
+  </div>
 
-        <div class="max-w-4xl mx-auto">
-          ${paperHtml}
-        </div>
-
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.focus();
-              window.print();
-            }, 300);
-          };
-        <\\/script>
-      </body>
-      </html>
-    `;
+  <div class="max-w-4xl mx-auto">
+    ${paperHtml}
+  </div>
+</body>
+</html>`;
   },
 
   openVendorPrintWindow(vendorId) {
@@ -2002,13 +2007,14 @@ window.CMS_MASTERS = {
     if (!v) return;
     const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true });
     const fullPrintDoc = this.buildVendorPrintDocument(v, paperHtml);
-    const win = window.open('', '_blank', 'width=950,height=850');
+    const win = window.open('', '_blank', 'width=1000,height=900');
     if (win) {
       win.document.open();
       win.document.write(fullPrintDoc);
       win.document.close();
+      win.focus();
     } else {
-      window.CMS_APP.toast('Popup was blocked by browser. Please allow popups or use direct Print.', 'warning');
+      window.CMS_APP.toast('Popup was blocked by browser. Please allow popups or use Download Form (Print).', 'warning');
     }
   },
 
@@ -2239,7 +2245,24 @@ window.CMS_MASTERS = {
     const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true });
     const fullPrintDoc = this.buildVendorPrintDocument(v, paperHtml);
 
-    // Isolated hidden iframe printing mechanism (prevents dashboard/table print leakage)
+    // Primary: Open dedicated print window (standard established pattern in CMS_PRINT)
+    const printWin = window.open('', '_blank', 'width=1000,height=900');
+    if (printWin) {
+      printWin.document.open();
+      printWin.document.write(fullPrintDoc);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => {
+        try {
+          printWin.print();
+        } catch (e) {
+          console.warn('Auto-print prompt:', e);
+        }
+      }, 500);
+      return;
+    }
+
+    // Fallback: If popup was blocked by browser, use full-size off-screen iframe (NOT visibility:hidden)
     try {
       const oldFrame = document.getElementById('vendor-print-frame');
       if (oldFrame) oldFrame.remove();
@@ -2248,12 +2271,14 @@ window.CMS_MASTERS = {
       printFrame.id = 'vendor-print-frame';
       printFrame.name = 'vendorPrintFrame';
       printFrame.style.position = 'fixed';
-      printFrame.style.right = '0';
-      printFrame.style.bottom = '0';
-      printFrame.style.width = '0';
-      printFrame.style.height = '0';
-      printFrame.style.border = '0';
-      printFrame.style.visibility = 'hidden';
+      printFrame.style.left = '0';
+      printFrame.style.top = '0';
+      printFrame.style.width = '100vw';
+      printFrame.style.height = '100vh';
+      printFrame.style.zIndex = '-9999';
+      printFrame.style.opacity = '0.01';
+      printFrame.style.pointerEvents = 'none';
+      printFrame.style.border = 'none';
       document.body.appendChild(printFrame);
 
       const frameDoc = printFrame.contentWindow.document;
@@ -2266,13 +2291,11 @@ window.CMS_MASTERS = {
           printFrame.contentWindow.focus();
           printFrame.contentWindow.print();
         } catch (e) {
-          console.warn('Iframe print failed, falling back to popup window:', e);
-          this.openVendorPrintWindow(v.id);
+          console.warn('Iframe print failed:', e);
         }
-      }, 450);
+      }, 600);
     } catch (err) {
       console.error('Print iframe creation error:', err);
-      this.openVendorPrintWindow(v.id);
     }
   },
 
