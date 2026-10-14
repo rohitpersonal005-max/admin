@@ -39,14 +39,21 @@ window.CMS_FILE_STORE = {
         store.put(dataUrl, name);
       }
     } catch (err) {
-      console.warn('IndexedDB save failed, safely kept in memory cache:', err);
+      console.warn('IndexedDB save failed, kept in memory cache:', err);
     }
     // Synchronize to cloud database (Supabase) via CMS_STORE.data.files
     if (window.CMS_STORE && window.CMS_STORE.data) {
       if (!window.CMS_STORE.data.files) window.CMS_STORE.data.files = {};
       window.CMS_STORE.data.files[name] = dataUrl;
       if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
-        window.CMS_SUPABASE.from('master_tenants').update({ cms_db: window.CMS_STORE.data }).eq('id', window.CMS_TENANT_ID).then(() => {});
+        try {
+          window.CMS_SUPABASE.from('master_tenants').update({ cms_db: window.CMS_STORE.data }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
+            if (error) console.error("Cloud file sync failed:", error);
+            else console.log("Cloud file synced successfully:", name);
+          });
+        } catch (e) {
+          console.warn('Supabase file update dispatch:', e);
+        }
       }
     }
   },
@@ -85,6 +92,37 @@ window.CMS_FILE_STORE = {
         return val;
       }
     } catch (e) {}
+
+    // 4. On-demand seamless fetch directly from cloud backend (Supabase)
+    if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
+      try {
+        const { data: tenants, error } = await window.CMS_SUPABASE
+          .from('master_tenants')
+          .select('cms_db')
+          .eq('id', window.CMS_TENANT_ID);
+        if (!error && tenants && tenants.length > 0) {
+          const cloudFiles = tenants[0].cms_db?.files || {};
+          if (cloudFiles[name]) {
+            const val = cloudFiles[name];
+            this.cache.set(name, val);
+            if (window.CMS_STORE && window.CMS_STORE.data) {
+              if (!window.CMS_STORE.data.files) window.CMS_STORE.data.files = {};
+              window.CMS_STORE.data.files[name] = val;
+            }
+            try {
+              const db = await this.getDB();
+              if (db) {
+                const tx = db.transaction('files', 'readwrite');
+                tx.objectStore('files').put(val, name);
+              }
+            } catch (e) {}
+            return val;
+          }
+        }
+      } catch (e) {
+        console.warn('On-demand file fetch error:', e);
+      }
+    }
     return null;
   },
 

@@ -4337,7 +4337,16 @@ window.CMS_MASTERS = {
     this.saveVendor(activeId, false, true);
   },
 
-  saveVendor(vendorId = null, directSubmit = true, isManualDraft = false) {
+  async saveVendor(vendorId = null, directSubmit = true, isManualDraft = false) {
+    const readFileAsDataUrl = (file) => {
+      return new Promise((resolve) => {
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      });
+    };
     const store = window.CMS_STORE;
     const currentUser = store.getCurrentUser();
     if (currentUser && currentUser.role === 'Admin') {
@@ -4416,7 +4425,19 @@ window.CMS_MASTERS = {
     let gstCertificateFile = (gstFileInput?.files?.[0]) ? gstFileInput.files[0].name : (existingVendor?.gstCertificateFile || '');
     let panCardFile = (panFileInput?.files?.[0]) ? panFileInput.files[0].name : (existingVendor?.panCardFile || '');
 
-    // If no physical file was chosen from disk, keep empty or preserve existing - do not invent fake filenames
+    // Asynchronously read and persist uploaded PAN and GST documents directly into backend repository
+    if (panFileInput?.files?.[0]) {
+      const dataUrl = await readFileAsDataUrl(panFileInput.files[0]);
+      if (dataUrl && window.CMS_FILE_STORE) {
+        await window.CMS_FILE_STORE.saveFile(panFileInput.files[0].name, dataUrl);
+      }
+    }
+    if (gstFileInput?.files?.[0]) {
+      const dataUrl = await readFileAsDataUrl(gstFileInput.files[0]);
+      if (dataUrl && window.CMS_FILE_STORE) {
+        await window.CMS_FILE_STORE.saveFile(gstFileInput.files[0].name, dataUrl);
+      }
+    }
 
     // Bank Details
     const bankName = document.getElementById('v-bank-name')?.value.trim() || '';
@@ -4426,7 +4447,15 @@ window.CMS_MASTERS = {
     const branchName = document.getElementById('v-branch-name')?.value.trim() || '';
     
     const bankFileInput = document.getElementById('v-bank-file');
-      let bankDoc = (bankFileInput?.files?.[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
+    let bankDoc = (bankFileInput?.files?.[0]) ? bankFileInput.files[0].name : (existingVendor?.bankDoc || '');
+
+    // Asynchronously read and persist uploaded Bank document directly into backend repository
+    if (bankFileInput?.files?.[0]) {
+      const dataUrl = await readFileAsDataUrl(bankFileInput.files[0]);
+      if (dataUrl && window.CMS_FILE_STORE) {
+        await window.CMS_FILE_STORE.saveFile(bankFileInput.files[0].name, dataUrl);
+      }
+    }
       
       if (directSubmit && (!bankDoc || !bankDocTitle)) {
           window.CMS_APP.toast('Supporting Bank Document and its Document Type are mandatory.', 'error');
@@ -4443,6 +4472,12 @@ window.CMS_MASTERS = {
       
       const fileInput = row.querySelector('.q-file');
       let docName = (fileInput?.files?.[0]) ? fileInput.files[0].name : '';
+      if (fileInput?.files?.[0]) {
+        const dataUrl = await readFileAsDataUrl(fileInput.files[0]);
+        if (dataUrl && window.CMS_FILE_STORE) {
+          await window.CMS_FILE_STORE.saveFile(fileInput.files[0].name, dataUrl);
+        }
+      }
       if (!docName) {
           const span = row.querySelector('span.text-emerald-700');
           if (span && span.innerText.includes('Attached on record: ')) {
@@ -4622,6 +4657,12 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       const alertDate = row.querySelector('.cert-alert-input')?.value || (expiry ? CMS_MASTERS.calculateAlertDate(expiry, alertDays) : '');
       const fileInput = row.querySelector('.cert-file-input');
       let fileName = (fileInput?.files?.[0]) ? fileInput.files[0].name : (fileInput?.dataset.current || '');
+      if (fileInput?.files?.[0]) {
+        const dataUrl = await readFileAsDataUrl(fileInput.files[0]);
+        if (dataUrl && window.CMS_FILE_STORE) {
+          await window.CMS_FILE_STORE.saveFile(fileInput.files[0].name, dataUrl);
+        }
+      }
 
       // Skip blank rows if user didn't enter agency or number
       if (!reg && !certNo) continue;
@@ -4797,6 +4838,31 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       }
 
       
+    // Harvest all documents associated with this vendor into cloud store before saving
+    const allVendorFiles = [
+      panCardFile,
+      gstCertificateFile,
+      bankDoc,
+      ...certificates.map(c => c.fileName),
+      ...quotedItems.map(q => q.doc)
+    ].filter(Boolean);
+
+    for (const f of allVendorFiles) {
+      if (!store.data.files) store.data.files = {};
+      if (!store.data.files[f]) {
+        let cached = null;
+        if (window.CMS_FILE_STORE) {
+          cached = await window.CMS_FILE_STORE.getFile(f);
+        }
+        if (!cached) {
+          cached = localStorage.getItem('CMS_FILE_' + f);
+        }
+        if (cached) {
+          store.data.files[f] = cached;
+        }
+      }
+    }
+
     if (directSubmit) {
       store.save(); // full UI update
       window.CMS_APP.closeModal();

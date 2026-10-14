@@ -1084,59 +1084,82 @@ class Store {
 
   async loadFromCloud() {
     if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
-      // Load Database
-      const { data: tenants, error } = await window.CMS_SUPABASE
-        .from('master_tenants')
-        .select('cms_db')
-        .eq('id', window.CMS_TENANT_ID);
-        
-      if (!error && tenants && tenants.length > 0) {
-        let val = tenants[0].cms_db || {};
-        
-        // Merge with EMPTY_DATABASE to ensure no arrays/objects are missing
-        this.data = {
-          ...EMPTY_DATABASE,
-          ...val,
-          vendors: (val.vendors || []).map(normalizeVendor),
-          consumables: (val.consumables || []).map(normalizeConsumable)
-        };
-        
-        // Hydrate CMS_FILE_STORE cache from cloud-synced files
-        if (this.data.files && window.CMS_FILE_STORE) {
-          Object.entries(this.data.files).forEach(([fname, fdata]) => {
-            window.CMS_FILE_STORE.cache.set(fname, fdata);
-          });
+      try {
+        const { data: tenants, error } = await window.CMS_SUPABASE
+          .from('master_tenants')
+          .select('cms_db')
+          .eq('id', window.CMS_TENANT_ID);
+          
+        if (!error && tenants && tenants.length > 0) {
+          let val = tenants[0].cms_db || {};
+          
+          this.data = {
+            ...EMPTY_DATABASE,
+            ...val,
+            vendors: (val.vendors || []).map(normalizeVendor),
+            consumables: (val.consumables || []).map(normalizeConsumable),
+            files: val.files || {}
+          };
+          
+          // Hydrate CMS_FILE_STORE cache and IndexedDB from cloud-synced files
+          if (this.data.files && window.CMS_FILE_STORE) {
+            const db = await window.CMS_FILE_STORE.getDB();
+            Object.entries(this.data.files).forEach(([fname, fdata]) => {
+              window.CMS_FILE_STORE.cache.set(fname, fdata);
+              if (db) {
+                try {
+                  const tx = db.transaction('files', 'readwrite');
+                  tx.objectStore('files').put(fdata, fname);
+                } catch (e) {}
+              }
+            });
+          }
+          this.data.userRole = this.getRole();
+
+          // Strip heavy files from localStorage to prevent 5MB quota crash
+          const localData = { ...this.data };
+          delete localData.files;
+          try {
+            localStorage.setItem(getStorageKey(), JSON.stringify(localData));
+          } catch (storageErr) {
+            console.warn('localStorage save in loadFromCloud:', storageErr);
+          }
+
+          if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
+          }
         }
-        // Preserve userRole if it existed locally so UI stays correct for the current user
-        this.data.userRole = this.getRole();
-        localStorage.setItem(getStorageKey(), JSON.stringify(this.data));
-        if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
-          window.CMS_SUPABASE.from('master_tenants').update({ cms_db: this.data }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
-            if (error) console.error("Cloud sync failed:", error);
-          });
-        }
-        if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
-          window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
-        }
+      } catch (err) {
+        console.error("loadFromCloud error:", err);
       }
     }
   }
 
   save() {
     try {
-      localStorage.setItem(getStorageKey(), JSON.stringify(this.data));
-        if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
-          window.CMS_SUPABASE.from('master_tenants').update({ cms_db: this.data }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
-            if (error) console.error("Cloud sync failed:", error);
-          });
-        }
+      // 1. Strip files from localStorage to prevent 5MB quota crash
+      const localData = { ...this.data };
+      delete localData.files;
+      try {
+        localStorage.setItem(getStorageKey(), JSON.stringify(localData));
+      } catch (storageErr) {
+        console.warn('localStorage quota handled safely in save():', storageErr);
+      }
+
+      // 2. Replicate complete dataset including all documents to cloud Supabase backend
+      if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
+        window.CMS_SUPABASE.from('master_tenants').update({ cms_db: this.data }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
+          if (error) console.error("Cloud database sync failed:", error);
+          else console.log("Cloud database and documents synced successfully!");
+        });
+      }
       const currentUser = this.getCurrentUser();
       localStorage.setItem(ROLE_KEY, currentUser.role);
       if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
         window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
       }
     } catch (e) {
-      console.error('Error saving store', e);
+      console.error('Error in store.save():', e);
     }
   }
 
