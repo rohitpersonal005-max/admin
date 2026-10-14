@@ -964,8 +964,22 @@ function normalizeVendor(vendor) {
     addressText.includes('peenya') ? 'Bengaluru Urban' : ''
   );
   const inferredPinCode = vendor.addressPinCode || (String(vendor.address || '').match(/\b\d{6}\b/) || [''])[0];
+
+  let countryCode = (vendor.countryCode || '').trim();
+  let contactNo = (vendor.contactNo || '').trim();
+  if (/^India\b/i.test(contactNo)) {
+    contactNo = contactNo.replace(/^India\s*/i, '').trim();
+  }
+  if (!countryCode || countryCode.toLowerCase() === 'india' || countryCode.toLowerCase() === 'in' || countryCode.toLowerCase() === 'ind') {
+    countryCode = '+91';
+  } else if (!countryCode.startsWith('+')) {
+    countryCode = /^\d+$/.test(countryCode) ? '+' + countryCode : '+91';
+  }
+
   return {
     ...vendor,
+    countryCode,
+    contactNo,
     addressTaluka: vendor.addressTaluka || '',
     addressDistrict: inferredDistrict,
     addressState: inferredState,

@@ -1192,6 +1192,24 @@ window.CMS_MASTERS = {
     return { ...s, taxMode };
   },
 
+  formatVendorPhone(v) {
+    if (!v) return '-';
+    let contact = (v.contactNo || '').trim();
+    if (!contact || contact === '-') return '-';
+    if (/^India\b/i.test(contact)) {
+      contact = contact.replace(/^India\s*/i, '').trim();
+    }
+    if (contact.startsWith('+')) return contact;
+
+    let code = (v.countryCode || '').trim();
+    if (!code || code.toLowerCase() === 'india' || code.toLowerCase() === 'in' || code.toLowerCase() === 'ind') {
+      code = '+91';
+    } else if (!code.startsWith('+')) {
+      const matched = (this.countries || []).find(c => c.name.toLowerCase() === code.toLowerCase());
+      code = matched ? matched.code : (/^\d+$/.test(code) ? '+' + code : '+91');
+    }
+    return `${code} ${contact}`;
+  },
   // ==========================================
   // VENDOR MASTER
   // ==========================================
@@ -1294,7 +1312,7 @@ window.CMS_MASTERS = {
             </div>
           </td>
           <td class="p-4 text-xs space-y-0.5">
-            <div class="text-slate-800 font-medium">Tel: ${(v.countryCode ? v.countryCode + ' ' : '') + (v.contactNo || '-')}</div>
+            <div class="text-slate-800 font-medium">Tel: ${this.formatVendorPhone(v)}</div>
             <div class="text-slate-500">Email: ${v.email || '-'}</div>
             ${v.bankName ? `<div class="text-[10px] text-slate-400 font-mono">Bank: ${v.bankName}</div>` : ''}
           </td>
@@ -1718,6 +1736,9 @@ window.CMS_MASTERS = {
 
     let adminContact = (companyInfo.contact || '').trim();
     if (adminContact.toLowerCase().includes('adminutes')) adminContact = '';
+    if (/^India\b/i.test(adminContact)) {
+      adminContact = adminContact.replace(/^India\s*/i, '+91 ');
+    }
 
     let adminEmail = (companyInfo.email || '').trim();
     if (adminEmail.toLowerCase().includes('adminutes')) adminEmail = '';
@@ -1816,7 +1837,7 @@ window.CMS_MASTERS = {
               </tr>
               <tr>
                 <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Official Contact Number</td>
-                <td class="p-2 font-mono font-medium text-slate-800 border-r border-slate-200">${(v.countryCode ? v.countryCode + ' ' : '') + (v.contactNo || '-')}</td>
+                <td class="p-2 font-mono font-medium text-slate-800 border-r border-slate-200">${this.formatVendorPhone(v)}</td>
                 <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Official Email Address</td>
                 <td class="p-2 font-medium text-slate-800">${v.email || '-'}</td>
               </tr>
@@ -3797,11 +3818,14 @@ window.CMS_MASTERS = {
                     <div class="md:col-span-4">
                       <label class="block font-bold text-slate-700 mb-1">Phone Number <span class="text-rose-600 font-bold">*</span></label>
                       <div class="flex items-stretch border border-slate-300 rounded-sm overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 shadow-sm w-full bg-white">
-                        <input type="text" id="v-country-code" list="country-codes-list" value="${vendor.countryCode || '+91'}" class="w-[80px] px-2 py-2 bg-slate-50 border-r border-slate-300 text-slate-700 font-mono text-xs focus:outline-none" placeholder="+91" />
-                          <datalist id="country-codes-list">
-                            ${this.countries.map(c => `<option value="${c.code}">${c.name}</option>`).join('')}
-                          </datalist>
-                        <input type="tel" id="v-contact" required maxlength="10" pattern="[0-9]{10}" value="${vendor.contactNo || ''}" class="flex-1 min-w-0 px-3 py-2 font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent" placeholder="10-digit number" />
+                        <select id="v-country-code" class="w-[115px] px-2 py-2 bg-slate-50 border-r border-slate-300 text-slate-700 font-mono text-xs focus:outline-none cursor-pointer">
+                          ${this.countries.map(c => {
+                            const vCode = (vendor.countryCode || '').trim();
+                            const isSel = (vCode === c.code) || (!vCode && c.code === '+91') || (vCode.toLowerCase() === 'india' && c.code === '+91') || (vCode === c.name);
+                            return `<option value="${c.code}" ${isSel ? 'selected' : ''}>${c.code} (${c.name})</option>`;
+                          }).join('')}
+                        </select>
+                        <input type="tel" id="v-contact" required maxlength="10" pattern="[0-9]{10}" value="${(vendor.contactNo || '').replace(/^India\s*/i, '').replace(/^\+\d+\s*/, '')}" class="flex-1 min-w-0 px-3 py-2 font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent" placeholder="10-digit number" />
                       </div>
                     </div>
                     <div class="md:col-span-4">
@@ -4359,8 +4383,16 @@ window.CMS_MASTERS = {
     const addressState = document.getElementById('v-state')?.value || '';
     const addressCountry = document.getElementById('v-country')?.value.trim() || 'India';
     const addressPinCode = document.getElementById('v-pin')?.value.trim() || '';
-    const contactNo = document.getElementById('v-contact')?.value.trim() || '';
-      const countryCode = document.getElementById('v-country-code')?.value.trim() || '+91';
+    const rawContact = document.getElementById('v-contact')?.value.trim() || '';
+    const contactNo = rawContact.replace(/^India\s*/i, '').replace(/^\+\d+\s*/, '').trim();
+    let countryCode = document.getElementById('v-country-code')?.value.trim() || '+91';
+    if (!countryCode.startsWith('+')) {
+      const matched = (this.countries || []).find(c => c.name.toLowerCase() === countryCode.toLowerCase());
+      countryCode = matched ? matched.code : (countryCode ? '+' + countryCode.replace(/\D/g, '') : '+91');
+    }
+    if (!countryCode || countryCode === '+' || countryCode.toLowerCase() === 'india') {
+      countryCode = '+91';
+    }
     const email = document.getElementById('v-email')?.value.trim() || '';
     const gstDocTitle = document.getElementById('v-gst-title')?.value.trim() || 'GST Certificate';
     const panDocTitle = document.getElementById('v-pan-title')?.value.trim() || 'PAN Card';

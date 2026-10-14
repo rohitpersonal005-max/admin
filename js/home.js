@@ -345,7 +345,7 @@ window.CMS_HOME = {
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Contact No</span>
-                <div class="text-slate-800 text-sm font-mono font-medium">${this.companyInfo.contact || '-'}</div>
+                <div class="text-slate-800 text-sm font-mono font-medium">${(this.companyInfo.contact || '-').replace(/^India\s*/i, '+91 ')}</div>
               </div>
               <div>
                 <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Company Email</span>
@@ -420,7 +420,7 @@ window.CMS_HOME = {
     <option value="+49">DE (+49)</option>
     <option value="+81">JP (+81)</option>
   </select>
-  <input type="tel" id="home-comp-contact" maxlength="10" pattern="[0-9]{10}" value="${this.companyInfo.contact || ''}" class="flex-1 min-w-0 px-3 py-2 font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent" placeholder="10-digit number" />
+  <input type="tel" id="home-comp-contact" maxlength="10" pattern="[0-9]{10}" value="${(this.companyInfo.contact || '').replace(/^India\s*/i, '').replace(/^\+\d+\s*/, '').trim()}" class="flex-1 min-w-0 px-3 py-2 font-mono text-sm border-none focus:ring-0 focus:outline-none bg-transparent" placeholder="10-digit number" />
 </div>
 
               </div>
@@ -650,7 +650,7 @@ window.CMS_HOME = {
       pin,
       country: 'India',
       countryCode,
-      contact: contact ? `${countryCode} ${contact}` : (this.companyInfo.contact || ''),
+      contact: contact ? `${countryCode} ${contact.replace(/^India\s*/i, '').replace(/^\+\d+\s*/, '').trim()}` : (this.companyInfo.contact || '').replace(/^India\s*/i, '+91 '),
       email,
       gstin,
       pan,

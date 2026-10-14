@@ -48,6 +48,9 @@ window.CMS_PRINT = {
 
     let contact = (companyInfo.contact || '').trim();
     if (contact.toLowerCase().includes('adminutes')) contact = '';
+    if (/^India\b/i.test(contact)) {
+      contact = contact.replace(/^India\s*/i, '+91 ');
+    }
 
     const logo = (companyInfo.logo && !companyInfo.logo.includes('adminutes_logo')) ? companyInfo.logo : (companyInfo.logoUrl && !companyInfo.logoUrl.includes('adminutes_logo') ? companyInfo.logoUrl : null);
 
