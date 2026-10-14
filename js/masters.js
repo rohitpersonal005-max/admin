@@ -2109,13 +2109,13 @@ window.CMS_MASTERS = {
           </div>
           <div class="flex items-center gap-1.5">
             <button type="button" id="${docId}-btn-vector" onclick="CMS_MASTERS.toggleDocView('${docId}', 'vector')" class="px-2.5 py-1 text-[11px] font-bold bg-slate-900 text-white rounded transition shadow-2xs cursor-pointer">
-              Paper View
+              Official Paper Certificate
             </button>
             <button type="button" id="${docId}-btn-raw" onclick="CMS_MASTERS.toggleDocView('${docId}', 'raw')" class="px-2.5 py-1 text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded transition cursor-pointer">
-              Raw PDF
+              PDF File View
             </button>
             <a href="${cachedData}" download="${att.filename}" class="px-2.5 py-1 text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded transition inline-flex items-center gap-1 cursor-pointer">
-              <i data-lucide="download" class="w-3 h-3"></i> Download
+              <i data-lucide="download" class="w-3 h-3"></i> Download Original
             </a>
           </div>
         </div>
