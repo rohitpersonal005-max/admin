@@ -1257,7 +1257,7 @@ window.CMS_MASTERS = {
             ` : ''}
           </td>
           <td class="p-4 font-mono font-bold text-slate-800">
-            ${v.panNotApplicable ? '<span class="text-slate-400 font-normal">Exempt (N/A)</span>' : (v.panNo || (v.gstNo && v.gstNo.length >= 12 ? v.gstNo.substring(2, 12).toUpperCase() : '<span class="text-slate-400 font-normal font-sans">Pending</span>'))}
+            ${v.panNotApplicable ? '<span class="text-slate-400 font-normal">Exempt (N/A)</span>' : (v.panNo ? v.panNo : '<span class="text-slate-400 font-normal font-sans">-</span>')}
             ${v.panCardFile ? `
               <div class="text-[10px] text-emerald-700 font-sans font-medium flex items-center gap-1 mt-1 cursor-pointer hover:underline" onclick="CMS_APP.viewDocument('${v.panCardFile}', 'PAN Card', { partyName: '${v.name.replace(/'/g, "\\'")}', id: '${v.id}' })">
                 <i data-lucide="file-check" class="w-3 h-3"></i> PAN Copy
@@ -1715,9 +1715,6 @@ window.CMS_MASTERS = {
     if (adminGstin.toLowerCase().includes('29abcde1234f1z5')) adminGstin = '';
 
     let adminPan = (companyInfo.pan || '').trim();
-    if (!adminPan && adminGstin && adminGstin.length >= 12) {
-      adminPan = adminGstin.substring(2, 12);
-    }
 
     let adminContact = (companyInfo.contact || '').trim();
     if (adminContact.toLowerCase().includes('adminutes')) adminContact = '';
@@ -2743,15 +2740,6 @@ window.CMS_MASTERS = {
       }
     }
 
-    // Always update PAN dynamically from characters 3-12 of 15-digit GSTIN
-    if (panInput && !panInput.disabled) {
-      if (cleanGst.length >= 12) {
-        panInput.value = cleanGst.substring(2, 12);
-        panInput.dataset.autoFilled = 'true';
-      } else if (panInput.dataset.autoFilled === 'true') {
-        panInput.value = '';
-      }
-    }
 
     // Auto-detect Indian State from first 2 digits of GSTIN
     if (cleanGst.length >= 2) {
@@ -3655,7 +3643,7 @@ window.CMS_MASTERS = {
       quotedMaterialId: '', quotedMaterialName: '', quotedMaterialRate: '', quotedMaterialUnit: 'Nos', quotedMaterialHsn: '8472'
     };
 
-    const initialPan = vendor.panNo || (vendor.gstNo && vendor.gstNo.length >= 12 ? vendor.gstNo.substring(2, 12).toUpperCase() : '');
+    const initialPan = vendor.panNo || '';
     const today = new Date().toISOString().split('T')[0];
     const initialInfo = this.getStateInfo(vendor.addressState || 'Delhi');
     const initialGst = (vendor.gstNo || '').trim().toUpperCase();
