@@ -960,6 +960,31 @@ th {
     background-color: #f2f2f2 !important;
     -webkit-print-color-adjust: exact;
   }
+
+  /* Strict monochrome overrides: eliminate all color tints during print */
+  [class*="text-blue-"], [class*="text-emerald-"], [class*="text-green-"],
+  [class*="text-amber-"], [class*="text-rose-"], [class*="text-red-"],
+  [class*="text-indigo-"], [class*="text-purple-"], [class*="text-cyan-"] {
+    color: #000000 !important;
+  }
+  [class*="bg-blue-"], [class*="bg-emerald-"], [class*="bg-green-"],
+  [class*="bg-amber-"], [class*="bg-rose-"], [class*="bg-red-"],
+  [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-cyan-"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-color: #94a3b8 !important;
+  }
+  [class*="border-blue-"], [class*="border-emerald-"], [class*="border-green-"],
+  [class*="border-amber-"], [class*="border-rose-"], [class*="border-red-"],
+  [class*="border-indigo-"], [class*="border-purple-"], [class*="border-cyan-"] {
+    border-color: #94a3b8 !important;
+  }
+
+  #vendor-paper-form,
+  #vendor-paper-form * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
 
 /* Global UI Simplification: Remove pastel/multi-color combinations from main view */

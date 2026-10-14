@@ -1172,7 +1172,16 @@ window.CMS_MASTERS = {
   },
 
   getStateInfo(stateName) {
-    const companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}');
+    let companyInfo = {};
+    try {
+      if (window.CMS_HOME && window.CMS_HOME.companyInfo && window.CMS_HOME.companyInfo.name) {
+        companyInfo = window.CMS_HOME.companyInfo;
+      } else if (typeof localStorage !== 'undefined') {
+        companyInfo = JSON.parse(localStorage.getItem('CMS_COMPANY_INFO') || '{}') || {};
+      }
+    } catch (e) {
+      companyInfo = {};
+    }
     const compState = (companyInfo.state || 'Delhi').toLowerCase();
     
     const s = this.indianStates.find(item => item.name.toLowerCase() === String(stateName || '').toLowerCase());
@@ -1719,8 +1728,8 @@ window.CMS_MASTERS = {
                     ${adminEmail ? `<span>Email: <strong class="text-slate-800">${adminEmail}</strong></span>` : ''}
                   </div>
                 ` : ''}
-                <div class="text-[10px] text-blue-900 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
-                  <span class="inline-block w-2 h-2 rounded-full bg-blue-600 shrink-0"></span>
+                <div class="text-[10px] ${isPrint ? 'text-slate-800' : 'text-blue-900'} font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                  <span class="inline-block w-2 h-2 rounded-full ${isPrint ? 'bg-slate-800' : 'bg-blue-600'} shrink-0"></span>
                   <span>Central Procurement & Consumable Management System (CMS)</span>
                 </div>
               </div>
@@ -1735,7 +1744,7 @@ window.CMS_MASTERS = {
               </div>
               <div class="text-xs">
                 <span class="text-slate-500 font-medium">Status:</span>
-                <span class="font-bold ml-1 ${v.status === 'Approved' ? 'text-emerald-700' : v.status === 'Pending Approval' ? 'text-amber-700' : v.status === 'Blocked' ? 'text-rose-700' : 'text-slate-700'}">${v.status.toUpperCase()}</span>
+                <span class="font-bold ml-1 ${isPrint ? 'text-slate-900' : (v.status === 'Approved' ? 'text-emerald-700' : v.status === 'Pending Approval' ? 'text-amber-700' : v.status === 'Blocked' ? 'text-rose-700' : 'text-slate-700')}">${v.status.toUpperCase()}</span>
               </div>
               <div class="text-[11px] text-slate-500 mt-0.5">
                 Date: <strong class="text-slate-700 font-mono">${formatDate(v.createdAt || new Date())}</strong>
@@ -1803,7 +1812,7 @@ window.CMS_MASTERS = {
                     <div class="flex items-center justify-between">
                       <span class="text-slate-500 font-medium">Attached Proof:</span>
                       ${v.panCardFile ? `
-                        <span class="text-[9px] font-bold text-blue-800 bg-blue-100 border border-blue-200 px-1.5 py-0.2 rounded font-mono">
+                        <span class="text-[9px] font-bold ${isPrint ? 'text-slate-900 bg-white border border-slate-400' : 'text-blue-800 bg-blue-100 border border-blue-200'} px-1.5 py-0.2 rounded font-mono">
                           Annexure Doc #${panSeq}
                         </span>
                       ` : ''}
@@ -1824,7 +1833,7 @@ window.CMS_MASTERS = {
                     <div class="flex items-center justify-between">
                       <span class="text-slate-500 font-medium">Attached Certificate:</span>
                       ${v.gstCertificateFile ? `
-                        <span class="text-[9px] font-bold text-blue-800 bg-blue-100 border border-blue-200 px-1.5 py-0.2 rounded font-mono">
+                        <span class="text-[9px] font-bold ${isPrint ? 'text-slate-900 bg-white border border-slate-400' : 'text-blue-800 bg-blue-100 border border-blue-200'} px-1.5 py-0.2 rounded font-mono">
                           Annexure Doc #${gstSeq}
                         </span>
                       ` : ''}
@@ -1870,7 +1879,7 @@ window.CMS_MASTERS = {
                     <div class="flex items-center justify-between">
                       <span class="text-slate-500 font-medium">Document File:</span>
                       ${v.bankDoc ? `
-                        <span class="text-[9px] font-bold text-blue-800 bg-blue-100 border border-blue-200 px-1.5 py-0.2 rounded font-mono">
+                        <span class="text-[9px] font-bold ${isPrint ? 'text-slate-900 bg-white border border-slate-400' : 'text-blue-800 bg-blue-100 border border-blue-200'} px-1.5 py-0.2 rounded font-mono">
                           Annexure Doc #${bankSeq}
                         </span>
                       ` : ''}
@@ -1934,7 +1943,7 @@ window.CMS_MASTERS = {
                       <td class="p-2">
                         ${q.doc ? `
                           <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${q.doc}">${q.doc}</div>
-                          ${qSeq ? `<div class="text-[9px] text-blue-700 font-bold">Annexure #${qSeq}</div>` : ''}
+                          ${qSeq ? `<div class="text-[9px] ${isPrint ? 'text-slate-900' : 'text-blue-700'} font-bold">Annexure #${qSeq}</div>` : ''}
                           ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${q.doc}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
                         ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
                       </td>
@@ -1977,13 +1986,13 @@ window.CMS_MASTERS = {
                       <td class="p-2 border-r border-slate-200 font-bold text-slate-900">${c.regulator || c.name || 'Statutory Certificate'}</td>
                       <td class="p-2 border-r border-slate-200 text-center font-mono text-slate-600">${c.formNo || '-'}</td>
                       <td class="p-2 border-r border-slate-200 font-mono font-medium text-slate-800">${c.certificateNo || '-'}</td>
-                      <td class="p-2 border-r border-slate-200 text-center font-semibold ${c.hasValidity ? 'text-amber-800' : 'text-emerald-800'}">${c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
+                      <td class="p-2 border-r border-slate-200 text-center font-semibold ${isPrint ? 'text-slate-900' : (c.hasValidity ? 'text-amber-800' : 'text-emerald-800')}">${c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
                       <td class="p-2 border-r border-slate-200 font-mono">${c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
                       <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">${c.hasValidity && c.alertDate ? formatDate(c.alertDate) : '-'}</td>
                       <td class="p-2">
                         ${c.fileName ? `
                           <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${c.fileName}">${c.fileName}</div>
-                          ${cSeq ? `<div class="text-[9px] text-blue-700 font-bold">Annexure #${cSeq}</div>` : ''}
+                          ${cSeq ? `<div class="text-[9px] ${isPrint ? 'text-slate-900' : 'text-blue-700'} font-bold">Annexure #${cSeq}</div>` : ''}
                           ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${c.fileName}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
                         ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
                       </td>
@@ -2007,19 +2016,19 @@ window.CMS_MASTERS = {
                 <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Empanelment Category</td>
                 <td class="w-1/4 p-2 font-medium text-slate-800 border-r border-slate-200">
                   ${v.approvedForLimitedPeriod ? `
-                    <span class="font-bold text-amber-700">Limited Period Approval</span>
+                    <span class="font-bold ${isPrint ? 'text-slate-900' : 'text-amber-700'}">Limited Period Approval</span>
                     <div class="text-[10px] text-slate-600 font-mono">Valid Till: ${formatDate(v.approvalValidTill)} (Alert: ${v.approvalAlertDays || 15}d prior on ${formatDate(v.approvalAlertDate)})</div>
                   ` : `
-                    <span class="font-bold text-emerald-700">Perpetual / Regular Empanelment</span>
+                    <span class="font-bold ${isPrint ? 'text-slate-900' : 'text-emerald-700'}">Perpetual / Regular Empanelment</span>
                   `}
                 </td>
                 <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Risk & Blacklist Status</td>
                 <td class="w-1/4 p-2 font-medium">
                   ${v.isBlocked ? `
-                    <span class="font-bold text-rose-700">BLACKLISTED / BLOCKED</span>
-                    <div class="text-[10px] text-rose-600">Reason: ${v.blockReason || 'Administrative order'}</div>
+                    <span class="font-bold ${isPrint ? 'text-slate-900' : 'text-rose-700'}">BLACKLISTED / BLOCKED</span>
+                    <div class="text-[10px] ${isPrint ? 'text-slate-700' : 'text-rose-600'}">Reason: ${v.blockReason || 'Administrative order'}</div>
                   ` : `
-                    <span class="font-bold text-emerald-700">Cleared & In Good Standing</span>
+                    <span class="font-bold ${isPrint ? 'text-slate-900' : 'text-emerald-700'}">Cleared & In Good Standing</span>
                   `}
                 </td>
               </tr>
@@ -2037,10 +2046,10 @@ window.CMS_MASTERS = {
               </tr>
               ${v.checkerMistakeRemark ? `
                 <tr>
-                  <td class="p-2 bg-rose-50 font-semibold text-rose-800 border-r border-slate-200">Checker Review / Mistake Remark</td>
-                  <td colspan="3" class="p-2 font-medium text-rose-900 bg-rose-50/30">
+                  <td class="p-2 ${isPrint ? 'bg-slate-100 font-semibold text-slate-800' : 'bg-rose-50 font-semibold text-rose-800'} border-r border-slate-200">Checker Review / Mistake Remark</td>
+                  <td colspan="3" class="p-2 font-medium ${isPrint ? 'text-slate-900 bg-white' : 'text-rose-900 bg-rose-50/30'}">
                     <div>${v.checkerMistakeRemark}</div>
-                    <div class="text-[10px] text-rose-600">Reviewed By: ${v.rejectedBy || 'Store In-Charge'}</div>
+                    <div class="text-[10px] ${isPrint ? 'text-slate-600' : 'text-rose-600'}">Reviewed By: ${v.rejectedBy || 'Store In-Charge'}</div>
                   </td>
                 </tr>
               ` : ''}
@@ -2074,7 +2083,7 @@ window.CMS_MASTERS = {
             <!-- Box 2: Store Dealing Assistant -->
             <div class="border border-slate-300 bg-white p-3 rounded flex flex-col justify-between h-32">
               <div class="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Store Dealing Assistant (Maker)</div>
-              <div class="text-center font-mono font-bold text-blue-900 text-xs">${v.createdByName || 'Store Staff'}</div>
+              <div class="text-center font-mono font-bold ${isPrint ? 'text-slate-900' : 'text-blue-900'} text-xs">${v.createdByName || 'Store Staff'}</div>
               <div class="border-t border-slate-200 pt-1 text-[10px] text-slate-700">
                 <div>Emp ID: CMS-M-01</div>
                 <div>Role: Store Keeper / Maker</div>
@@ -2085,7 +2094,7 @@ window.CMS_MASTERS = {
             <!-- Box 3: Approving Officer -->
             <div class="border border-slate-300 bg-white p-3 rounded flex flex-col justify-between h-32">
               <div class="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Store In-Charge / Approver (Checker)</div>
-              <div class="text-center font-bold text-emerald-900 text-xs">${v.approvedBy || (v.status === 'Approved' ? 'Col. Anita Sharma' : 'Pending Sanction')}</div>
+              <div class="text-center font-bold ${isPrint ? 'text-slate-900' : 'text-emerald-900'} text-xs">${v.approvedBy || (v.status === 'Approved' ? 'Col. Anita Sharma' : 'Pending Sanction')}</div>
               <div class="border-t border-slate-200 pt-1 text-[10px] text-slate-700">
                 <div>Rank: Officer In-Charge</div>
                 <div>Designation: Central Stores Head</div>
@@ -2100,7 +2109,7 @@ window.CMS_MASTERS = {
           <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span>8. Attached Supporting Documents & Statutory Scans (Annexures)</span>
-              <span class="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">${attachments.length} ${attachments.length === 1 ? 'Attachment' : 'Attachments'}</span>
+              <span class="${isPrint ? 'bg-slate-900 text-white' : 'bg-blue-600 text-white'} text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">${attachments.length} ${attachments.length === 1 ? 'Attachment' : 'Attachments'}</span>
             </div>
             <span class="text-[10px] text-slate-500 font-normal">Section 8 of 8</span>
           </div>
@@ -2140,7 +2149,7 @@ window.CMS_MASTERS = {
                       </div>
 
                       <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-[9px] uppercase font-bold text-blue-800 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded">
+                        <span class="text-[9px] uppercase font-bold ${isPrint ? 'text-slate-900 bg-slate-100 border border-slate-300' : 'text-blue-800 bg-blue-100 border border-blue-200'} px-2 py-0.5 rounded">
                           ${att.category}
                         </span>
                         <span class="text-[10px] font-mono font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded">
@@ -2160,11 +2169,11 @@ window.CMS_MASTERS = {
                           <div class="p-3.5 border border-slate-200 bg-slate-50 rounded text-xs flex items-center justify-between">
                             <div class="space-y-0.5">
                               <div class="font-bold text-slate-800 flex items-center gap-1.5">
-                                <span class="font-mono text-blue-900">[Attached Digital Document: ${att.filename}]</span>
+                                <span class="font-mono ${isPrint ? 'text-slate-900' : 'text-blue-900'}">[Attached Digital Document: ${att.filename}]</span>
                               </div>
                               <div class="text-[10px] text-slate-500">Official document scan verified and held in digital vault. Electronic record reference: CMS/VRF/${v.id}/ANNEX-${seq}.</div>
                             </div>
-                            <span class="text-[9px] uppercase font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-1 rounded shrink-0">Attached On Record</span>
+                            <span class="text-[9px] uppercase font-bold ${isPrint ? 'text-slate-900 bg-white border border-slate-400' : 'text-emerald-800 bg-emerald-100 border border-emerald-300'} px-2 py-1 rounded shrink-0">Attached On Record</span>
                           </div>
                         `}
                       ` : `
@@ -2225,7 +2234,7 @@ window.CMS_MASTERS = {
     }
     body {
       background-color: #ffffff !important;
-      color: #0f172a !important;
+      color: #000000 !important;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
@@ -2247,6 +2256,26 @@ window.CMS_MASTERS = {
       page-break-inside: avoid;
       break-inside: avoid;
     }
+
+    /* Strict monochrome overrides: eliminate all color tints */
+    [class*="text-blue-"], [class*="text-emerald-"], [class*="text-green-"],
+    [class*="text-amber-"], [class*="text-rose-"], [class*="text-red-"],
+    [class*="text-indigo-"], [class*="text-purple-"], [class*="text-cyan-"] {
+      color: #000000 !important;
+    }
+    [class*="bg-blue-"], [class*="bg-emerald-"], [class*="bg-green-"],
+    [class*="bg-amber-"], [class*="bg-rose-"], [class*="bg-red-"],
+    [class*="bg-indigo-"], [class*="bg-purple-"], [class*="bg-cyan-"] {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      border-color: #94a3b8 !important;
+    }
+    [class*="border-blue-"], [class*="border-emerald-"], [class*="border-green-"],
+    [class*="border-amber-"], [class*="border-rose-"], [class*="border-red-"],
+    [class*="border-indigo-"], [class*="border-purple-"], [class*="border-cyan-"] {
+      border-color: #94a3b8 !important;
+    }
+
     @media print {
       .no-print {
         display: none !important;
@@ -2255,15 +2284,37 @@ window.CMS_MASTERS = {
         padding: 0 !important;
         margin: 0 !important;
         background: #ffffff !important;
+        color: #000000 !important;
+      }
+      #vendor-paper-form {
+        border: none !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+      }
+      * {
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .bg-white {
+        background-color: #ffffff !important;
+      }
+      .bg-slate-50, .bg-slate-100 {
+        background-color: #f8fafc !important;
+      }
+      .border-slate-200, .border-slate-300, .border-slate-400 {
+        border-color: #94a3b8 !important;
       }
     }
   </style>
 </head>
-<body class="p-4 bg-white text-slate-800">
+<body class="p-4 bg-white text-slate-900">
   <div class="no-print max-w-4xl mx-auto mb-4 flex justify-between items-center bg-slate-100 p-3 rounded border border-slate-300">
-    <span class="text-xs font-bold text-slate-700">${adminCompName} - Official Vendor Empanelment Form (${v.id} - ${v.name})</span>
+    <span class="text-xs font-bold text-slate-800">${adminCompName} - Official Vendor Empanelment Form (${v.id} - ${v.name})</span>
     <div class="flex gap-2">
-      <button onclick="window.print()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded text-xs transition shadow-sm">
+      <button onclick="window.print()" class="px-4 py-1.5 bg-slate-900 hover:bg-black text-white font-bold rounded text-xs transition shadow-sm">
         Print / Save PDF
       </button>
       <button onclick="window.close()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded text-xs transition">
@@ -2272,7 +2323,7 @@ window.CMS_MASTERS = {
     </div>
   </div>
 
-  <div class="max-w-4xl mx-auto">
+  <div class="max-w-4xl mx-auto bg-white">
     ${paperHtml}
   </div>
 </body>
@@ -2334,7 +2385,7 @@ window.CMS_MASTERS = {
 
       <div class="pt-4 border-t border-slate-200 flex flex-wrap justify-between items-center gap-2 print:hidden mt-4 bg-slate-50 p-3 rounded">
         <div class="flex items-center gap-2">
-          <button type="button" onclick="CMS_MASTERS.downloadVendorForm('${v.id}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
+          <button type="button" onclick="CMS_MASTERS.downloadVendorForm('${v.id}')" class="px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
             <i data-lucide="printer" class="w-4 h-4 text-white"></i>
             <span>Download Form (Print / Save PDF)</span>
           </button>

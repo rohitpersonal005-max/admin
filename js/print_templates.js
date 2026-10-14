@@ -472,14 +472,23 @@ window.CMS_PRINT = {
           <script src="https://cdn.tailwindcss.com"><\/script>
           <style>
             @media print {
-              body { background: white !important; -webkit-print-color-adjust: exact; }
+              body { background: white !important; color: #000000 !important; -webkit-print-color-adjust: exact; }
               @page { margin: 15mm; }
+              [class*="text-blue-"], [class*="text-emerald-"], [class*="text-green-"],
+              [class*="text-amber-"], [class*="text-rose-"], [class*="text-red-"] {
+                color: #000000 !important;
+              }
+              [class*="bg-blue-"], [class*="bg-emerald-"], [class*="bg-green-"],
+              [class*="bg-amber-"], [class*="bg-rose-"], [class*="bg-red-"] {
+                background-color: #ffffff !important;
+                border-color: #94a3b8 !important;
+              }
             }
           </style>
         </head>
         <body class="bg-slate-100 p-6 flex flex-col items-center">
           <div class="w-full max-w-4xl flex justify-end gap-3 mb-4 no-print">
-            <button onclick="window.print()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded shadow transition">
+            <button onclick="window.print()" class="px-5 py-2 bg-slate-900 hover:bg-black text-white font-semibold rounded shadow transition">
               Print Voucher
             </button>
             <button onclick="window.close()" class="px-5 py-2 bg-slate-300 hover:bg-slate-400 text-slate-800 font-semibold rounded transition">
