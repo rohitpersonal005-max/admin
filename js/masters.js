@@ -3965,9 +3965,14 @@ window.CMS_MASTERS = {
 
       <!-- Explicit Number of Days Fixation for Quotation Mail Notification -->
       <div class="quote-mail-fixation-section ${qSendEmail ? '' : 'hidden'} p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5 mt-2">
-        <div class="flex items-center gap-1.5 pb-1.5 border-b border-blue-200/60 font-bold text-blue-900 text-xs">
-          <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
-          <span>Number of Days Fixation</span>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
+          <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
+            <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
+            <span>Number of Days Fixation</span>
+          </div>
+          <span class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded shadow-2xs">
+            ${minAlertPolicy} Days
+          </span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
@@ -4190,9 +4195,14 @@ window.CMS_MASTERS = {
 
             <!-- 3. Explicit NUMBER OF DAYS FIXATION Section (When Yes) -->
             <div class="cert-mail-fixation-section ${certSendEmail ? '' : 'hidden'} p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5">
-              <div class="flex items-center gap-1.5 pb-1.5 border-b border-blue-200/60 font-bold text-blue-900 text-xs">
-                <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
-                <span>Number of Days Fixation</span>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
+                <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
+                  <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                  <span>Number of Days Fixation</span>
+                </div>
+                <span class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded shadow-2xs">
+                  ${minAlertPolicy} Days
+                </span>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
@@ -5096,9 +5106,14 @@ window.CMS_MASTERS = {
 
                   <!-- 3. Explicit NUMBER OF DAYS FIXATION Section (When Yes) -->
                   <div id="v-approval-mail-fixation-section" class="${vendor.approvalSendEmailNotification !== false ? '' : 'hidden'} p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5">
-                    <div class="flex items-center gap-1.5 pb-1.5 border-b border-blue-200/60 font-bold text-blue-900 text-xs">
-                      <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
-                      <span>Number of Days Fixation</span>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
+                      <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
+                        <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
+                        <span>Number of Days Fixation</span>
+                      </div>
+                      <span class="text-[10px] font-bold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded shadow-2xs">
+                        ${minAlertPolicy} Days
+                      </span>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
