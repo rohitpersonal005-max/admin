@@ -1335,12 +1335,18 @@ window.CMS_MASTERS = {
               <i data-lucide="printer" class="w-3.5 h-3.5"></i>
             </button>
 
-            <!-- Maker Edit Button (Only User can edit) -->
-            <!-- Maker Edit Button & Prominent Revise Button (Only shown to Maker/User when not approved) -->
-            ${(role !== 'Admin' && !isApproved && (isPending || isRevision || v.status === 'Draft')) ? `
-              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Modify Vendor'}">
-                <i data-lucide="${isRevision ? 'edit-3' : 'pencil'}" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-slate-600'}"></i>
-                ${isRevision ? '<span>Edit & Fix</span>' : ''}
+            <!-- Continue Working on Draft & Edit/Revise Buttons -->
+            ${!isApproved && (v.status === 'Draft' || isRevision) ? `
+              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Continue Working on Vendor Draft'}">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-purple-600'}"></i>
+                <span>${isRevision ? 'Edit & Fix' : 'Continue Working'}</span>
+              </button>
+              <button onclick="CMS_MASTERS.deleteVendor('${v.id}')" class="px-2 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Delete Draft Vendor">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
+              </button>
+            ` : (role !== 'Admin' && !isApproved && isPending) ? `
+              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Modify Vendor">
+                <i data-lucide="pencil" class="w-3.5 h-3.5 text-slate-600"></i>
               </button>
             ` : ''}
 
@@ -1389,14 +1395,12 @@ window.CMS_MASTERS = {
             </h2>
           </div>
 
-          ${role !== 'Admin' ? `
-            <div class="flex flex-wrap items-center gap-2.5">
-              <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition text-xs cursor-pointer">
-                <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
-                <span>Register New Vendor</span>
-              </button>
-            </div>
-          ` : ''}
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition text-xs cursor-pointer">
+              <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
+              <span>Register New Vendor</span>
+            </button>
+          </div>
         </div>
 
         <!-- Table Toolbar: Search & Filter -->
@@ -4542,17 +4546,17 @@ window.CMS_MASTERS = {
 
   openVendorModal(vendorId = null) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Admin') {
-      window.CMS_APP.toast('Approvers / Admins cannot create or edit vendor registrations. Registration is handled by Store Staff (Maker).', 'info');
-      if (vendorId) this.viewVendorProfile(vendorId);
-      return;
-    }
     const isEdit = Boolean(vendorId);
+    let existingVendor = null;
     if (isEdit) {
-      const existingVendor = window.CMS_STORE.data.vendors.find(v => v.id === vendorId);
+      existingVendor = window.CMS_STORE.data.vendors.find(v => v.id === vendorId);
       if (existingVendor && (existingVendor.status === 'Approved' || existingVendor.isApproved)) {
         window.CMS_APP.toast('Approved vendor records are locked and cannot be edited.', 'info');
         this.viewVendorProfile(vendorId);
+        return;
+      }
+      if (existingVendor && existingVendor.status === 'Pending Approval' && role === 'Admin') {
+        this.openVendorSanctionModal(vendorId);
         return;
       }
     }
@@ -5211,7 +5215,8 @@ window.CMS_MASTERS = {
         </form>
     `;
 
-    window.CMS_APP.openModal(isEdit ? 'Modify Vendor Record' : 'Register New Vendor', content, 'max-w-4xl');
+    const modalTitle = isEdit ? ((!vendor.status || vendor.status === 'Draft') ? 'Continue Working on Vendor Draft' : (vendor.status === 'Revision Required' ? 'Revise Vendor Registration' : 'Modify Vendor Record')) : 'Register New Vendor';
+    window.CMS_APP.openModal(modalTitle, content, 'max-w-4xl');
     this.populateDistrictDropdown(vendor.addressState || 'Delhi', vendor.addressDistrict || '');
 
       // Auto-clear error styling and Auto-Save Draft
@@ -5957,11 +5962,6 @@ window.CMS_MASTERS = {
 
   async saveVendor(vendorId = null, directSubmit = true, isManualDraft = false) {
     const store = window.CMS_STORE;
-    const role = store.getRole();
-    if (role === 'Admin') {
-      if (window.CMS_APP) window.CMS_APP.toast('Administrative Approvers (Checker) cannot create or modify vendor registrations.', 'error');
-      return;
-    }
     const readFileAsDataUrl = (file) => {
       return new Promise((resolve) => {
         if (!file) return resolve(null);
@@ -6540,6 +6540,13 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       window.CMS_APP.toast('Vendor credentials and statutory certificates submitted for Admin approval!', 'success');
       this.refreshVendorsView();
       window.CMS_APP.refreshView();
+      if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
+        const container = document.getElementById('view-container');
+        if (container && window.CMS_APP.currentView === 'draft-workspace') {
+          container.innerHTML = window.CMS_DRAFTS.render();
+          if (window.lucide) window.lucide.createIcons();
+        }
+      }
       if (window.CMS_HOME && typeof window.CMS_HOME.render === 'function') {
         window.CMS_HOME.render();
       }
@@ -6551,6 +6558,13 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       window.CMS_APP.toast('Vendor draft saved to workspace successfully!', 'success');
       this.refreshVendorsView();
       window.CMS_APP.refreshView();
+      if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
+        const container = document.getElementById('view-container');
+        if (container && window.CMS_APP.currentView === 'draft-workspace') {
+          container.innerHTML = window.CMS_DRAFTS.render();
+          if (window.lucide) window.lucide.createIcons();
+        }
+      }
     } else {
       // Quiet background save for drafts: update localStorage directly without triggering global UI rebuilds
       const storageKey = window.CMS_TENANT_ID ? 'CMS_DATA_' + window.CMS_TENANT_ID : 'CMS_DATA';
@@ -6627,6 +6641,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
     const currentUser = store.getCurrentUser();
     v.status = 'Approved';
+    v.isApproved = true;
     v.approvedAt = new Date().toISOString();
     v.approvedBy = currentUser.id;
     v.approvedByName = currentUser.name;
@@ -6634,6 +6649,13 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     store.save();
     window.CMS_APP.toast(`Vendor "${v.name}" sanctioned and approved by ${currentUser.name}!`, 'success');
     window.CMS_APP.refreshView();
+    if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
+      const container = document.getElementById('view-container');
+      if (container && window.CMS_APP.currentView === 'draft-workspace') {
+        container.innerHTML = window.CMS_DRAFTS.render();
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
   },
 
   rejectVendorWithRemark(vendorId, mistakeRemark) {
