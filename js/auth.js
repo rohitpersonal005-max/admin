@@ -20,7 +20,11 @@ window.CMS_AUTH = {
     this.isLoggedIn = true;
     if (window.CMS_APP && !window.CMS_APP_INITIALIZED) {
       window.CMS_APP_INITIALIZED = true;
-      window.CMS_APP.init();
+      try {
+        window.CMS_APP.init();
+      } catch (appErr) {
+        console.warn('CMS_APP.init() handled notice:', appErr);
+      }
     }
   },
 

@@ -1185,23 +1185,27 @@ class Store {
       }
 
       if (window.CMS_APP && typeof window.CMS_APP.refreshView === 'function') {
-        window.CMS_APP.refreshView();
+        try { window.CMS_APP.refreshView(); } catch (e) {}
       }
       if (window.CMS_MASTERS && typeof window.CMS_MASTERS.refreshVendorsView === 'function') {
-        window.CMS_MASTERS.refreshVendorsView();
+        try { window.CMS_MASTERS.refreshVendorsView(); } catch (e) {}
       }
       if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
-        const container = document.getElementById('view-container');
-        if (container && window.CMS_APP && window.CMS_APP.currentView === 'draft-workspace') {
-          container.innerHTML = window.CMS_DRAFTS.render();
-          if (window.lucide) window.lucide.createIcons();
-        }
+        try {
+          const container = document.getElementById('view-container');
+          if (container && window.CMS_APP && window.CMS_APP.currentView === 'draft-workspace') {
+            container.innerHTML = window.CMS_DRAFTS.render();
+            if (window.lucide) window.lucide.createIcons();
+          }
+        } catch (e) {}
       }
       if (window.CMS_HOME && typeof window.CMS_HOME.render === 'function') {
-        const homeScreen = document.getElementById('home-screen');
-        if (homeScreen && !homeScreen.classList.contains('hidden')) {
-          window.CMS_HOME.render();
-        }
+        try {
+          const homeScreen = document.getElementById('home-screen');
+          if (homeScreen && !homeScreen.classList.contains('hidden')) {
+            window.CMS_HOME.render();
+          }
+        } catch (e) {}
       }
     } catch (e) {
       console.warn('applyCloudUpdate notice:', e);

@@ -1344,8 +1344,10 @@ window.CMS_MASTERS = {
               <button onclick="CMS_MASTERS.deleteVendor('${v.id}')" class="px-2 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Delete Draft Vendor">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
               </button>
+            ` : ''}
+
             <!-- Action Buttons for Pending Approval -->
-            ${isPending ? `
+            ${isPending ? (role === 'Admin' ? `
               <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition shadow-sm inline-flex items-center gap-1 cursor-pointer" title="Sanction & Approve Vendor">
                 <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
                 <span>Approve</span>
@@ -1356,7 +1358,12 @@ window.CMS_MASTERS = {
               <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Modify Vendor Details">
                 <i data-lucide="pencil" class="w-3.5 h-3.5 text-slate-600"></i>
               </button>
-            ` : isRevision ? `
+            ` : `
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded">
+                <i data-lucide="clock" class="w-3 h-3 text-amber-600"></i>
+                Pending Approval
+              </span>
+            `) : isRevision ? `
               <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm" title="${v.checkerMistakeRemark ? `Reported Mistake: ${v.checkerMistakeRemark}` : 'Admin Rejected'}">
                 <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
                 <span>Admin Rejected</span>

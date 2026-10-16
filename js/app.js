@@ -444,81 +444,80 @@ window.CMS_APP = {
     // Render corresponding view
     switch (route) {
       case 'home':
-        if (window.CMS_HOME) window.CMS_HOME.render();
+        if (window.CMS_HOME && typeof window.CMS_HOME.render === 'function') window.CMS_HOME.render();
         break;
       case 'dashboard':
-        main.innerHTML = window.CMS_DASHBOARD.render();
-        // Removed showEmergencyAlerts
+        main.innerHTML = (window.CMS_DASHBOARD && typeof window.CMS_DASHBOARD.render === 'function') ? window.CMS_DASHBOARD.render() : '';
         break;
       case 'draft-workspace':
-        main.innerHTML = window.CMS_DRAFTS.render();
+        main.innerHTML = (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') ? window.CMS_DRAFTS.render() : '';
         break;
 
       // Masters
       case 'vendors':
-        main.innerHTML = window.CMS_MASTERS.renderVendors();
+        main.innerHTML = (window.CMS_MASTERS && typeof window.CMS_MASTERS.renderVendors === 'function') ? window.CMS_MASTERS.renderVendors() : '';
         break;
       case 'categories':
-        main.innerHTML = window.CMS_MASTERS.renderCategories();
+        main.innerHTML = (window.CMS_MASTERS && typeof window.CMS_MASTERS.renderCategories === 'function') ? window.CMS_MASTERS.renderCategories() : '';
         break;
       case 'consumables':
-        main.innerHTML = window.CMS_MASTERS.renderConsumables();
+        main.innerHTML = (window.CMS_MASTERS && typeof window.CMS_MASTERS.renderConsumables === 'function') ? window.CMS_MASTERS.renderConsumables() : '';
         break;
       case 'gst-slabs':
-        main.innerHTML = window.CMS_MASTERS.renderGstSlabs();
+        main.innerHTML = (window.CMS_MASTERS && typeof window.CMS_MASTERS.renderGstSlabs === 'function') ? window.CMS_MASTERS.renderGstSlabs() : '';
         break;
 
       // Consumable Operations
       case 'receipts':
-        main.innerHTML = window.CMS_TRANSACTIONS.renderReceipts();
+        main.innerHTML = (window.CMS_TRANSACTIONS && typeof window.CMS_TRANSACTIONS.renderReceipts === 'function') ? window.CMS_TRANSACTIONS.renderReceipts() : '';
         break;
       case 'requests':
-        main.innerHTML = window.CMS_TRANSACTIONS.renderRequests();
+        main.innerHTML = (window.CMS_TRANSACTIONS && typeof window.CMS_TRANSACTIONS.renderRequests === 'function') ? window.CMS_TRANSACTIONS.renderRequests() : '';
         break;
       case 'issuances':
-        main.innerHTML = window.CMS_TRANSACTIONS.renderIssuances();
+        main.innerHTML = (window.CMS_TRANSACTIONS && typeof window.CMS_TRANSACTIONS.renderIssuances === 'function') ? window.CMS_TRANSACTIONS.renderIssuances() : '';
         break;
       case 'returns':
-        main.innerHTML = window.CMS_TRANSACTIONS.renderReturns();
+        main.innerHTML = (window.CMS_TRANSACTIONS && typeof window.CMS_TRANSACTIONS.renderReturns === 'function') ? window.CMS_TRANSACTIONS.renderReturns() : '';
         break;
       case 'stock-adjustments':
-        main.innerHTML = window.CMS_TRANSACTIONS.renderStockAdjustments();
+        main.innerHTML = (window.CMS_TRANSACTIONS && typeof window.CMS_TRANSACTIONS.renderStockAdjustments === 'function') ? window.CMS_TRANSACTIONS.renderStockAdjustments() : '';
         break;
       case 'challan-conversion':
-        main.innerHTML = window.CMS_TRANSACTIONS.renderChallanConversion();
+        main.innerHTML = (window.CMS_TRANSACTIONS && typeof window.CMS_TRANSACTIONS.renderChallanConversion === 'function') ? window.CMS_TRANSACTIONS.renderChallanConversion() : '';
         break;
       case 'po-generation':
-        main.innerHTML = window.CMS_PO.renderPOs();
+        main.innerHTML = (window.CMS_PO && typeof window.CMS_PO.renderPOs === 'function') ? window.CMS_PO.renderPOs() : '';
         break;
       case 'reconciliation':
-        main.innerHTML = window.CMS_RECONCILIATION.renderReconciliation();
+        main.innerHTML = (window.CMS_RECONCILIATION && typeof window.CMS_RECONCILIATION.renderReconciliation === 'function') ? window.CMS_RECONCILIATION.renderReconciliation() : '';
         break;
 
       // Dual Inventory & Governance
       case 'consumer-inventory':
-        main.innerHTML = window.CMS_REPORTS.renderConsumerInventory();
+        main.innerHTML = (window.CMS_REPORTS && typeof window.CMS_REPORTS.renderConsumerInventory === 'function') ? window.CMS_REPORTS.renderConsumerInventory() : '';
         break;
       case 'fixed-inventory':
-        main.innerHTML = window.CMS_REPORTS.renderFixedInventory();
+        main.innerHTML = (window.CMS_REPORTS && typeof window.CMS_REPORTS.renderFixedInventory === 'function') ? window.CMS_REPORTS.renderFixedInventory() : '';
         break;
 
       // Reports & Approvals
       case 'stock-status':
-        main.innerHTML = window.CMS_REPORTS.renderStockReport();
+        main.innerHTML = (window.CMS_REPORTS && typeof window.CMS_REPORTS.renderStockReport === 'function') ? window.CMS_REPORTS.renderStockReport() : '';
         break;
       case 'stock-ledger':
-        main.innerHTML = window.CMS_REPORTS.renderStockLedger();
+        main.innerHTML = (window.CMS_REPORTS && typeof window.CMS_REPORTS.renderStockLedger === 'function') ? window.CMS_REPORTS.renderStockLedger() : '';
         break;
       case 'pending-approvals':
-        if (!window.CMS_STORE.isApprover()) {
-          main.innerHTML = window.CMS_REPORTS.renderApprovalsAccessDenied();
+        if (!window.CMS_STORE || !window.CMS_STORE.isApprover()) {
+          main.innerHTML = (window.CMS_REPORTS && typeof window.CMS_REPORTS.renderApprovalsAccessDenied === 'function') ? window.CMS_REPORTS.renderApprovalsAccessDenied() : '';
         } else {
-          main.innerHTML = window.CMS_REPORTS.renderPendingApprovals();
+          main.innerHTML = (window.CMS_REPORTS && typeof window.CMS_REPORTS.renderPendingApprovals === 'function') ? window.CMS_REPORTS.renderPendingApprovals() : '';
         }
         break;
 
       default:
-        main.innerHTML = window.CMS_DASHBOARD.render();
+        main.innerHTML = (window.CMS_DASHBOARD && typeof window.CMS_DASHBOARD.render === 'function') ? window.CMS_DASHBOARD.render() : '';
         break;
     }
 
@@ -580,8 +579,16 @@ window.CMS_APP = {
   },
 
   refreshView() {
-    this.navigateTo(this.currentView);
-    if (window.CMS_DASHBOARD) window.CMS_DASHBOARD.getEmergencyAlerts();
+    if (this.currentView) {
+      try {
+        this.navigateTo(this.currentView);
+      } catch (err) {
+        console.warn('refreshView navigateTo notice:', err);
+      }
+    }
+    if (window.CMS_DASHBOARD && typeof window.CMS_DASHBOARD.getEmergencyAlerts === 'function') {
+      try { window.CMS_DASHBOARD.getEmergencyAlerts(); } catch (e) {}
+    }
   },
 
   openModuleGuideModal() {
