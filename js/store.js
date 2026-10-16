@@ -1139,6 +1139,7 @@ class Store {
           if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
             window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
           }
+          this.initRealtimeSync();
         }
       } catch (err) {
         console.error("loadFromCloud error:", err);
@@ -1146,8 +1147,156 @@ class Store {
     }
   }
 
+  async applyCloudUpdate(val, writeLocal = true) {
+    if (!val) return;
+    try {
+      this.data = {
+        ...EMPTY_DATABASE,
+        ...val,
+        vendors: (val.vendors || []).map(normalizeVendor),
+        consumables: (val.consumables || []).map(normalizeConsumable),
+        files: { ...(this.data.files || {}), ...(val.files || {}) }
+      };
+
+      if (this.data.files && window.CMS_FILE_STORE) {
+        const db = await window.CMS_FILE_STORE.getDB();
+        Object.entries(this.data.files).forEach(([fname, fdata]) => {
+          window.CMS_FILE_STORE.cache.set(fname, fdata);
+          if (db) {
+            try {
+              const tx = db.transaction('files', 'readwrite');
+              tx.objectStore('files').put(fdata, fname);
+            } catch (e) {}
+          }
+        });
+      }
+      this.data.userRole = this.getRole();
+
+      if (writeLocal) {
+        const localData = { ...this.data };
+        delete localData.files;
+        try {
+          localStorage.setItem(getStorageKey(), JSON.stringify(localData));
+        } catch (storageErr) {}
+      }
+
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
+      }
+
+      if (window.CMS_MASTERS && typeof window.CMS_MASTERS.refreshVendorsView === 'function') {
+        window.CMS_MASTERS.refreshVendorsView();
+      }
+      if (window.CMS_HOME && typeof window.CMS_HOME.render === 'function') {
+        const homeScreen = document.getElementById('home-screen');
+        if (homeScreen && !homeScreen.classList.contains('hidden')) {
+          window.CMS_HOME.render();
+        }
+      }
+    } catch (e) {
+      console.warn('applyCloudUpdate notice:', e);
+    }
+  }
+
+  async syncIfRemoteChanged() {
+    if (!window.CMS_TENANT_ID || !window.CMS_SUPABASE) return;
+    if (this._syncing) return;
+    this._syncing = true;
+    try {
+      const { data: tenants, error } = await window.CMS_SUPABASE
+        .from('master_tenants')
+        .select('cms_db')
+        .eq('id', window.CMS_TENANT_ID);
+
+      if (!error && tenants && tenants.length > 0 && tenants[0].cms_db) {
+        const remote = tenants[0].cms_db;
+        const remoteTime = Number(remote._lastUpdatedAt || 0);
+        const localTime = Number(this.data._lastUpdatedAt || 0);
+        const remoteVendorCount = (remote.vendors || []).length;
+        const localVendorCount = (this.data.vendors || []).length;
+
+        if (remoteTime > localTime || remoteVendorCount !== localVendorCount) {
+          console.log('[CMS Realtime] Live vendor/store update received from cloud session.');
+          await this.applyCloudUpdate(remote);
+        }
+      }
+    } catch (err) {
+      // quiet catch
+    } finally {
+      this._syncing = false;
+    }
+  }
+
+  initRealtimeSync() {
+    if (this._realtimeInitialized) return;
+    this._realtimeInitialized = true;
+
+    // 1. Instant Cross-Tab Sync on the Same Computer (using storage event)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', (e) => {
+        if (e.key === getStorageKey() && e.newValue) {
+          try {
+            const parsed = JSON.parse(e.newValue);
+            this.applyCloudUpdate(parsed, false);
+          } catch (err) {}
+        }
+      });
+    }
+
+    // 2. Supabase Realtime WebSocket Channel across All Chromes / Devices worldwide
+    if (window.CMS_SUPABASE && window.CMS_TENANT_ID) {
+      try {
+        const channelName = 'realtime_tenant_' + window.CMS_TENANT_ID;
+        window.CMS_SUPABASE
+          .channel(channelName)
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'master_tenants',
+              filter: `id=eq.${window.CMS_TENANT_ID}`
+            },
+            async (payload) => {
+              console.log('[CMS Realtime] WebSocket push received from another Chrome session:', payload);
+              if (payload && payload.new && payload.new.cms_db) {
+                await this.applyCloudUpdate(payload.new.cms_db);
+              } else {
+                await this.loadFromCloud();
+              }
+            }
+          )
+          .subscribe((status) => {
+            console.log('[CMS Realtime] WebSocket subscription status:', status);
+          });
+      } catch (err) {
+        console.warn('[CMS Realtime] WebSocket subscription notice:', err);
+      }
+    }
+
+    // 3. Heartbeat Polling Fallback (runs every 3.5 seconds when active)
+    if (typeof window !== 'undefined') {
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          this.syncIfRemoteChanged();
+        }
+      }, 3500);
+
+      window.addEventListener('focus', () => {
+        this.syncIfRemoteChanged();
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.syncIfRemoteChanged();
+        }
+      });
+    }
+  }
+
   save() {
     try {
+      this.data._lastUpdatedAt = Date.now();
       // 1. Strip files from localStorage to prevent 5MB quota crash
       const localData = { ...this.data };
       delete localData.files;

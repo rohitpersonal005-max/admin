@@ -1458,7 +1458,7 @@ window.CMS_MASTERS = {
 
   getFilteredVendors() {
     const store = window.CMS_STORE.data;
-    let list = store.vendors || [];
+    let list = (store.vendors || []).slice();
 
     if (this.vendorSearchQuery) {
       const q = this.vendorSearchQuery.toLowerCase();
@@ -1484,6 +1484,13 @@ window.CMS_MASTERS = {
     if (this.vendorStateFilter && this.vendorStateFilter !== 'ALL') {
       list = list.filter(v => (v.addressState || '').toLowerCase() === this.vendorStateFilter.toLowerCase());
     }
+
+    // Sort newest first so freshly registered vendors are immediately visible at row 1
+    list.sort((a, b) => {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : (parseInt((a.id || '').replace(/\D/g, ''), 10) || 0);
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : (parseInt((b.id || '').replace(/\D/g, ''), 10) || 0);
+      return timeB - timeA;
+    });
 
     return list;
   },
@@ -6394,7 +6401,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         }
       }
 
-      store.data.vendors.push({
+      store.data.vendors.unshift({
         id: newId,
         name, constitution, address, addressTaluka, addressDistrict, addressState, addressCountry, addressPinCode,
         stateCode: stateInfo.code,
@@ -6525,14 +6532,24 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
 
     if (directSubmit) {
-      store.save(); // full UI update
+      this.vendorSearchQuery = '';
+      this.vendorStatusFilter = 'ALL';
+      this.vendorStateFilter = 'ALL';
+      store.save(); // full UI update & cloud broadcast
       window.CMS_APP.closeModal();
       window.CMS_APP.toast('Vendor credentials and statutory certificates submitted for Admin approval!', 'success');
+      this.refreshVendorsView();
       window.CMS_APP.refreshView();
+      if (window.CMS_HOME && typeof window.CMS_HOME.render === 'function') {
+        window.CMS_HOME.render();
+      }
     } else if (isManualDraft) {
+      this.vendorSearchQuery = '';
+      this.vendorStatusFilter = 'ALL';
       store.save();
       window.CMS_APP.closeModal();
       window.CMS_APP.toast('Vendor draft saved to workspace successfully!', 'success');
+      this.refreshVendorsView();
       window.CMS_APP.refreshView();
     } else {
       // Quiet background save for drafts: update localStorage directly without triggering global UI rebuilds

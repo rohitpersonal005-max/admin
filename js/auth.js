@@ -53,7 +53,9 @@ window.CMS_AUTH = {
           } else {
              const updated = existingUsers.map(u => u.id === user.id ? { ...u, name: saasAdmin.name } : u);
              window.CMS_STORE.setUsers(updated);
-          } window.CMS_STORE.setCurrentUser(user.id); }
+           } window.CMS_STORE.setCurrentUser(user.id);
+           if (window.CMS_STORE.initRealtimeSync) window.CMS_STORE.initRealtimeSync();
+         }
         
         this.hideLogin();
     } catch (err) {
@@ -63,6 +65,7 @@ window.CMS_AUTH = {
         console.warn("Proceeding with cached workspace offline.");
         window.CMS_TENANT_ID = window.CMS_TENANT_ID || localStorage.getItem('CMS_TENANT_ID_CACHE');
         this.hideLogin();
+        if (window.CMS_STORE && window.CMS_STORE.initRealtimeSync) window.CMS_STORE.initRealtimeSync();
         if (window.CMS_APP && window.CMS_APP.toast) {
           window.CMS_APP.toast('Connected in offline/cached mode. Cloud sync will retry.', 'warning');
         }
@@ -89,6 +92,7 @@ window.CMS_AUTH = {
       if (window.CMS_STORE) {
         await window.CMS_STORE.loadFromCloud();
         window.CMS_STORE.setCurrentUser(subSession.userId);
+        if (window.CMS_STORE.initRealtimeSync) window.CMS_STORE.initRealtimeSync();
       }
       
       this.hideLogin();
