@@ -1197,33 +1197,10 @@ window.CMS_APP = {
 
     if (dataUrl) {
       if (isPdf) {
-        let vendorMatch = null;
-        let docType = null;
-        if (window.CMS_STORE && window.CMS_STORE.data && Array.isArray(window.CMS_STORE.data.vendors)) {
-          for (const v of window.CMS_STORE.data.vendors) {
-            if (v.panCardFile === fileName) { vendorMatch = v; docType = 'pan'; break; }
-            if (v.gstCertificateFile === fileName) { vendorMatch = v; docType = 'gst'; break; }
-            if (v.bankDoc === fileName) { vendorMatch = v; docType = 'bank'; break; }
-            if (Array.isArray(v.quotedItems) && v.quotedItems.some(q => q && q.doc === fileName)) { vendorMatch = v; docType = 'quote'; break; }
-            if (Array.isArray(v.certificates) && v.certificates.some(c => c && c.fileName === fileName)) { vendorMatch = v; docType = 'cert'; break; }
-          }
-        }
-
         const cleanPdfUrl = dataUrl.includes('#') ? dataUrl : (dataUrl + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH');
-
-        if (vendorMatch && window.CMS_MASTERS && window.CMS_MASTERS.renderDocumentAnnexureContent) {
-          const att = {
-            filename: fileName,
-            title: fileName.replace(/\.[^/.]+$/, '').replace(/_/g, ' '),
-            docType: docType || 'cert',
-            category: docType === 'pan' ? 'Statutory PAN' : docType === 'gst' ? 'Statutory GSTIN' : docType === 'bank' ? 'Banking Mandate' : docType === 'quote' ? 'Commercial Quotation' : 'Compliance Certificate'
-          };
-          viewerHtml = window.CMS_MASTERS.renderDocumentAnnexureContent(att, dataUrl, 1, vendorMatch, { isPrint: false });
-        } else {
-          viewerHtml = `<iframe src="${cleanPdfUrl}" class="w-full h-[70vh] border-0 rounded bg-white shadow-xs"></iframe>`;
-        }
+        viewerHtml = `<iframe src="${cleanPdfUrl}" class="w-full h-[75vh] border-0 rounded bg-white shadow-xs" title="${fileName}"></iframe>`;
       } else {
-        viewerHtml = `<div class="max-h-[70vh] overflow-auto flex items-center justify-center p-2"><img src="${dataUrl}" class="max-w-full max-h-[68vh] object-contain rounded shadow-xs" alt="${fileName}" /></div>`;
+        viewerHtml = `<div class="max-h-[75vh] overflow-auto flex items-center justify-center p-2"><img src="${dataUrl}" class="max-w-full max-h-[72vh] object-contain rounded shadow-xs" alt="${fileName}" /></div>`;
       }
     } else {
       viewerHtml = `

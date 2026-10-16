@@ -2082,59 +2082,36 @@ window.CMS_MASTERS = {
       `;
     }
 
-    // Determine statutory / vector doc type
-    let docHtml = '';
-    if (docTypeLower === 'pan' || fnLower.includes('pan') || titleLower.includes('pan') || catLower.includes('pan')) {
-      docHtml = this.renderPanCardDoc(v, att, formatDate);
-    } else if (docTypeLower === 'gst' || fnLower.includes('gst') || titleLower.includes('gst') || catLower.includes('gst')) {
-      docHtml = this.renderGstCertificateDoc(v, att, formatDate);
-    } else if (docTypeLower === 'bank' || fnLower.includes('bank') || fnLower.includes('cheque') || fnLower.includes('passbook') || titleLower.includes('bank') || titleLower.includes('passbook') || titleLower.includes('cheque') || catLower.includes('bank') || catLower.includes('remittance')) {
-      docHtml = this.renderBankChequeDoc(v, att, formatDate);
-    } else if (docTypeLower === 'quote' || fnLower.includes('quote') || titleLower.includes('quotation') || titleLower.includes('quote') || catLower.includes('quote') || catLower.includes('commercial')) {
-      docHtml = this.renderQuotationDoc(v, att, quotes, formatDate, adminCompName);
-    } else {
-      docHtml = this.renderRegulatoryCertDoc(v, att, certs, formatDate);
-    }
-
-    const docId = 'doc-annex-' + seq;
-
-    // In print mode, output the pristine official vector document directly
-    if (isPrint || !cachedData) {
+    if (cachedData) {
+      const cleanPdfUrl = cachedData.includes('#') ? cachedData : (cachedData + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH');
       return `
         <div class="w-full">
-          ${docHtml}
+          ${!isPrint ? `
+            <div class="no-print flex items-center justify-between bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-t text-xs mb-3">
+              <div class="flex items-center gap-1.5 text-slate-700 font-medium">
+                <span class="inline-block w-2 h-2 rounded-full bg-blue-600"></span>
+                <span>Uploaded Document: ${att.title || att.filename}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="CMS_APP.previewFile('${att.filename}', '${cachedData}')" class="px-2.5 py-1 text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded transition inline-flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="maximize-2" class="w-3 h-3"></i> Full Screen
+                </button>
+                <a href="${cachedData}" download="${att.filename}" class="px-2.5 py-1 text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded transition inline-flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="download" class="w-3 h-3"></i> Download Original
+                </a>
+              </div>
+            </div>
+          ` : ''}
+          <iframe src="${cleanPdfUrl}" class="w-full h-[650px] border border-slate-300 rounded shadow-xs" title="${att.title}"></iframe>
         </div>
       `;
     }
 
-    // In interactive modal preview: show paper scan view by default with raw PDF toggle
     return `
-      <div class="w-full">
-        <div class="no-print flex items-center justify-between bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-t text-xs mb-3">
-          <div class="flex items-center gap-1.5 text-slate-700 font-medium">
-            <span class="inline-block w-2 h-2 rounded-full bg-slate-800"></span>
-            <span>Official Scanned Paper Record</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button type="button" id="${docId}-btn-vector" onclick="CMS_MASTERS.toggleDocView('${docId}', 'vector')" class="px-2.5 py-1 text-[11px] font-bold bg-slate-900 text-white rounded transition shadow-2xs cursor-pointer">
-              Official Paper Certificate
-            </button>
-            <button type="button" id="${docId}-btn-raw" onclick="CMS_MASTERS.toggleDocView('${docId}', 'raw')" class="px-2.5 py-1 text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded transition cursor-pointer">
-              PDF File View
-            </button>
-            <a href="${cachedData}" download="${att.filename}" class="px-2.5 py-1 text-[11px] font-medium bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded transition inline-flex items-center gap-1 cursor-pointer">
-              <i data-lucide="download" class="w-3 h-3"></i> Download Original
-            </a>
-          </div>
-        </div>
-
-        <div id="${docId}-vector">
-          ${docHtml}
-        </div>
-
-        <div id="${docId}-raw" class="hidden">
-          <iframe src="${cachedData}#toolbar=0&navpanes=0&scrollbar=0&view=FitH" class="w-full h-[650px] border border-slate-300 rounded shadow-xs" title="${att.title}"></iframe>
-        </div>
+      <div class="p-8 text-center bg-slate-50 border border-dashed border-slate-300 rounded text-slate-600">
+        <i data-lucide="file-text" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+        <div class="font-bold text-xs">${att.title || att.filename}</div>
+        <div class="text-[11px] text-slate-500 mt-1">Uploaded document: <span class="font-mono text-slate-800">${att.filename}</span></div>
       </div>
     `;
   },
