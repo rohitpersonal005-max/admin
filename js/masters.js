@@ -6644,22 +6644,56 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   },
 
-  deleteVendor(vendorId) {
+  deleteVendor(vendorId, force = false) {
     const store = window.CMS_STORE;
     const v = store.data.vendors.find(i => i.id === vendorId);
-    if (!v) return;
+    if (!v) {
+      window.CMS_APP.toast('Vendor record not found or already deleted.', 'info');
+      window.CMS_APP.refreshView();
+      return;
+    }
     if (v.status === 'Approved') {
       window.CMS_APP.toast('Master deletion is disabled for approved vendors.', 'error');
       return;
     }
     const name = v.name || v.id;
-    if (confirm(`Delete draft vendor "${name}"? This action cannot be undone.`)) {
-      const idx = store.data.vendors.findIndex(i => i.id === vendorId);
-      if (idx !== -1) {
-        store.data.vendors.splice(idx, 1);
-        store.save();
-        window.CMS_APP.toast(`Draft vendor "${name}" deleted successfully.`, 'success');
-        window.CMS_APP.refreshView();
+    if (!force) {
+      const content = `
+        <div class="space-y-4 text-xs">
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded text-rose-800 flex items-start gap-2.5">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600 shrink-0 mt-0.5"></i>
+            <div>
+              <div class="font-bold text-sm">Delete Vendor Draft</div>
+              <div class="text-[11px] text-rose-700 mt-1">Are you sure you want to permanently delete draft vendor <strong>"${name}"</strong> (${vendorId})? This action cannot be undone.</div>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs">Cancel</button>
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.deleteVendor('${vendorId}', true);" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs cursor-pointer">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Confirm Delete</span>
+            </button>
+          </div>
+        </div>
+      `;
+      window.CMS_APP.openModal(`Delete Draft: ${name}`, content, 'max-w-md');
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    const idx = store.data.vendors.findIndex(i => i.id === vendorId);
+    if (idx !== -1) {
+      store.data.vendors.splice(idx, 1);
+      store.save();
+      window.CMS_APP.toast(`Draft vendor "${name}" deleted successfully.`, 'success');
+      this.refreshVendorsView();
+      window.CMS_APP.refreshView();
+      if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
+        const container = document.getElementById('view-container');
+        if (container && window.CMS_APP.currentView === 'draft-workspace') {
+          container.innerHTML = window.CMS_DRAFTS.render();
+          if (window.lucide) window.lucide.createIcons();
+        }
       }
     }
   },

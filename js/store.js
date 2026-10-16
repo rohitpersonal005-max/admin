@@ -1212,10 +1212,8 @@ class Store {
         const remote = tenants[0].cms_db;
         const remoteTime = Number(remote._lastUpdatedAt || 0);
         const localTime = Number(this.data._lastUpdatedAt || 0);
-        const remoteVendorCount = (remote.vendors || []).length;
-        const localVendorCount = (this.data.vendors || []).length;
 
-        if (remoteTime > localTime || remoteVendorCount !== localVendorCount) {
+        if (remoteTime > localTime) {
           console.log('[CMS Realtime] Live vendor/store update received from cloud session.');
           await this.applyCloudUpdate(remote);
         }
