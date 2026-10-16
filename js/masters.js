@@ -2651,8 +2651,7 @@ window.CMS_MASTERS = {
                       </td>
                       <td class="p-2 border-r border-slate-200">
                         <div class="text-[10px] text-slate-700">Valid Till: <strong class="font-mono">${formatDate(q.validTill || q.quotationValidTill)}</strong></div>
-                        ${q.alertDays ? `<div class="text-[9px] text-slate-500">Alert: ${q.alertDays}d prior (${formatDate(q.alertDate)})</div>` : ''}
-                        <div class="text-[9px] ${q.sendEmailNotification !== false ? 'text-emerald-700 font-semibold' : 'text-slate-400'}">Mail to Vendor: ${q.sendEmailNotification !== false ? 'Yes' : 'No'}</div>
+                        <div class="text-[9px] text-emerald-700 font-semibold flex items-center gap-1"><i data-lucide="mail-check" class="w-3 h-3 text-emerald-600"></i> Auto-Mail: Active (7:00 AM)</div>
                       </td>
                       <td class="p-2">
                         ${qDoc ? `
@@ -2704,8 +2703,7 @@ window.CMS_MASTERS = {
                       <td class="p-2 border-r border-slate-200 text-center font-semibold text-slate-900">${c && c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
                       <td class="p-2 border-r border-slate-200 font-mono">${c && c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
                       <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">
-                        ${c && c.hasValidity && c.alertDate ? formatDate(c.alertDate) : '-'}
-                        ${c && c.hasValidity ? `<div class="text-[9px] ${c.sendEmailNotification !== false ? 'text-emerald-700 font-semibold' : 'text-slate-400'}">Mail: ${c.sendEmailNotification !== false ? 'Yes' : 'No'}</div>` : ''}
+                        ${c && c.hasValidity ? `<div class="text-[9px] text-emerald-700 font-semibold flex items-center gap-1"><i data-lucide="mail-check" class="w-3 h-3 text-emerald-600"></i> Auto-Mail: Active (7:00 AM)</div>` : ''}
                       </td>
                       <td class="p-2">
                         ${cFile ? `
@@ -3945,26 +3943,8 @@ window.CMS_MASTERS = {
         </div>
       </div>
 
-      <!-- Ask User: Alert Notification -->
-      <div class="p-2.5 bg-slate-50 border border-slate-200 rounded flex items-center justify-between gap-2 shadow-2xs mt-2">
-        <div class="flex items-center gap-2">
-          <i data-lucide="bell" class="w-4 h-4 text-blue-600 shrink-0"></i>
-          <span class="text-xs font-bold text-slate-800">Alert Notification</span>
-        </div>
-        <div class="inline-flex items-center gap-2 bg-white px-2 py-1 rounded border border-slate-200 shrink-0">
-          <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
-            <input type="radio" name="quote_mail_${rowId}" value="yes" class="q-send-mail-radio text-blue-600" ${qSendEmail ? 'checked' : ''} onchange="CMS_MASTERS.onQuoteMailRadioToggle('${rowId}', true)" />
-            <span class="text-emerald-700">Yes (Send Mail)</span>
-          </label>
-          <label class="inline-flex items-center gap-1 cursor-pointer font-medium text-slate-500 text-xs">
-            <input type="radio" name="quote_mail_${rowId}" value="no" class="q-send-mail-radio text-slate-400" ${!qSendEmail ? 'checked' : ''} onchange="CMS_MASTERS.onQuoteMailRadioToggle('${rowId}', false)" />
-            <span>No</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Explicit Number of Days Fixation for Quotation Mail Notification -->
-      <div class="quote-mail-fixation-section ${qSendEmail ? '' : 'hidden'} p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5 mt-2">
+      <!-- Number of Days Fixation for Quotation Mail Notification (Always Active) -->
+      <div class="quote-mail-fixation-section p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5 mt-2">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
           <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
             <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
@@ -4004,13 +3984,7 @@ window.CMS_MASTERS = {
         </div>
       </div>
 
-      <!-- Message when No is chosen -->
-      <div class="quote-no-mail-section ${!qSendEmail ? '' : 'hidden'} p-2.5 bg-slate-100 border border-slate-200 rounded text-[11px] text-slate-600 flex items-center gap-2 mt-2">
-        <i data-lucide="bell-off" class="w-4 h-4 text-slate-400 shrink-0"></i>
-        <div>
-          <span class="font-bold text-slate-700">Vendor Mail Disabled.</span> Dashboard alert only.
-        </div>
-      </div>
+      <input type="hidden" class="q-send-mail-radio" value="yes" />
 
       <input type="hidden" class="q-alert" value="${computedQuoteAlertIso}" />
       <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 mt-2">
@@ -4175,26 +4149,8 @@ window.CMS_MASTERS = {
               <input type="date" min="${today}" class="cert-expiry-input w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs font-mono outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" value="${validTill}" onchange="CMS_MASTERS.onCertDateOrDaysChange(this)" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" />
             </div>
 
-            <!-- 2. Question: Alert Notification -->
-            <div class="p-2.5 bg-white border border-slate-200 rounded flex items-center justify-between gap-2 shadow-2xs">
-              <div class="flex items-center gap-2">
-                <i data-lucide="bell" class="w-4 h-4 text-blue-600 shrink-0"></i>
-                <span class="text-xs font-bold text-slate-800">Alert Notification</span>
-              </div>
-              <div class="inline-flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded border border-slate-200 shrink-0">
-                <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
-                  <input type="radio" name="cert_mail_${rowId}" value="yes" class="cert-send-mail-radio text-blue-600" ${certSendEmail ? 'checked' : ''} onchange="CMS_MASTERS.onCertMailRadioToggle('${rowId}', true)" />
-                  <span class="text-emerald-700">Yes (Send Mail)</span>
-                </label>
-                <label class="inline-flex items-center gap-1 cursor-pointer font-medium text-slate-500 text-xs">
-                  <input type="radio" name="cert_mail_${rowId}" value="no" class="cert-send-mail-radio text-slate-400" ${!certSendEmail ? 'checked' : ''} onchange="CMS_MASTERS.onCertMailRadioToggle('${rowId}', false)" />
-                  <span>No</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- 3. Explicit NUMBER OF DAYS FIXATION Section (When Yes) -->
-            <div class="cert-mail-fixation-section ${certSendEmail ? '' : 'hidden'} p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5">
+            <!-- 2. Number of Days Fixation (Always Active with Validity) -->
+            <div class="cert-mail-fixation-section p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
                 <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
                   <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
@@ -4234,13 +4190,7 @@ window.CMS_MASTERS = {
               </div>
             </div>
 
-            <!-- 4. Message when No is chosen -->
-            <div class="cert-no-mail-section ${!certSendEmail ? '' : 'hidden'} p-2.5 bg-slate-100 border border-slate-200 rounded text-[11px] text-slate-600 flex items-center gap-2">
-              <i data-lucide="bell-off" class="w-4 h-4 text-slate-400 shrink-0"></i>
-              <div>
-                <span class="font-bold text-slate-700">Vendor Mail Disabled.</span> Dashboard alert only.
-              </div>
-            </div>
+            <input type="hidden" class="cert-send-mail-radio" value="yes" />
 
             <input type="hidden" class="cert-alert-input" value="${computedCertAlertIso}" />
           </div>
@@ -5086,26 +5036,8 @@ window.CMS_MASTERS = {
                     <input type="date" id="v-approval-valid-till" min="${today}" value="${vendor.approvalValidTill || ''}" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" class="w-full px-2.5 py-1.5 border border-slate-300 rounded bg-white text-xs font-mono outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
                   </div>
 
-                  <!-- 2. Question: Alert Notification -->
-                  <div class="p-2.5 bg-white border border-slate-200 rounded flex items-center justify-between gap-2 shadow-2xs">
-                    <div class="flex items-center gap-2">
-                      <i data-lucide="bell" class="w-4 h-4 text-blue-600 shrink-0"></i>
-                      <span class="text-xs font-bold text-slate-800">Alert Notification</span>
-                    </div>
-                    <div class="inline-flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded border border-slate-200 shrink-0">
-                      <label class="inline-flex items-center gap-1 cursor-pointer font-bold text-slate-700 text-xs">
-                        <input type="radio" name="v_approval_mail_opt" value="yes" id="v-approval-mail-yes" ${vendor.approvalSendEmailNotification !== false ? 'checked' : ''} class="text-blue-600" onchange="CMS_MASTERS.onApprovalMailRadioToggle(true)" />
-                        <span class="text-emerald-700">Yes (Send Mail)</span>
-                      </label>
-                      <label class="inline-flex items-center gap-1 cursor-pointer font-medium text-slate-500 text-xs">
-                        <input type="radio" name="v_approval_mail_opt" value="no" id="v-approval-mail-no" ${vendor.approvalSendEmailNotification === false ? 'checked' : ''} class="text-slate-400" onchange="CMS_MASTERS.onApprovalMailRadioToggle(false)" />
-                        <span>No</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <!-- 3. Explicit NUMBER OF DAYS FIXATION Section (When Yes) -->
-                  <div id="v-approval-mail-fixation-section" class="${vendor.approvalSendEmailNotification !== false ? '' : 'hidden'} p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5">
+                  <!-- 2. Number of Days Fixation (Always Active with Validity) -->
+                  <div id="v-approval-mail-fixation-section" class="p-3 bg-blue-50/80 border border-blue-200 rounded space-y-2.5">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1.5 border-b border-blue-200/60">
                       <div class="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
                         <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 shrink-0"></i>
@@ -5145,13 +5077,7 @@ window.CMS_MASTERS = {
                     </div>
                   </div>
 
-                  <!-- 4. Message when No is chosen -->
-                  <div id="v-approval-no-mail-section" class="${vendor.approvalSendEmailNotification === false ? '' : 'hidden'} p-2.5 bg-slate-100 border border-slate-200 rounded text-[11px] text-slate-600 flex items-center gap-2">
-                    <i data-lucide="bell-off" class="w-4 h-4 text-slate-400 shrink-0"></i>
-                    <div>
-                      <span class="font-bold text-slate-700">Vendor Mail Disabled.</span> Dashboard alert only.
-                    </div>
-                  </div>
+                  <input type="hidden" id="v-approval-mail-yes" value="yes" />
 
                   <input type="hidden" id="v-approval-alert-date" value="${vendor.approvalAlertDate || (vendor.approvalValidTill ? CMS_MASTERS.calculateAlertDate(vendor.approvalValidTill, vendor.approvalAlertDays || minAlertPolicy) : '')}" />
                 </div>
@@ -6251,7 +6177,7 @@ window.CMS_MASTERS = {
         const mrpNa = row.querySelector('.q-mrp-na')?.checked;
         // MRP vs Rate strict blocking removed; handled by confirm prompt onchange.
 
-      const qSendMail = row.querySelector('.q-send-mail-radio:checked')?.value !== 'no';
+      const qSendMail = qValid ? true : (row.querySelector('.q-send-mail-radio:checked')?.value !== 'no');
       quotedItems.push({
         quotationNo: qno,
         quotationDate: qDate,
@@ -6260,7 +6186,7 @@ window.CMS_MASTERS = {
           alertDate: row.querySelector('.q-alert')?.value || '',
         alertDays: Math.max(parseInt(row.querySelector('.q-alert-days')?.value, 10) || minAlertPolicy, minAlertPolicy),
           alertFreq: row.querySelector('.q-freq') ? row.querySelector('.q-freq').value : 'Daily',
-        sendEmailNotification: qSendMail,
+        sendEmailNotification: Boolean(qValid),
         materialId: row.querySelector('.q-mat-id')?.value || '',
         materialName: matName,
         rate: row.querySelector('.q-rate')?.value || 0,
@@ -6296,7 +6222,7 @@ window.CMS_MASTERS = {
     const approvalValidTill = approvedForLimitedPeriod ? (document.getElementById('v-approval-valid-till')?.value || '') : '';
     const approvalAlertDays = approvedForLimitedPeriod ? Math.max(parseInt(document.getElementById('v-approval-alert-days')?.value, 10) || minAlertPolicy, minAlertPolicy) : minAlertPolicy;
     const approvalAlertDate = approvedForLimitedPeriod ? (document.getElementById('v-approval-alert-date')?.value || CMS_MASTERS.calculateAlertDate(approvalValidTill, approvalAlertDays)) : '';
-    const approvalSendEmailNotification = approvedForLimitedPeriod ? (document.getElementById('v-approval-mail-yes')?.checked !== false) : true;
+    const approvalSendEmailNotification = approvedForLimitedPeriod ? Boolean(approvalValidTill) : false;
     const isBlocked = document.getElementById('v-blocked')?.checked || false;
     const blockReason = isBlocked ? (document.getElementById('v-block-reason')?.value.trim() || 'Blocked by administrator') : '';
 
@@ -6431,7 +6357,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         fileName = `${reg.replace(/\s+/g, '_')}_${certNo || 'Certificate'}.pdf`;
       }
 
-      const certSendMail = row.querySelector('.cert-send-mail-radio:checked')?.value !== 'no';
+      const certSendMail = (hasVal && expiry) ? true : (row.querySelector('.cert-send-mail-radio:checked')?.value !== 'no');
       certificates.push({
         regulator: reg,
         name: reg,
@@ -6441,7 +6367,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         validTill: expiry,
         alertDays,
         alertDate,
-        sendEmailNotification: certSendMail,
+        sendEmailNotification: Boolean(hasVal && expiry),
         documentName: docName,
         docTitle: docName,
         fileName

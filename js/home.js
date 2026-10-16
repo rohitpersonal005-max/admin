@@ -602,10 +602,13 @@ window.CMS_HOME = {
           <!-- Actions & Save -->
           <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100">
             <div class="text-[11px] text-slate-500 flex items-center gap-1.5">
-              <i data-lucide="info" class="w-3.5 h-3.5 text-blue-500"></i>
-              <span>Vendors with "Send email notification: Yes" on their validity dates will receive notices via this Gmail according to their fixed days.</span>
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span><strong>07:00 AM Automated Schedule:</strong> All documents with validity dates automatically dispatch notices at 7:00 AM on their alert threshold date from the registered company email with zero redirecting.</span>
             </div>
             <div class="flex items-center gap-2">
+              <button type="button" onclick="CMS_NOTIFICATIONS.checkAndAutoSendDailyAlerts(true);" class="px-3.5 py-2 text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-sm border border-emerald-300 transition flex items-center gap-1.5" title="Test and trigger the 07:00 AM automated dispatch cycle now">
+                <i data-lucide="send-check" class="w-3.5 h-3.5 text-emerald-600"></i> Run 7:00 AM Dispatch Now
+              </button>
               <button type="button" onclick="CMS_NOTIFICATIONS.openSampleEmailPreviewModal()" class="px-3.5 py-2 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-sm border border-slate-300 transition flex items-center gap-1.5">
                 <i data-lucide="eye" class="w-3.5 h-3.5"></i> Preview Sample Email
               </button>
@@ -641,7 +644,7 @@ window.CMS_HOME = {
                     <th class="py-2.5 px-3">Valid Till</th>
                     <th class="py-2.5 px-3">Fixed Lead Time</th>
                     <th class="py-2.5 px-3">Expiry Status</th>
-                    <th class="py-2.5 px-3">Mail to Vendor?</th>
+                    <th class="py-2.5 px-3">Mail Delivery</th>
                     <th class="py-2.5 px-3 text-right">Action</th>
                   </tr>
                 </thead>
@@ -651,6 +654,9 @@ window.CMS_HOME = {
                     const isToday = item.diff === 0;
                     const expBadge = isExp ? 'bg-rose-100 text-rose-800 font-bold' : (item.isDue ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-700');
                     const expText = isExp ? `Expired ${Math.abs(item.diff)}d ago` : (isToday ? 'Expires Today' : `${item.diff}d remaining`);
+                    const safeVendorName = (item.vendorName || '').replace(/'/g, "\\'");
+                    const safeDocName = (item.name || '').replace(/'/g, "\\'");
+                    const safeRef = (item.refNo || '').replace(/'/g, "\\'");
                     return `
                       <tr class="hover:bg-slate-50/80 transition">
                         <td class="py-2.5 px-3">
@@ -671,19 +677,16 @@ window.CMS_HOME = {
                           <span class="inline-block px-2 py-0.5 rounded text-[10px] ${expBadge}">${expText}</span>
                         </td>
                         <td class="py-2.5 px-3">
-                          ${item.sendEmailNotification ? `
-                            <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                              <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Yes (Mail Active)
-                            </span>
-                          ` : `
-                            <span class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
-                              No (Disabled)
-                            </span>
-                          `}
+                          <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded whitespace-nowrap">
+                            <i data-lucide="mail-check" class="w-3.5 h-3.5 text-emerald-600"></i> Auto-Mail (7:00 AM)
+                          </span>
                         </td>
-                        <td class="py-2.5 px-3 text-right">
-                          <button type="button" onclick="CMS_NOTIFICATIONS.openEmailComposer('${item.vendorId}', '${item.refNo || item.name}', '${item.type}')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded transition shadow-2xs">
-                            <i data-lucide="send" class="w-3 h-3"></i> Send Notice via Gmail
+                        <td class="py-2.5 px-3 text-right whitespace-nowrap">
+                          <button type="button" onclick="CMS_NOTIFICATIONS.dispatchEmailInBackground({ vendor: { id: '${item.vendorId}', name: '${safeVendorName}', email: '${item.vendorEmail}' }, docType: '${item.typeName}', docName: '${safeDocName}', refNo: '${safeRef}', validTill: '${item.validTill}', scheduleNote: 'Manual Direct Dispatch' }).then(() => { CMS_APP.toast('Notice dispatched directly to vendor with zero redirecting!', 'success'); CMS_HOME.render(); });" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded transition shadow-2xs mr-1" title="Dispatches notice immediately in background with zero redirecting">
+                            <i data-lucide="send-check" class="w-3 h-3"></i> Send Now
+                          </button>
+                          <button type="button" onclick="CMS_NOTIFICATIONS.openEmailComposer('${item.vendorId}', '${safeRef || safeDocName}', '${item.type}')" class="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded transition shadow-2xs" title="Preview or customize notice">
+                            <i data-lucide="eye" class="w-3 h-3"></i> View
                           </button>
                         </td>
                       </tr>

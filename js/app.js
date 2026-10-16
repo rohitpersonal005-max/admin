@@ -178,6 +178,7 @@ window.CMS_APP = {
       route = 'dashboard';
     }
     this.navigateTo(route);
+    if (window.CMS_NOTIFICATIONS) window.CMS_NOTIFICATIONS.initAutomatedScheduler();
 
     // Global dual-retention & repository sync pipeline for all file uploads
     document.addEventListener('change', (e) => {
