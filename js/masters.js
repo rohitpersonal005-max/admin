@@ -1344,21 +1344,19 @@ window.CMS_MASTERS = {
               <button onclick="CMS_MASTERS.deleteVendor('${v.id}')" class="px-2 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Delete Draft Vendor">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
               </button>
-            ` : (role !== 'Admin' && !isApproved && isPending) ? `
-              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Modify Vendor">
-                <i data-lucide="pencil" class="w-3.5 h-3.5 text-slate-600"></i>
+            <!-- Action Buttons for Pending Approval -->
+            ${isPending ? `
+              <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition shadow-sm inline-flex items-center gap-1 cursor-pointer" title="Sanction & Approve Vendor">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                <span>Approve</span>
               </button>
-            ` : ''}
-
-            <!-- Checker Governance Actions: Sanction or Reject with Mistake Remark -->
-            ${isPending && role === 'Admin' ? `
-              <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition shadow-sm" title="Sanction Vendor">
-                Approve
-              </button>
-              <button onclick="CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-sm transition" title="Reject / Return for Revision">
+              <button onclick="CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-sm transition cursor-pointer" title="Reject / Return for Revision">
                 Reject
               </button>
-            ` : isRevision && role === 'Admin' ? `
+              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Modify Vendor Details">
+                <i data-lucide="pencil" class="w-3.5 h-3.5 text-slate-600"></i>
+              </button>
+            ` : isRevision ? `
               <span class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm" title="${v.checkerMistakeRemark ? `Reported Mistake: ${v.checkerMistakeRemark}` : 'Admin Rejected'}">
                 <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
                 <span>Admin Rejected</span>

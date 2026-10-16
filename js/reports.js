@@ -610,29 +610,22 @@ window.CMS_REPORTS = {
                             <span>View Docs</span>
                           </button>
                         ` : ''}
-                        ${isChecker ? `
-                          ${(item.status === 'Revision Required' || item.status === 'Rejected') ? `
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm" title="${item.checkerMistakeRemark ? `Reported Mistake: ${item.checkerMistakeRemark}` : 'Admin Rejected'}">
-                              <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
-                              <span>Admin Rejected</span>
-                            </span>
-                          ` : `
-                            <button onclick="${item.onApprove}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-sm transition text-xs flex items-center gap-1">
-                              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
-                              <span>Sanction</span>
-                            </button>
-                            ${item.onReject ? `
-                              <button onclick="${item.onReject}" class="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold rounded transition text-xs flex items-center gap-1" title="Reject / Request Revision">
-                                <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
-                                <span>Reject</span>
-                              </button>
-                            ` : ''}
-                          `}
+                        ${(item.status === 'Revision Required' || item.status === 'Rejected') ? `
+                          <span class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm" title="${item.checkerMistakeRemark ? `Reported Mistake: ${item.checkerMistakeRemark}` : 'Admin Rejected'}">
+                            <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
+                            <span>Admin Rejected</span>
+                          </span>
                         ` : `
-                          <button onclick="CMS_APP.promptManagerPin(() => { ${item.onApprove} }, 'Sanction ${item.title}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium rounded border border-slate-300 transition text-xs flex items-center gap-1.5">
-                            <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-600"></i>
-                            <span>Authorize with PIN</span>
+                          <button onclick="${item.onApprove}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded shadow-sm transition text-xs flex items-center gap-1 cursor-pointer" title="Sanction & Approve">
+                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                            <span>Sanction</span>
                           </button>
+                          ${item.onReject ? `
+                            <button onclick="${item.onReject}" class="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold rounded transition text-xs flex items-center gap-1 cursor-pointer" title="Reject / Request Revision">
+                              <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                              <span>Reject</span>
+                            </button>
+                          ` : ''}
                         `}
                       </div>
                     </div>

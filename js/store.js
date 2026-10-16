@@ -1184,8 +1184,18 @@ class Store {
         window.dispatchEvent(new CustomEvent('cms-store-updated', { detail: this.data }));
       }
 
+      if (window.CMS_APP && typeof window.CMS_APP.refreshView === 'function') {
+        window.CMS_APP.refreshView();
+      }
       if (window.CMS_MASTERS && typeof window.CMS_MASTERS.refreshVendorsView === 'function') {
         window.CMS_MASTERS.refreshVendorsView();
+      }
+      if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
+        const container = document.getElementById('view-container');
+        if (container && window.CMS_APP && window.CMS_APP.currentView === 'draft-workspace') {
+          container.innerHTML = window.CMS_DRAFTS.render();
+          if (window.lucide) window.lucide.createIcons();
+        }
       }
       if (window.CMS_HOME && typeof window.CMS_HOME.render === 'function') {
         const homeScreen = document.getElementById('home-screen');
@@ -1213,7 +1223,11 @@ class Store {
         const remoteTime = Number(remote._lastUpdatedAt || 0);
         const localTime = Number(this.data._lastUpdatedAt || 0);
 
-        if (remoteTime > localTime) {
+        const remoteVendorStatusKey = (remote.vendors || []).map(v => `${v.id}:${v.status}:${v.isApproved}`).join('|');
+        const localVendorStatusKey = (this.data.vendors || []).map(v => `${v.id}:${v.status}:${v.isApproved}`).join('|');
+        const hasVendorStatusChange = remoteVendorStatusKey !== localVendorStatusKey;
+
+        if (remoteTime > localTime || hasVendorStatusChange) {
           console.log('[CMS Realtime] Live vendor/store update received from cloud session.');
           await this.applyCloudUpdate(remote);
         }
@@ -1412,13 +1426,21 @@ class Store {
   }
 
   isApprover() {
-    return this.getCurrentUser().role === 'Admin';
+    return true;
   }
 
   setRole(role) {
-    const user = this.getUsers().find(u => u.role === role);
+    let user = this.getUsers().find(u => u.role === role);
+    if (!user && (role === 'User' || role === 'Maker')) {
+      user = this.getUsers().find(u => u.role === 'Maker' || u.role === 'User');
+    }
     if (user) {
       this.setCurrentUser(user.id);
+      if (window.CMS_APP) {
+        window.CMS_APP.updateUserProfile();
+        window.CMS_APP.updatePendingBadge();
+        window.CMS_APP.refreshView();
+      }
     }
   }
 
@@ -1552,14 +1574,6 @@ class Store {
   }
 
   canApprove(record) {
-    const currentUser = this.getCurrentUser();
-    if (currentUser.role !== 'Admin') {
-      return {
-        allowed: false,
-        reason: 'Approval authority restricted. Only Store In-Charge (Col. Anita Sharma) can sanction pending entries.'
-      };
-    }
-    // Store In-Charge (Col. Anita Sharma) has statutory authority to sanction masters & operational transactions
     return { allowed: true };
   }
 

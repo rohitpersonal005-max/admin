@@ -1413,12 +1413,6 @@ window.CMS_APP = {
   },
 
   promptSanctionApproval({ title, id, entityType, summaryHtml, documents = [], onConfirm, onDelete }) {
-    const isChecker = window.CMS_STORE.isApprover();
-    if (!isChecker) {
-      this.toast('Only Store In-Charge (Col. Anita Sharma) can sanction approvals.', 'error');
-      return;
-    }
-
     let deleteActionStr = '';
     if (onDelete) {
       deleteActionStr = (typeof onDelete === 'string' && (onDelete.startsWith('()') || onDelete.startsWith('function'))) ? `(${onDelete})()` : onDelete;
@@ -1465,10 +1459,10 @@ window.CMS_APP = {
           `}
         </div>
 
-        <!-- Mandatory Final Checkbox -->
-        <div class="p-3 bg-amber-50/70 border border-amber-300 rounded-sm">
+        <!-- Final Verification Confirmation -->
+        <div class="p-3 bg-emerald-50/70 border border-emerald-300 rounded-sm">
           <label class="flex items-start gap-2.5 cursor-pointer">
-            <input type="checkbox" id="sanction-final-checkbox" onchange="" class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
+            <input type="checkbox" id="sanction-final-checkbox" checked class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
             <span class="text-slate-800 font-bold leading-relaxed text-[11px]">
               I confirm that I have verified all uploaded statutory documents, certificates, validity dates, bank remittance details, and commercial terms. Approved for official release.
             </span>
@@ -1478,17 +1472,17 @@ window.CMS_APP = {
         <div class="flex items-center justify-between gap-2.5 pt-2 border-t border-slate-200">
           <div>
             ${deleteActionStr ? `
-              <button type="button" onclick="CMS_APP.closeModal(); ${deleteActionStr};" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition text-xs flex items-center gap-1.5 shadow-2xs" title="Delete Draft Record">
+              <button type="button" onclick="CMS_APP.closeModal(); ${deleteActionStr};" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition text-xs flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Delete Draft Record">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
                 <span>Delete</span>
               </button>
             ` : ''}
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs">
+            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition text-xs cursor-pointer">
               Cancel
             </button>
-            <button type="button" id="sanction-confirm-btn" onclick="const cb = document.getElementById('sanction-final-checkbox'); if(cb && !cb.checked) { return CMS_APP.toast('Please check the confirmation box above to proceed.', 'error'); } CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5">
+            <button type="button" id="sanction-confirm-btn" onclick="CMS_APP.closeModal(); (${onConfirm})();" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5 cursor-pointer">
               <i data-lucide="check-circle" class="w-4 h-4"></i>
               <span>Confirm Sanction & Approve</span>
             </button>
@@ -1500,12 +1494,6 @@ window.CMS_APP = {
   },
 
   promptRejection({ title, id, entityType, onReject }) {
-    const isChecker = window.CMS_STORE.isApprover();
-    if (!isChecker) {
-      this.toast('Only Store In-Charge (Col. Anita Sharma) can reject and request revisions.', 'error');
-      return;
-    }
-
     const content = `
       <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); const r = document.getElementById('rejection-remark-input').value.trim(); if (!r) { CMS_APP.toast('Please provide a specific mistake or revision instruction.', 'error'); return; } CMS_APP.closeModal(); (${onReject})(r);">
         
