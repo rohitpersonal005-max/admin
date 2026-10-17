@@ -28,7 +28,14 @@ window.CMS_NOTIFICATIONS = {
       minAlertDays: (settings && settings.minAlertDays !== undefined && settings.minAlertDays !== '') ? Math.max(1, parseInt(settings.minAlertDays, 10)) : 15,
       fixedAlertDays: (settings && (settings.fixedAlertDays || settings.minAlertDays) !== undefined) ? Math.max(1, parseInt(settings.fixedAlertDays || settings.minAlertDays, 10)) : 15,
       senderGmail: (settings && settings.senderGmail) ? settings.senderGmail.trim() : (compEmail || userEmail || ''),
-      autoSendVendorEmail: (settings && settings.autoSendVendorEmail !== undefined) ? Boolean(settings.autoSendVendorEmail) : true
+      autoSendVendorEmail: (settings && settings.autoSendVendorEmail !== undefined) ? Boolean(settings.autoSendVendorEmail) : true,
+
+      // Live Background Email Gateway Configuration
+      mailProvider: (settings && settings.mailProvider) || 'emailjs',
+      emailjsServiceId: (settings && settings.emailjsServiceId) ? settings.emailjsServiceId.trim() : '',
+      emailjsTemplateId: (settings && settings.emailjsTemplateId) ? settings.emailjsTemplateId.trim() : '',
+      emailjsPublicKey: (settings && settings.emailjsPublicKey) ? settings.emailjsPublicKey.trim() : '',
+      webhookUrl: (settings && settings.webhookUrl) ? settings.webhookUrl.trim() : ''
     };
   },
 
@@ -46,9 +53,36 @@ window.CMS_NOTIFICATIONS = {
   /**
    * Saves notification settings to store and localStorage
    */
-  saveSettings(minDays, senderGmail, autoSend = true) {
-    const days = Math.max(1, parseInt(minDays, 10) || 15);
-    const email = (senderGmail || '').trim();
+  saveSettings(params, maybeEmail = null, maybeAutoSend = true) {
+    let days = 15;
+    let email = '';
+    let autoSend = true;
+    let mailProvider = 'emailjs';
+    let emailjsServiceId = '';
+    let emailjsTemplateId = '';
+    let emailjsPublicKey = '';
+    let webhookUrl = '';
+
+    if (typeof params === 'object' && params !== null) {
+      days = Math.max(1, parseInt(params.minDays, 10) || 15);
+      email = (params.senderGmail || '').trim();
+      autoSend = params.autoSend !== undefined ? Boolean(params.autoSend) : true;
+      mailProvider = params.mailProvider || 'emailjs';
+      emailjsServiceId = (params.emailjsServiceId || '').trim();
+      emailjsTemplateId = (params.emailjsTemplateId || '').trim();
+      emailjsPublicKey = (params.emailjsPublicKey || '').trim();
+      webhookUrl = (params.webhookUrl || '').trim();
+    } else {
+      days = Math.max(1, parseInt(params, 10) || 15);
+      email = (maybeEmail || '').trim();
+      autoSend = Boolean(maybeAutoSend);
+      const existing = this.getSettings();
+      mailProvider = existing.mailProvider;
+      emailjsServiceId = existing.emailjsServiceId;
+      emailjsTemplateId = existing.emailjsTemplateId;
+      emailjsPublicKey = existing.emailjsPublicKey;
+      webhookUrl = existing.webhookUrl;
+    }
 
     if (!email) {
       if (window.CMS_APP) window.CMS_APP.toast('Please enter the Sender Gmail address.', 'error');
@@ -64,6 +98,11 @@ window.CMS_NOTIFICATIONS = {
       fixedAlertDays: days,
       senderGmail: email,
       autoSendVendorEmail: Boolean(autoSend),
+      mailProvider,
+      emailjsServiceId,
+      emailjsTemplateId,
+      emailjsPublicKey,
+      webhookUrl,
       updatedAt: new Date().toISOString()
     };
 
@@ -77,7 +116,7 @@ window.CMS_NOTIFICATIONS = {
     }
 
     if (window.CMS_APP) {
-      window.CMS_APP.toast(`Alert days fixation saved! Fixed lead time: ${days} days, Sender Gmail: ${email}`, 'success');
+      window.CMS_APP.toast(`Email gateway and alert policy saved successfully!`, 'success');
     }
     return true;
   },
@@ -88,10 +127,31 @@ window.CMS_NOTIFICATIONS = {
   handleAdminSaveSettings() {
     const daysInput = document.getElementById('home-notif-min-days');
     const emailInput = document.getElementById('home-notif-sender-gmail');
+    const providerSelect = document.getElementById('home-notif-provider');
+    const emailjsServiceInput = document.getElementById('home-notif-emailjs-service');
+    const emailjsTemplateInput = document.getElementById('home-notif-emailjs-template');
+    const emailjsPublicKeyInput = document.getElementById('home-notif-emailjs-publickey');
+    const webhookUrlInput = document.getElementById('home-notif-webhook-url');
+
     const days = daysInput ? daysInput.value : 15;
     const email = emailInput ? emailInput.value : '';
+    const mailProvider = providerSelect ? providerSelect.value : 'emailjs';
+    const emailjsServiceId = emailjsServiceInput ? emailjsServiceInput.value : '';
+    const emailjsTemplateId = emailjsTemplateInput ? emailjsTemplateInput.value : '';
+    const emailjsPublicKey = emailjsPublicKeyInput ? emailjsPublicKeyInput.value : '';
+    const webhookUrl = webhookUrlInput ? webhookUrlInput.value : '';
 
-    const ok = this.saveSettings(days, email, true);
+    const ok = this.saveSettings({
+      minDays: days,
+      senderGmail: email,
+      autoSend: true,
+      mailProvider,
+      emailjsServiceId,
+      emailjsTemplateId,
+      emailjsPublicKey,
+      webhookUrl
+    });
+
     if (ok && window.CMS_HOME) {
       window.CMS_HOME.render();
     }
@@ -304,7 +364,7 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
             Close
           </button>
           <div class="flex flex-wrap items-center gap-2">
-            <button type="button" onclick="CMS_NOTIFICATIONS.dispatchEmailInBackground({ vendor: { id: '${vendor.id}', name: '${safeVendorName}', email: '${emailData.to}' }, docType: '${docType}', docName: '${safeDocName}', refNo: '${safeRefNo}', validTill: '${validTill}', scheduleNote: 'Manual Direct Send' }).then(() => { CMS_APP.toast('Email automatically dispatched to vendor with zero redirecting!', 'success'); CMS_APP.closeModal(); if (window.CMS_HOME) CMS_HOME.render(); });" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5" title="Dispatches immediately in background with zero redirecting">
+            <button type="button" onclick="CMS_NOTIFICATIONS.handleComposerDirectSend({ vendor: { id: '${vendor.id}', name: '${safeVendorName}', email: '${emailData.to}' }, docType: '${docType}', docName: '${safeDocName}', refNo: '${safeRefNo}', validTill: '${validTill}' });" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5" title="Dispatches real email immediately in background">
               <i data-lucide="send-check" class="w-3.5 h-3.5"></i> Send Directly (No Redirect)
             </button>
             <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('email-preview-body').value); CMS_APP.toast('Email body copied to clipboard!', 'success');" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold rounded-sm transition flex items-center gap-1.5">
@@ -478,11 +538,240 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
   },
 
   /**
-   * Silently dispatches an email notice in the background with ZERO redirecting or popups
+   * Transmits real email across the internet using EmailJS or Webhook
+   */
+  async sendRealEmail({ to, subject, body, vendorName, docType, docName, refNo, validTill }) {
+    const settings = this.getSettings();
+    const compName = (window.CMS_HOME && window.CMS_HOME.companyInfo && window.CMS_HOME.companyInfo.name) ||
+                     (window.CMS_STORE && window.CMS_STORE.data && window.CMS_STORE.data.companyName) ||
+                     'Our Organization';
+    const fromEmail = settings.senderGmail || this.getCompanySenderEmail();
+
+    if (!to || !to.includes('@')) {
+      throw new Error('Recipient does not have a valid email address on file.');
+    }
+
+    // 1. Send via Webhook / Google Apps Script
+    if (settings.mailProvider === 'webhook' && settings.webhookUrl) {
+      console.log('[CMS Mail] Dispatching real email via Webhook:', settings.webhookUrl);
+      try {
+        await fetch(settings.webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          mode: 'no-cors', // Supports Google Apps Script without CORS restriction
+          body: JSON.stringify({
+            to,
+            subject,
+            body,
+            fromEmail,
+            fromName: compName,
+            vendorName: vendorName || '',
+            docType: docType || '',
+            docName: docName || '',
+            refNo: refNo || '',
+            validTill: validTill || '',
+            timestamp: new Date().toISOString()
+          })
+        });
+        return { provider: 'Google Apps Script / Webhook', success: true };
+      } catch (err) {
+        throw new Error('Webhook dispatch error: ' + (err.message || 'Check endpoint connectivity.'));
+      }
+    }
+
+    // 2. Send via EmailJS SDK
+    if (settings.mailProvider === 'emailjs' && settings.emailjsServiceId && settings.emailjsTemplateId && settings.emailjsPublicKey) {
+      if (typeof window.emailjs === 'undefined') {
+        throw new Error('EmailJS SDK is not loaded. Please check your internet connection.');
+      }
+      console.log('[CMS Mail] Dispatching real email via EmailJS...');
+      try {
+        const params = {
+          to_email: to,
+          to_name: vendorName || 'Vendor',
+          from_name: compName,
+          from_email: fromEmail,
+          reply_to: fromEmail,
+          subject: subject,
+          message: body,
+          doc_type: docType || '',
+          doc_name: docName || '',
+          ref_no: refNo || '',
+          valid_till: validTill || ''
+        };
+        const res = await window.emailjs.send(
+          settings.emailjsServiceId,
+          settings.emailjsTemplateId,
+          params,
+          settings.emailjsPublicKey
+        );
+        return { provider: 'EmailJS', status: res.status, text: res.text, success: true };
+      } catch (err) {
+        throw new Error('EmailJS dispatch error: ' + (err.text || err.message || 'Check EmailJS keys.'));
+      }
+    }
+
+    // 3. Fallback: If neither Webhook nor EmailJS credentials are configured
+    throw new Error('No live email gateway configured. Please enter your EmailJS credentials or Google Webhook URL in Home -> Email Settings, or click "Open in Gmail" to send immediately.');
+  },
+
+  /**
+   * Dispatches a real test email to verify gateway configuration
+   */
+  async sendTestEmail() {
+    const settings = this.getSettings();
+    const testTo = prompt('Enter recipient email address to send test email to:', settings.senderGmail || '');
+    if (!testTo || !testTo.includes('@')) {
+      if (window.CMS_APP) window.CMS_APP.toast('Test email cancelled or invalid email address.', 'warning');
+      return;
+    }
+
+    if (window.CMS_APP) window.CMS_APP.toast('Sending live test email in background...', 'info');
+
+    try {
+      const res = await this.sendRealEmail({
+        to: testTo.trim(),
+        subject: '[Test] Consumable ERP Background Email Verification',
+        body: `Hello,\n\nThis is a real live test email sent directly from your Consumable Management ERP system background email gateway (${settings.mailProvider}).\n\nTimestamp: ${new Date().toLocaleString()}\nSender: ${settings.senderGmail}\n\nEverything is operating properly!`,
+        vendorName: 'Test Recipient',
+        docType: 'System Test',
+        docName: 'Email Gateway Verification',
+        refNo: 'TEST-001',
+        validTill: new Date().toISOString().split('T')[0]
+      });
+
+      if (window.CMS_APP) {
+        window.CMS_APP.toast(`Success! Real test email sent via ${res.provider || 'Gateway'} to ${testTo}!`, 'success');
+      }
+    } catch (err) {
+      console.error('[CMS Mail] Test email failed:', err);
+      if (window.CMS_APP) {
+        window.CMS_APP.toast(`Test Email Failed: ${err.message}`, 'error');
+      }
+    }
+  },
+
+  /**
+   * Helper modal for 1-minute Google Apps Script Webhook or EmailJS setup
+   */
+  openGatewayGuideModal() {
+    const modalHtml = `
+      <div class="space-y-4 text-xs text-slate-700">
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded-sm text-blue-900">
+          <div class="font-bold text-sm">How to Connect Real Background Email Dispatch</div>
+          <div class="text-[11px] text-blue-800 mt-1">Choose either Method A (Google Apps Script - 100% Free via Gmail) or Method B (EmailJS). Both send real emails directly into the vendor's inbox silently in the background.</div>
+        </div>
+
+        <div class="space-y-3">
+          <!-- Method A -->
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold">A</span>
+                Method A: Free Google Apps Script Webhook (Recommended)
+              </span>
+              <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">100% Free • Sends from your Gmail</span>
+            </div>
+            <ol class="list-decimal pl-5 space-y-1 text-slate-600 text-[11px] leading-relaxed">
+              <li>Open <a href="https://script.google.com" target="_blank" class="text-blue-600 underline font-semibold">script.google.com</a> with your Gmail and click <strong>New Project</strong>.</li>
+              <li>Paste this simple code replacing the default code:</li>
+            </ol>
+            <div class="mt-2 relative">
+              <pre class="bg-slate-900 text-slate-100 p-2.5 rounded font-mono text-[10px] overflow-x-auto select-all">function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  MailApp.sendEmail({
+    to: data.to,
+    subject: data.subject,
+    body: data.body,
+    name: data.fromName || "Consumable Management ERP"
+  });
+  return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+            </div>
+            <ol start="3" class="list-decimal pl-5 space-y-1 text-slate-600 text-[11px] mt-2 leading-relaxed">
+              <li>Click <strong>Deploy &rarr; New Deployment</strong> &rarr; Click Gear icon &rarr; Select <strong>Web app</strong>.</li>
+              <li>Set <em>Execute as:</em> <strong>Me</strong> and <em>Who has access:</em> <strong>Anyone</strong>.</li>
+              <li>Click <strong>Deploy</strong>, copy the Web App URL, and paste it into the Webhook URL field in Admin Home!</li>
+            </ol>
+          </div>
+
+          <!-- Method B -->
+          <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                <span class="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">B</span>
+                Method B: EmailJS (Free Cloud Relay)
+              </span>
+              <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">200 Free Mails/Month</span>
+            </div>
+            <ol class="list-decimal pl-5 space-y-1 text-slate-600 text-[11px] leading-relaxed">
+              <li>Sign up for a free account at <a href="https://www.emailjs.com" target="_blank" class="text-blue-600 underline font-semibold">emailjs.com</a>.</li>
+              <li>In <strong>Email Services</strong>, click <em>Add Service</em> &rarr; Connect your Gmail. Copy the <strong>Service ID</strong>.</li>
+              <li>In <strong>Email Templates</strong>, create a template with variables <code>{{to_email}}</code>, <code>{{subject}}</code>, and <code>{{message}}</code>. Copy the <strong>Template ID</strong>.</li>
+              <li>In <strong>Account &rarr; General</strong>, copy your <strong>Public Key</strong>.</li>
+              <li>Paste Service ID, Template ID, and Public Key into the fields in Admin Home and click Save.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-900 text-white font-bold rounded-sm">Close Guide</button>
+        </div>
+      </div>
+    `;
+
+    if (window.CMS_APP) {
+      window.CMS_APP.openModal('Background Email Gateway Setup Guide', modalHtml, 'max-w-2xl');
+      if (window.lucide) window.lucide.createIcons();
+    }
+  },
+
+  /**
+   * Handles user clicking "Send Directly" inside composer modal
+   */
+  async handleComposerDirectSend(payload) {
+    if (window.CMS_APP) window.CMS_APP.toast('Dispatching real email in background...', 'info');
+    try {
+      await this.dispatchEmailInBackground({ ...payload, scheduleNote: 'Manual Direct Send' });
+      if (window.CMS_APP) {
+        window.CMS_APP.toast('Email successfully delivered to vendor inbox!', 'success');
+        window.CMS_APP.closeModal();
+      }
+      if (window.CMS_HOME) window.CMS_HOME.render();
+    } catch (err) {
+      if (window.CMS_APP) {
+        window.CMS_APP.toast(err.message, 'error');
+      }
+    }
+  },
+
+  /**
+   * Silently dispatches a real email notice in the background with ZERO redirecting or popups
    */
   async dispatchEmailInBackground({ vendor, docType, docName, refNo, validTill, scheduleNote = '07:00 AM Scheduled Auto-Dispatch' }) {
     const emailData = this.composeEmail({ vendor, docType, docName, refNo, validTill });
     const todayStr = new Date().toISOString().split('T')[0];
+
+    let dispatchStatus = 'Pending';
+    let realDeliveryError = null;
+
+    try {
+      const realResult = await this.sendRealEmail({
+        to: emailData.to,
+        subject: emailData.subject,
+        body: emailData.body,
+        vendorName: vendor.name,
+        docType,
+        docName,
+        refNo,
+        validTill
+      });
+      dispatchStatus = `Delivered via ${realResult.provider || 'Gateway'}`;
+    } catch (err) {
+      realDeliveryError = err;
+      console.warn('[CMS Mail] Background dispatch notice:', err.message);
+      dispatchStatus = `Gateway Notice: ${err.message}`;
+    }
 
     const logEntry = {
       vendorId: vendor.id,
@@ -493,12 +782,13 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
       docName,
       expiryDate: validTill,
       dispatchDate: todayStr,
-      dispatchTime: '07:00 AM',
-      status: 'Auto-Dispatched at 07:00 AM (Scheduled)',
+      dispatchTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      status: dispatchStatus,
       scheduleNote,
       autoSent: true,
       subject: emailData.subject,
-      body: emailData.body
+      body: emailData.body,
+      error: realDeliveryError ? realDeliveryError.message : null
     };
 
     // 1. Record in local & store logs
@@ -513,6 +803,10 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
       } catch (err) {
         console.warn('Background Supabase log update:', err);
       }
+    }
+
+    if (realDeliveryError) {
+      throw realDeliveryError;
     }
 
     console.log(`[CMS Auto-Mail] Successfully dispatched notice to ${vendor.name} (${emailData.to}) from registered company email (${emailData.from})`);

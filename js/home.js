@@ -67,6 +67,18 @@ window.CMS_HOME = {
     return [...new Set(roles)];
   },
 
+  onMailProviderChange(provider) {
+    const emailjsContainer = document.getElementById('emailjs-fields-container');
+    const webhookContainer = document.getElementById('webhook-fields-container');
+    if (provider === 'webhook') {
+      if (emailjsContainer) emailjsContainer.classList.add('hidden');
+      if (webhookContainer) webhookContainer.classList.remove('hidden');
+    } else {
+      if (emailjsContainer) emailjsContainer.classList.remove('hidden');
+      if (webhookContainer) webhookContainer.classList.add('hidden');
+    }
+  },
+
   addUser() {
     const users = window.CMS_STORE.getUsers();
     const seatLimit = window.CMS_TENANT_SEATS || 10;
@@ -596,6 +608,69 @@ window.CMS_HOME = {
               <div class="relative pt-1">
                 <input type="email" id="home-notif-sender-gmail" required value="${notifSettings.senderGmail || ''}" placeholder="e.g. procurement.compliance@gmail.com" class="w-full pl-3 pr-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
+            </div>
+          </div>
+
+          <!-- 3. Real Background Email Dispatch Gateway Configuration -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-3">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-800">
+                    Live Background Email Sending Gateway (Direct Silent Delivery)
+                  </label>
+                  <p class="text-[11px] text-slate-500">Transmits real emails to vendors silently without opening Gmail.</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button type="button" onclick="CMS_NOTIFICATIONS.openGatewayGuideModal()" class="px-2.5 py-1 text-[11px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> Setup Guide (1-Minute)
+                </button>
+                <button type="button" onclick="CMS_NOTIFICATIONS.sendTestEmail()" class="px-2.5 py-1 text-[11px] font-bold bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded shadow-xs flex items-center gap-1 cursor-pointer" title="Send a real live test email now">
+                  <i data-lucide="mail" class="w-3.5 h-3.5 text-emerald-600"></i> Send Test Email
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">Dispatch Method / Gateway</label>
+                <select id="home-notif-provider" onchange="CMS_HOME.onMailProviderChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500">
+                  <option value="emailjs" ${notifSettings.mailProvider === 'emailjs' ? 'selected' : ''}>EmailJS (Free, Connects to Gmail)</option>
+                  <option value="webhook" ${notifSettings.mailProvider === 'webhook' ? 'selected' : ''}>Google Apps Script / Webhook (100% Free)</option>
+                </select>
+              </div>
+
+              <!-- EmailJS Settings (Show when emailjs selected) -->
+              <div id="emailjs-fields-container" class="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-2 ${notifSettings.mailProvider === 'webhook' ? 'hidden' : ''}">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-600 mb-1">Service ID</label>
+                  <input type="text" id="home-notif-emailjs-service" value="${notifSettings.emailjsServiceId || ''}" placeholder="e.g. service_xxxx" class="w-full px-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-600 mb-1">Template ID</label>
+                  <input type="text" id="home-notif-emailjs-template" value="${notifSettings.emailjsTemplateId || ''}" placeholder="e.g. template_xxxx" class="w-full px-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-600 mb-1">Public Key</label>
+                  <input type="text" id="home-notif-emailjs-publickey" value="${notifSettings.emailjsPublicKey || ''}" placeholder="e.g. user_xxxx" class="w-full px-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white" />
+                </div>
+              </div>
+
+              <!-- Webhook URL Field (Show when webhook selected) -->
+              <div id="webhook-fields-container" class="md:col-span-2 ${notifSettings.mailProvider === 'webhook' ? '' : 'hidden'}">
+                <label class="block text-[11px] font-bold text-slate-600 mb-1">Google Apps Script / Webhook Endpoint URL</label>
+                <input type="url" id="home-notif-webhook-url" value="${notifSettings.webhookUrl || ''}" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white" />
+              </div>
+            </div>
+
+            <div class="text-[11px] text-slate-500 bg-white p-2.5 rounded border border-slate-200 flex items-center justify-between">
+              <span id="gateway-status-desc">
+                ${notifSettings.mailProvider === 'webhook' && notifSettings.webhookUrl ? '<span class="text-emerald-700 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> Google Apps Script Webhook Configured & Active</span>' : (notifSettings.mailProvider === 'emailjs' && notifSettings.emailjsServiceId && notifSettings.emailjsPublicKey ? '<span class="text-emerald-700 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> EmailJS Gateway Configured & Active</span>' : '<span class="text-amber-700 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Real background dispatch requires either EmailJS keys or a free Google Apps Script Webhook URL. Click "Setup Guide" above to connect in 1 minute.</span>')}
+              </span>
             </div>
           </div>
 
