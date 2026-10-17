@@ -552,7 +552,7 @@ window.CMS_APP = {
         'stock-status': 'Live Stock Status & Buffers',
         'stock-ledger': 'Stock Ledger Movement Trail',
         'vendors': 'Vendor Catalog',
-        'categories': 'Consumable Category',
+        'categories': 'Material Category',
         'consumables': 'Material Catalog',
         'gst-slabs': 'GST / IGST Slabs',
         'receipts': 'Goods Inward (Auto Material Filing)',

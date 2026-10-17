@@ -6775,7 +6775,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
               <div class="w-8 h-8 rounded-full bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="tag" class="w-4 h-4"></i>
               </div>
-              <span>Consumable Category</span>
+              <span>Material Category</span>
             </h2>
             
           </div>
@@ -6858,7 +6858,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       </form>
     `;
 
-    window.CMS_APP.openModal(isEdit ? 'Modify Category' : 'Add Consumable Category', content);
+    window.CMS_APP.openModal(isEdit ? 'Modify Category' : 'Add Material Category', content);
   },
 
   saveCategory(catId, directSubmit = false) {

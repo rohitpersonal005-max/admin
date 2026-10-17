@@ -435,7 +435,7 @@ window.CMS_REPORTS = {
 
     (store.categories || []).filter(c => c.status === 'Pending Approval').forEach(c => {
       pending.push({
-        module: 'Consumable Category',
+        module: 'Material Category',
         id: c.id,
         title: c.name,
         details: c.description || 'No description',
