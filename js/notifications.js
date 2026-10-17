@@ -557,8 +557,8 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
       try {
         await fetch(settings.webhookUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          mode: 'no-cors', // Supports Google Apps Script without CORS restriction
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          mode: 'no-cors',
           body: JSON.stringify({
             to,
             subject,
