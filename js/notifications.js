@@ -265,7 +265,7 @@ Sender Company Mail: ${senderGmail}
 Date: ${new Date().toLocaleDateString('en-GB')}`;
 
     const vendorEmail = (vendor.email || '').trim();
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(vendorEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const gmailUrl = `https://mail.google.com/mail/?authuser=${encodeURIComponent(senderGmail)}&view=cm&fs=1&to=${encodeURIComponent(vendorEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     const mailtoUrl = `mailto:${encodeURIComponent(vendorEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
     return {
@@ -679,19 +679,22 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
             <div class="mt-2 relative">
               <pre class="bg-slate-900 text-slate-100 p-2.5 rounded font-mono text-[10px] overflow-x-auto select-all">function doPost(e) {
   var data = JSON.parse(e.postData.contents);
-  MailApp.sendEmail({
-    to: data.to,
-    subject: data.subject,
-    body: data.body,
-    name: data.fromName || "Consumable Management ERP"
+  GmailApp.sendEmail(data.to, data.subject, data.body, {
+    name: data.fromName || "Consumable Management ERP",
+    replyTo: data.fromEmail || ""
   });
   return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function authorizeGmail() {
+  GmailApp.sendEmail(Session.getActiveUser().getEmail(), "CMS Auth", "Ready");
 }</pre>
             </div>
             <ol start="3" class="list-decimal pl-5 space-y-1 text-slate-600 text-[11px] mt-2 leading-relaxed">
-              <li>Click <strong>Deploy &rarr; New Deployment</strong> &rarr; Click Gear icon &rarr; Select <strong>Web app</strong>.</li>
-              <li>Set <em>Execute as:</em> <strong>Me</strong> and <em>Who has access:</em> <strong>Anyone</strong>.</li>
-              <li>Click <strong>Deploy</strong>, copy the Web App URL, and paste it into the Webhook URL field in Admin Home!</li>
+              <li><strong>Important:</strong> Create and deploy this script from the <strong>Company / Admin Google account</strong> so emails are sent directly from that admin address.</li>
+              <li>Run <code>authorizeGmail</code> once to grant permissions.</li>
+              <li>Click <strong>Deploy &rarr; New Deployment</strong> &rarr; <em>Execute as:</em> <strong>Me</strong> and <em>Who has access:</em> <strong>Anyone</strong>.</li>
+              <li>Paste the Web App URL into the Webhook URL field and save!</li>
             </ol>
           </div>
 
