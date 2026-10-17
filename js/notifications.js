@@ -31,11 +31,11 @@ window.CMS_NOTIFICATIONS = {
       autoSendVendorEmail: (settings && settings.autoSendVendorEmail !== undefined) ? Boolean(settings.autoSendVendorEmail) : true,
 
       // Live Background Email Gateway Configuration
-      mailProvider: (settings && settings.mailProvider) || 'emailjs',
+      mailProvider: (settings && settings.mailProvider) || 'webhook',
       emailjsServiceId: (settings && settings.emailjsServiceId) ? settings.emailjsServiceId.trim() : '',
       emailjsTemplateId: (settings && settings.emailjsTemplateId) ? settings.emailjsTemplateId.trim() : '',
       emailjsPublicKey: (settings && settings.emailjsPublicKey) ? settings.emailjsPublicKey.trim() : '',
-      webhookUrl: (settings && settings.webhookUrl) ? settings.webhookUrl.trim() : ''
+      webhookUrl: (settings && settings.webhookUrl) ? settings.webhookUrl.trim() : 'https://script.google.com/macros/s/AKfycbzC-ge0PkP4a9lxzWf_7H7WnQdn3G9asyNdOZ-nrC27N3xiR2oBZl-4UItXfXf-Eluo/exec'
     };
   },
 
