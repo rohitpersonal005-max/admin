@@ -103,43 +103,15 @@
           </a>
         </div>
 
-        <!-- 2. STOCK & ASSET CARE (2ND IN LIST) -->
+        <!-- 1. SETUP & CATALOG -->
         <div class="pt-0.5">
-          <button type="button" onclick="document.getElementById('menu-inventory').classList.toggle('hidden'); document.getElementById('icon-inventory').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
-            <span class="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1 pointer-events-none">
-              <i data-lucide="package" class="w-3 h-3 text-white"></i> Reports
-            </span>
-            <i id="icon-inventory" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
-          </button>
-          <div id="menu-inventory" class="space-y-0.5 pl-1.5 ml-2 transition-all">
-            <a href="#consumer-inventory" data-route="consumer-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="package" class="w-4 h-4 text-white"></i>
-              <span>Consumable Materials</span>
-            </a>
-            <a href="#fixed-inventory" data-route="fixed-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="cpu" class="w-4 h-4 text-white"></i>
-              <span>Fixed Assets & PM</span>
-            </a>
-            <a href="#stock-status" data-route="stock-status" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="bar-chart-3" class="w-4 h-4 text-white"></i>
-              <span>Stock Status & Buffers</span>
-            </a>
-            <a href="#stock-ledger" data-route="stock-ledger" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
-              <i data-lucide="list" class="w-4 h-4 text-white"></i>
-              <span>Stock Ledger Trail</span>
-            </a>
-          </div>
-        </div>
-
-        <!-- 3. SETUP & CATALOG (3RD) -->
-        <div class="pt-0.5">
-          <button type="button" onclick="document.getElementById('menu-transactions').classList.toggle('hidden'); document.getElementById('icon-transactions').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
+          <button type="button" onclick="document.getElementById('menu-setup').classList.toggle('hidden'); document.getElementById('icon-setup').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
             <span class="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1 pointer-events-none">
               <i data-lucide="folder" class="w-3 h-3 text-white"></i> Setup
             </span>
-            <i id="icon-transactions" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
+            <i id="icon-setup" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
           </button>
-          <div id="menu-transactions" class="space-y-0.5 pl-1.5 ml-2 transition-all">
+          <div id="menu-setup" class="space-y-0.5 pl-1.5 ml-2 transition-all">
             <a href="#vendors" data-route="vendors" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="building" class="w-4 h-4 text-white"></i>
               <span>Vendor</span>
@@ -159,15 +131,15 @@
           </div>
         </div>
 
-        <!-- 4. STORE OPERATIONS & MOVEMENT (4TH - MOVED BELOW) -->
+        <!-- 2. TRANSACTION & STORE OPERATIONS -->
         <div class="pt-0.5">
-          <button type="button" onclick="document.getElementById('menu-reports').classList.toggle('hidden'); document.getElementById('icon-reports').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
+          <button type="button" onclick="document.getElementById('menu-transactions').classList.toggle('hidden'); document.getElementById('icon-transactions').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
             <span class="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1 pointer-events-none">
               <i data-lucide="sliders" class="w-3 h-3 text-white"></i> Transaction
             </span>
-            <i id="icon-reports" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
+            <i id="icon-transactions" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
           </button>
-          <div id="menu-reports" class="space-y-0.5 pl-1.5 ml-2 transition-all">
+          <div id="menu-transactions" class="space-y-0.5 pl-1.5 ml-2 transition-all">
             <a href="#receipts" data-route="receipts" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="arrow-down-left" class="w-4 h-4 text-white"></i>
               <span>Goods Inward (Auto Material)</span>
@@ -199,6 +171,34 @@
             <a href="#reconciliation" data-route="reconciliation" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
               <i data-lucide="clipboard" class="w-4 h-4 text-white"></i>
               <span>Stock Reconciliation</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 3. REPORT & INVENTORY -->
+        <div class="pt-0.5">
+          <button type="button" onclick="document.getElementById('menu-reports').classList.toggle('hidden'); document.getElementById('icon-reports').classList.toggle('-rotate-90');" class="w-full px-2.5 mb-1 flex items-center justify-between hover:bg-slate-800 hover:text-white py-1.5 rounded cursor-pointer transition outline-none">
+            <span class="text-[10px] uppercase font-bold text-white tracking-wider flex items-center gap-1 pointer-events-none">
+              <i data-lucide="package" class="w-3 h-3 text-white"></i> Report
+            </span>
+            <i id="icon-reports" data-lucide="chevron-down" class="w-4 h-4 text-white transition-transform duration-200 pointer-events-none"></i>
+          </button>
+          <div id="menu-reports" class="space-y-0.5 pl-1.5 ml-2 transition-all">
+            <a href="#consumer-inventory" data-route="consumer-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="package" class="w-4 h-4 text-white"></i>
+              <span>Consumable Materials</span>
+            </a>
+            <a href="#fixed-inventory" data-route="fixed-inventory" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="cpu" class="w-4 h-4 text-white"></i>
+              <span>Fixed Assets & PM</span>
+            </a>
+            <a href="#stock-status" data-route="stock-status" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-white"></i>
+              <span>Stock Status & Buffers</span>
+            </a>
+            <a href="#stock-ledger" data-route="stock-ledger" class="nav-link flex items-center gap-2.5 px-2 py-1.5 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition font-medium">
+              <i data-lucide="list" class="w-4 h-4 text-white"></i>
+              <span>Stock Ledger Trail</span>
             </a>
           </div>
         </div>
@@ -440,19 +440,19 @@
   
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
-  <script src="js/store.js?v=1792230000000"></script>
-  <script src="js/notifications.js?v=1792230000000"></script>
-  <script src="js/auth.js?v=1792230000000"></script>
-  <script src="js/print_templates.js?v=1792230000000"></script>
-  <script src="js/masters.js?v=1792230000000"></script>
-  <script src="js/transactions.js?v=1792230000000"></script>
-  <script src="js/po_generator.js?v=1792230000000"></script>
-  <script src="js/reconciliation.js?v=1792230000000"></script>
-  <script src="js/reports.js?v=1792230000000"></script>
-  <script src="js/dashboard.js?v=1792230000000"></script>
-  <script src="js/drafts.js?v=1792230000000"></script>
-  <script src="js/home.js?v=1792230000000"></script>
-  <script src="js/app.js?v=1792230000000"></script>
+  <script src="js/store.js?v=1792235000000"></script>
+  <script src="js/notifications.js?v=1792235000000"></script>
+  <script src="js/auth.js?v=1792235000000"></script>
+  <script src="js/print_templates.js?v=1792235000000"></script>
+  <script src="js/masters.js?v=1792235000000"></script>
+  <script src="js/transactions.js?v=1792235000000"></script>
+  <script src="js/po_generator.js?v=1792235000000"></script>
+  <script src="js/reconciliation.js?v=1792235000000"></script>
+  <script src="js/reports.js?v=1792235000000"></script>
+  <script src="js/dashboard.js?v=1792235000000"></script>
+  <script src="js/drafts.js?v=1792235000000"></script>
+  <script src="js/home.js?v=1792235000000"></script>
+  <script src="js/app.js?v=1792235000000"></script>
 <script>console.log('AGENT FIXES LOADED AT ' + new Date().toISOString());</script>
 </body>
 </html>
