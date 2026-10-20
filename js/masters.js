@@ -1,6 +1,6 @@
 /**
  * Adminutes - Masters Module Engine
- * Handles Vendor Master, Consumable Category Master, Consumable (Material) Master
+ * Handles Vendor Master, Material Category Master, Material Master
  * with Rate Effective From & Authorized Consumer Confirmation, and GST/IGST Slabs.
  * Includes Live Search, Category Filters, and Material 360� Inspection Drawers.
  */
@@ -6844,7 +6844,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   },
 
-  // // CONSUMABLE CATEGORY MASTER
+  // // MATERIAL CATEGORY MASTER
   // ==========================================
   renderCategories() {
     const store = window.CMS_STORE.data;
@@ -6939,7 +6939,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       </form>
     `;
 
-    window.CMS_APP.openModal(isEdit ? 'Modify Category' : 'Add Material Category', content);
+    window.CMS_APP.openModal(isEdit ? 'Modify Material Category' : 'Add Material Category', content);
   },
 
   saveCategory(catId, directSubmit = false) {
@@ -8468,10 +8468,10 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
               </tr>
               <tr class="border-b border-slate-200">
                 <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Description & Purpose</td>
-                <td class="p-3 text-slate-800">${c.description || 'General consumables category'}</td>
+                <td class="p-3 text-slate-800">${c.description || 'General material category'}</td>
               </tr>
               <tr class="border-b border-slate-200">
-                <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Linked Consumable Items</td>
+                <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Linked Material Items</td>
                 <td class="p-3 font-bold text-blue-600">${items.length} Registered Items in Store</td>
               </tr>
               <tr>

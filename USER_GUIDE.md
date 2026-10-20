@@ -66,7 +66,7 @@ Review chronological stock movement, including receipts, issues, returns, adjust
 
 Create and maintain vendor details, GST/PAN information, contact details, compliance certificates, and validity dates.
 
-#### Consumable Category
+#### Material Category
 
 Create categories used to organize materials. New categories may require Checker approval before use.
 

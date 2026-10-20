@@ -13,7 +13,7 @@ A comprehensive, responsive web application for managing consumable inventory, v
   - Certificate validity date tracker with renewal alert.
   - Compliance certificate file upload / attachment support.
   - GSTIN, phone, address, and email tracking with Maker-Checker approval.
-- **Consumable Category Master (Page 3)**:
+- **Material Category Master (Page 3)**:
   - Add / Modify / Delete categories (`Stationery`, `Housekeeping`, `Packing Material`, `Safety & PPE`, etc.).
   - Approval workflow before categories become active for item listing.
 - **Consumable (Material) Master (Page 4 & User Addition)**:
