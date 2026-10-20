@@ -3644,7 +3644,6 @@ window.CMS_MASTERS = {
         if (gstNa) { gstNa.checked = true; window.CMS_MASTERS.toggleGstApplicable(true); }
         if (panNa) { panNa.checked = true; window.CMS_MASTERS.togglePanApplicable(true); }
       }
-    }
     },
 
   // Sequence strictly arranged:

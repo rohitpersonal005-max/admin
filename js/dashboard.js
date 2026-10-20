@@ -6,10 +6,14 @@ window.CMS_DASHBOARD = {
   },
 
   showEmergencyAlerts(showModal = false) {
+    const html = this.getAlertsHtml();
     if (showModal) {
-      const html = this.getAlertsHtml();
       window.CMS_APP.openModal('Notifications & Emergency Alerts', html || '<div class="p-8 text-center text-slate-500">No active alerts or critical notifications at this time.</div>', 'max-w-3xl');
     }
+  },
+
+  getEmergencyAlerts() {
+    this.showEmergencyAlerts(false);
   },
 
   renderToDOM() {
@@ -409,7 +413,7 @@ window.CMS_DASHBOARD = {
               <div class="whitespace-pre-wrap">${msg.text}</div>
             </div>
             <div class="text-[10px] text-slate-400 mt-1 px-1">
-              ${msg.sender} � ${window.CMS_STORE.formatDate(msg.timestamp)}
+              ${msg.sender} • ${window.CMS_STORE.formatDate(msg.timestamp)}
             </div>
           </div>
         `;
