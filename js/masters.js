@@ -6429,7 +6429,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         isBlocked, blockReason, quotedItems,
         certificates,
         certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || '',
-        status: directSubmit ? 'Pending Approval' : 'Draft',
+        status: (role === 'Admin') ? 'Approved' : (directSubmit ? 'Pending Approval' : 'Draft'),
         createdAt: new Date().toISOString(),
         createdBy: currentUser ? currentUser.id : 'system',
         createdByName: currentUser ? currentUser.name : 'Store Staff'
@@ -6841,9 +6841,6 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
 
   openCategoryModal(catId = null) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Admin') {
-      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying categories must be initiated by User.', 'warning');
-    }
     const isEdit = Boolean(catId);
     const cat = isEdit ? window.CMS_STORE.data.categories.find(c => c.id === catId) : { name: '', description: '' };
 
@@ -6869,9 +6866,6 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
 
   saveCategory(catId, directSubmit = false) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Admin') {
-      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying categories must be initiated by User.', 'warning');
-    }
     const name = document.getElementById('cat-name').value.trim();
     const description = document.getElementById('cat-desc').value.trim();
     const store = window.CMS_STORE;
@@ -6882,7 +6876,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         store.data.categories[idx] = {
           ...store.data.categories[idx],
           name, description,
-          status: directSubmit ? 'Pending Approval' : store.data.categories[idx].status
+          status: (role === 'Admin') ? 'Approved' : (directSubmit ? 'Pending Approval' : store.data.categories[idx].status)
         };
       }
     } else {
@@ -7428,9 +7422,6 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
 
   openConsumableModal(matId = null, forcedType = null) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Admin') {
-      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying materials must be initiated by User.', 'warning');
-    }
     const store = window.CMS_STORE.data;
     const isEdit = Boolean(matId);
     const existing = isEdit ? store.consumables.find(i => i.id === matId) : null;
@@ -7797,9 +7788,6 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
 
   saveConsumable(matId, directSubmit = false) {
     const role = window.CMS_STORE.getRole();
-    if (role === 'Admin') {
-      if (directSubmit) return window.CMS_APP.toast('Col. Anita Sharma (Admin) is authorized for review and approval only. Adding or modifying materials must be initiated by User.', 'warning');
-    }
     const store = window.CMS_STORE;
     const inventoryType = document.getElementById('m-inv-type').value;
     const catId = document.getElementById('m-cat').value;
@@ -7922,7 +7910,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           vendor2Id: v2Id, vendor2Name: v2 ? v2.name : (secondaryVendor.vendorName || ''), vendor2Rate: v2Rate, vendor2RateEffectiveFrom: v2RateEffectiveFrom,
           consumerConfirmed, confirmedBy, confirmationDate, confirmationRemarks,
           avgMonthlyConsumption,
-          status: directSubmit ? 'Pending Approval' : (store.data.consumables[idx].status || 'Draft'),
+          status: (role === 'Admin') ? 'Approved' : (directSubmit ? 'Pending Approval' : (store.data.consumables[idx].status || 'Draft')),
           updatedAt: new Date().toISOString()
         };
       }
