@@ -1396,7 +1396,7 @@ window.CMS_MASTERS = {
               <div class="w-8 h-8 rounded-full bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="building-2" class="w-4 h-4"></i>
               </div>
-              <span>Vendor Master</span>
+              <span>Vendor</span>
             </h2>
           </div>
 

@@ -551,7 +551,7 @@ window.CMS_APP = {
         'fixed-inventory': 'Fixed Assets & Care (Warranty & PM)',
         'stock-status': 'Live Stock Status & Buffers',
         'stock-ledger': 'Stock Ledger Movement Trail',
-        'vendors': 'Vendor Catalog',
+        'vendors': 'Vendor',
         'categories': 'Material Category',
         'consumables': 'Material Catalog',
         'gst-slabs': 'GST / IGST Slabs',
