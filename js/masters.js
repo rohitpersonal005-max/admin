@@ -3954,13 +3954,13 @@ window.CMS_MASTERS = {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="block text-[11px] font-bold text-slate-700">Fix Days Prior to Expiry <span class="text-rose-600 font-bold">*</span></label>
+              <label class="block text-[11px] font-bold text-slate-700">Activate Alerts Days before Expiry <span class="text-rose-600 font-bold">*</span></label>
               <span class="text-[10px] text-slate-400 font-medium">Days</span>
             </div>
             <div class="flex items-center gap-1.5">
               <input type="number" min="${minAlertPolicy}" max="365" class="q-alert-days w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" value="${qAlertDays}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onQuoteDateOrDaysChange(this)" onchange="CMS_MASTERS.onQuoteDateOrDaysChange(this, true)" onblur="CMS_MASTERS.onQuoteDateOrDaysChange(this, true)" />
               <div class="inline-flex rounded border border-blue-200 bg-white p-0.5 shadow-2xs">
-                <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=${minAlertPolicy}; CMS_MASTERS.onQuoteDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
+                <button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=${minAlertPolicy}; CMS_MASTERS.onQuoteDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">${minAlertPolicy}d</button>
                 ${minAlertPolicy < 30 ? `<button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=30; CMS_MASTERS.onQuoteDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>` : ''}
                 ${minAlertPolicy < 60 ? `<button type="button" onclick="const r=this.closest('.quote-row'); const inp=r.querySelector('.q-alert-days'); inp.value=60; CMS_MASTERS.onQuoteDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>` : ''}
               </div>
@@ -3968,7 +3968,7 @@ window.CMS_MASTERS = {
           </div>
 
           <div>
-            <label class="block text-[11px] font-bold text-slate-700 mb-1">Calculated Mail Dispatch Date</label>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Alert activation date</label>
             <div class="px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-slate-700 flex items-center justify-between shadow-2xs">
               <div class="flex items-center gap-1.5 min-w-0">
                 <i data-lucide="bell" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
@@ -4160,13 +4160,13 @@ window.CMS_MASTERS = {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
                 <div>
                   <div class="flex items-center justify-between mb-1">
-                    <label class="block text-[11px] font-bold text-slate-700">Fix Days Prior to Valid Till Date <span class="text-rose-600 font-bold">*</span></label>
+                    <label class="block text-[11px] font-bold text-slate-700">Activate Alerts Days before Expiry <span class="text-rose-600 font-bold">*</span></label>
                     <span class="text-[10px] text-slate-400 font-medium">Days</span>
                   </div>
                   <div class="flex items-center gap-1.5">
                     <input type="number" min="${minAlertPolicy}" max="365" class="cert-alert-days w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" value="${certAlertDays}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onCertDateOrDaysChange(this)" onchange="CMS_MASTERS.onCertDateOrDaysChange(this, true)" onblur="CMS_MASTERS.onCertDateOrDaysChange(this, true)" />
                     <div class="inline-flex rounded border border-blue-200 bg-white p-0.5 shadow-2xs">
-                      <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=${minAlertPolicy}; CMS_MASTERS.onCertDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
+                      <button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=${minAlertPolicy}; CMS_MASTERS.onCertDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">${minAlertPolicy}d</button>
                       ${minAlertPolicy < 30 ? `<button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=30; CMS_MASTERS.onCertDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>` : ''}
                       ${minAlertPolicy < 60 ? `<button type="button" onclick="const b=this.closest('.cert-expiry-box'); const inp=b.querySelector('.cert-alert-days'); inp.value=60; CMS_MASTERS.onCertDateOrDaysChange(inp, true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>` : ''}
                     </div>
@@ -4174,7 +4174,7 @@ window.CMS_MASTERS = {
                 </div>
 
                 <div>
-                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Calculated Mail Dispatch Date</label>
+                  <label class="block text-[11px] font-bold text-slate-700 mb-1">Alert activation date</label>
                   <div class="px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-slate-700 flex items-center justify-between shadow-2xs">
                     <div class="flex items-center gap-1.5 min-w-0">
                       <i data-lucide="bell" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
@@ -5048,13 +5048,13 @@ window.CMS_MASTERS = {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
                       <div>
                         <div class="flex items-center justify-between mb-1">
-                          <label class="block text-[11px] font-bold text-slate-700">Fix Days Prior to Approval Expiry <span class="text-rose-600 font-bold">*</span></label>
+                          <label class="block text-[11px] font-bold text-slate-700">Activate Alerts Days before Expiry <span class="text-rose-600 font-bold">*</span></label>
                           <span class="text-[10px] text-slate-400 font-medium">Days</span>
                         </div>
                         <div class="flex items-center gap-1.5">
                           <input type="number" min="${minAlertPolicy}" max="365" id="v-approval-alert-days" value="${vendor.approvalAlertDays || minAlertPolicy}" placeholder="${minAlertPolicy}" oninput="CMS_MASTERS.onLimitedApprovalDateOrDaysChange()" onchange="CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true)" onblur="CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true)" class="w-20 text-center font-bold font-mono px-2 py-1.5 border border-blue-300 bg-white rounded text-xs text-slate-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
                           <div class="inline-flex rounded border border-blue-200 bg-white p-0.5 shadow-2xs">
-                            <button type="button" onclick="document.getElementById('v-approval-alert-days').value=${minAlertPolicy}; CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">Admin (${minAlertPolicy}d)</button>
+                            <button type="button" onclick="document.getElementById('v-approval-alert-days').value=${minAlertPolicy}; CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true);" class="px-1.5 py-0.5 text-[10px] font-bold text-blue-700 hover:bg-blue-100 rounded transition" title="Fix to Admin Minimum">${minAlertPolicy}d</button>
                             ${minAlertPolicy < 30 ? `<button type="button" onclick="document.getElementById('v-approval-alert-days').value=30; CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">30d</button>` : ''}
                             ${minAlertPolicy < 60 ? `<button type="button" onclick="document.getElementById('v-approval-alert-days').value=60; CMS_MASTERS.onLimitedApprovalDateOrDaysChange(true);" class="px-1.5 py-0.5 text-[10px] font-medium text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded transition">60d</button>` : ''}
                           </div>
@@ -5062,7 +5062,7 @@ window.CMS_MASTERS = {
                       </div>
 
                       <div>
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Calculated Mail Dispatch Date</label>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Alert activation date</label>
                         <div class="px-2.5 py-1.5 bg-white border border-blue-200 rounded text-xs text-slate-700 flex items-center justify-between shadow-2xs">
                           <div class="flex items-center gap-1.5 min-w-0">
                             <i data-lucide="bell" class="w-3.5 h-3.5 text-blue-600 shrink-0"></i>
