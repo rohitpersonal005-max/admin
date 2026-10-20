@@ -423,7 +423,7 @@ window.CMS_REPORTS = {
         module: 'Vendor',
         id: v.id,
         title: v.name,
-        details: `GST: ${v.gstNotApplicable ? 'Exempt' : (v.gstNo || 'Unregistered')} | State: ${v.addressState || 'Delhi'} | Bank: ${v.bankName || 'Recorded'}`,
+        details: `GST: ${v.gstNotApplicable ? 'Exempt' : (v.gstNo || 'Unregistered')} | State: ${v.addressState || '-'} | Bank: ${v.bankName || 'Recorded'}`,
         date: v.createdAt,
         status: v.status,
         checkerMistakeRemark: v.checkerMistakeRemark,

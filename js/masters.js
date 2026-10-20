@@ -3547,18 +3547,21 @@ window.CMS_MASTERS = {
   },
 
   onStateChange(stateName) {
+    const stateBox = document.getElementById('v-gst-state');
+    const stateNameEl = document.getElementById('v-gst-state-name');
     if (stateName) {
       const s = this.indianStates.find(item => item.name.toLowerCase() === String(stateName || '').toLowerCase());
-      const stateBox = document.getElementById('v-gst-state');
-      const stateNameEl = document.getElementById('v-gst-state-name');
       if (stateBox && s) {
         stateBox.value = s.code;
       }
       if (stateNameEl && s) {
         stateNameEl.innerText = '(' + s.name + ')';
       }
-      this.assembleGst();
+    } else {
+      if (stateBox) stateBox.value = '';
+      if (stateNameEl) stateNameEl.innerText = '(Auto from State)';
     }
+    this.assembleGst();
     this.validateGstStateCode();
     this.populateDistrictDropdown(stateName, '');
   },
@@ -3598,35 +3601,35 @@ window.CMS_MASTERS = {
       const gstNa = document.getElementById('v-gst-na');
       const panNa = document.getElementById('v-pan-na');
       
-      const c = this.countries.find(x => countryName.includes(x.name));
+      const c = this.countries.find(x => countryName && countryName.includes(x.name));
       if (ccInput && c) ccInput.value = c.code;
 
-      const isIndia = countryName.includes('India');
+      const isForeign = countryName && !countryName.includes('India');
 
       const talukaInput = document.getElementById('v-taluka');
       const districtInput = document.getElementById('v-district');
       
       if (talukaInput) {
-        talukaInput.parentElement.style.display = isIndia ? 'block' : 'none';
-        if (!isIndia) talukaInput.value = ''; // clear when hidden
+        talukaInput.parentElement.style.display = isForeign ? 'none' : 'block';
+        if (isForeign) talukaInput.value = ''; // clear when hidden
       }
-      
-      const stVal = document.getElementById('v-state')?.value || (isIndia ? 'Delhi' : '');
-      this.populateDistrictDropdown(stVal, '');
 
       if (stateContainer) {
-        if (!isIndia) {
-          stateContainer.innerHTML = `<input id="v-state" required placeholder="State / Province" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-xs" />`;
+        if (isForeign) {
+          stateContainer.innerHTML = `<input id="v-state" required placeholder="State / Province" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white text-sm" />`;
         } else {
-          stateContainer.innerHTML = `<select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium text-xs">
-              <option value="">-- Choose State / UT --</option>
+          stateContainer.innerHTML = `<select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium text-sm">
+              <option value="">-- Select State / UT --</option>
               ${this.indianStates.map(s => `<option value="${s.name}">${s.code} - ${s.name}</option>`).join('')}
             </select>`;
         }
       }
 
+      const stVal = document.getElementById('v-state')?.value || '';
+      this.populateDistrictDropdown(stVal, '');
+
       if (pinInput) {
-        if (!isIndia) {
+        if (isForeign) {
           pinInput.removeAttribute('pattern');
           pinInput.removeAttribute('maxlength');
           pinInput.placeholder = "ZIP / Postal Code";
@@ -3637,10 +3640,11 @@ window.CMS_MASTERS = {
         }
       }
 
-      if (!isIndia) {
+      if (isForeign) {
         if (gstNa) { gstNa.checked = true; window.CMS_MASTERS.toggleGstApplicable(true); }
         if (panNa) { panNa.checked = true; window.CMS_MASTERS.togglePanApplicable(true); }
       }
+    }
     },
 
   // Sequence strictly arranged:
@@ -4566,7 +4570,7 @@ window.CMS_MASTERS = {
       }
     }
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
-      name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: 'Delhi', addressCountry: 'India', addressPinCode: '',
+      name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: '', addressCountry: '', addressPinCode: '',
       gstNo: '', panNo: '', gstNotApplicable: false, panNotApplicable: false, certificates: [], contactNo: '', email: '',
       certificateFile: '', gstCertificateFile: '', panCardFile: '', approvedForLimitedPeriod: false, approvalValidTill: '',
       bankName: '', accountNo: '', accountName: '', ifscCode: '', branchName: '', isBlocked: false, blockReason: '',
@@ -4577,15 +4581,15 @@ window.CMS_MASTERS = {
     const initialPan = vendor.panNo || '';
     const today = new Date().toISOString().split('T')[0];
     const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
-    const initialInfo = this.getStateInfo(vendor.addressState || 'Delhi');
+    const initialInfo = vendor.addressState ? this.getStateInfo(vendor.addressState) : { code: '', name: '' };
     const initialGst = (vendor.gstNo || '').trim().toUpperCase();
-    const initialGstState = initialGst.length >= 2 ? initialGst.substring(0, 2) : (initialInfo.code || '07');
+    const initialGstState = initialGst.length >= 2 ? initialGst.substring(0, 2) : (initialInfo.code || '');
     const initialGstPan = initialGst.length >= 12 ? initialGst.substring(2, 12) : (initialPan || '');
     const initialGstSuffix = initialGst.length >= 15 ? initialGst.substring(12, 15) : (initialGst.length > 12 ? initialGst.substring(12) : '');
       
       setTimeout(() => {
         const cEl = document.getElementById('v-country');
-        if (cEl && !cEl.value.includes('India')) {
+        if (cEl && cEl.value && !cEl.value.includes('India')) {
           CMS_MASTERS.onCountryChange(cEl.value);
         }
       }, 50);
@@ -4698,7 +4702,8 @@ window.CMS_MASTERS = {
                   <div class="md:col-span-1">
                     <label class="block font-bold text-slate-700 mb-1">Nationality / Country of Vendor <span class="text-rose-600 font-bold">*</span></label>
                     <select id="v-country" required onchange="CMS_MASTERS.onCountryChange(this.value)" class="w-full px-3.5 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm bg-white">
-                      ${this.countries.map(c => `<option value="${c.name}" ${(vendor.addressCountry || 'India').includes(c.name) ? 'selected' : ''}>${c.name}</option>`).join('')}
+                      <option value="">-- Select Country --</option>
+                      ${this.countries.map(c => `<option value="${c.name}" ${(vendor.addressCountry && vendor.addressCountry.includes(c.name)) ? 'selected' : ''}>${c.name}</option>`).join('')}
                     </select>
                   </div>
                   <div class="md:col-span-1">
@@ -4708,8 +4713,8 @@ window.CMS_MASTERS = {
                         `<input id="v-state" required value="${vendor.addressState || ''}" placeholder="State / Province" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />` 
                       : 
                         `<select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium">
-                          <option value="">-- Choose State / UT --</option>
-                          ${this.indianStates.map(s => '<option value="' + s.name + '" ' + ((vendor.addressState || 'Delhi') === s.name ? 'selected' : '') + '>' + s.code + ' - ' + s.name + '</option>').join('')}
+                          <option value="">-- Select State / UT --</option>
+                          ${this.indianStates.map(s => '<option value="' + s.name + '" ' + (vendor.addressState === s.name ? 'selected' : '') + '>' + s.code + ' - ' + s.name + '</option>').join('')}
                         </select>`
                       }
                     </div>
@@ -5222,7 +5227,7 @@ window.CMS_MASTERS = {
 
     const modalTitle = isEdit ? ((!vendor.status || vendor.status === 'Draft') ? 'Continue Working on Vendor Draft' : (vendor.status === 'Revision Required' ? 'Revise Vendor Registration' : 'Modify Vendor Record')) : 'Register New Vendor';
     window.CMS_APP.openModal(modalTitle, content, 'max-w-4xl');
-    this.populateDistrictDropdown(vendor.addressState || 'Delhi', vendor.addressDistrict || '');
+    this.populateDistrictDropdown(vendor.addressState || '', vendor.addressDistrict || '');
 
       // Auto-clear error styling and Auto-Save Draft
         const vendorForm = document.getElementById('vendor-form');
@@ -6006,7 +6011,7 @@ window.CMS_MASTERS = {
       }
     }
     const addressState = document.getElementById('v-state')?.value || '';
-    const addressCountry = document.getElementById('v-country')?.value.trim() || 'India';
+    const addressCountry = document.getElementById('v-country')?.value.trim() || '';
     const addressPinCode = document.getElementById('v-pin')?.value.trim() || '';
     const rawContact = document.getElementById('v-contact')?.value.trim() || '';
     const contactNo = rawContact.replace(/^India\s*/i, '').replace(/^\+\d+\s*/, '').trim();
@@ -6235,7 +6240,8 @@ window.CMS_MASTERS = {
 if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Company Name is required.', 'error');
     if (directSubmit && !address) return window.CMS_APP.toast('Street / Building address is mandatory.', 'error');
     if (directSubmit && !addressDistrict) return window.CMS_APP.toast('District is required.', 'error');
-    if (directSubmit && !addressState) return window.CMS_APP.toast('Please select an Indian State or Union Territory.', 'error');
+    if (directSubmit && !addressCountry) return window.CMS_APP.toast('Please select Nationality / Country of vendor.', 'error');
+    if (directSubmit && !addressState) return window.CMS_APP.toast('Please select the State / Province.', 'error');
 
     // PIN Code: exactly 6 digits
     if (!addressPinCode || !/^[0-9]{6}$/.test(addressPinCode)) {
