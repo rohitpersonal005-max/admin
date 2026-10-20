@@ -554,7 +554,7 @@ window.CMS_HOME = {
               <i data-lucide="bell-ring" class="w-5 h-5"></i>
             </div>
             <div>
-              <h3 class="font-bold text-slate-800 text-base">Alert Days Fixation & Vendor Expiry Email Settings</h3>
+              <h3 class="font-bold text-slate-800 text-base">Number of days Fixation For Expiry alerts & Email Settings</h3>
               <p class="text-xs text-slate-500">Fix the minimum alert lead time policy for the entire system, and configure the sender Gmail for automated vendor document change & renewal notices.</p>
             </div>
           </div>
@@ -571,7 +571,7 @@ window.CMS_HOME = {
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-2.5">
               <div class="flex items-center justify-between">
                 <label class="block text-xs font-bold text-slate-800">
-                  Number of Days Fixation (Minimum Alert Policy) <span class="text-rose-600">*</span>
+                  Number of days Fixation For Expiry alerts (Minimum Alert Policy) <span class="text-rose-600">*</span>
                 </label>
                 <span class="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">
                   Fixed Policy Threshold
@@ -745,7 +745,7 @@ window.CMS_HOME = {
                         <td class="py-2.5 px-3 font-mono font-medium">${CMS_NOTIFICATIONS.formatDisplayDate(item.validTill)}</td>
                         <td class="py-2.5 px-3">
                           <span class="font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded text-[10px] whitespace-nowrap">
-                            ${item.alertDays} Days Fixation
+                            ${item.alertDays} Days Fixation for Expiry alerts
                           </span>
                         </td>
                         <td class="py-2.5 px-3">
