@@ -5970,6 +5970,7 @@ window.CMS_MASTERS = {
   },
 
   async saveVendor(vendorId = null, directSubmit = true, isManualDraft = false) {
+    try {
     const store = window.CMS_STORE;
     const readFileAsDataUrl = (file) => {
       return new Promise((resolve) => {
@@ -6436,12 +6437,13 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
 
       const btn = document.getElementById('v-submit-btn');
       if (btn) btn.setAttribute('onclick', `CMS_MASTERS.saveVendor('${newId}', true)`);
-      if (form) form.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${newId}', true);`);
+      const vendorForm = document.getElementById('vendor-form');
+      if (vendorForm) vendorForm.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${newId}', true);`);
     }
 
     // Automatically synchronize quotation and quoted material
     
-      const targetVendorId = isEdit ? vendorId : store.data.vendors[store.data.vendors.length - 1].id;
+      const targetVendorId = isEdit ? vendorId : newId;
       
       for (const q of quotedItems) {
         if (!q.quotationNo && !q.materialName) continue;
@@ -6583,6 +6585,12 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           window.CMS_SUPABASE.from('master_tenants').update({ cms_db: store.data }).eq('id', window.CMS_TENANT_ID).then(() => {});
       }
     }
+  } catch (err) {
+    console.error('Error in saveVendor:', err);
+    if (window.CMS_APP && window.CMS_APP.toast) {
+      window.CMS_APP.toast('Submission error: ' + (err.message || err), 'error');
+    }
+  }
   },
 
   async openVendorSanctionModal(vendorId) {
