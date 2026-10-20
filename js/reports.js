@@ -427,7 +427,7 @@ window.CMS_REPORTS = {
         date: v.createdAt,
         status: v.status,
         checkerMistakeRemark: v.checkerMistakeRemark,
-        onView: `CMS_MASTERS.viewVendorProfile('${v.id}')`,
+        onView: `CMS_MASTERS.openVendorSanctionModal('${v.id}')`,
         onApprove: `CMS_MASTERS.openVendorSanctionModal('${v.id}')`,
         onReject: `CMS_MASTERS.openVendorRejectModal('${v.id}')`
       });
@@ -440,7 +440,8 @@ window.CMS_REPORTS = {
         title: c.name,
         details: c.description || 'No description',
         date: c.createdAt,
-        onApprove: `CMS_MASTERS.approveCategory('${c.id}')`
+        onView: `CMS_MASTERS.openCategorySanctionModal('${c.id}')`,
+        onApprove: `CMS_MASTERS.openCategorySanctionModal('${c.id}')`
       });
     });
 
@@ -453,7 +454,7 @@ window.CMS_REPORTS = {
         date: m.createdAt,
         status: m.status,
         checkerMistakeRemark: m.checkerMistakeRemark,
-        onView: `CMS_MASTERS.viewMaterial360('${m.id}')`,
+        onView: `CMS_MASTERS.openConsumableSanctionModal('${m.id}')`,
         onApprove: `CMS_MASTERS.openConsumableSanctionModal('${m.id}')`,
         onReject: `CMS_MASTERS.openConsumableRejectModal('${m.id}')`
       });
@@ -466,7 +467,8 @@ window.CMS_REPORTS = {
         title: g.name,
         details: `Tax mode: ${window.CMS_STORE.getTaxMode(g) === 'IGST' ? 'IGST' : 'CGST + SGST'} | ${window.CMS_STORE.getTaxLabel(g)}`,
         date: g.createdAt,
-        onApprove: `CMS_MASTERS.approveGst('${g.id}')`
+        onView: `CMS_MASTERS.openGstSanctionModal('${g.id}')`,
+        onApprove: `CMS_MASTERS.openGstSanctionModal('${g.id}')`
       });
     });
 
@@ -477,7 +479,9 @@ window.CMS_REPORTS = {
         title: `${r.receiptNo} - ${r.materialName}`,
         details: `Vendor: ${r.vendorName} | Qty: ${r.qty} ${r.unit} | Doc: ${r.docNo}`,
         date: r.createdAt,
-        onApprove: `CMS_TRANSACTIONS.approveReceipt('${r.id}')`
+        onView: `CMS_TRANSACTIONS.openReceiptSanctionModal('${r.id}')`,
+        onApprove: `CMS_TRANSACTIONS.openReceiptSanctionModal('${r.id}')`,
+        onReject: `CMS_TRANSACTIONS.openReceiptRejectModal('${r.id}')`
       });
     });
 
@@ -488,7 +492,8 @@ window.CMS_REPORTS = {
         title: `${ret.returnNo} - ${ret.materialName}`,
         details: `Returned by: ${ret.returnedBy} (${ret.department}) | Qty: ${ret.qty} ${ret.unit}`,
         date: ret.createdAt,
-        onApprove: `CMS_TRANSACTIONS.approveReturn('${ret.id}')`
+        onView: `CMS_TRANSACTIONS.openReturnSanctionModal('${ret.id}')`,
+        onApprove: `CMS_TRANSACTIONS.openReturnSanctionModal('${ret.id}')`
       });
     });
 
@@ -499,7 +504,8 @@ window.CMS_REPORTS = {
         title: `${a.adjustmentNo} - ${a.materialName}`,
         details: `${a.type === 'ADD' ? 'Plus (+)' : 'Minus (-)'} ${a.qty} ${a.unit} | Reason: ${a.reason}`,
         date: a.createdAt,
-        onApprove: `CMS_TRANSACTIONS.approveStockAdjustment('${a.id}')`
+        onView: `CMS_TRANSACTIONS.openAdjustmentSanctionModal('${a.id}')`,
+        onApprove: `CMS_TRANSACTIONS.openAdjustmentSanctionModal('${a.id}')`
       });
     });
 
@@ -510,7 +516,9 @@ window.CMS_REPORTS = {
         title: `${p.poNo} - ${p.materialName}`,
         details: `Vendor: ${p.vendorName} | Order Qty: ${p.orderQty} ${p.unit} | Total: ₹${Number(p.totalAmount).toFixed(2)}`,
         date: p.createdAt,
-        onApprove: `CMS_PO.approvePO('${p.id}')`
+        onView: `CMS_PO.openPOSanctionModal('${p.id}')`,
+        onApprove: `CMS_PO.openPOSanctionModal('${p.id}')`,
+        onReject: `CMS_PO.openPORejectModal('${p.id}')`
       });
     });
 

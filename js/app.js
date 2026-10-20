@@ -1434,32 +1434,46 @@ window.CMS_APP = {
     const docItems = (documents || []).filter(d => Boolean(d && d.fileName));
     const content = `
       <div class="space-y-4 text-xs">
-        
-
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-sm">
-          ${summaryHtml || `<div class="font-bold text-slate-800">${title} (${id})</div>`}
+        <!-- Summary & Particulars Section -->
+        <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm">
+          ${summaryHtml || `<div class="font-bold text-slate-800 text-sm">${title} (${id})</div>`}
         </div>
 
-        <!-- Document Inspection Section -->
-        <div class="p-3.5 bg-white border border-slate-200 rounded-sm space-y-2">
-          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between">
-            <span class="flex items-center gap-1.5"><i data-lucide="file-check" class="w-3.5 h-3.5 text-blue-600"></i> Submitted Statutory Documents (${docItems.length})</span>
-            <span class="text-[10px] text-slate-400 font-normal">Click eye to inspect</span>
+        <!-- Document Inspection Section with Live Previews -->
+        <div class="p-4 bg-white border border-slate-200 rounded-sm space-y-3">
+          <div class="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center justify-between pb-2 border-b border-slate-200">
+            <span class="flex items-center gap-1.5"><i data-lucide="file-check" class="w-4 h-4 text-blue-600"></i> Submitted Statutory Documents & File Scans (${docItems.length})</span>
+            <span class="text-[10px] text-slate-400 font-normal">All submitted files are visually embedded below for compliance review</span>
           </div>
           ${docItems.length === 0 ? `
-            <div class="text-slate-400 italic text-[11px] py-1">No file uploads attached to this submission.</div>
+            <div class="text-slate-400 italic text-[11px] py-3 text-center bg-slate-50 border border-dashed border-slate-200 rounded">
+              No physical file uploads or document scans attached to this submission.
+            </div>
           ` : `
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              ${docItems.map(d => `
-                <div class="flex items-center justify-between p-2 bg-slate-50 border border-slate-200 rounded text-[11px]">
-                  <div class="truncate mr-2">
-                    <span class="font-bold text-slate-700 block truncate">${d.label || 'Document'}</span>
-                    <span class="text-slate-400 font-mono text-[10px] truncate block">${d.fileName}</span>
+            <div class="grid grid-cols-1 ${docItems.length > 1 ? 'md:grid-cols-2' : ''} gap-4">
+              ${docItems.map((d, idx) => `
+                <div class="border border-slate-200 rounded bg-slate-50/50 overflow-hidden shadow-2xs flex flex-col justify-between">
+                  <div class="bg-slate-100 px-3 py-2 border-b border-slate-200 flex items-center justify-between gap-2">
+                    <div class="truncate">
+                      <span class="font-bold text-slate-800 block truncate text-xs">${d.label || 'Statutory Document'}</span>
+                      <span class="text-slate-400 font-mono text-[10px] truncate block">${d.fileName}</span>
+                    </div>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <button type="button" onclick="CMS_APP.viewDocument('${d.fileName}', '${(d.label || 'Document').replace(/'/g, "\\'")}', { id: '${id}', partyName: '${(d.partyName || title).replace(/'/g, "\\'")}' })" class="px-2 py-1 bg-white hover:bg-slate-100 text-blue-600 border border-slate-200 font-bold rounded text-[11px] flex items-center gap-1 transition" title="Open Fullscreen View">
+                        <i data-lucide="maximize-2" class="w-3 h-3"></i>
+                        <span>Inspect</span>
+                      </button>
+                      <button type="button" onclick="CMS_APP.downloadDocument('${d.fileName}')" class="px-2 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold rounded text-[11px] flex items-center gap-1 transition" title="Download Document">
+                        <i data-lucide="download" class="w-3 h-3"></i>
+                      </button>
+                    </div>
                   </div>
-                  <button type="button" onclick="CMS_APP.viewDocument('${d.fileName}', '${d.label || 'Document'}', { id: '${id}', partyName: '${(d.partyName || title).replace(/'/g, "\\'")}' })" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-blue-600 font-bold rounded flex items-center gap-1 shrink-0 transition" title="Inspect Document">
-                    <i data-lucide="eye" class="w-3 h-3"></i>
-                    <span>Inspect</span>
-                  </button>
+                  <div id="sanction-doc-container-${idx}" class="p-2.5 bg-white min-h-[160px] flex items-center justify-center text-center">
+                    <div class="text-slate-400 text-xs flex items-center gap-1.5">
+                      <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>
+                      <span>Loading inline preview...</span>
+                    </div>
+                  </div>
                 </div>
               `).join('')}
             </div>
@@ -1467,11 +1481,11 @@ window.CMS_APP = {
         </div>
 
         <!-- Final Verification Confirmation -->
-        <div class="p-3 bg-emerald-50/70 border border-emerald-300 rounded-sm">
+        <div class="p-3 bg-emerald-50/80 border border-emerald-300 rounded-sm">
           <label class="flex items-start gap-2.5 cursor-pointer">
             <input type="checkbox" id="sanction-final-checkbox" checked class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
             <span class="text-slate-800 font-bold leading-relaxed text-[11px]">
-              I confirm that I have verified all uploaded statutory documents, certificates, validity dates, bank remittance details, and commercial terms. Approved for official release.
+              I confirm that I have verified all submitted details, statutory documents, validity dates, bank remittance details, and commercial contract terms. Approved for official release.
             </span>
           </label>
         </div>
@@ -1497,7 +1511,46 @@ window.CMS_APP = {
         </div>
       </div>
     `;
-    this.openModal(`Statutory Sanction: ${title}`, content, 'max-w-xl');
+    this.openModal(`Statutory Sanction: ${title}`, content, 'max-w-5xl');
+    if (window.lucide) window.lucide.createIcons();
+
+    // Async hydration of inline document previews
+    if (docItems.length > 0) {
+      setTimeout(() => {
+        docItems.forEach(async (d, idx) => {
+          const el = document.getElementById(`sanction-doc-container-${idx}`);
+          if (!el) return;
+          let dataUrl = null;
+          if (window.CMS_FILE_STORE) {
+            dataUrl = await window.CMS_FILE_STORE.getFile(d.fileName);
+          }
+          if (!dataUrl) {
+            dataUrl = localStorage.getItem('CMS_FILE_' + d.fileName);
+          }
+          if (dataUrl) {
+            const isPdf = d.fileName.toLowerCase().endsWith('.pdf') || dataUrl.startsWith('data:application/pdf');
+            if (isPdf) {
+              const cleanPdfUrl = dataUrl.includes('#') ? dataUrl : (dataUrl + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH');
+              el.innerHTML = `<iframe src="${cleanPdfUrl}" class="w-full h-72 border border-slate-300 rounded shadow-xs" title="${d.label}"></iframe>`;
+            } else {
+              el.innerHTML = `<div class="w-full text-center bg-white p-2 border border-slate-200 rounded shadow-xs"><img src="${dataUrl}" alt="${d.label}" class="max-h-72 max-w-full object-contain mx-auto rounded" /></div>`;
+            }
+          } else {
+            el.innerHTML = `
+              <div class="py-6 text-center text-slate-500 text-xs">
+                <i data-lucide="file-text" class="w-8 h-8 text-slate-400 mx-auto mb-1.5"></i>
+                <span class="font-bold block text-slate-700">${d.label || 'Document'}</span>
+                <span class="font-mono text-[10px] text-slate-400 block">${d.fileName}</span>
+                <button type="button" onclick="CMS_APP.viewDocument('${d.fileName}', '${(d.label || 'Document').replace(/'/g, "\\'")}', { id: '${id}', partyName: '${(d.partyName || title).replace(/'/g, "\\'")}' })" class="mt-2 px-3 py-1 bg-slate-100 hover:bg-slate-200 text-blue-600 font-bold rounded text-xs inline-flex items-center gap-1">
+                  <i data-lucide="eye" class="w-3 h-3"></i> Inspect Document
+                </button>
+              </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+          }
+        });
+      }, 50);
+    }
   },
 
   promptRejection({ title, id, entityType, onReject }) {

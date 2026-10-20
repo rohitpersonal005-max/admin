@@ -78,8 +78,8 @@ window.CMS_PO = {
                         Print PO
                       </button>
                       ${po.status === 'Pending Approval' && role === 'Admin' ? `
-                        <button onclick="CMS_PO.approvePO('${po.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded transition">
-                          Approve
+                        <button onclick="CMS_PO.openPOSanctionModal('${po.id}')" class="px-2.5 py-1 text-xs font-semibold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded transition">
+                          Sanction
                         </button>
                       ` : ''}
                       <button onclick="CMS_PO.deletePO('${po.id}')" class="px-2 py-1 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded transition">
@@ -427,9 +427,165 @@ window.CMS_PO = {
     p.approvedAt = new Date().toISOString();
     p.approvedBy = currentUser.id;
     p.approvedByName = currentUser.name;
+    delete p.checkerMistakeRemark;
     store.save();
     window.CMS_APP.toast(`Purchase Order ${p.poNo} sanctioned by ${currentUser.name}!`, 'success');
     window.CMS_APP.refreshView();
+  },
+
+  openPOSanctionModal(poId) {
+    const store = window.CMS_STORE;
+    const p = store.data.purchaseOrders.find(i => i.id === poId);
+    if (!p) return;
+
+    const vendor = store.data.vendors.find(v => v.id === p.vendorId);
+    const content = `
+      <div class="space-y-4 text-xs">
+        <!-- Top Command Header -->
+        <div class="p-4 bg-slate-900 text-white rounded-sm border border-slate-800 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded text-[10px] font-bold uppercase tracking-wider">
+                Purchase Order Sanction & Procurement Release
+              </span>
+              <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-mono font-bold">
+                ${p.poNo || p.id}
+              </span>
+            </div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span>PO Ref: ${p.poNo}</span>
+            </h3>
+            <p class="text-slate-300 text-xs mt-0.5">
+              Procurement indent for <strong class="text-white">${p.vendorName}</strong>. Indented by Rajesh Kumar (Store Incharge).
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_PO.openPORejectModal('${p.id}');" class="px-3.5 py-2 bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 font-bold rounded-sm transition text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-300"></i>
+              <span>Reject Indent</span>
+            </button>
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_PO.approvePO('${p.id}');" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-sm shadow-md transition text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
+              <span>Sanction & Release PO</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 1: Purchase Order Terms & Particulars -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>1. Purchase Order Particulars & Timeline</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 1 of 3</span>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">PO Number</td>
+                <td class="w-1/4 p-2 font-mono font-bold text-blue-600 border-r border-slate-200">${p.poNo}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Indent Period</td>
+                <td class="w-1/4 p-2 font-bold text-slate-800">${p.period || 'Current Cycle'}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">PO Generation Date</td>
+                <td class="p-2 font-mono text-slate-800 border-r border-slate-200">${store.formatDate(p.createdAt)}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Delivery Destination</td>
+                <td class="p-2 text-slate-800">Central Stores / Warehouse Dept</td>
+              </tr>
+              <tr>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Target Supplier</td>
+                <td class="p-2 font-bold text-slate-900 border-r border-slate-200">${p.vendorName} (${p.vendorId})</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Supplier GSTIN</td>
+                <td class="p-2 font-mono text-slate-800">${vendor ? (vendor.gstNotApplicable ? 'Exempt' : (vendor.gstNo || 'Unregistered')) : '-'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Section 2: Indented Item & Financial Valuation -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>2. Indented Material & Financial Commitment</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 2 of 3</span>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Material Name</td>
+                <td class="w-1/4 p-2 font-bold text-blue-600 border-r border-slate-200">${p.materialName}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Order Quantity</td>
+                <td class="w-1/4 p-2 font-mono font-black text-sm text-slate-900">${p.orderQty} ${p.unit || 'Nos'}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Approved Unit Rate (₹)</td>
+                <td class="p-2 font-mono font-bold text-emerald-700 border-r border-slate-200">₹${Number(p.rate || (p.totalAmount / (p.orderQty || 1)) || 0).toFixed(2)}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Estimated Buffer Consumption</td>
+                <td class="p-2 font-mono text-slate-700">${p.monthlyConsumption || '-'} ${p.unit || 'Nos'} / month</td>
+              </tr>
+              <tr>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Total Purchase Commitment</td>
+                <td colspan="3" class="p-3 font-mono font-black text-lg text-emerald-800 bg-emerald-50/50">
+                  ₹${Number(p.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  <span class="text-[11px] font-normal text-slate-500 ml-2 font-sans">(Inclusive of approved commercial contract rates)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Section 3: Approver Verification & Command Bar -->
+        <div class="p-4 bg-slate-50 border border-slate-300 rounded-sm space-y-3">
+          <div class="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded">
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" id="po-sanction-check" checked class="mt-0.5 text-emerald-600 rounded" />
+              <span class="text-slate-800 font-bold text-xs leading-relaxed">
+                I verify that the indent quantity, approved quotation rates, and vendor empanelment mandate have been audited. Authorized to issue official Purchase Order.
+              </span>
+            </label>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <button type="button" onclick="CMS_PRINT.printPurchaseOrder(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="px-3.5 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-sm text-xs flex items-center gap-1.5 shadow">
+              <i data-lucide="printer" class="w-3.5 h-3.5 text-white"></i>
+              <span>Print PO Voucher</span>
+            </button>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-sm text-xs">Cancel</button>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_PO.openPORejectModal('${p.id}');" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm text-xs flex items-center gap-1.5">
+                <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
+                <span>Reject</span>
+              </button>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_PO.approvePO('${p.id}');" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow text-xs flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>Sanction & Release PO</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.CMS_APP.openModal(`PO Sanction: ${p.poNo}`, content, 'max-w-4xl');
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  openPORejectModal(poId) {
+    const store = window.CMS_STORE;
+    const p = store.data.purchaseOrders.find(i => i.id === poId);
+    if (!p) return;
+    window.CMS_APP.promptRejection({
+      title: p.poNo || p.id,
+      id: p.id,
+      entityType: 'purchaseOrder',
+      onReject: `(remark) => {
+        const item = window.CMS_STORE.data.purchaseOrders.find(i => i.id === '${poId}');
+        if (item) {
+          item.status = 'Revision Required';
+          item.checkerMistakeRemark = remark;
+          window.CMS_STORE.save();
+          window.CMS_APP.toast('Purchase Order returned: ' + remark, 'error');
+          window.CMS_APP.refreshView();
+        }
+      }`
+    });
   },
 
   deletePO(poId) {

@@ -6585,48 +6585,127 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   },
 
-  openVendorSanctionModal(vendorId) {
+  async openVendorSanctionModal(vendorId) {
     const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
     if (!v) return;
 
-    const docs = [];
-    if (v.gstCertificateFile) docs.push({ label: 'GST Registration Certificate', fileName: v.gstCertificateFile, partyName: v.name });
-    if (v.panCardFile) docs.push({ label: 'Permanent Account Number (PAN) Card', fileName: v.panCardFile, partyName: v.name });
-    if (v.bankDoc) docs.push({ label: 'Bank Supporting Document', fileName: v.bankDoc, partyName: v.name });
-    if (v.quotationDoc) docs.push({ label: 'Approved Commercial Quotation', fileName: v.quotationDoc, partyName: v.name, validTill: v.quotationValidTill });
-    (v.certificates || []).forEach(c => {
-      const reg = typeof c === 'string' ? c : (c.regulator || c.name || 'Certificate');
-      const fName = typeof c === 'object' ? c.fileName : '';
-      if (fName) {
-        docs.push({ label: `${reg} Regulatory Certificate`, fileName: fName, partyName: v.name, validTill: c.validTill });
-      }
-    });
+    // Prefetch all attached statutory files into fileCache for instant inline previews
+    const fileCache = {};
+    const filesToLoad = [];
+    if (v.panCardFile) filesToLoad.push(v.panCardFile);
+    if (v.panFile) filesToLoad.push(v.panFile);
+    if (v.gstCertificateFile) filesToLoad.push(v.gstCertificateFile);
+    if (v.gstFile) filesToLoad.push(v.gstFile);
+    const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile));
+    if (bankDocFile) filesToLoad.push(bankDocFile);
+    if (v.certificateFile) filesToLoad.push(v.certificateFile);
+    if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
+    if (Array.isArray(v.certificates)) {
+      v.certificates.forEach(c => {
+        const fn = c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc);
+        if (fn) filesToLoad.push(fn);
+      });
+    }
+    if (Array.isArray(v.quotedItems)) {
+      v.quotedItems.forEach(q => {
+        const fn = q && (q.doc || q.document || q.file || q.quotationDoc || q.fileName || q.filename);
+        if (fn) filesToLoad.push(fn);
+      });
+    }
 
-    const summaryHtml = `
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="font-bold text-blue-600 text-sm">${v.name}</span>
-          <span class="font-mono text-slate-500 font-bold">${v.id}</span>
+    for (const f of filesToLoad) {
+      if (f && !fileCache[f]) {
+        let dataUrl = null;
+        if (window.CMS_FILE_STORE) {
+          dataUrl = await window.CMS_FILE_STORE.getFile(f);
+        }
+        if (!dataUrl) {
+          dataUrl = localStorage.getItem('CMS_FILE_' + f);
+        }
+        if (dataUrl) fileCache[f] = dataUrl;
+      }
+    }
+
+    const paperFormHtml = this.renderVendorPaperFormHtml(v, { forPrint: false, fileCache });
+
+    const content = `
+      <div class="space-y-4 text-xs">
+        <!-- Prominent Statutory Sanction Top Command Bar -->
+        <div class="p-4 bg-slate-900 border border-slate-800 text-white rounded-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-md">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-bold uppercase tracking-wider">
+                Statutory Sanction & Governance Review
+              </span>
+              <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded text-[10px] font-mono font-bold">
+                ${v.id}
+              </span>
+            </div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span>Sanctioning Vendor: ${v.name}</span>
+            </h3>
+            <p class="text-slate-300 text-xs mt-0.5">
+              Submitted by <strong class="text-white">${v.submittedByName || v.createdBy || 'Store Incharge / Maker'}</strong>. Please inspect all 8 statutory sections and attached document annexures below before approving.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-3.5 py-2 bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 font-bold rounded-sm transition text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-300"></i>
+              <span>Reject / Return</span>
+            </button>
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.approveVendor('${v.id}');" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-sm shadow-md transition text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
+              <span>Confirm Sanction & Approve</span>
+            </button>
+          </div>
         </div>
-        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
-          <div>GSTIN: <strong class="font-mono text-slate-800">${v.gstNotApplicable ? 'Exempt' : (v.gstNo || 'N/A')}</strong></div>
-          <div>PAN: <strong class="font-mono text-slate-800">${v.panNotApplicable ? 'Exempt' : (v.panNo || 'N/A')}</strong></div>
-          <div>Bank: <strong class="text-slate-800">${v.bankName || '-'} (${v.accountNo || '-'})</strong></div>
-          <div>State: <strong class="text-slate-800">${v.addressState || '-'} (Code: ${v.stateCode || '-'})</strong></div>
+
+        <!-- Complete 8-Section Official Form with Inline Document Annexures -->
+        ${paperFormHtml}
+
+        <!-- Bottom Sanction Confirmation Bar -->
+        <div class="mt-4 p-4 bg-slate-50 border border-slate-300 rounded-sm space-y-3">
+          <div class="p-3 bg-emerald-50/80 border border-emerald-300 rounded-sm">
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" id="vendor-sanction-check" checked class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
+              <span class="text-slate-800 font-bold leading-relaxed text-xs">
+                I confirm that I have verified all 8 sections: business legal name, constitution, full registered premises address, PAN (${v.panNotApplicable ? 'Exempt' : (v.panNo || 'N/A')}), GSTIN (${v.gstNotApplicable ? 'Exempt' : (v.gstNo || 'N/A')}), bank remittance mandate (${v.bankName || 'N/A'} - ${v.accountNo || 'N/A'}), commercial quotes, and all attached scanned document annexures above. Approved for official release.
+              </span>
+            </label>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200">
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="CMS_MASTERS.downloadVendorForm('${v.id}')" class="px-3.5 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-sm transition text-xs flex items-center gap-1.5 shadow">
+                <i data-lucide="printer" class="w-3.5 h-3.5 text-white"></i>
+                <span>Download / Print Form (PDF)</span>
+              </button>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.deleteVendor('${v.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition text-xs flex items-center gap-1 shadow-2xs">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>Delete Draft</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-sm transition text-xs">
+                Cancel
+              </button>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition text-xs flex items-center gap-1.5">
+                <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
+                <span>Reject / Return</span>
+              </button>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.approveVendor('${v.id}');" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>Confirm Sanction & Approve</span>
+              </button>
+            </div>
+          </div>
         </div>
-        ${v.quotationNo ? `<div class="text-[11px] text-blue-600 bg-slate-50/80 p-1.5 rounded border border-slate-200">Quote Ref: <strong>${v.quotationNo}</strong> | Valid Till: <strong>${window.CMS_STORE.formatDate(v.quotationValidTill)}</strong></div>` : ''}
       </div>
     `;
 
-    window.CMS_APP.promptSanctionApproval({
-      title: v.name,
-      id: v.id,
-      entityType: 'vendor',
-      summaryHtml,
-      documents: docs,
-      onConfirm: `() => CMS_MASTERS.approveVendor('${vendorId}')`,
-      onDelete: `() => CMS_MASTERS.deleteVendor('${vendorId}')`
-    });
+    window.CMS_APP.openModal(`Vendor Sanction & Form Dossier: ${v.name}`, content, 'max-w-5xl');
+    if (window.lucide) window.lucide.createIcons();
   },
 
   openVendorRejectModal(vendorId) {
@@ -7982,37 +8061,344 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
   },
 
   
-  openConsumableSanctionModal(matId) {
-    const m = window.CMS_STORE.data.consumables.find(i => i.id === matId);
+  async openConsumableSanctionModal(matId) {
+    const store = window.CMS_STORE;
+    const m = store.data.consumables.find(i => i.id === matId);
     if (!m) return;
-    const docs = [];
-    if (m.quotationDoc) docs.push({ label: 'Approved Rate Quotation', fileName: m.quotationDoc, partyName: m.materialName });
-    if (m.warrantyCardDoc) docs.push({ label: 'Warranty Policy Card', fileName: m.warrantyCardDoc, partyName: m.materialName });
 
-    const summaryHtml = `
-      <div class="space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="font-bold text-blue-600 text-sm">${m.materialName}</span>
-          <span class="font-mono text-slate-500 font-bold">${m.id}</span>
+    // Prefetch all attached quotation and warranty documents into fileCache
+    const fileCache = {};
+    const filesToLoad = [];
+    if (m.quotationDoc) filesToLoad.push(m.quotationDoc);
+    if (m.warrantyCardDoc) filesToLoad.push(m.warrantyCardDoc);
+
+    // If quotation doc is missing on material, check primary vendor's quote doc
+    if (!m.quotationDoc && m.vendor1Id) {
+      const v1 = store.data.vendors.find(v => v.id === m.vendor1Id);
+      if (v1 && v1.quotationDoc) {
+        filesToLoad.push(v1.quotationDoc);
+        if (!m.quotationDoc) m.quotationDoc = v1.quotationDoc;
+      }
+    }
+
+    for (const f of filesToLoad) {
+      if (f && !fileCache[f]) {
+        let dataUrl = null;
+        if (window.CMS_FILE_STORE) {
+          dataUrl = await window.CMS_FILE_STORE.getFile(f);
+        }
+        if (!dataUrl) {
+          dataUrl = localStorage.getItem('CMS_FILE_' + f);
+        }
+        if (dataUrl) fileCache[f] = dataUrl;
+      }
+    }
+
+    const liveStock = store.getStock(m.id);
+    const buffer = Number(m.avgMonthlyConsumption || 0);
+    const pct = Math.min(100, Math.round((liveStock / (buffer || 1)) * 100));
+    const isFixed = m.inventoryType === 'Fixed';
+
+    const selectedSlab = store.data.gstSlabs ? store.data.gstSlabs.find(g => g.id === m.gstSlabId) : null;
+    const slabLabel = selectedSlab ? `${selectedSlab.name} - ${store.getTaxLabel(selectedSlab)}` : (m.taxMode === 'IGST' ? `IGST ${m.igst || 18}%` : `CGST ${m.cgst || 9}% + SGST ${m.sgst || 9}%`);
+
+    const vendorsList = (Array.isArray(m.vendors) && m.vendors.length > 0) ? m.vendors : [
+      ...(m.vendor1Id ? [{ vendorId: m.vendor1Id, vendorName: m.vendor1Name, rate: m.vendor1Rate, quotationNo: m.quotationNo, effectiveFrom: m.vendor1RateEffectiveFrom, isPrimary: true }] : []),
+      ...(m.vendor2Id ? [{ vendorId: m.vendor2Id, vendorName: m.vendor2Name, rate: m.vendor2Rate, quotationNo: '', effectiveFrom: m.vendor2RateEffectiveFrom, isPrimary: false }] : [])
+    ];
+
+    const content = `
+      <div class="space-y-4 text-xs">
+        <!-- Top Statutory Sanction Command Bar -->
+        <div class="p-4 bg-slate-900 border border-slate-800 text-white rounded-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-md">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded text-[10px] font-bold uppercase tracking-wider">
+                Material Master Submission - Statutory Sanction
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${isFixed ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'}">
+                ${isFixed ? 'Fixed Capital Asset' : 'Consumable Material'}
+              </span>
+            </div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span>${m.materialName}</span>
+              <span class="text-xs font-mono text-slate-300 font-normal">(${m.id})</span>
+            </h3>
+            <p class="text-slate-300 text-xs mt-0.5">
+              Category: <strong class="text-white">${m.categoryName || 'General'}</strong> | Brand: <strong class="text-white">${m.brand || '-'}</strong> | Submitted by <strong class="text-white">${m.createdBy || 'Rajesh Kumar (Operation Manager)'}</strong> on ${store.formatDate(m.createdAt)}
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.openConsumableRejectModal('${m.id}')" class="px-3.5 py-2 bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 font-bold rounded-sm transition text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-300"></i>
+              <span>Reject / Return</span>
+            </button>
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.approveConsumable('${m.id}');" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-sm shadow-md transition text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
+              <span>Confirm Sanction & Approve</span>
+            </button>
+          </div>
         </div>
-        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
-          <div>Category: <strong class="text-slate-800">${m.categoryName}</strong></div>
-          <div>Unit / HSN: <strong class="text-slate-800">${m.unit} | ${m.hsnCode}</strong></div>
-          <div>Primary Vendor: <strong class="text-slate-800">${m.vendor1Name}</strong></div>
-          <div>Approved Rate: <strong class="font-mono text-emerald-700 font-bold">?${Number(m.vendor1Rate || 0).toFixed(2)}</strong></div>
+
+        <!-- 1. Item Classification & General Particulars -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>1. Item Identification & Classification</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 1 of 6</span>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Material / Asset Name</td>
+                <td class="w-1/4 p-2 font-bold text-slate-900 border-r border-slate-200">${m.materialName}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Classification Sub-Type</td>
+                <td class="w-1/4 p-2 font-medium text-slate-800">${isFixed ? 'Fixed Capital Equipment (Tracked by Tag)' : 'Consumable Material (Stock Ledger)'}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Product Category</td>
+                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">${m.categoryName || '-'}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Manufacturer / Brand</td>
+                <td class="p-2 font-medium text-slate-800">${m.brand || '-'}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Supplier Part / SKU Code</td>
+                <td class="p-2 font-mono font-medium text-slate-800 border-r border-slate-200">${m.supplierProductCode || 'N/A'}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Unit of Measurement (UoM)</td>
+                <td class="p-2 font-bold text-slate-900">${m.unit || 'Nos'}</td>
+              </tr>
+              ${isFixed ? `
+                <tr>
+                  <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Capital Asset Tag</td>
+                  <td class="p-2 font-mono font-bold text-indigo-700 border-r border-slate-200">${m.assetTag || 'Pending Tagging'}</td>
+                  <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Serial No & Custodian</td>
+                  <td class="p-2 font-mono text-slate-800">${m.serialNo || '-'} | Dept: ${m.custodianDept || 'General'}</td>
+                </tr>
+              ` : ''}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 2. Statutory Taxation & HSN Code -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>2. Statutory HSN & GST Taxation Particulars</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 2 of 6</span>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Statutory HSN / SAC Code</td>
+                <td class="w-1/4 p-2 font-mono font-bold text-blue-600 border-r border-slate-200 text-sm">${m.hsnCode || '-'}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Assigned GST Slab</td>
+                <td class="w-1/4 p-2 font-bold text-slate-900">${slabLabel}</td>
+              </tr>
+              <tr>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Tax Application Mode</td>
+                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">${m.taxMode === 'IGST' ? 'Inter-state IGST' : 'Intra-state Dual (CGST + SGST)'}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Tax Breakdown Rates</td>
+                <td class="p-2 font-mono text-slate-800">${m.taxMode === 'IGST' ? `IGST: ${m.igst || 18}%` : `CGST: ${m.cgst || 9}% + SGST: ${m.sgst || 9}% (Total: ${Number(m.cgst || 9) + Number(m.sgst || 9)}%)`}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 3. Warehouse Buffer & Reorder Targets -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>3. Warehouse Stock Balance & Buffer Targets</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 3 of 6</span>
+          </div>
+          <div class="p-3 bg-white">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center mb-2">
+              <div class="p-2 bg-slate-50 border border-slate-200 rounded">
+                <span class="text-[10px] uppercase font-bold text-slate-500 block">Current Stock</span>
+                <span class="font-mono font-bold text-slate-800 text-sm">${liveStock} ${m.unit}</span>
+              </div>
+              <div class="p-2 bg-slate-50 border border-slate-200 rounded">
+                <span class="text-[10px] uppercase font-bold text-slate-500 block">Monthly Buffer Target</span>
+                <span class="font-mono font-bold text-blue-600 text-sm">${buffer} ${m.unit}</span>
+              </div>
+              <div class="p-2 bg-slate-50 border border-slate-200 rounded">
+                <span class="text-[10px] uppercase font-bold text-slate-500 block">Buffer Health</span>
+                <span class="font-mono font-bold ${liveStock < buffer * 0.5 ? 'text-amber-600' : 'text-emerald-700'} text-sm">${pct}%</span>
+              </div>
+              <div class="p-2 bg-slate-50 border border-slate-200 rounded">
+                <span class="text-[10px] uppercase font-bold text-slate-500 block">Initial Opening Balance</span>
+                <span class="font-mono font-bold text-slate-700 text-sm">${m.initialStock || 0} ${m.unit}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Multi-Vendor Commercial Quotations & Rate Contracts -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>4. Approved Commercial Quotations & Multi-Vendor Pricing (${vendorsList.length})</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 4 of 6</span>
+          </div>
+          <div class="p-3 bg-white space-y-2.5">
+            ${vendorsList.length === 0 ? `
+              <div class="text-slate-400 italic text-center py-2">No vendor rates or commercial contracts attached.</div>
+            ` : `
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                ${vendorsList.map((v, i) => `
+                  <div class="p-3 border-2 ${v.isPrimary ? 'border-blue-400 bg-blue-50/20' : 'border-slate-200 bg-slate-50/50'} rounded-sm space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-xs uppercase flex items-center gap-1.5 ${v.isPrimary ? 'text-blue-700' : 'text-slate-700'}">
+                        <i data-lucide="${v.isPrimary ? 'award' : 'building'}" class="w-3.5 h-3.5 ${v.isPrimary ? 'text-blue-600' : 'text-slate-500'}"></i>
+                        ${v.isPrimary ? 'Primary Rate Contract (L1)' : `Alternate Source #${i + 1}`}
+                      </span>
+                      <span class="font-mono font-black text-emerald-700 text-sm">₹${Number(v.rate || 0).toFixed(2)} / ${m.unit || 'Unit'}</span>
+                    </div>
+                    <p class="font-bold text-slate-900 text-xs truncate">${v.vendorName || v.vendorId || 'Approved Vendor'}</p>
+                    <div class="text-[11px] text-slate-600 flex items-center justify-between pt-1 border-t border-slate-200">
+                      <span>Quote No: <strong class="font-mono text-slate-800">${v.quotationNo || 'Direct'}</strong></span>
+                      <span>Effective: <strong class="font-mono text-slate-800">${v.effectiveFrom || 'Current'}</strong></span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+            ${m.mrpBooked ? `
+              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded flex justify-between items-center text-[11px]">
+                <span class="text-slate-600">Recorded Consumer MRP: <strong class="font-mono text-slate-900 text-xs">₹${Number(m.mrpBooked).toFixed(2)}</strong></span>
+                <span class="text-emerald-700 font-bold">Commercial contract rate negotiated under institutional procurement mandate.</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+
+        <!-- 5. Warranty & Maintenance Policy -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>5. Warranty & Maintenance Policy Particulars</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 5 of 6</span>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Warranty Coverage</td>
+                <td class="w-1/4 p-2 font-bold ${m.hasWarranty ? 'text-emerald-700' : 'text-slate-500'} border-r border-slate-200">${m.hasWarranty ? 'Active Warranty Policy' : 'No Manufacturer Warranty'}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Warranty Validity</td>
+                <td class="w-1/4 p-2 font-mono text-slate-800">${m.hasWarranty ? `${m.warrantyPeriod || '1 Year'} (Till: ${m.warrantyValidTill || 'N/A'})` : '-'}</td>
+              </tr>
+              ${isFixed ? `
+                <tr>
+                  <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Preventive Maintenance (PM)</td>
+                  <td class="p-2 font-bold ${m.hasPm ? 'text-purple-700' : 'text-slate-500'} border-r border-slate-200">${m.hasPm ? `Scheduled (${m.pmFrequency || 'Quarterly'})` : 'Not Scheduled'}</td>
+                  <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Technician / Agency</td>
+                  <td class="p-2 text-slate-800">${m.repairmanName || '-'} (${m.repairmanAgency || m.pmVendor || 'Authorized'}) | ${m.repairmanContact || '-'}</td>
+                </tr>
+              ` : ''}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 6. Attached Statutory & Commercial Documents (Live Inline Previews) -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span>6. Attached Statutory Quotations & Warranty Policy Documents</span>
+              <span class="bg-slate-900 text-white text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">${filesToLoad.length} Attached</span>
+            </div>
+            <span class="text-[10px] text-slate-500 font-normal">Section 6 of 6</span>
+          </div>
+
+          <div class="p-4 bg-white space-y-4">
+            ${filesToLoad.length === 0 ? `
+              <div class="p-6 text-center text-slate-400 italic text-xs bg-slate-50 border border-dashed border-slate-200 rounded">
+                No external document scans attached. Rates are verified against master vendor agreements.
+              </div>
+            ` : `
+              <div class="space-y-4">
+                ${filesToLoad.map((fname, idx) => {
+                  const isWarranty = fname === m.warrantyCardDoc;
+                  const docTitle = isWarranty ? 'Manufacturer Warranty Policy Card' : 'Approved Rate Quotation Document';
+                  const cachedData = fileCache[fname];
+                  const isPdf = fname.toLowerCase().endsWith('.pdf') || (cachedData && cachedData.startsWith('data:application/pdf'));
+
+                  return `
+                    <div class="border border-slate-300 rounded bg-white overflow-hidden shadow-2xs">
+                      <div class="bg-slate-100 px-3 py-2 border-b border-slate-300 flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                          <span class="w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center font-mono">${idx + 1}</span>
+                          <div>
+                            <span class="font-bold text-slate-900 text-xs block">${docTitle}</span>
+                            <span class="text-slate-500 font-mono text-[10px] block">${fname}</span>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                          <button type="button" onclick="CMS_APP.viewDocument('${fname}', '${docTitle.replace(/'/g, "\\'")}', { id: '${m.id}', partyName: '${m.materialName.replace(/'/g, "\\'")}' })" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-blue-600 border border-slate-300 rounded text-[11px] font-bold inline-flex items-center gap-1">
+                            <i data-lucide="maximize-2" class="w-3 h-3"></i> Full Screen
+                          </button>
+                          <button type="button" onclick="CMS_APP.downloadDocument('${fname}')" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded text-[11px] font-bold inline-flex items-center gap-1">
+                            <i data-lucide="download" class="w-3 h-3"></i> Download
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="p-3 bg-slate-50 flex items-center justify-center">
+                        ${cachedData ? (
+                          isPdf ? `
+                            <iframe src="${cachedData.includes('#') ? cachedData : cachedData + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH'}" class="w-full h-80 border border-slate-300 rounded shadow-xs" title="${docTitle}"></iframe>
+                          ` : `
+                            <div class="w-full text-center bg-white p-2 border border-slate-200 rounded">
+                              <img src="${cachedData}" alt="${docTitle}" class="max-h-80 max-w-full object-contain mx-auto rounded shadow-xs" />
+                            </div>
+                          `
+                        ) : `
+                          <div class="py-8 text-center text-slate-500 text-xs">
+                            <i data-lucide="file-text" class="w-8 h-8 text-slate-400 mx-auto mb-1.5"></i>
+                            <span class="font-bold block text-slate-700">${docTitle}</span>
+                            <span class="font-mono text-[10px] text-slate-400 block">${fname}</span>
+                          </div>
+                        `}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+
+        <!-- Bottom Sanction Command & Verification Confirmation Bar -->
+        <div class="mt-4 p-4 bg-slate-50 border border-slate-300 rounded-sm space-y-3">
+          <div class="p-3 bg-emerald-50/80 border border-emerald-300 rounded-sm">
+            <label class="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" id="mat-sanction-check" checked class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
+              <span class="text-slate-800 font-bold leading-relaxed text-xs">
+                I confirm that I have verified all technical specifications, HSN code (${m.hsnCode || 'N/A'}), GST rate breakdown, multi-vendor rate quotes, warranty terms, and attached statutory quotation documents. Approved for catalog release.
+              </span>
+            </label>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.deleteConsumable('${m.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition text-xs flex items-center gap-1 shadow-2xs">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Delete Draft</span>
+            </button>
+
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-sm transition text-xs">
+                Cancel
+              </button>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.openConsumableRejectModal('${m.id}')" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm transition text-xs flex items-center gap-1.5">
+                <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
+                <span>Reject / Return</span>
+              </button>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.approveConsumable('${m.id}');" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition text-xs flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>Confirm Sanction & Approve</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     `;
 
-    window.CMS_APP.promptSanctionApproval({
-      title: m.materialName,
-      id: m.id,
-      entityType: 'consumable',
-      summaryHtml,
-      documents: docs,
-      onConfirm: `() => CMS_MASTERS.approveConsumable('${matId}')`,
-      onDelete: `() => CMS_MASTERS.deleteConsumable('${matId}')`
-    });
+    window.CMS_APP.openModal(`Material Sanction Dossier: ${m.materialName}`, content, 'max-w-5xl');
+    if (window.lucide) window.lucide.createIcons();
   },
 
   openConsumableRejectModal(matId) {
@@ -8045,12 +8431,129 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
     const currentUser = store.getCurrentUser();
     m.status = 'Approved';
+    m.isApproved = true;
     m.approvedAt = new Date().toISOString();
     m.approvedBy = currentUser.id;
     m.approvedByName = currentUser.name;
+    delete m.checkerMistakeRemark;
     store.save();
-    window.CMS_APP.toast(`Consumable "${m.materialName}" sanctioned by ${currentUser.name}!`, 'success');
+    window.CMS_APP.toast(`Material "${m.materialName}" sanctioned and released by ${currentUser.name}!`, 'success');
     window.CMS_APP.refreshView();
+  },
+
+  openCategorySanctionModal(catId) {
+    const store = window.CMS_STORE.data;
+    const c = (store.categories || []).find(i => i.id === catId);
+    if (!c) return;
+    const items = (store.consumables || []).filter(m => m.categoryId === catId);
+    const content = `
+      <div class="space-y-4 text-xs">
+        <div class="p-4 bg-slate-900 text-white rounded-sm border border-slate-800 shadow-sm flex justify-between items-center">
+          <div>
+            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded text-[10px] font-bold uppercase tracking-wider">
+              Category Master Sanction
+            </span>
+            <h3 class="text-base font-bold text-white mt-1">${c.name}</h3>
+            <p class="text-slate-400 font-mono text-[11px] mt-0.5">Code: ${c.id}</p>
+          </div>
+          <span class="badge ${c.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${c.status || 'Pending Approval'}</span>
+        </div>
+
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/3 p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Category Name</td>
+                <td class="p-3 font-bold text-slate-900">${c.name}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Description & Purpose</td>
+                <td class="p-3 text-slate-800">${c.description || 'General consumables category'}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Linked Consumable Items</td>
+                <td class="p-3 font-bold text-blue-600">${items.length} Registered Items in Store</td>
+              </tr>
+              <tr>
+                <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Submitted Date</td>
+                <td class="p-3 font-mono text-slate-700">${window.CMS_STORE.formatDate(c.createdAt)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs">
+            Cancel
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.approveCategory('${c.id}');" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>Confirm & Approve Category</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    window.CMS_APP.openModal(`Sanction Category: ${c.name}`, content, 'max-w-xl');
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  openGstSanctionModal(slabId) {
+    const store = window.CMS_STORE.data;
+    const g = (store.gstSlabs || []).find(i => i.id === slabId);
+    if (!g) return;
+    const content = `
+      <div class="space-y-4 text-xs">
+        <div class="p-4 bg-slate-900 text-white rounded-sm border border-slate-800 shadow-sm flex justify-between items-center">
+          <div>
+            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded text-[10px] font-bold uppercase tracking-wider">
+              GST Slab Master Sanction
+            </span>
+            <h3 class="text-base font-bold text-white mt-1">${g.name}</h3>
+            <p class="text-slate-400 font-mono text-[11px] mt-0.5">Code: ${g.id}</p>
+          </div>
+          <span class="badge ${g.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${g.status || 'Pending Approval'}</span>
+        </div>
+
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/3 p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Slab Name</td>
+                <td class="p-3 font-bold text-slate-900">${g.name}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Tax Mode</td>
+                <td class="p-3 font-bold text-blue-600">${g.taxMode === 'IGST' ? 'Inter-state IGST' : 'Intra-state CGST + SGST'}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Applicable Rates</td>
+                <td class="p-3 font-mono font-bold text-slate-900">${g.taxMode === 'IGST' ? `IGST: ${g.igst || 18}%` : `CGST: ${g.cgst || 9}% | SGST: ${g.sgst || 9}% (Total: ${Number(g.cgst || 9) + Number(g.sgst || 9)}%)`}</td>
+              </tr>
+              <tr>
+                <td class="p-3 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Creation Date</td>
+                <td class="p-3 font-mono text-slate-700">${window.CMS_STORE.formatDate(g.createdAt)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs">
+            Cancel
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_MASTERS.approveGst('${g.id}');" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>Confirm & Approve GST Slab</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    window.CMS_APP.openModal(`Sanction GST Slab: ${g.name}`, content, 'max-w-xl');
+    if (window.lucide) window.lucide.createIcons();
   },
 
   deleteConsumable(matId) {

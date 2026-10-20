@@ -332,10 +332,311 @@ window.CMS_TRANSACTIONS = {
     if (r) {
       r.status = 'Approved';
       r.approvedAt = new Date().toISOString();
+      const currentUser = store.getCurrentUser();
+      r.approvedBy = currentUser.id;
+      r.approvedByName = currentUser.name;
+      delete r.checkerMistakeRemark;
       store.save();
-      window.CMS_APP.toast(`Receipt ${r.receiptNo} approved and warehouse stock credited!`, 'success');
+      window.CMS_APP.toast(`Receipt ${r.receiptNo || r.id} approved and warehouse stock credited!`, 'success');
       window.CMS_APP.refreshView();
     }
+  },
+
+  openReceiptSanctionModal(receiptId) {
+    const store = window.CMS_STORE;
+    const r = store.data.receipts.find(i => i.id === receiptId);
+    if (!r) return;
+
+    const vendor = store.data.vendors.find(v => v.id === r.vendorId);
+    const mat = store.data.consumables.find(m => m.id === r.materialId);
+    const currStock = store.getStock(r.materialId);
+    const newStock = currStock + Number(r.qty || 0);
+
+    const content = `
+      <div class="space-y-4 text-xs">
+        <!-- Top Command Header -->
+        <div class="p-4 bg-slate-900 text-white rounded-sm border border-slate-800 shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded text-[10px] font-bold uppercase tracking-wider">
+                Goods Inward Consignment Sanction
+              </span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${r.type === 'Challan' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'}">
+                ${r.type === 'Challan' ? 'Delivery Challan' : 'Tax Invoice'}
+              </span>
+            </div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span>Receipt Ref: ${r.receiptNo || r.id}</span>
+            </h3>
+            <p class="text-slate-300 text-xs mt-0.5">
+              Consignment received from <strong class="text-white">${r.vendorName || (vendor ? vendor.name : 'Vendor')}</strong> on <span class="font-mono">${store.formatDate(r.docDate)}</span>.
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_TRANSACTIONS.openReceiptRejectModal('${r.id}');" class="px-3.5 py-2 bg-rose-900/60 hover:bg-rose-800 text-rose-200 border border-rose-700 font-bold rounded-sm transition text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-300"></i>
+              <span>Reject</span>
+            </button>
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_TRANSACTIONS.approveReceipt('${r.id}');" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-sm shadow-md transition text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
+              <span>Sanction & Restock</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 1: Inward Consignment Particulars -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>1. Inward Consignment Particulars</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 1 of 4</span>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Receipt Voucher No</td>
+                <td class="w-1/4 p-2 font-mono font-bold text-slate-900 border-r border-slate-200">${r.receiptNo || r.id}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Consignment Type</td>
+                <td class="w-1/4 p-2 font-bold ${r.type === 'Challan' ? 'text-amber-800' : 'text-blue-800'}">${r.type === 'Challan' ? 'Delivery Challan' : 'Tax Invoice'}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Vendor Doc / Invoice No</td>
+                <td class="p-2 font-mono font-bold text-blue-600 border-r border-slate-200">${r.docNo}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Consignment Date</td>
+                <td class="p-2 font-mono text-slate-800">${store.formatDate(r.docDate)}</td>
+              </tr>
+              <tr>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Supplier / Vendor</td>
+                <td class="p-2 font-bold text-slate-900 border-r border-slate-200">${r.vendorName || (vendor ? vendor.name : 'Unknown')} (${r.vendorId || '-'})</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Supplier GSTIN</td>
+                <td class="p-2 font-mono text-slate-800">${vendor ? (vendor.gstNotApplicable ? 'Exempt' : (vendor.gstNo || 'Unregistered')) : '-'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Section 2: Material Details & Commercials -->
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+            <span>2. Received Item & Commercial Evaluation</span>
+            <span class="text-[10px] text-slate-500 font-normal">Section 2 of 4</span>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Material Description</td>
+                <td class="w-1/4 p-2 font-bold text-blue-600 border-r border-slate-200">${r.materialName || (mat ? mat.materialName : '-')}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Brand / Make</td>
+                <td class="w-1/4 p-2 font-semibold text-slate-800">${r.brand || (mat ? mat.brand : '-')}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Inward Quantity</td>
+                <td class="p-2 font-mono font-black text-sm text-slate-900 border-r border-slate-200">${r.qty} ${r.unit || 'Nos'}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Unit Rate (₹)</td>
+                <td class="p-2 font-mono font-bold text-emerald-700">₹${Number(r.rate || 0).toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Total Consignment Value</td>
+                <td class="p-2 font-mono font-black text-base text-emerald-800 border-r border-slate-200">₹${Number(r.totalAmount || (r.qty * r.rate) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Quality / Inward Remarks</td>
+                <td class="p-2 text-slate-700 italic">${r.remarks || 'Standard quality verification passed at gate inward.'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Section 3: Live Warehouse Stock Ledger Impact -->
+        <div class="p-4 bg-emerald-50 border border-emerald-300 rounded-sm">
+          <div class="font-bold text-emerald-950 uppercase tracking-wide text-[11px] mb-2 flex items-center gap-1.5">
+            <i data-lucide="layers" class="w-4 h-4 text-emerald-700"></i>
+            <span>3. Live Warehouse Stock Ledger Credit Impact</span>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="p-2.5 bg-white border border-emerald-200 rounded">
+              <span class="text-[10px] text-slate-500 uppercase font-bold block">Current Live Balance</span>
+              <span class="font-mono font-bold text-slate-800 text-sm">${currStock} ${r.unit || 'Nos'}</span>
+            </div>
+            <div class="p-2.5 bg-emerald-100/60 border border-emerald-300 rounded">
+              <span class="text-[10px] text-emerald-800 uppercase font-bold block">Consignment Inward (+)</span>
+              <span class="font-mono font-black text-emerald-700 text-sm">+${r.qty} ${r.unit || 'Nos'}</span>
+            </div>
+            <div class="p-2.5 bg-white border border-emerald-300 rounded shadow-2xs">
+              <span class="text-[10px] text-slate-500 uppercase font-bold block">Resulting Restocked Ledger</span>
+              <span class="font-mono font-black text-emerald-800 text-base">${newStock} ${r.unit || 'Nos'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: Approver Verification & Command Bar -->
+        <div class="p-4 bg-slate-50 border border-slate-300 rounded-sm space-y-3">
+          <div class="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded">
+            <label class="flex items-start gap-2 cursor-pointer">
+              <input type="checkbox" id="receipt-sanction-check" checked class="mt-0.5 text-emerald-600 rounded" />
+              <span class="text-slate-800 font-bold text-xs leading-relaxed">
+                I verify that the physical count, package integrity, delivery documentation (${r.docNo}), and unit rates match store procurement authorization. Approved to restock inventory.
+              </span>
+            </label>
+          </div>
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200">
+            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-sm text-xs">Cancel</button>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_TRANSACTIONS.openReceiptRejectModal('${r.id}');" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold rounded-sm text-xs flex items-center gap-1.5">
+                <i data-lucide="x-circle" class="w-3.5 h-3.5 text-rose-600"></i>
+                <span>Reject</span>
+              </button>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_TRANSACTIONS.approveReceipt('${r.id}');" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow text-xs flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>Confirm Sanction & Restock Inventory</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    window.CMS_APP.openModal(`Inward Sanction: ${r.receiptNo || r.id}`, content, 'max-w-4xl');
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  openReceiptRejectModal(receiptId) {
+    const store = window.CMS_STORE;
+    const r = store.data.receipts.find(i => i.id === receiptId);
+    if (!r) return;
+    window.CMS_APP.promptRejection({
+      title: r.receiptNo || r.id,
+      id: r.id,
+      entityType: 'receipt',
+      onReject: `(remark) => {
+        const item = window.CMS_STORE.data.receipts.find(i => i.id === '${receiptId}');
+        if (item) {
+          item.status = 'Revision Required';
+          item.checkerMistakeRemark = remark;
+          window.CMS_STORE.save();
+          window.CMS_APP.toast('Consignment returned for correction: ' + remark, 'error');
+          window.CMS_APP.refreshView();
+        }
+      }`
+    });
+  },
+
+  openReturnSanctionModal(returnId) {
+    const store = window.CMS_STORE;
+    const ret = (store.data.returns || []).find(i => i.id === returnId);
+    if (!ret) return;
+
+    const content = `
+      <div class="space-y-4 text-xs">
+        <div class="p-4 bg-slate-900 text-white rounded-sm border border-slate-800 shadow-sm flex justify-between items-center">
+          <div>
+            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded text-[10px] font-bold uppercase tracking-wider">
+              Return to Store Sanction
+            </span>
+            <h3 class="text-base font-bold text-white mt-1">${ret.returnNo || ret.id}</h3>
+            <p class="text-slate-300 text-xs mt-0.5">Item returned by ${ret.returnedBy} (${ret.department})</p>
+          </div>
+          <span class="badge ${ret.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${ret.status}</span>
+        </div>
+
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Return Voucher No</td>
+                <td class="w-1/4 p-2 font-mono font-bold text-slate-900 border-r border-slate-200">${ret.returnNo || ret.id}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Material Name</td>
+                <td class="w-1/4 p-2 font-bold text-blue-600">${ret.materialName}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Returned Quantity</td>
+                <td class="p-2 font-mono font-black text-sm text-slate-900 border-r border-slate-200">${ret.qty} ${ret.unit || 'Nos'}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Department / Person</td>
+                <td class="p-2 font-medium text-slate-800">${ret.returnedBy} (${ret.department})</td>
+              </tr>
+              <tr>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Return Reason</td>
+                <td class="p-2 text-slate-800 border-r border-slate-200">${ret.reason || 'Unused material returned'}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Condition of Goods</td>
+                <td class="p-2 font-bold text-emerald-700">${ret.condition || 'Good / Reusable'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs">
+            Cancel
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_TRANSACTIONS.approveReturn('${ret.id}');" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>Confirm & Credit Stock to Store</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    window.CMS_APP.openModal(`Sanction Store Return: ${ret.returnNo || ret.id}`, content, 'max-w-3xl');
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  openAdjustmentSanctionModal(adjId) {
+    const store = window.CMS_STORE;
+    const a = (store.data.stockAdjustments || []).find(i => i.id === adjId);
+    if (!a) return;
+    const curr = store.getStock(a.materialId);
+
+    const content = `
+      <div class="space-y-4 text-xs">
+        <div class="p-4 bg-slate-900 text-white rounded-sm border border-slate-800 shadow-sm flex justify-between items-center">
+          <div>
+            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-500/40 rounded text-[10px] font-bold uppercase tracking-wider">
+              Stock Adjustment Sanction
+            </span>
+            <h3 class="text-base font-bold text-white mt-1">${a.adjustmentNo || a.id}</h3>
+            <p class="text-slate-300 text-xs mt-0.5">${a.materialName} (${a.type === 'ADD' ? 'Stock Increase +' : 'Stock Deduction -'}${a.qty} ${a.unit})</p>
+          </div>
+          <span class="badge ${a.status === 'Approved' ? 'badge-approved' : 'badge-pending'}">${a.status}</span>
+        </div>
+
+        <div class="border border-slate-300 rounded overflow-hidden">
+          <table class="w-full text-xs border-collapse">
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Voucher No</td>
+                <td class="w-1/4 p-2 font-mono font-bold text-slate-900 border-r border-slate-200">${a.adjustmentNo || a.id}</td>
+                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Material</td>
+                <td class="w-1/4 p-2 font-bold text-blue-600">${a.materialName}</td>
+              </tr>
+              <tr class="border-b border-slate-200">
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Adjustment Type</td>
+                <td class="p-2 font-bold ${a.type === 'ADD' ? 'text-emerald-700' : 'text-rose-700'} border-r border-slate-200">${a.type === 'ADD' ? 'Stock Addition (+)' : 'Stock Deduction (-)'}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Quantity</td>
+                <td class="p-2 font-mono font-black text-slate-900">${a.qty} ${a.unit || 'Nos'}</td>
+              </tr>
+              <tr>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Official Reason</td>
+                <td class="p-2 text-slate-800 border-r border-slate-200">${a.reason}</td>
+                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Auditor Remarks</td>
+                <td class="p-2 text-slate-700 italic">${a.remarks || 'Authorized physical verification adjustment.'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs">
+            Cancel
+          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="CMS_APP.closeModal(); CMS_TRANSACTIONS.approveStockAdjustment('${a.id}');" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow text-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+              <span>Confirm & Commit Ledger Adjustment</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    window.CMS_APP.openModal(`Sanction Stock Adjustment: ${a.adjustmentNo || a.id}`, content, 'max-w-3xl');
+    if (window.lucide) window.lucide.createIcons();
   },
 
   deleteReceipt(receiptId) {
