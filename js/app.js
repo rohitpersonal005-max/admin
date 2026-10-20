@@ -553,7 +553,7 @@ window.CMS_APP = {
         'stock-ledger': 'Stock Ledger Movement Trail',
         'vendors': 'Vendor',
         'categories': 'Material Category',
-        'consumables': 'Material Catalog',
+        'consumables': 'Material',
         'gst-slabs': 'GST / IGST Slabs',
         'receipts': 'Goods Inward (Auto Material Filing)',
         'requests': 'Department Push / Pull Requests',
@@ -655,7 +655,7 @@ window.CMS_APP = {
               <div class="pt-1 border-t border-slate-100">
                 <strong>Key Transaction Types:</strong>
                 <ul class="list-disc list-inside mt-0.5 text-slate-700 space-y-0.5">
-                  <li><strong>Goods Inward (Auto Material):</strong> Record delivery challans and auto-catalog new items.</li>
+                  <li><strong>Goods Inward (Auto Material):</strong> Record delivery challans and auto-register new items.</li>
                   <li><strong>Dept Push vs Pull:</strong> Pull (dept requests items) vs Push (stores allocates assets).</li>
                   <li><strong>Issuances & Returns:</strong> Official printable vouchers & condition-graded returns.</li>
                 </ul>

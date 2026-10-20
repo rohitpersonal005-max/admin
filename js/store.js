@@ -1488,7 +1488,7 @@ class Store {
       vendor2Rate: Number(data.vendor2Rate || 0),
       vendor2RateEffectiveFrom: '',
       consumerConfirmed: true,
-      confirmedBy: `Auto-Cataloged by ${currentUser.name}`,
+      confirmedBy: `Auto-Registered by ${currentUser.name}`,
       confirmationDate: new Date().toISOString().split('T')[0],
       confirmationRemarks: 'Auto Master Filing triggered via Goods Inward Receipt',
 

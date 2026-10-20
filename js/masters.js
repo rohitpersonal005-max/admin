@@ -2600,10 +2600,10 @@ window.CMS_MASTERS = {
           </table>
         </div>
 
-        <!-- 4. Commercial Quotations & Approved Materials Catalog -->
+        <!-- 4. Commercial Quotations & Approved Materials -->
         <div class="border border-slate-300 rounded overflow-hidden">
           <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>4. Commercial Quotations & Approved Material Catalog</span>
+            <span>4. Commercial Quotations & Approved Materials</span>
             <span class="text-[10px] text-slate-500 font-normal">Section 4 of 8 (${quotes.length} Items)</span>
           </div>
           ${quotes.length === 0 ? `
@@ -4445,7 +4445,7 @@ window.CMS_MASTERS = {
     if (!container) return;
     const rows = container.querySelectorAll('.mat-vendor-row');
     if (rows.length <= 1) {
-      window.CMS_APP.toast('At least one vendor quotation is required for procurement cataloging.', 'warning');
+      window.CMS_APP.toast('At least one vendor quotation is required for procurement registration.', 'warning');
       return;
     }
     const row = document.getElementById(rowId);
@@ -6439,7 +6439,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       if (form) form.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${newId}', true);`);
     }
 
-    // Automatically synchronize quotation and quoted material with catalog
+    // Automatically synchronize quotation and quoted material
     
       const targetVendorId = isEdit ? vendorId : store.data.vendors[store.data.vendors.length - 1].id;
       
@@ -6505,7 +6505,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
               consumerConfirmed: true,
               confirmedBy: currentUser.name,
               confirmationDate: today,
-              confirmationRemarks: `Auto-Cataloged via Vendor Quotation [${q.quotationNo}]`,
+              confirmationRemarks: `Auto-Registered via Vendor Quotation [${q.quotationNo}]`,
               avgMonthlyConsumption: 10,
               initialStock: 0,
               status: 'Approved',
@@ -7052,7 +7052,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
               <div class="w-8 h-8 rounded-full bg-slate-50 text-blue-600 flex items-center justify-center">
                 <i data-lucide="package" class="w-4 h-4"></i>
               </div>
-              <span>Material Catalog (Consumable Materials & Fixed Assets)</span>
+              <span>Material Master (Consumable Materials & Fixed Assets)</span>
             </h2>
             
           </div>
@@ -7108,7 +7108,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
                   <tr>
                     <td colspan="9" class="p-12 text-center text-slate-400">
                       <i data-lucide="package-open" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
-                      <div class="font-bold text-slate-600">No matching catalog items found</div>
+                      <div class="font-bold text-slate-600">No matching material items found</div>
                       <p class="text-slate-400 text-xs mt-1">Try adjusting your filters or register a new material.</p>
                     </td>
                   </tr>
@@ -8368,7 +8368,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
             <label class="flex items-start gap-2.5 cursor-pointer">
               <input type="checkbox" id="mat-sanction-check" checked class="mt-0.5 text-emerald-600 focus:ring-emerald-500 rounded" />
               <span class="text-slate-800 font-bold leading-relaxed text-xs">
-                I confirm that I have verified all technical specifications, HSN code (${m.hsnCode || 'N/A'}), GST rate breakdown, multi-vendor rate quotes, warranty terms, and attached statutory quotation documents. Approved for catalog release.
+                I confirm that I have verified all technical specifications, HSN code (${m.hsnCode || 'N/A'}), GST rate breakdown, multi-vendor rate quotes, warranty terms, and attached statutory quotation documents. Approved for release.
               </span>
             </label>
           </div>

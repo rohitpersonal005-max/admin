@@ -15,9 +15,9 @@ A comprehensive, responsive web application for managing consumable inventory, v
   - GSTIN, phone, address, and email tracking with Maker-Checker approval.
 - **Consumable Category Master (Page 3)**:
   - Add / Modify / Delete categories (`Stationery`, `Housekeeping`, `Packing Material`, `Safety & PPE`, etc.).
-  - Approval workflow before categories become active for item cataloging.
+  - Approval workflow before categories become active for item listing.
 - **Consumable (Material) Master (Page 4 & User Addition)**:
-  - Catalog details: Category, Material Name, Unit of Measurement, Brand, SKU / Supplier Product Code, HSN Code, SGST/CGST/IGST rates.
+  - Material details: Category, Material Name, Unit of Measurement, Brand, SKU / Supplier Product Code, HSN Code, SGST/CGST/IGST rates.
   - **Dual-Vendor Pricing**: Primary Vendor (Vendor-1) and Secondary Vendor (Vendor-2) approved rates.
   - **Rate Effective From Date**: Date selector for when each vendor's approved price takes effect.
   - **Authorized Consumer Confirmation**: Security mechanism ensuring rates and effective dates are authenticated and confirmed by the designated department head / consumer.

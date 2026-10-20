@@ -82,7 +82,7 @@ window.CMS_REPORTS = {
           <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm hover-lift">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Materials</span>
             <div class="text-2xl font-semibold font-mono text-slate-900 mt-1">${store.consumables.length}</div>
-            <div class="text-xs text-slate-400 mt-1">Cataloged SKUs</div>
+            <div class="text-xs text-slate-400 mt-1">Registered SKUs</div>
           </div>
           <div class="p-5 bg-white border border-slate-200 rounded-sm shadow-sm hover-lift">
             <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Total Stock Value</span>
