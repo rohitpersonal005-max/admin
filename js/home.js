@@ -67,16 +67,35 @@ window.CMS_HOME = {
     return [...new Set(roles)];
   },
 
+  toggleGmailConnection(connect) {
+    if (connect) {
+      if (window.CMS_NOTIFICATIONS) window.CMS_NOTIFICATIONS.connectGmail();
+      window.CMS_APP.toast('Gmail sending connection enabled.', 'info');
+    } else {
+      if (window.CMS_NOTIFICATIONS) window.CMS_NOTIFICATIONS.disconnectGmail();
+      window.CMS_APP.toast('Gmail sending completely disconnected.', 'warning');
+    }
+    this.render();
+  },
+
   onMailProviderChange(provider) {
     const emailjsContainer = document.getElementById('emailjs-fields-container');
     const webhookContainer = document.getElementById('webhook-fields-container');
-    if (provider === 'webhook') {
+    const statusDesc = document.getElementById('gateway-status-desc');
+    if (provider === 'none') {
+      if (emailjsContainer) emailjsContainer.classList.add('hidden');
+      if (webhookContainer) webhookContainer.classList.add('hidden');
+      if (statusDesc) statusDesc.innerHTML = '<span class="text-rose-700 font-bold flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Gmail Sending is completely disconnected. No emails will be sent.</span>';
+    } else if (provider === 'webhook') {
       if (emailjsContainer) emailjsContainer.classList.add('hidden');
       if (webhookContainer) webhookContainer.classList.remove('hidden');
+      if (statusDesc) statusDesc.innerHTML = '<span class="text-slate-600 flex items-center gap-1"><i data-lucide="info" class="w-3.5 h-3.5"></i> Google Apps Script Webhook selected. Paste your Webhook URL below and click Save.</span>';
     } else {
       if (emailjsContainer) emailjsContainer.classList.remove('hidden');
       if (webhookContainer) webhookContainer.classList.add('hidden');
+      if (statusDesc) statusDesc.innerHTML = '<span class="text-slate-600 flex items-center gap-1"><i data-lucide="info" class="w-3.5 h-3.5"></i> EmailJS selected. Provide Service ID, Template ID, and Public Key below and click Save.</span>';
     }
+    if (window.lucide) window.lucide.createIcons();
   },
 
   addUser() {
@@ -559,13 +578,26 @@ window.CMS_HOME = {
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <span class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-sm flex items-center gap-1">
-              <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Notification Engine Active
-            </span>
+            ${notifSettings.gmailConnected ? `
+              <span class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-sm flex items-center gap-1">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Gmail Sending Connected
+              </span>
+              <button type="button" onclick="CMS_HOME.toggleGmailConnection(false)" class="px-2.5 py-1 text-[11px] font-bold text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 rounded-sm transition flex items-center gap-1 cursor-pointer" title="Disconnect automated and direct Gmail sending">
+                <i data-lucide="power-off" class="w-3.5 h-3.5"></i> Disconnect
+              </button>
+            ` : `
+              <span class="px-2.5 py-1 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm flex items-center gap-1">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-600"></i> Gmail Sending Disconnected
+              </span>
+              <button type="button" onclick="CMS_HOME.toggleGmailConnection(true)" class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:text-white bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 rounded-sm transition flex items-center gap-1 cursor-pointer" title="Enable Gmail sending connection">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i> Connect Gmail
+              </button>
+            `}
           </div>
         </div>
 
         <form id="home-notif-settings-form" onsubmit="event.preventDefault(); CMS_NOTIFICATIONS.handleAdminSaveSettings();" class="space-y-4">
+          <input type="hidden" id="home-notif-gmail-connected" value="${notifSettings.gmailConnected ? 'true' : 'false'}" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- 1. Number of Days Fixation (Minimum Alert Time Policy) -->
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-2.5">
@@ -596,17 +628,17 @@ window.CMS_HOME = {
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-2.5">
               <div class="flex items-center justify-between">
                 <label class="block text-xs font-bold text-slate-800">
-                  Sender Gmail Address <span class="text-rose-600">*</span>
+                  Sender Gmail Address ${notifSettings.gmailConnected ? '<span class="text-rose-600">*</span>' : '<span class="text-slate-400 font-normal">(Optional when disconnected)</span>'}
                 </label>
-                <span class="text-[10px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded">
-                  Outgoing Sender
+                <span class="text-[10px] font-mono font-bold ${notifSettings.gmailConnected ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-slate-500 bg-slate-100 border-slate-200'} border px-2 py-0.5 rounded">
+                  ${notifSettings.gmailConnected ? 'Outgoing Sender' : 'Disconnected'}
                 </span>
               </div>
               <p class="text-[11px] text-slate-500">
                 The official Gmail from which document change and renewal notification emails will be dispatched to the vendor.
               </p>
               <div class="relative pt-1">
-                <input type="email" id="home-notif-sender-gmail" required value="${notifSettings.senderGmail || ''}" placeholder="e.g. procurement.compliance@gmail.com" class="w-full pl-3 pr-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <input type="email" id="home-notif-sender-gmail" ${notifSettings.gmailConnected ? 'required' : ''} value="${notifSettings.senderGmail || ''}" placeholder="${notifSettings.gmailConnected ? 'e.g. procurement.compliance@gmail.com' : 'Optional (Gmail Sending is Disconnected)'}" class="w-full pl-3 pr-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
             </div>
           </div>
@@ -639,13 +671,14 @@ window.CMS_HOME = {
               <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">Dispatch Method / Gateway</label>
                 <select id="home-notif-provider" onchange="CMS_HOME.onMailProviderChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500">
-                  <option value="emailjs" ${notifSettings.mailProvider === 'emailjs' ? 'selected' : ''}>EmailJS (Free, Connects to Gmail)</option>
-                  <option value="webhook" ${notifSettings.mailProvider === 'webhook' ? 'selected' : ''}>Google Apps Script / Webhook (100% Free)</option>
+                  <option value="none" ${(!notifSettings.gmailConnected || notifSettings.mailProvider === 'none') ? 'selected' : ''}>Disconnected (No Emails Sent)</option>
+                  <option value="emailjs" ${(notifSettings.gmailConnected && notifSettings.mailProvider === 'emailjs') ? 'selected' : ''}>EmailJS (Free, Connects to Gmail)</option>
+                  <option value="webhook" ${(notifSettings.gmailConnected && notifSettings.mailProvider === 'webhook') ? 'selected' : ''}>Google Apps Script / Webhook (100% Free)</option>
                 </select>
               </div>
 
               <!-- EmailJS Settings (Show when emailjs selected) -->
-              <div id="emailjs-fields-container" class="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-2 ${notifSettings.mailProvider === 'webhook' ? 'hidden' : ''}">
+              <div id="emailjs-fields-container" class="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-2 ${(!notifSettings.gmailConnected || notifSettings.mailProvider !== 'emailjs') ? 'hidden' : ''}">
                 <div>
                   <label class="block text-[11px] font-bold text-slate-600 mb-1">Service ID</label>
                   <input type="text" id="home-notif-emailjs-service" value="${notifSettings.emailjsServiceId || ''}" placeholder="e.g. service_xxxx" class="w-full px-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white" />
@@ -661,7 +694,7 @@ window.CMS_HOME = {
               </div>
 
               <!-- Webhook URL Field (Show when webhook selected) -->
-              <div id="webhook-fields-container" class="md:col-span-2 ${notifSettings.mailProvider === 'webhook' ? '' : 'hidden'}">
+              <div id="webhook-fields-container" class="md:col-span-2 ${(!notifSettings.gmailConnected || notifSettings.mailProvider !== 'webhook') ? 'hidden' : ''}">
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">Google Apps Script / Webhook Endpoint URL</label>
                 <input type="url" id="home-notif-webhook-url" value="${notifSettings.webhookUrl || ''}" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white" />
               </div>
@@ -669,7 +702,17 @@ window.CMS_HOME = {
 
             <div class="text-[11px] text-slate-500 bg-white p-2.5 rounded border border-slate-200 flex items-center justify-between">
               <span id="gateway-status-desc">
-                ${notifSettings.mailProvider === 'webhook' && notifSettings.webhookUrl ? '<span class="text-emerald-700 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> Google Apps Script Webhook Configured & Active</span>' : (notifSettings.mailProvider === 'emailjs' && notifSettings.emailjsServiceId && notifSettings.emailjsPublicKey ? '<span class="text-emerald-700 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> EmailJS Gateway Configured & Active</span>' : '<span class="text-amber-700 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Real background dispatch requires either EmailJS keys or a free Google Apps Script Webhook URL. Click "Setup Guide" above to connect in 1 minute.</span>')}
+                ${!notifSettings.gmailConnected || notifSettings.mailProvider === 'none' ? `
+                  <span class="text-rose-700 font-bold flex items-center gap-1">
+                    <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Gmail Sending is completely disconnected. Automated alerts will be recorded on dashboard only; no real emails will be dispatched.
+                  </span>
+                ` : (notifSettings.mailProvider === 'webhook' && notifSettings.webhookUrl ? `
+                  <span class="text-emerald-700 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> Google Apps Script Webhook Configured & Active</span>
+                ` : (notifSettings.mailProvider === 'emailjs' && notifSettings.emailjsServiceId && notifSettings.emailjsPublicKey ? `
+                  <span class="text-emerald-700 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> EmailJS Gateway Configured & Active</span>
+                ` : `
+                  <span class="text-amber-700 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Real background dispatch requires either EmailJS keys or a free Google Apps Script Webhook URL. Click "Setup Guide" above to connect in 1 minute.</span>
+                `))}
               </span>
             </div>
           </div>
@@ -752,9 +795,15 @@ window.CMS_HOME = {
                           <span class="inline-block px-2 py-0.5 rounded text-[10px] ${expBadge}">${expText}</span>
                         </td>
                         <td class="py-2.5 px-3">
+                          ${notifSettings.gmailConnected ? `
                           <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded whitespace-nowrap">
                             <i data-lucide="mail-check" class="w-3.5 h-3.5 text-emerald-600"></i> Auto-Mail (7:00 AM)
                           </span>
+                          ` : `
+                          <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded whitespace-nowrap" title="Gmail sending is disconnected in Admin Settings">
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-slate-500"></i> Alert Only (Gmail Disconnected)
+                          </span>
+                          `}
                         </td>
                         <td class="py-2.5 px-3 text-right whitespace-nowrap">
                           <button type="button" onclick="CMS_NOTIFICATIONS.dispatchEmailInBackground({ vendor: { id: '${item.vendorId}', name: '${safeVendorName}', email: '${item.vendorEmail}' }, docType: '${item.typeName}', docName: '${safeDocName}', refNo: '${safeRef}', validTill: '${item.validTill}', scheduleNote: 'Manual Direct Dispatch' }).then(() => { CMS_APP.toast('Notice dispatched directly to vendor with zero redirecting!', 'success'); CMS_HOME.render(); });" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded transition shadow-2xs mr-1" title="Dispatches notice immediately in background with zero redirecting">

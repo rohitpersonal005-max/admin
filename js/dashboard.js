@@ -186,7 +186,8 @@ window.CMS_DASHBOARD = {
         });
       }
 
-      const notifSettings = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings() : { minAlertDays: 15 };
+      const notifSettings = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings() : { minAlertDays: 15, gmailConnected: false };
+      const isGmailConnected = notifSettings.gmailConnected === true;
 
       // Check Expiries (Certificates)
       if (v.status === 'Approved' && Array.isArray(v.certificates)) {
@@ -213,7 +214,7 @@ window.CMS_DASHBOARD = {
               timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
             }
 
-            const actionHtml = sendMailEnabled ? `
+            const actionHtml = sendMailEnabled ? (isGmailConnected ? `
               <div class="mt-2 flex flex-wrap items-center gap-2">
                 <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded">
                   <i data-lucide="mail-check" class="w-3 h-3 text-emerald-700"></i> Vendor Email: Enabled
@@ -223,6 +224,15 @@ window.CMS_DASHBOARD = {
                 </button>
               </div>
             ` : `
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                  <i data-lucide="shield-alert" class="w-3 h-3 text-slate-500"></i> Gmail Sending Disconnected
+                </span>
+                <button type="button" onclick="CMS_APP.closeModal(); CMS_NOTIFICATIONS.openEmailComposer('${v.id}', '${cert.certificateNo || cert.name}', 'certificate');" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded transition shadow-2xs cursor-pointer">
+                  <i data-lucide="eye" class="w-3 h-3"></i> View Draft
+                </button>
+              </div>
+            `) : `
               <div class="mt-1.5">
                 <span class="inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                   Vendor Email Notice: Disabled in Setup
@@ -266,7 +276,7 @@ window.CMS_DASHBOARD = {
               timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
             }
 
-            const actionHtml = sendMailEnabled ? `
+            const actionHtml = sendMailEnabled ? (isGmailConnected ? `
               <div class="mt-2 flex flex-wrap items-center gap-2">
                 <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded">
                   <i data-lucide="mail-check" class="w-3 h-3 text-emerald-700"></i> Vendor Email: Enabled
@@ -276,6 +286,15 @@ window.CMS_DASHBOARD = {
                 </button>
               </div>
             ` : `
+              <div class="mt-2 flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                  <i data-lucide="shield-alert" class="w-3 h-3 text-slate-500"></i> Gmail Sending Disconnected
+                </span>
+                <button type="button" onclick="CMS_APP.closeModal(); CMS_NOTIFICATIONS.openEmailComposer('${v.id}', '${q.quotationNo || q.materialName}', 'quotation');" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded transition shadow-2xs cursor-pointer">
+                  <i data-lucide="eye" class="w-3 h-3"></i> View Draft
+                </button>
+              </div>
+            `) : `
               <div class="mt-1.5">
                 <span class="inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                   Vendor Email Notice: Disabled in Setup
@@ -317,7 +336,7 @@ window.CMS_DASHBOARD = {
             timeText = `Expires in ${diffDays} day${diffDays === 1 ? '' : 's'} on ${expFormatted}`;
           }
 
-          const actionHtml = sendMailEnabled ? `
+          const actionHtml = sendMailEnabled ? (isGmailConnected ? `
             <div class="mt-2 flex flex-wrap items-center gap-2">
               <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded">
                 <i data-lucide="mail-check" class="w-3 h-3 text-emerald-700"></i> Vendor Email: Enabled
@@ -327,6 +346,15 @@ window.CMS_DASHBOARD = {
               </button>
             </div>
           ` : `
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded">
+                <i data-lucide="shield-alert" class="w-3 h-3 text-slate-500"></i> Gmail Sending Disconnected
+              </span>
+              <button type="button" onclick="CMS_APP.closeModal(); CMS_NOTIFICATIONS.openEmailComposer('${v.id}', '${v.id}', 'approval');" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded transition shadow-2xs cursor-pointer">
+                <i data-lucide="eye" class="w-3 h-3"></i> View Draft
+              </button>
+            </div>
+          `) : `
             <div class="mt-1.5">
               <span class="inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                 Vendor Email Notice: Disabled in Setup

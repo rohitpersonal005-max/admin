@@ -14,9 +14,7 @@ window.CMS_NOTIFICATIONS = {
    */
   getSettings() {
     let settings = null;
-    if (window.CMS_STORE && window.CMS_STORE.data && window.CMS_STORE.data.notificationSettings) {
-      settings = window.CMS_STORE.data.notificationSettings;
-    } else {
+    if (typeof localStorage !== 'undefined') {
       try {
         settings = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || 'null');
       } catch (e) {}
@@ -24,19 +22,63 @@ window.CMS_NOTIFICATIONS = {
     const compEmail = (window.CMS_HOME && window.CMS_HOME.companyInfo && window.CMS_HOME.companyInfo.email) || '';
     const userEmail = (window.CMS_STORE && window.CMS_STORE.getCurrentUser && window.CMS_STORE.getCurrentUser()?.email) || '';
 
+    // Disconnected by default unless explicitly connected
+    const isConnected = Boolean(settings && settings.gmailConnected === true);
+
     return {
       minAlertDays: (settings && settings.minAlertDays !== undefined && settings.minAlertDays !== '') ? Math.max(1, parseInt(settings.minAlertDays, 10)) : 15,
       fixedAlertDays: (settings && (settings.fixedAlertDays || settings.minAlertDays) !== undefined) ? Math.max(1, parseInt(settings.fixedAlertDays || settings.minAlertDays, 10)) : 15,
+      gmailConnected: isConnected,
       senderGmail: (settings && settings.senderGmail) ? settings.senderGmail.trim() : (compEmail || userEmail || ''),
-      autoSendVendorEmail: (settings && settings.autoSendVendorEmail !== undefined) ? Boolean(settings.autoSendVendorEmail) : true,
+      autoSendVendorEmail: isConnected ? Boolean(settings.autoSendVendorEmail) : false,
 
-      // Live Background Email Gateway Configuration
-      mailProvider: (settings && settings.mailProvider) || 'webhook',
+      // Live Background Email Gateway Configuration - Disconnected by default
+      mailProvider: isConnected ? (settings.mailProvider || 'none') : 'none',
       emailjsServiceId: (settings && settings.emailjsServiceId) ? settings.emailjsServiceId.trim() : '',
       emailjsTemplateId: (settings && settings.emailjsTemplateId) ? settings.emailjsTemplateId.trim() : '',
       emailjsPublicKey: (settings && settings.emailjsPublicKey) ? settings.emailjsPublicKey.trim() : '',
-      webhookUrl: (settings && settings.webhookUrl) ? settings.webhookUrl.trim() : 'https://script.google.com/macros/s/AKfycbzC-ge0PkP4a9lxzWf_7H7WnQdn3G9asyNdOZ-nrC27N3xiR2oBZl-4UItXfXf-Eluo/exec'
+      webhookUrl: (settings && settings.webhookUrl) ? settings.webhookUrl.trim() : ''
     };
+  },
+
+  disconnectGmail() {
+    const s = this.getSettings();
+    s.gmailConnected = false;
+    s.autoSendVendorEmail = false;
+    s.mailProvider = 'none';
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(s));
+    } catch (e) {}
+    if (window.CMS_STORE && window.CMS_STORE.data) {
+      window.CMS_STORE.data.notificationSettings = s;
+      window.CMS_STORE.save();
+    }
+    if (window.CMS_APP) {
+      window.CMS_APP.toast('Gmail sending option has been disconnected.', 'info');
+    }
+    if (window.CMS_HOME) {
+      window.CMS_HOME.render();
+    }
+  },
+
+  connectGmail() {
+    const s = this.getSettings();
+    s.gmailConnected = true;
+    s.autoSendVendorEmail = true;
+    if (s.mailProvider === 'none') s.mailProvider = 'webhook';
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(s));
+    } catch (e) {}
+    if (window.CMS_STORE && window.CMS_STORE.data) {
+      window.CMS_STORE.data.notificationSettings = s;
+      window.CMS_STORE.save();
+    }
+    if (window.CMS_APP) {
+      window.CMS_APP.toast('Gmail sending option connected. Configure your sender details below.', 'info');
+    }
+    if (window.CMS_HOME) {
+      window.CMS_HOME.render();
+    }
   },
 
   /**
@@ -53,11 +95,12 @@ window.CMS_NOTIFICATIONS = {
   /**
    * Saves notification settings to store and localStorage
    */
-  saveSettings(params, maybeEmail = null, maybeAutoSend = true) {
+  saveSettings(params, maybeEmail = null, maybeAutoSend = false) {
     let days = 15;
     let email = '';
-    let autoSend = true;
-    let mailProvider = 'emailjs';
+    let autoSend = false;
+    let gmailConnected = false;
+    let mailProvider = 'none';
     let emailjsServiceId = '';
     let emailjsTemplateId = '';
     let emailjsPublicKey = '';
@@ -65,9 +108,10 @@ window.CMS_NOTIFICATIONS = {
 
     if (typeof params === 'object' && params !== null) {
       days = Math.max(1, parseInt(params.minDays, 10) || 15);
+      gmailConnected = Boolean(params.gmailConnected);
       email = (params.senderGmail || '').trim();
-      autoSend = params.autoSend !== undefined ? Boolean(params.autoSend) : true;
-      mailProvider = params.mailProvider || 'emailjs';
+      autoSend = gmailConnected ? Boolean(params.autoSend) : false;
+      mailProvider = gmailConnected ? (params.mailProvider || 'none') : 'none';
       emailjsServiceId = (params.emailjsServiceId || '').trim();
       emailjsTemplateId = (params.emailjsTemplateId || '').trim();
       emailjsPublicKey = (params.emailjsPublicKey || '').trim();
@@ -77,6 +121,7 @@ window.CMS_NOTIFICATIONS = {
       email = (maybeEmail || '').trim();
       autoSend = Boolean(maybeAutoSend);
       const existing = this.getSettings();
+      gmailConnected = existing.gmailConnected;
       mailProvider = existing.mailProvider;
       emailjsServiceId = existing.emailjsServiceId;
       emailjsTemplateId = existing.emailjsTemplateId;
@@ -84,18 +129,21 @@ window.CMS_NOTIFICATIONS = {
       webhookUrl = existing.webhookUrl;
     }
 
-    if (!email) {
-      if (window.CMS_APP) window.CMS_APP.toast('Please enter the Sender Gmail address.', 'error');
-      return false;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      if (window.CMS_APP) window.CMS_APP.toast('Please enter a valid Gmail / Email address format (e.g. alerts@gmail.com).', 'error');
-      return false;
+    if (gmailConnected) {
+      if (!email) {
+        if (window.CMS_APP) window.CMS_APP.toast('Please enter the Sender Gmail address.', 'error');
+        return false;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (window.CMS_APP) window.CMS_APP.toast('Please enter a valid Gmail / Email address format (e.g. alerts@gmail.com).', 'error');
+        return false;
+      }
     }
 
     const newSettings = {
       minAlertDays: days,
       fixedAlertDays: days,
+      gmailConnected: Boolean(gmailConnected),
       senderGmail: email,
       autoSendVendorEmail: Boolean(autoSend),
       mailProvider,
@@ -132,10 +180,12 @@ window.CMS_NOTIFICATIONS = {
     const emailjsTemplateInput = document.getElementById('home-notif-emailjs-template');
     const emailjsPublicKeyInput = document.getElementById('home-notif-emailjs-publickey');
     const webhookUrlInput = document.getElementById('home-notif-webhook-url');
+    const connectedInput = document.getElementById('home-notif-gmail-connected');
 
     const days = daysInput ? daysInput.value : 15;
     const email = emailInput ? emailInput.value : '';
-    const mailProvider = providerSelect ? providerSelect.value : 'emailjs';
+    const gmailConnected = connectedInput ? (connectedInput.value === 'true') : false;
+    const mailProvider = providerSelect ? providerSelect.value : 'none';
     const emailjsServiceId = emailjsServiceInput ? emailjsServiceInput.value : '';
     const emailjsTemplateId = emailjsTemplateInput ? emailjsTemplateInput.value : '';
     const emailjsPublicKey = emailjsPublicKeyInput ? emailjsPublicKeyInput.value : '';
@@ -143,9 +193,10 @@ window.CMS_NOTIFICATIONS = {
 
     const ok = this.saveSettings({
       minDays: days,
+      gmailConnected,
       senderGmail: email,
-      autoSend: true,
-      mailProvider,
+      autoSend: gmailConnected,
+      mailProvider: gmailConnected ? mailProvider : 'none',
       emailjsServiceId,
       emailjsTemplateId,
       emailjsPublicKey,
@@ -317,6 +368,8 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
       validTill = vendor.approvalValidTill || '';
     }
 
+    const settings = this.getSettings();
+    const isGmailConnected = settings.gmailConnected === true;
     const emailData = this.composeEmail({ vendor, docType, docName, refNo, validTill });
 
     const safeVendorName = (vendor.name || '').replace(/'/g, "\\'");
@@ -326,6 +379,18 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
     const modalHtml = `
       <div class="space-y-4 text-xs">
         <!-- Banner -->
+        ${!isGmailConnected ? `
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-sm flex items-start gap-2.5 text-amber-900">
+          <i data-lucide="shield-alert" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
+          <div>
+            <div class="font-bold flex items-center gap-2">
+              <span>Gmail Sending is Disconnected</span>
+              <span class="px-1.5 py-0.5 text-[10px] bg-amber-200 text-amber-900 font-bold rounded">DISCONNECTED</span>
+            </div>
+            <div class="text-[11px] text-amber-800 mt-0.5">Automated and direct email sending is currently turned off. To enable sending, go to <strong>Home &rarr; Notification &amp; Auto-Alert Settings</strong> and connect Gmail. You can still review or copy the draft text below.</div>
+          </div>
+        </div>
+        ` : `
         <div class="p-3 bg-blue-50 border border-blue-200 rounded-sm flex items-start gap-2.5 text-blue-900">
           <i data-lucide="mail-check" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5"></i>
           <div>
@@ -333,6 +398,7 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
             <div class="text-[11px] text-blue-800 mt-0.5">This email is configured to dispatch automatically from company email at <strong>07:00 AM</strong>. You can also send it directly right now with zero redirecting.</div>
           </div>
         </div>
+        `}
 
         <!-- Headers -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-sm">
@@ -364,15 +430,23 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
             Close
           </button>
           <div class="flex flex-wrap items-center gap-2">
+            ${isGmailConnected ? `
             <button type="button" onclick="CMS_NOTIFICATIONS.handleComposerDirectSend({ vendor: { id: '${vendor.id}', name: '${safeVendorName}', email: '${emailData.to}' }, docType: '${docType}', docName: '${safeDocName}', refNo: '${safeRefNo}', validTill: '${validTill}' });" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5" title="Dispatches real email immediately in background">
               <i data-lucide="send-check" class="w-3.5 h-3.5"></i> Send Directly (No Redirect)
             </button>
+            ` : `
+            <span class="px-3 py-1.5 bg-slate-100 border border-slate-300 text-slate-500 font-bold text-xs rounded-sm flex items-center gap-1.5" title="Gmail Sending is Disconnected in Admin Settings">
+              <i data-lucide="mail-x" class="w-3.5 h-3.5 text-slate-400"></i> Sending Disconnected
+            </span>
+            `}
             <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('email-preview-body').value); CMS_APP.toast('Email body copied to clipboard!', 'success');" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold rounded-sm transition flex items-center gap-1.5">
               <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Text
             </button>
+            ${isGmailConnected ? `
             <a href="${emailData.gmailUrl}" target="_blank" onclick="CMS_NOTIFICATIONS.logEmail({ vendorId: '${vendor.id}', vendorName: '${safeVendorName}', vendorEmail: '${emailData.to}', senderGmail: '${emailData.from}', docType: '${docType}', docName: '${safeDocName}', expiryDate: '${validTill}', status: 'Dispatched via Gmail' }); CMS_APP.toast('Opening Gmail Compose window...', 'info');" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5">
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Open in Gmail
             </a>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -542,6 +616,9 @@ Date: ${new Date().toLocaleDateString('en-GB')}`;
    */
   async sendRealEmail({ to, subject, body, vendorName, docType, docName, refNo, validTill }) {
     const settings = this.getSettings();
+    if (!settings.gmailConnected || settings.mailProvider === 'none') {
+      throw new Error('Gmail sending option is currently disconnected.');
+    }
     const compName = (window.CMS_HOME && window.CMS_HOME.companyInfo && window.CMS_HOME.companyInfo.name) ||
                      (window.CMS_STORE && window.CMS_STORE.data && window.CMS_STORE.data.companyName) ||
                      'Our Organization';
@@ -754,6 +831,30 @@ function authorizeGmail() {
   async dispatchEmailInBackground({ vendor, docType, docName, refNo, validTill, scheduleNote = '07:00 AM Scheduled Auto-Dispatch' }) {
     const emailData = this.composeEmail({ vendor, docType, docName, refNo, validTill });
     const todayStr = new Date().toISOString().split('T')[0];
+    const settings = this.getSettings();
+
+    if (!settings.gmailConnected || settings.mailProvider === 'none') {
+      console.log('[CMS Auto-Mail] Gmail sending is disconnected. Notice logged locally only.');
+      const logEntry = {
+        vendorId: vendor.id,
+        vendorName: vendor.name,
+        vendorEmail: emailData.to,
+        senderGmail: emailData.from,
+        docType,
+        docName,
+        expiryDate: validTill,
+        dispatchDate: todayStr,
+        dispatchTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        status: 'Logged (Gmail Disconnected)',
+        scheduleNote,
+        autoSent: false,
+        subject: emailData.subject,
+        body: emailData.body,
+        error: null
+      };
+      this.logEmail(logEntry);
+      return { success: true, emailData, logEntry, disconnected: true };
+    }
 
     let dispatchStatus = 'Pending';
     let realDeliveryError = null;
@@ -821,6 +922,11 @@ function authorizeGmail() {
    * on the calculated alert date with zero redirecting.
    */
   async checkAndAutoSendDailyAlerts(forceNow = false) {
+    const settings = this.getSettings();
+    if (!settings.gmailConnected || !settings.autoSendVendorEmail || settings.mailProvider === 'none') {
+      console.log('[CMS Auto-Mail] Gmail sending option is disconnected. Skipping email dispatch.');
+      return { skipped: true, reason: 'Gmail sending option is disconnected.' };
+    }
     const now = new Date();
     const currentHour = now.getHours();
     const todayStr = now.toISOString().split('T')[0];
