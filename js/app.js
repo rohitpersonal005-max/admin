@@ -307,7 +307,7 @@ window.CMS_APP = {
           if (isPin) isValid = val.length === 6 && /^\d{6}$/.test(val);
           if (isContact) isValid = val.length === 10 && /^\d{10}$/.test(val);
           if (isEmail) isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-          if (isGst) isValid = val.length === 15;
+          if (isGst) isValid = val.length === 15 && /^[A-Z]$/i.test(val.charAt(13));
           if (isPan) isValid = val.length === 10;
 
           if (val.length > 0) {

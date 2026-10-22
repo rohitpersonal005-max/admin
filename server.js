@@ -210,7 +210,7 @@ async function handleApi(req, res) {
       if (input.password) targetUser.password = String(input.password);
       if (input.email !== undefined) targetUser.email = String(input.email).trim();
       if (input.modules) targetUser.modules = input.modules;
-      if (input.role) targetUser.role = input.role;
+      // Roles are strictly fixed at registration time; ignore any role modification requests
 
       saveUsers();
       sendJson(res, 200, { user: publicUser(targetUser) });

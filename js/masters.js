@@ -3399,15 +3399,13 @@ window.CMS_MASTERS = {
     const gstNaCheckbox = document.getElementById('v-gst-na');
     const cleanGst = (val || '').trim().toUpperCase();
 
-    // Blue Box lock: if GSTN is provided, do NOT check blue box
+    // Keep box interactive: if GSTIN is provided, uncheck exempt box but keep it clickable
     if (gstNaCheckbox) {
-      if (cleanGst.length > 0) {
+      if (cleanGst.length > 0 && gstNaCheckbox.checked) {
         gstNaCheckbox.checked = false;
-        gstNaCheckbox.disabled = true;
         this.toggleGstApplicable(false);
-      } else {
-        gstNaCheckbox.disabled = false;
       }
+      gstNaCheckbox.disabled = false;
     }
 
 
@@ -3428,7 +3426,63 @@ window.CMS_MASTERS = {
     
   },
 
+  onNormalGstInput(val) {
+    const clean = (val || '').trim().toUpperCase();
+    const fullInput = document.getElementById('v-gst');
+    const fullDisplay = document.getElementById('v-gst-full-display');
+    const gstNaCheckbox = document.getElementById('v-gst-na');
+    
+    if (fullInput) fullInput.value = clean;
+    if (fullDisplay) fullDisplay.innerText = clean || '-';
+
+    if (gstNaCheckbox && clean.length > 0 && gstNaCheckbox.checked) {
+      gstNaCheckbox.checked = false;
+      this.toggleGstApplicable(false);
+    }
+  },
+
+  updateGstFieldMode(isForeign) {
+    const bracketBox = document.getElementById('v-gst-bracket-container');
+    const normalBox = document.getElementById('v-gst-normal-container');
+    const normalInput = document.getElementById('v-gst-normal');
+    const label = document.getElementById('v-gst-label');
+    const badge = document.getElementById('v-gst-badge');
+    const stateNameEl = document.getElementById('v-gst-state-name');
+    const fullInput = document.getElementById('v-gst');
+    const fullDisplay = document.getElementById('v-gst-full-display');
+
+    if (bracketBox) {
+      bracketBox.classList.toggle('hidden', isForeign);
+      bracketBox.classList.toggle('flex', !isForeign);
+    }
+    if (normalBox) {
+      normalBox.classList.toggle('hidden', !isForeign);
+    }
+    if (label) {
+      label.innerHTML = (isForeign ? 'GST / VAT / Tax ID Number' : 'GSTIN Number (15 Characters)') + ' <span class="text-rose-600 font-bold">*</span>';
+    }
+    if (badge) {
+      badge.textContent = isForeign ? 'Tax Identification' : 'Goods & Services';
+    }
+    if (stateNameEl) {
+      stateNameEl.classList.toggle('hidden', isForeign);
+    }
+
+    if (isForeign) {
+      if (normalInput && fullInput) {
+        normalInput.value = fullInput.value || '';
+      }
+      if (fullDisplay && fullInput) {
+        fullDisplay.innerText = fullInput.value || '-';
+      }
+    } else {
+      this.assembleGst();
+    }
+  },
+
   assembleGst() {
+    const countryVal = document.getElementById('v-country')?.value || '';
+    if (countryVal && !countryVal.includes('India')) return;
     const sBox = document.getElementById('v-gst-state');
     const pBox = document.getElementById('v-gst-pan');
     const sufBox = document.getElementById('v-gst-suffix');
@@ -3482,6 +3536,21 @@ window.CMS_MASTERS = {
   },
 
   onGstSuffixInput(val) {
+    const sufBox = document.getElementById('v-gst-suffix');
+    if (sufBox) {
+      let clean = (sufBox.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3);
+      if (clean.length >= 2) {
+        const midChar = clean.charAt(1);
+        if (!/^[A-Z]$/.test(midChar)) {
+          if (window.CMS_APP && window.CMS_APP.toast) {
+            window.CMS_APP.toast('In the last 3 digits of GST, the middle character must always be an Alphabet (e.g. "1Z5").', 'warning');
+          }
+          // Remove the invalid digit at position 2 (keep 1st char and 3rd if present)
+          clean = clean.charAt(0) + (clean.length > 2 ? clean.charAt(2) : '');
+        }
+      }
+      sufBox.value = clean;
+    }
     this.assembleGst();
   },
 
@@ -3640,9 +3709,17 @@ window.CMS_MASTERS = {
         }
       }
 
-      if (isForeign) {
-        if (gstNa) { gstNa.checked = true; window.CMS_MASTERS.toggleGstApplicable(true); }
-        if (panNa) { panNa.checked = true; window.CMS_MASTERS.togglePanApplicable(true); }
+      // Automatically switch GST field layout between separated bracket fields (India) and normal single field (Other Countries)
+      this.updateGstFieldMode(isForeign);
+
+      // Keep exemption state intact or properly initialized
+      const activeEditingId = window.CMS_MASTERS.editingVendorId;
+      const activeVendor = activeEditingId ? window.CMS_STORE.data.vendors.find(v => v.id === activeEditingId) : null;
+      if (!activeVendor || !activeVendor.gstNotApplicable) {
+        if (gstNa && gstNa.checked) { gstNa.checked = false; window.CMS_MASTERS.toggleGstApplicable(false); }
+      }
+      if (!activeVendor || !activeVendor.panNotApplicable) {
+        if (panNa && panNa.checked) { panNa.checked = false; window.CMS_MASTERS.togglePanApplicable(false); }
       }
     },
 
@@ -4569,7 +4646,7 @@ window.CMS_MASTERS = {
       }
     }
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
-      name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: '', addressCountry: '', addressPinCode: '',
+      name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: '', addressCountry: 'India', addressPinCode: '',
       gstNo: '', panNo: '', gstNotApplicable: false, panNotApplicable: false, certificates: [], contactNo: '', email: '',
       certificateFile: '', gstCertificateFile: '', panCardFile: '', approvedForLimitedPeriod: false, approvalValidTill: '',
       bankName: '', accountNo: '', accountName: '', ifscCode: '', branchName: '', isBlocked: false, blockReason: '',
@@ -4577,6 +4654,7 @@ window.CMS_MASTERS = {
       quotedMaterialId: '', quotedMaterialName: '', quotedMaterialRate: '', quotedMaterialUnit: 'Nos', quotedMaterialHsn: '8472'
     };
 
+    const isForeign = Boolean(vendor.addressCountry && !vendor.addressCountry.includes('India'));
     const initialPan = vendor.panNo || '';
     const today = new Date().toISOString().split('T')[0];
     const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
@@ -4860,17 +4938,18 @@ window.CMS_MASTERS = {
                 </div>
               </div>
 
-              <!-- 2. GSTIN Number (Right Card - auto-synced from State & PAN) -->
+              <!-- 2. GSTIN Number (Right Card - auto-synced from State & PAN for India, single field for foreign) -->
               <div class="bg-white p-4 rounded border border-slate-200/90 shadow-2xs flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between mb-1.5 h-5">
-                    <label class="text-xs font-bold text-slate-800">
-                      GSTIN Number (15 Characters) <span class="text-rose-600">*</span>
+                    <label id="v-gst-label" class="text-xs font-bold text-slate-800">
+                      ${isForeign ? 'GST / VAT / Tax ID Number' : 'GSTIN Number (15 Characters)'} <span class="text-rose-600 font-bold">*</span>
                     </label>
-                    <span class="text-[9px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">Goods & Services</span>
+                    <span id="v-gst-badge" class="text-[9px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded">${isForeign ? 'Tax Identification' : 'Goods & Services'}</span>
                   </div>
                   
-                  <div class="flex items-center gap-1.5 h-10">
+                  <!-- Indian Separated Bracket Layout (Active for India) -->
+                  <div id="v-gst-bracket-container" class="${isForeign ? 'hidden' : 'flex'} items-center gap-1.5 h-10">
                     <!-- Bracket 1: State Code (2 digits) - Locked to State -->
                     <div class="w-14 h-10 shrink-0">
                       <input type="text" id="v-gst-state" readonly tabindex="-1" maxlength="2" value="${initialGstState}"
@@ -4899,16 +4978,23 @@ window.CMS_MASTERS = {
                     </div>
                   </div>
 
+                  <!-- Foreign Single Standard GST Field (Active for Other Countries) -->
+                  <div id="v-gst-normal-container" class="${isForeign ? '' : 'hidden'} h-10">
+                    <input type="text" id="v-gst-normal" maxlength="30" value="${vendor.gstNo || ''}" placeholder="Enter GST / VAT / Tax ID Number"
+                      oninput="this.value = this.value.toUpperCase(); CMS_MASTERS.onNormalGstInput(this.value);"
+                      class="w-full h-10 px-3 border border-slate-300 rounded font-mono font-bold uppercase tracking-wider text-xs text-slate-800 bg-white placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition shadow-2xs" />
+                  </div>
+
                   <!-- Hidden full input to preserve full compatibility with database & validation -->
                   <input type="hidden" id="v-gst" value="${vendor.gstNo || ''}" />
                   <div class="h-5 mt-1.5 flex items-center justify-between text-[11px] text-slate-600 font-mono">
-                    <span class="truncate">Full GSTIN: <strong id="v-gst-full-display" class="text-slate-900 font-bold">${vendor.gstNo || (initialGstState + initialGstPan + initialGstSuffix) || '-'}</strong></span>
-                    <span id="v-gst-state-name" class="text-slate-500 italic font-sans text-[10px] shrink-0 ml-1">${initialInfo.name ? '(' + initialInfo.name + ')' : ''}</span>
+                    <span class="truncate">Full GST / Tax ID: <strong id="v-gst-full-display" class="text-slate-900 font-bold">${vendor.gstNo || (isForeign ? (vendor.gstNo || '-') : (initialGstState + initialGstPan + initialGstSuffix)) || '-'}</strong></span>
+                    <span id="v-gst-state-name" class="${isForeign ? 'hidden' : ''} text-slate-500 italic font-sans text-[10px] shrink-0 ml-1">${initialInfo.name ? '(' + initialInfo.name + ')' : ''}</span>
                   </div>
                   
                   <div class="h-6 mt-2 flex items-center">
                     <label class="inline-flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
-                      <input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.toggleGstApplicable(this.checked)" class="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                      <input type="checkbox" id="v-gst-na" ${vendor.gstNotApplicable ? 'checked' : ''} onchange="CMS_MASTERS.toggleGstApplicable(this.checked)" class="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
                       <span>GST registration is not applicable for this vendor (Exempt)</span>
                     </label>
                   </div>
@@ -5311,6 +5397,22 @@ window.CMS_MASTERS = {
         } else {
           CMS_MASTERS.addVendorQuotationRow();
         }
+
+        // Guarantee that for a new vendor, PAN and GST boxes are initially unchecked and active
+        if (!isEdit) {
+          const pNa = document.getElementById('v-pan-na');
+          const gNa = document.getElementById('v-gst-na');
+          if (pNa) {
+            pNa.checked = false;
+            pNa.disabled = false;
+            CMS_MASTERS.togglePanApplicable(false);
+          }
+          if (gNa) {
+            gNa.checked = false;
+            gNa.disabled = false;
+            CMS_MASTERS.toggleGstApplicable(false);
+          }
+        }
       }, 0);
 
   },
@@ -5327,9 +5429,10 @@ window.CMS_MASTERS = {
     const sInput = document.getElementById('v-gst-state');
     const pInput = document.getElementById('v-gst-pan');
     const sufInput = document.getElementById('v-gst-suffix');
+    const normInput = document.getElementById('v-gst-normal');
     const box = document.getElementById('v-gst-file-box');
     
-    [input, sInput, pInput, sufInput].forEach(el => {
+    [input, sInput, pInput, sufInput, normInput].forEach(el => {
       if (!el) return;
       el.disabled = isNotApplicable;
       if (isNotApplicable) {
@@ -5343,14 +5446,23 @@ window.CMS_MASTERS = {
       if (input) input.value = '';
       if (pInput) pInput.value = '';
       if (sufInput) sufInput.value = '';
+      if (normInput) normInput.value = '';
       const displayEl = document.getElementById('v-gst-full-display');
       if (displayEl) displayEl.innerText = 'Exempt (N/A)';
     } else {
-      const stateVal = document.getElementById('v-state')?.value;
-      if (stateVal) this.onStateChange(stateVal);
-      const panVal = document.getElementById('v-pan')?.value;
-      if (panVal && pInput) pInput.value = panVal;
-      this.assembleGst();
+      const countryVal = document.getElementById('v-country')?.value || '';
+      const isForeign = Boolean(countryVal && !countryVal.includes('India'));
+      if (isForeign) {
+        if (normInput && input) input.value = normInput.value;
+        const displayEl = document.getElementById('v-gst-full-display');
+        if (displayEl && normInput) displayEl.innerText = normInput.value || '-';
+      } else {
+        const stateVal = document.getElementById('v-state')?.value;
+        if (stateVal) this.onStateChange(stateVal);
+        const panVal = document.getElementById('v-pan')?.value;
+        if (panVal && pInput) pInput.value = panVal;
+        this.assembleGst();
+      }
     }
 
     if (box) box.classList.toggle('hidden', isNotApplicable);
@@ -5724,32 +5836,51 @@ window.CMS_MASTERS = {
 
       const gstNa = document.getElementById('v-gst-na')?.checked || false;
       const gstInput = document.getElementById('v-gst');
-      const sCode = document.getElementById('v-gst-state')?.value.trim() || '';
-      const pCode = document.getElementById('v-gst-pan')?.value.trim().toUpperCase() || '';
-      const sufCode = document.getElementById('v-gst-suffix')?.value.trim().toUpperCase() || '';
-      let fullGst = (sCode + pCode + sufCode).toUpperCase();
-      if (gstInput && gstInput.value) {
-        fullGst = gstInput.value.trim().toUpperCase();
+      const countryVal = document.getElementById('v-country')?.value.trim() || '';
+      const isForeign = Boolean(countryVal && !countryVal.includes('India'));
+      const normInput = document.getElementById('v-gst-normal');
+
+      let fullGst = '';
+      if (isForeign) {
+        fullGst = (normInput ? normInput.value : (gstInput ? gstInput.value : '')).trim().toUpperCase();
+        if (gstInput) gstInput.value = fullGst;
+      } else {
+        const sCode = document.getElementById('v-gst-state')?.value.trim() || '';
+        const pCode = document.getElementById('v-gst-pan')?.value.trim().toUpperCase() || '';
+        const sufCode = document.getElementById('v-gst-suffix')?.value.trim().toUpperCase() || '';
+        fullGst = (sCode + pCode + sufCode).toUpperCase();
+        if (gstInput && gstInput.value) {
+          fullGst = gstInput.value.trim().toUpperCase();
+        }
       }
 
       if (!gstNa) {
+        const target = isForeign ? (normInput || gstInput) : (document.getElementById('v-gst-suffix') || gstInput);
         if (!fullGst || fullGst.length === 0) {
-          const target = document.getElementById('v-gst-suffix') || gstInput;
-          return highlightError(target, 'GSTIN Number is mandatory. If vendor is unregistered/exempt, check the GST exemption box.');
+          return highlightError(target, isForeign ? 'GST / VAT / Tax ID Number is mandatory. If vendor is unregistered/exempt, check the GST exemption box.' : 'GSTIN Number is mandatory. If vendor is unregistered/exempt, check the GST exemption box.');
         }
-        if (fullGst.length !== 15) {
-          const target = document.getElementById('v-gst-suffix') || gstInput;
-          return highlightError(target, `GSTIN must be exactly 15 characters (currently ${fullGst.length} characters). Example: 07AABCA1234F1Z5.`);
-        }
-        if (!/^[0-9A-Z]{15}$/.test(fullGst)) {
-          const target = document.getElementById('v-gst-suffix') || gstInput;
-          return highlightError(target, 'GSTIN must be 15 alphanumeric characters without spaces or symbols.');
+        if (!isForeign) {
+          if (fullGst.length !== 15) {
+            return highlightError(target, `GSTIN must be exactly 15 characters (currently ${fullGst.length} characters). Example: 07AABCA1234F1Z5.`);
+          }
+          if (!/^[0-9A-Z]{15}$/.test(fullGst)) {
+            return highlightError(target, 'GSTIN must be 15 alphanumeric characters without spaces or symbols.');
+          }
+          if (!/^[A-Z]$/.test(fullGst.charAt(13))) {
+            return highlightError(target, 'Invalid GSTIN: In the last 3 digits of GST, the middle character must always be an Alphabet (e.g. "1Z5").');
+          }
+        } else {
+          if (fullGst.length < 3) {
+            return highlightError(target, `GST / VAT / Tax ID must contain at least 3 characters (currently "${fullGst}").`);
+          }
+          if (!/^[A-Z0-9\-\/\s]+$/i.test(fullGst)) {
+            return highlightError(target, 'Invalid Tax ID format: only letters, numbers, hyphens, and slashes are allowed.');
+          }
         }
 
         // Duplicate GSTIN check
         const duplicateGst = store.data.vendors.find(v => v.id !== vendorId && v.gstNo && v.gstNo.toUpperCase() === fullGst);
         if (duplicateGst) {
-          const target = document.getElementById('v-gst-suffix') || gstInput;
           return highlightError(target, `Duplicate GSTIN! "${duplicateGst.name}" (${duplicateGst.id}) is already registered with GSTIN ${fullGst}.`);
         }
 
@@ -5761,7 +5892,7 @@ window.CMS_MASTERS = {
         );
         if (!hasGstFile) {
           const dropzone = document.getElementById('v-gst-dropzone');
-          return highlightError(dropzone, 'Please upload the GST Registration Certificate (PDF or Image).');
+          return highlightError(dropzone, isForeign ? 'Please upload the Tax Registration / GST Certificate (PDF or Image).' : 'Please upload the GST Registration Certificate (PDF or Image).');
         }
       }
 
@@ -5982,6 +6113,7 @@ window.CMS_MASTERS = {
       });
     };
     const currentUser = store.getCurrentUser();
+    const role = store.getRole();
     
     if (directSubmit) {
       for (let s = 1; s <= 4; s++) {
@@ -6034,7 +6166,16 @@ window.CMS_MASTERS = {
     // GST & PAN Statutory Check
     const gstNotApplicable = document.getElementById('v-gst-na')?.checked || false;
     const panNotApplicable = document.getElementById('v-pan-na')?.checked || false;
-    const gstNo = gstNotApplicable ? '' : (document.getElementById('v-gst')?.value.trim().toUpperCase() || '');
+    const isForeignVendor = Boolean(addressCountry && !addressCountry.includes('India'));
+    let gstNo = '';
+    if (!gstNotApplicable) {
+      if (isForeignVendor) {
+        const normGst = document.getElementById('v-gst-normal');
+        gstNo = (normGst ? normGst.value : (document.getElementById('v-gst')?.value || '')).trim().toUpperCase();
+      } else {
+        gstNo = document.getElementById('v-gst')?.value.trim().toUpperCase() || '';
+      }
+    }
     const panNo = panNotApplicable ? '' : (document.getElementById('v-pan')?.value.trim().toUpperCase() || '');
 
     const gstFileInput = document.getElementById('v-gst-file');
@@ -6078,7 +6219,7 @@ window.CMS_MASTERS = {
     }
 
     if (directSubmit && !gstNotApplicable && !gstCertificateFile) {
-      window.CMS_APP.toast('Please upload a copy of the GST Registration Certificate in Step 2.', 'error');
+      window.CMS_APP.toast(isForeignVendor ? 'Please upload a copy of the Tax Registration / GST Certificate in Step 2.' : 'Please upload a copy of the GST Registration Certificate in Step 2.', 'error');
       this.switchVendorTab(2);
       return;
     }
@@ -6243,9 +6384,12 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     if (directSubmit && !addressCountry) return window.CMS_APP.toast('Please select Nationality / Country of vendor.', 'error');
     if (directSubmit && !addressState) return window.CMS_APP.toast('Please select the State / Province.', 'error');
 
-    // PIN Code: exactly 6 digits
-    if (!addressPinCode || !/^[0-9]{6}$/.test(addressPinCode)) {
+    // PIN Code: exactly 6 digits for India; required for all
+    const isIndiaVendor = !addressCountry || addressCountry.includes('India');
+    if (isIndiaVendor && (!addressPinCode || !/^[0-9]{6}$/.test(addressPinCode))) {
       if (directSubmit) return window.CMS_APP.toast(`PIN Code must be exactly 6 numeric digits (currently "${addressPinCode}"). Example: 110020.`, 'error');
+    } else if (!isIndiaVendor && !addressPinCode) {
+      if (directSubmit) return window.CMS_APP.toast('PIN / Postal Code is mandatory.', 'error');
     }
 
     // Phone: minimum 10 digits
@@ -6257,13 +6401,25 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     // GSTIN Validation (unless exempt)
     if (!gstNotApplicable) {
       if (!gstNo) {
-        if (directSubmit) return window.CMS_APP.toast('GSTIN Number is mandatory. If vendor is unregistered, you must confirm the blue box (GST registration is not applicable).', 'error');
+        if (directSubmit) return window.CMS_APP.toast(isForeignVendor ? 'GST / VAT / Tax ID Number is mandatory. If vendor is unregistered/exempt, select the exemption box.' : 'GSTIN Number is mandatory. If vendor is unregistered/exempt, select the "GST registration is not applicable" box.', 'error');
       }
-      if (gstNo.length !== 15) {
-        if (directSubmit) return window.CMS_APP.toast(`GSTIN must be exactly 15 characters (currently ${gstNo.length} characters). Example: 07AABCA1234F1Z5.`, 'error');
-      }
-      if (!/^[0-9A-Z]{15}$/.test(gstNo)) {
-        if (directSubmit) return window.CMS_APP.toast('GSTIN must be 15 alphanumeric characters without spaces or symbols.', 'error');
+      if (!isForeignVendor) {
+        if (gstNo.length !== 15) {
+          if (directSubmit) return window.CMS_APP.toast(`GSTIN must be exactly 15 characters (currently ${gstNo.length} characters). Example: 07AABCA1234F1Z5.`, 'error');
+        }
+        if (!/^[0-9A-Z]{15}$/.test(gstNo)) {
+          if (directSubmit) return window.CMS_APP.toast('GSTIN must be 15 alphanumeric characters without spaces or symbols.', 'error');
+        }
+        if (!/^[A-Z]$/.test(gstNo.charAt(13))) {
+          if (directSubmit) return window.CMS_APP.toast('Invalid GSTIN: In the last 3 digits of GST, the middle character must always be an Alphabet (e.g. "1Z5").', 'error');
+        }
+      } else {
+        if (gstNo.length < 3) {
+          if (directSubmit) return window.CMS_APP.toast(`GST / VAT / Tax ID must contain at least 3 characters (currently "${gstNo}").`, 'error');
+        }
+        if (!/^[A-Z0-9\-\/\s]+$/i.test(gstNo)) {
+          if (directSubmit) return window.CMS_APP.toast('Invalid Tax ID format: only letters, numbers, hyphens, and slashes are allowed.', 'error');
+        }
       }
       // Check duplicate GSTIN across other vendors
       const duplicateGst = store.data.vendors.find(v => v.id !== vendorId && v.gstNo && v.gstNo.toUpperCase() === gstNo);
@@ -6275,7 +6431,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     // PAN Validation (unless exempt)
     if (!panNotApplicable) {
       if (!panNo) {
-        if (directSubmit) return window.CMS_APP.toast('PAN Card Number is mandatory. If vendor has no PAN, confirm the PAN exemption blue box.', 'error');
+        if (directSubmit) return window.CMS_APP.toast('PAN Card Number is mandatory. If vendor has no PAN, select the "PAN card is not applicable" box.', 'error');
       }
       if (panNo.length !== 10) {
         if (directSubmit) return window.CMS_APP.toast(`PAN Number must be exactly 10 characters (currently ${panNo.length} characters). Example: AABCA1234F.`, 'error');
@@ -6370,6 +6526,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
 
     const stateInfo = this.getStateInfo(addressState);
+    let targetVendorId = vendorId;
 
     if (isEdit) {
       const idx = store.data.vendors.findIndex(v => v.id === vendorId);
@@ -6411,6 +6568,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           newId = 'VEN-' + String(nextNum).padStart(3, '0');
         }
       }
+      targetVendorId = newId;
 
       store.data.vendors.unshift({
         id: newId,
@@ -6442,8 +6600,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
 
     // Automatically synchronize quotation and quoted material
-    
-      const targetVendorId = isEdit ? vendorId : newId;
+      if (!targetVendorId) targetVendorId = vendorId || 'VEN-DRAFT';
       
       for (const q of quotedItems) {
         if (!q.quotationNo && !q.materialName) continue;
@@ -6737,6 +6894,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       return;
     }
     const currentUser = store.getCurrentUser();
+    const role = store.getRole();
     v.status = 'Approved';
     v.isApproved = true;
     v.approvedAt = new Date().toISOString();
@@ -6991,6 +7149,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       return;
     }
     const currentUser = store.getCurrentUser();
+    const role = store.getRole();
     c.status = 'Approved';
     c.approvedAt = new Date().toISOString();
     c.approvedBy = currentUser.id;
@@ -8438,6 +8597,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       return;
     }
     const currentUser = store.getCurrentUser();
+    const role = store.getRole();
     m.status = 'Approved';
     m.isApproved = true;
     m.approvedAt = new Date().toISOString();
@@ -8780,6 +8940,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       return;
     }
     const currentUser = store.getCurrentUser();
+    const role = store.getRole();
     g.status = 'Approved';
     g.approvedAt = new Date().toISOString();
     g.approvedBy = currentUser.id;

@@ -544,9 +544,11 @@ window.CMS_HOME = {
                     </div>
                   </td>
                   <td class='py-3 px-3'>
-                    <select class="role-sel-${u.id} border border-slate-300 rounded px-2 py-1 text-xs font-bold ${u.role === 'Admin' ? 'text-purple-700 bg-purple-50' : 'text-blue-600 bg-slate-50'}" ${u.id === currentUser.id ? 'disabled' : ''}>
-                      ${roles.map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r}</option>`).join('')}
-                    </select>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold ${u.role === 'Admin' ? 'text-purple-700 bg-purple-50 border border-purple-200' : 'text-blue-700 bg-blue-50 border border-blue-200'}">
+                      <i data-lucide="${u.role === 'Admin' ? 'shield-check' : 'user'}" class="w-3.5 h-3.5"></i>
+                      <span>${u.role}</span>
+                    </div>
+                    <div class="text-[9px] text-slate-400 mt-0.5">Fixed at Registration</div>
                   </td>
                   <td class='py-3 px-3'>
                     <div class='flex gap-2 flex-wrap'>
@@ -894,13 +896,14 @@ window.CMS_HOME = {
 
   async saveUserSettings(userId) {
     const checkboxes = document.querySelectorAll('.mod-chk-' + userId);
-    const roleSel = document.querySelector('.role-sel-' + userId);
     const pwdInput = document.getElementById('pwd-' + userId);
     
     const modules = Array.from(checkboxes).filter(chk => chk.checked).map(chk => chk.value);
-    const role = roleSel ? roleSel.value : 'User';
     const password = pwdInput && pwdInput.value.trim() !== '' ? pwdInput.value : undefined;
-    
+
+    const existingUser = window.CMS_STORE.getUsers().find(u => u.id === userId);
+    const role = existingUser ? existingUser.role : 'User'; // strictly preserve registered role
+
     try {
       const response = await fetch('/api/users/' + userId, {
         method: 'PUT',
@@ -966,6 +969,10 @@ window.CMS_HOME = {
     const license = document.getElementById('home-comp-license')?.value.trim();
 
     if (!name) return window.CMS_APP.toast('Company name is required', 'error');
+    if (gstin && gstin.length > 0) {
+      if (gstin.length !== 15) return window.CMS_APP.toast('GSTIN must be exactly 15 characters.', 'error');
+      if (!/^[A-Z]$/.test(gstin.charAt(13))) return window.CMS_APP.toast('Invalid GSTIN: In the last 3 digits, the middle character must always be an Alphabet (e.g. "Z").', 'error');
+    }
 
     const updated = {
       ...this.companyInfo,

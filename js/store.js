@@ -1434,18 +1434,11 @@ class Store {
   }
 
   setRole(role) {
-    let user = this.getUsers().find(u => u.role === role);
-    if (!user && (role === 'User' || role === 'Maker')) {
-      user = this.getUsers().find(u => u.role === 'Maker' || u.role === 'User');
+    if (window.CMS_APP) {
+      window.CMS_APP.toast('Role switching is permanently disabled. User roles are fixed at registration.', 'warning');
     }
-    if (user) {
-      this.setCurrentUser(user.id);
-      if (window.CMS_APP) {
-        window.CMS_APP.updateUserProfile();
-        window.CMS_APP.updatePendingBadge();
-        window.CMS_APP.refreshView();
-      }
-    }
+    console.warn('[Security] Role switching is forbidden. User roles are permanently fixed during registration.');
+    return false;
   }
 
   // --- Auto Master Filing: Automatically registers a new item directly into Master from Goods Receipt ---
