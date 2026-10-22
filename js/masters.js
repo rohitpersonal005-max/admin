@@ -3671,9 +3671,9 @@ window.CMS_MASTERS = {
       const panNa = document.getElementById('v-pan-na');
       
       const c = this.countries.find(x => countryName && countryName.includes(x.name));
-      if (ccInput && c) ccInput.value = c.code;
+      if (ccInput) ccInput.value = c ? c.code : '';
 
-      const isForeign = countryName && !countryName.includes('India');
+      const isForeign = Boolean(countryName && !countryName.includes('India'));
 
       const talukaInput = document.getElementById('v-taluka');
       const districtInput = document.getElementById('v-district');
@@ -4646,7 +4646,7 @@ window.CMS_MASTERS = {
       }
     }
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
-      name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: '', addressCountry: 'India', addressPinCode: '',
+      name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: '', addressCountry: '', countryCode: '', addressPinCode: '',
       gstNo: '', panNo: '', gstNotApplicable: false, panNotApplicable: false, certificates: [], contactNo: '', email: '',
       certificateFile: '', gstCertificateFile: '', panCardFile: '', approvedForLimitedPeriod: false, approvalValidTill: '',
       bankName: '', accountNo: '', accountName: '', ifscCode: '', branchName: '', isBlocked: false, blockReason: '',
@@ -4786,7 +4786,7 @@ window.CMS_MASTERS = {
                   <div class="md:col-span-1">
                     <label class="block font-bold text-slate-700 mb-1">State / Province <span class="text-rose-600 font-bold">*</span></label>
                     <div id="v-state-container">
-                      ${!(vendor.addressCountry || 'India').includes('India') ? 
+                      ${(vendor.addressCountry && !vendor.addressCountry.includes('India')) ? 
                         `<input id="v-state" required value="${vendor.addressState || ''}" placeholder="State / Province" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />` 
                       : 
                         `<select id="v-state" required onchange="CMS_MASTERS.onStateChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white font-medium">
@@ -4822,9 +4822,10 @@ window.CMS_MASTERS = {
                       <label class="block font-bold text-slate-700 mb-1">Phone Number <span class="text-rose-600 font-bold">*</span></label>
                       <div class="flex items-stretch border border-slate-300 rounded-sm overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 shadow-sm w-full bg-white">
                         <select id="v-country-code" class="w-[115px] px-2 py-2 bg-slate-50 border-r border-slate-300 text-slate-700 font-mono text-xs focus:outline-none cursor-pointer">
+                          <option value="">-- Code --</option>
                           ${this.countries.map(c => {
                             const vCode = (vendor.countryCode || '').trim();
-                            const isSel = (vCode === c.code) || (!vCode && c.code === '+91') || (vCode.toLowerCase() === 'india' && c.code === '+91') || (vCode === c.name);
+                            const isSel = Boolean(vCode && ((vCode === c.code) || (vCode === c.name)));
                             return `<option value="${c.code}" ${isSel ? 'selected' : ''}>${c.code} (${c.name})</option>`;
                           }).join('')}
                         </select>
@@ -5749,7 +5750,7 @@ window.CMS_MASTERS = {
         return highlightError(country, 'Please select Nationality / Country of vendor.');
       }
 
-      const isIndia = (country.value || 'India').includes('India');
+      const isIndia = Boolean(country.value && country.value.includes('India'));
 
       const state = document.getElementById('v-state');
       if (!state || !state.value.trim()) {
@@ -6385,7 +6386,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     if (directSubmit && !addressState) return window.CMS_APP.toast('Please select the State / Province.', 'error');
 
     // PIN Code: exactly 6 digits for India; required for all
-    const isIndiaVendor = !addressCountry || addressCountry.includes('India');
+    const isIndiaVendor = Boolean(addressCountry && addressCountry.includes('India'));
     if (isIndiaVendor && (!addressPinCode || !/^[0-9]{6}$/.test(addressPinCode))) {
       if (directSubmit) return window.CMS_APP.toast(`PIN Code must be exactly 6 numeric digits (currently "${addressPinCode}"). Example: 110020.`, 'error');
     } else if (!isIndiaVendor && !addressPinCode) {
