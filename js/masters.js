@@ -1251,10 +1251,11 @@ window.CMS_MASTERS = {
       return `
         <tr class="hover:bg-slate-50/80 transition ${isBlocked ? 'bg-rose-50/40' : isRevision ? 'bg-amber-50/40' : isPending ? 'bg-slate-50/30' : ''}">
           <td class="p-4">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
               <span class="font-bold text-blue-600 text-sm hover:text-blue-600 cursor-pointer" onclick="CMS_MASTERS.viewVendorProfile('${v.id}')">${v.name}</span>
               ${isBlocked ? '<span class="px-1.5 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold text-[9px] uppercase tracking-wide">BLOCKED</span>' : ''}
               ${isRevision ? '<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 font-bold text-[9px] uppercase tracking-wide">REVISION REQUIRED</span>' : ''}
+              ${v.pendingModificationTaskId ? '<span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-300 font-bold text-[9px] uppercase tracking-wide inline-flex items-center gap-1"><i data-lucide="clipboard-edit" class="w-2.5 h-2.5"></i> TASK ACTIVE</span>' : ''}
             </div>
             <div class="text-[11px] text-slate-400 font-mono mt-0.5">${v.id} � ${stateInfo.code ? `State Code: ${stateInfo.code}` : ''}</div>
             <div class="text-slate-500 line-clamp-1 mt-0.5 text-[11px]" title="${[v.address, v.addressDistrict, v.addressState].filter(Boolean).join(', ')}">
@@ -1317,9 +1318,12 @@ window.CMS_MASTERS = {
             ${v.bankName ? `<div class="text-[10px] text-slate-400 font-mono">Bank: ${v.bankName}</div>` : ''}
           </td>
           <td class="p-4">
-            <span class="badge ${isApproved ? 'badge-approved' : isRevision ? 'badge-draft' : isPending ? 'badge-pending' : 'badge-draft'}">
+            <span class="badge ${isBlocked ? 'badge-rejected' : isApproved ? 'badge-approved' : isRevision ? 'badge-draft' : isPending ? 'badge-pending' : 'badge-draft'}">
               ${v.status}
             </span>
+            ${v.autoBlockedOnExpiry ? `
+              <div class="text-[10px] text-rose-600 font-bold mt-1 flex items-center gap-1"><i data-lucide="alert-octagon" class="w-3 h-3"></i> Expired Hold</div>
+            ` : ''}
             ${v.approvedForLimitedPeriod && v.approvalValidTill ? `
               <div class="text-[10px] text-amber-700 font-mono mt-1 font-semibold">Valid Till: ${window.CMS_STORE.formatDate(v.approvalValidTill)}</div>
             ` : ''}
@@ -1334,6 +1338,14 @@ window.CMS_MASTERS = {
             <button onclick="CMS_MASTERS.downloadVendorForm('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-sm transition" title="Download / Print Registration Form">
               <i data-lucide="printer" class="w-3.5 h-3.5"></i>
             </button>
+
+            <!-- Assigned Modification Task Action -->
+            ${v.pendingModificationTaskId ? `
+              <button onclick="CMS_MASTERS.openVendorModal('${v.id}', '${v.pendingModificationTaskId}')" class="px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Update Authorized Phase of Vendor Form">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-600"></i>
+                <span>Update Form</span>
+              </button>
+            ` : ''}
 
             <!-- Continue Working on Draft & Edit/Revise Buttons -->
             ${!isApproved && (v.status === 'Draft' || isRevision) ? `
@@ -1383,6 +1395,9 @@ window.CMS_MASTERS = {
   },
 
   renderVendors() {
+    if (window.CMS_NOTIFICATIONS && typeof window.CMS_NOTIFICATIONS.checkAndApplyAutoExpiryBlocks === 'function') {
+      try { window.CMS_NOTIFICATIONS.checkAndApplyAutoExpiryBlocks(); } catch (e) { console.error(e); }
+    }
     const store = window.CMS_STORE.data;
     const role = window.CMS_STORE.getRole();
     let list = this.getFilteredVendors();
@@ -2282,6 +2297,19 @@ window.CMS_MASTERS = {
       });
     }
 
+    // Limited Period Approval Document
+    const limDocFile = v.approvalDocFile || '';
+    if (v.approvedForLimitedPeriod && limDocFile) {
+      addAttachment({
+        slotId: 'approval_doc',
+        filename: limDocFile,
+        title: v.approvalDocTitle || 'Limited Period Approval / Justification Letter',
+        category: 'Administrative Sanction & Validity Justification',
+        docType: 'approval_doc',
+        extraRef: v.approvalValidTill ? `Valid Till: ${formatDate(v.approvalValidTill)}` : ''
+      });
+    }
+
     // 4. Step 3: Commercial Quotation Documents
     let quoteDocAdded = false;
     quotes.forEach((q, idx) => {
@@ -2405,53 +2433,50 @@ window.CMS_MASTERS = {
     const customLogo = (companyInfo.logo && !companyInfo.logo.includes('adminutes_logo')) ? companyInfo.logo : (companyInfo.logoUrl && !companyInfo.logoUrl.includes('adminutes_logo') ? companyInfo.logoUrl : null);
 
     return `
-      <div id="vendor-paper-form" data-vendor-id="${v.id}" class="space-y-5 text-xs bg-white ${isPrint ? 'p-0 border-0 shadow-none' : 'p-6 border border-slate-300 shadow-sm'} text-slate-800">
+      <div id="vendor-paper-form" data-vendor-id="${v.id}" class="space-y-6 text-xs bg-white ${isPrint ? 'p-0 border-0 shadow-none' : 'p-6 sm:p-8'} text-slate-800">
         
         <!-- Official Document Letterhead & Header -->
-        <div class="${isPrint ? 'pb-4 mb-4' : 'border-b-2 border-slate-900 pb-4 mb-4'}">
+        <div class="border-b border-slate-200 pb-4 mb-4">
           <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
             <div class="flex items-start gap-3.5 max-w-xl">
               ${customLogo ? `
-                <img src="${customLogo}" alt="Company Logo" class="h-14 w-auto rounded border border-slate-300 object-contain shadow-2xs mt-0.5 shrink-0" onerror="this.style.display='none'" />
+                <img src="${customLogo}" alt="Company Logo" class="h-14 w-auto rounded border border-slate-200 object-contain mt-0.5 shrink-0" onerror="this.style.display='none'" />
               ` : ''}
               <div>
                 <h1 class="text-xl font-black tracking-tight text-slate-900 uppercase leading-snug">${adminCompName}</h1>
                 ${adminAddressStr ? `
-                  <div class="text-[11px] text-slate-600 mt-1 leading-normal font-medium">
+                  <div class="text-[11px] text-slate-500 mt-1 leading-normal font-medium">
                     ${adminAddressStr}
                   </div>
                 ` : ''}
                 ${(adminGstin || adminPan) ? `
-                  <div class="text-[11px] text-slate-700 mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono">
+                  <div class="text-[11px] text-slate-600 mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-mono">
                     ${adminGstin ? `<span>GSTIN: <strong class="text-slate-900 font-bold">${adminGstin}</strong></span>` : ''}
                     ${adminPan ? `<span>PAN: <strong class="text-slate-900 font-bold">${adminPan}</strong></span>` : ''}
                   </div>
                 ` : ''}
                 ${(adminContact || adminEmail) ? `
-                  <div class="text-[11px] text-slate-600 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-sans">
-                    ${adminContact ? `<span>Contact: <strong class="font-mono text-slate-800">${adminContact}</strong></span>` : ''}
-                    ${adminEmail ? `<span>Email: <strong class="text-slate-800">${adminEmail}</strong></span>` : ''}
+                  <div class="text-[11px] text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 font-sans">
+                    ${adminContact ? `<span>Contact: <strong class="font-mono text-slate-700">${adminContact}</strong></span>` : ''}
+                    ${adminEmail ? `<span>Email: <strong class="text-slate-700">${adminEmail}</strong></span>` : ''}
                   </div>
                 ` : ''}
-                <div class="text-[10px] text-slate-800 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
-                  <span class="inline-block w-2 h-2 rounded-full bg-slate-800 shrink-0"></span>
+                <div class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
+                  <span class="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0"></span>
                   <span>Central Procurement & Consumable Management System (CMS)</span>
                 </div>
               </div>
             </div>
-            <div class="text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-0 border-slate-300 pl-3 sm:pl-0 shrink-0">
-              <span class="inline-block px-3 py-1 bg-slate-900 text-white font-bold text-[11px] tracking-wider uppercase rounded">
-                VENDOR EMPANELMENT & REGISTRATION FORM
-              </span>
-              <div class="mt-1.5 text-xs">
-                <span class="text-slate-500 font-medium">Form Ref:</span>
+            <div class="text-left sm:text-right shrink-0">
+              <div class="text-xs">
+                <span class="text-slate-400 font-medium">Form Ref:</span>
                 <strong class="font-mono font-bold text-slate-900 ml-1">CMS/VRF/${v.id}</strong>
               </div>
               <div class="text-xs">
-                <span class="text-slate-500 font-medium">Status:</span>
+                <span class="text-slate-400 font-medium">Status:</span>
                 <span class="font-bold ml-1 text-slate-900">${(v.status || 'Pending Approval').toUpperCase()}</span>
               </div>
-              <div class="text-[11px] text-slate-500 mt-0.5">
+              <div class="text-[11px] text-slate-400 mt-0.5">
                 Date: <strong class="text-slate-700 font-mono">${formatDate(v.createdAt || new Date())}</strong>
               </div>
             </div>
@@ -2459,352 +2484,346 @@ window.CMS_MASTERS = {
         </div>
 
         <!-- 1. Organization & Business Details -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>1. Organization & General Business Particulars</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 1 of 8</span>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">1. Organization & General Business Particulars</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 1 of 8</span>
           </div>
-          <table class="w-full text-xs border-collapse">
-            <tbody>
-              <tr class="border-b border-slate-200">
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Legal Business Name</td>
-                <td class="w-1/4 p-2 font-bold text-slate-900 border-r border-slate-200">${v.name}</td>
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Constitution / Entity Type</td>
-                <td class="w-1/4 p-2 font-medium text-slate-800">${v.constitution || 'Not Specified'}</td>
-              </tr>
-              <tr class="border-b border-slate-200">
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Country of Origin</td>
-                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">${v.addressCountry || 'India'}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">State / UT (Code)</td>
-                <td class="p-2 font-medium text-slate-800">${v.addressState || '-'} ${stateInfo.code ? `(${stateInfo.code})` : ''}</td>
-              </tr>
-              <tr class="border-b border-slate-200">
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">District</td>
-                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">${v.addressDistrict || '-'}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Taluka / Tehsil</td>
-                <td class="p-2 font-medium text-slate-800">${v.addressTaluka || '-'}</td>
-              </tr>
-              <tr class="border-b border-slate-200">
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Registered Premises Address</td>
-                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">${v.address || '-'}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">PIN / Postal Code</td>
-                <td class="p-2 font-mono font-bold text-slate-900">${v.addressPinCode || '-'}</td>
-              </tr>
-              <tr>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Official Contact Number</td>
-                <td class="p-2 font-mono font-medium text-slate-800 border-r border-slate-200">${this.formatVendorPhone(v)}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Official Email Address</td>
-                <td class="p-2 font-medium text-slate-800">${v.email || '-'}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 pt-1">
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Legal Business Name</div>
+              <div class="text-xs font-bold text-slate-900 mt-0.5">${v.name}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Constitution / Entity Type</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.constitution || 'Not Specified'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Country of Origin</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.addressCountry || 'India'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">State / UT (Code)</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.addressState || '-'} ${stateInfo.code ? `(${stateInfo.code})` : ''}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">District</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.addressDistrict || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Taluka / Tehsil</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.addressTaluka || '-'}</div>
+            </div>
+            <div class="sm:col-span-2">
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Registered Premises Address</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.address || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">PIN / Postal Code</div>
+              <div class="text-xs font-mono font-bold text-slate-900 mt-0.5">${v.addressPinCode || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Official Contact Number</div>
+              <div class="text-xs font-mono font-medium text-slate-800 mt-0.5">${this.formatVendorPhone(v)}</div>
+            </div>
+            <div class="sm:col-span-2">
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Official Email Address</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.email || '-'}</div>
+            </div>
+          </div>
         </div>
 
         <!-- 2. Statutory Identifications (Tax & Legal) -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>2. Statutory Tax & Identification Credentials</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 2 of 8</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">2. Statutory Tax & Identification Credentials</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 2 of 8</span>
           </div>
-          <table class="w-full text-xs border-collapse">
-            <tbody>
-              <tr class="border-b border-slate-200">
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Income Tax PAN No.</td>
-                <td class="w-1/4 p-2 border-r border-slate-200">
-                  <div class="font-mono font-bold text-sm text-slate-900">${v.panNotApplicable ? 'EXEMPT / NOT APPLICABLE' : (v.panNo || 'Not Recorded')}</div>
-                  <div class="text-[10px] text-slate-500">${v.panNotApplicable ? 'Exempt under IT Rules' : 'Income Tax Department PAN'}</div>
-                  <div class="mt-1.5 pt-1.5 border-t border-slate-200 text-[10px]">
-                    <div class="flex items-center justify-between">
-                      <span class="text-slate-500 font-medium">Attached Proof:</span>
-                      ${panFile ? `
-                        <span class="text-[9px] font-bold text-slate-900 bg-white border border-slate-400 px-1.5 py-0.2 rounded font-mono">
-                          Annexure Doc #${panSeq}
-                        </span>
-                      ` : ''}
-                    </div>
-                    ${panFile ? `
-                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${panFile}">${panFile}</div>
-                      <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
-                    ` : `<div class="text-slate-400 italic mt-0.5">${v.panNotApplicable ? 'Not Applicable (Exempt)' : 'No document attached'}</div>`}
-                  </div>
-                </td>
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">GSTIN Registration No.</td>
-                <td class="w-1/4 p-2">
-                  <div class="font-mono font-bold text-sm text-slate-900">${v.gstNotApplicable ? 'EXEMPT / NOT REGISTERED' : (v.gstNo || 'Not Registered')}</div>
-                  ${!v.gstNotApplicable && v.gstNo ? `
-                    <div class="text-[10px] text-slate-500 font-mono mt-0.5">State: <strong>${gstState}</strong> | PAN: <strong>${gstPan}</strong> | Suffix: <strong>${gstSuffix}</strong></div>
-                  ` : `<div class="text-[10px] text-slate-500">Exempt from GST under threshold/category</div>`}
-                  <div class="mt-1.5 pt-1.5 border-t border-slate-200 text-[10px]">
-                    <div class="flex items-center justify-between">
-                      <span class="text-slate-500 font-medium">Attached Certificate:</span>
-                      ${gstFile ? `
-                        <span class="text-[9px] font-bold text-slate-900 bg-white border border-slate-400 px-1.5 py-0.2 rounded font-mono">
-                          Annexure Doc #${gstSeq}
-                        </span>
-                      ` : ''}
-                    </div>
-                    ${gstFile ? `
-                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${gstFile}">${gstFile}</div>
-                      <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
-                    ` : `<div class="text-slate-400 italic mt-0.5">${v.gstNotApplicable ? 'Not Applicable (Exempt)' : 'No document attached'}</div>`}
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 pt-1">
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Income Tax PAN No.</div>
+              <div class="font-mono font-bold text-sm text-slate-900 mt-0.5">${v.panNotApplicable ? 'EXEMPT / NOT APPLICABLE' : (v.panNo || 'Not Recorded')}</div>
+              <div class="text-[10px] text-slate-500">${v.panNotApplicable ? 'Exempt under IT Rules' : 'Income Tax Department PAN'}</div>
+              <div class="text-[11px] text-slate-600 mt-1.5">
+                <span class="text-slate-400">Attached Proof: </span>
+                ${panFile ? `<span class="font-semibold text-slate-800">${panFile}</span> <span class="text-[10px] text-slate-500 font-mono">(Annexure #${panSeq})</span>` : `<span class="text-slate-400 italic">${v.panNotApplicable ? 'Not Applicable (Exempt)' : 'No document attached'}</span>`}
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">GSTIN Registration No.</div>
+              <div class="font-mono font-bold text-sm text-slate-900 mt-0.5">${v.gstNotApplicable ? 'EXEMPT / NOT REGISTERED' : (v.gstNo || 'Not Registered')}</div>
+              ${!v.gstNotApplicable && v.gstNo ? `
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">State: <strong>${gstState}</strong> | PAN: <strong>${gstPan}</strong> | Suffix: <strong>${gstSuffix}</strong></div>
+              ` : `<div class="text-[10px] text-slate-500">Exempt from GST under threshold/category</div>`}
+              <div class="text-[11px] text-slate-600 mt-1.5">
+                <span class="text-slate-400">Attached Certificate: </span>
+                ${gstFile ? `<span class="font-semibold text-slate-800">${gstFile}</span> <span class="text-[10px] text-slate-500 font-mono">(Annexure #${gstSeq})</span>` : `<span class="text-slate-400 italic">${v.gstNotApplicable ? 'Not Applicable (Exempt)' : 'No document attached'}</span>`}
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 3. Banking & Remittance Particulars -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>3. Banking & Remittance Particulars (PFMS / RTGS / NEFT)</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 3 of 8</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">3. Banking & Remittance Particulars (PFMS / RTGS / NEFT)</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 3 of 8</span>
           </div>
-          <table class="w-full text-xs border-collapse">
-            <tbody>
-              <tr class="border-b border-slate-200">
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Bank Name</td>
-                <td class="w-1/4 p-2 font-bold text-slate-900 border-r border-slate-200">${v.bankName || '-'}</td>
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Branch Name</td>
-                <td class="w-1/4 p-2 font-medium text-slate-800">${v.branchName || '-'}</td>
-              </tr>
-              <tr class="border-b border-slate-200">
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Beneficiary / Account Name</td>
-                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">${v.accountName || v.name || '-'}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Bank Account Number</td>
-                <td class="p-2 font-mono font-bold text-slate-900">${v.accountNo || '-'}</td>
-              </tr>
-              <tr>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">IFSC Code (11 Chars)</td>
-                <td class="p-2 font-mono font-bold text-slate-900 border-r border-slate-200">${v.ifscCode || '-'}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Bank Verification Proof</td>
-                <td class="p-2">
-                  <div class="text-[11px] font-bold text-slate-800">${v.bankDocTitle || (v.bankDetails && v.bankDetails.bankDocTitle) || 'Cancelled Cheque / Bank Statement'}</div>
-                  <div class="mt-1 pt-1 border-t border-slate-200 text-[10px]">
-                    <div class="flex items-center justify-between">
-                      <span class="text-slate-500 font-medium">Document File:</span>
-                      ${bankDocFile ? `
-                        <span class="text-[9px] font-bold text-slate-900 bg-white border border-slate-400 px-1.5 py-0.2 rounded font-mono">
-                          Annexure Doc #${bankSeq}
-                        </span>
-                      ` : ''}
-                    </div>
-                    ${bankDocFile ? `
-                      <div class="text-slate-800 font-mono font-bold truncate mt-0.5" title="${bankDocFile}">${bankDocFile}</div>
-                      <div class="text-[9px] text-slate-500 italic mt-0.5">(See Section 8 at end of form)</div>
-                    ` : `<div class="text-slate-400 italic mt-0.5">No document attached</div>`}
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 pt-1">
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Bank Name</div>
+              <div class="text-xs font-bold text-slate-900 mt-0.5">${v.bankName || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Branch Name</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.branchName || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Beneficiary / Account Name</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.accountName || v.name || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Bank Account Number</div>
+              <div class="text-xs font-mono font-bold text-slate-900 mt-0.5">${v.accountNo || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">IFSC Code (11 Chars)</div>
+              <div class="text-xs font-mono font-bold text-slate-900 mt-0.5">${v.ifscCode || '-'}</div>
+            </div>
+            <div class="sm:col-span-3">
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Bank Verification Proof</div>
+              <div class="text-xs text-slate-800 mt-0.5">
+                <span class="font-medium">${v.bankDocTitle || (v.bankDetails && v.bankDetails.bankDocTitle) || 'Cancelled Cheque / Bank Statement'}</span>
+                ${bankDocFile ? ` - <span class="font-semibold text-slate-900">${bankDocFile}</span> <span class="text-[10px] text-slate-500 font-mono">(Annexure #${bankSeq})</span>` : ' <span class="text-slate-400 italic">(No document attached)</span>'}
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 4. Commercial Quotations & Approved Materials -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>4. Commercial Quotations & Approved Materials</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 4 of 8 (${quotes.length} Items)</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <div class="flex items-center gap-2">
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">4. Commercial Quotations & Approved Materials</h3>
+              <span class="px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded text-[10px] font-mono">${quotes.length} ${quotes.length === 1 ? 'Item' : 'Items'}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-400 font-normal hidden sm:inline">Section 4 of 8</span>
+              ${(!isPrint && quotes.length > 0) ? `
+                <button type="button" onclick="CMS_MASTERS.toggleVendorPreviewMaterials()" id="v-preview-mat-toggle-btn" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded transition print:hidden cursor-pointer" title="Click to Minimize / Expand Material List">
+                  <i data-lucide="chevron-up" class="w-3.5 h-3.5 text-blue-600"></i>
+                  <span>Minimize List</span>
+                </button>
+              ` : ''}
+            </div>
           </div>
-          ${quotes.length === 0 ? `
-            <div class="p-4 text-center text-slate-400 italic text-xs">No commercial quotations or approved materials recorded.</div>
+          ${options.minimizeMaterials ? `
+            <div class="p-3 bg-slate-50 rounded text-slate-700 text-[11px] flex items-center gap-2.5">
+              <i data-lucide="package" class="w-4 h-4 text-slate-400 shrink-0"></i>
+              <span><strong>Approved Material List (Summary):</strong> Total <strong>${quotes.length}</strong> commercial quotations / approved materials on official record. Itemized material list omitted per download selection.</span>
+            </div>
+          ` : quotes.length === 0 ? `
+            <div class="py-4 text-center text-slate-400 italic text-xs">No commercial quotations or approved materials recorded.</div>
           ` : `
-            <table class="w-full text-[11px] border-collapse text-left">
-              <thead>
-                <tr class="bg-slate-50 border-b border-slate-300 text-slate-700 font-bold">
-                  <th class="p-2 border-r border-slate-200 text-center w-8">#</th>
-                  <th class="p-2 border-r border-slate-200">Material Description</th>
-                  <th class="p-2 border-r border-slate-200 text-center w-16">HSN</th>
-                  <th class="p-2 border-r border-slate-200 text-center w-12">UOM</th>
-                  <th class="p-2 border-r border-slate-200 text-right w-20">Rate (₹)</th>
-                  <th class="p-2 border-r border-slate-200 text-right w-20">MRP (₹)</th>
-                  <th class="p-2 border-r border-slate-200">Quote Ref & Date</th>
-                  <th class="p-2 border-r border-slate-200">Validity & Alert</th>
-                  <th class="p-2">Document</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${quotes.map((q, idx) => {
-                  const qDoc = (q && (q.doc || q.document || q.file || q.quotationDoc || q.fileName || q.filename)) || (quotes.length === 1 ? v.quotationDoc : '');
-                  const qSeq = getAnnexureSeq(qDoc, 'quote', `quote_${idx}`);
-                  return `
-                    <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
-                      <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${idx + 1}</td>
-                      <td class="p-2 border-r border-slate-200">
-                        <div class="font-bold text-slate-900">${q.materialName || q.materialId || '-'}</div>
-                        <div class="text-[10px] text-slate-500 font-mono">${q.materialId || ''}</div>
-                      </td>
-                      <td class="p-2 border-r border-slate-200 text-center font-mono">${q.hsn || '-'}</td>
-                      <td class="p-2 border-r border-slate-200 text-center font-semibold">${q.unit || 'Nos'}</td>
-                      <td class="p-2 border-r border-slate-200 text-right font-mono font-bold text-slate-900">₹${Number(q.rate || 0).toFixed(2)}</td>
-                      <td class="p-2 border-r border-slate-200 text-right font-mono text-slate-600">${q.mrpNotApplicable || !q.mrp ? 'N/A' : '₹' + Number(q.mrp).toFixed(2)}</td>
-                      <td class="p-2 border-r border-slate-200">
-                        <div class="font-semibold text-slate-800">${q.quotationNo || 'Direct Quote'}</div>
-                        <div class="text-[10px] text-slate-500 font-mono">Date: ${formatDate(q.quotationDate)}</div>
-                      </td>
-                      <td class="p-2 border-r border-slate-200">
-                        <div class="text-[10px] text-slate-700">Valid Till: <strong class="font-mono">${formatDate(q.validTill || q.quotationValidTill)}</strong></div>
-                        <div class="text-[9px] text-emerald-700 font-semibold flex items-center gap-1"><i data-lucide="mail-check" class="w-3 h-3 text-emerald-600"></i> Auto-Mail: Active (7:00 AM)</div>
-                      </td>
-                      <td class="p-2">
-                        ${qDoc ? `
-                          <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${qDoc}">${qDoc}</div>
-                          ${qSeq ? `<div class="text-[9px] text-slate-900 font-bold">Annexure #${qSeq}</div>` : ''}
-                          ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${qDoc}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
-                        ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
-                      </td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
+            <div id="v-preview-materials-collapsed-banner" class="hidden"></div>
+            <div id="v-preview-materials-table-wrapper" class="overflow-x-auto">
+              <table class="w-full text-[11px] border-collapse text-left">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-400 font-semibold uppercase text-[10px] tracking-wider">
+                    <th class="py-2 px-2 text-center w-8">#</th>
+                    <th class="py-2 px-2">Material Description</th>
+                    <th class="py-2 px-2 text-center w-16">HSN</th>
+                    <th class="py-2 px-2 text-center w-12">UOM</th>
+                    <th class="py-2 px-2 text-right w-20">Rate (₹)</th>
+                    <th class="py-2 px-2 text-right w-20">MRP (₹)</th>
+                    <th class="py-2 px-2">Quote Ref & Date</th>
+                    <th class="py-2 px-2">Validity & Alert</th>
+                    <th class="py-2 px-2">Document</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${quotes.map((q, idx) => {
+                    const qDoc = (q && (q.doc || q.document || q.file || q.quotationDoc || q.fileName || q.filename)) || (quotes.length === 1 ? v.quotationDoc : '');
+                    const qSeq = getAnnexureSeq(qDoc, 'quote', `quote_${idx}`);
+                    return `
+                      <tr class="hover:bg-slate-50/50 transition">
+                        <td class="py-2 px-2 text-center font-bold text-slate-400">${idx + 1}</td>
+                        <td class="py-2 px-2">
+                          <div class="font-bold text-slate-900">${q.materialName || q.materialId || '-'}</div>
+                          <div class="text-[10px] text-slate-400 font-mono">${q.materialId || ''}</div>
+                        </td>
+                        <td class="py-2 px-2 text-center font-mono text-slate-600">${q.hsn || '-'}</td>
+                        <td class="py-2 px-2 text-center font-medium text-slate-700">${q.unit || 'Nos'}</td>
+                        <td class="py-2 px-2 text-right font-mono font-bold text-slate-900">₹${Number(q.rate || 0).toFixed(2)}</td>
+                        <td class="py-2 px-2 text-right font-mono text-slate-500">${q.mrpNotApplicable || !q.mrp ? 'N/A' : '₹' + Number(q.mrp).toFixed(2)}</td>
+                        <td class="py-2 px-2">
+                          <div class="font-medium text-slate-800">${q.quotationNo || 'Direct Quote'}</div>
+                          <div class="text-[10px] text-slate-400 font-mono">Date: ${formatDate(q.quotationDate)}</div>
+                        </td>
+                        <td class="py-2 px-2">
+                          <div class="text-[10px] text-slate-700">Valid: <strong class="font-mono text-slate-900">${formatDate(q.validTill || q.quotationValidTill)}</strong></div>
+                          <div class="text-[9px] text-emerald-700 font-medium flex items-center gap-1"><i data-lucide="mail-check" class="w-3 h-3 text-emerald-600"></i> Auto-Mail: Active</div>
+                        </td>
+                        <td class="py-2 px-2">
+                          ${qDoc ? `
+                            <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${qDoc}">${qDoc}</div>
+                            ${qSeq ? `<div class="text-[9px] text-slate-500">Annexure #${qSeq}</div>` : ''}
+                            ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${qDoc}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
+                          ` : '<span class="text-slate-300 italic text-[10px]">None</span>'}
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
           `}
         </div>
 
         <!-- 5. Regulatory Licenses & Compliance Certificates -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>5. Regulatory Licenses & Quality Accreditations</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 5 of 8 (${certs.length} Certificates)</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">5. Regulatory Licenses & Quality Accreditations</h3>
+            <span class="text-[10px] text-slate-400 font-normal">Section 5 of 8 (${certs.length} ${certs.length === 1 ? 'Certificate' : 'Certificates'})</span>
           </div>
           ${certs.length === 0 ? `
-            <div class="p-4 text-center text-slate-400 italic text-xs">No regulatory compliance certificates or quality accreditations recorded.</div>
+            <div class="py-4 text-center text-slate-400 italic text-xs">No regulatory compliance certificates or quality accreditations recorded.</div>
           ` : `
-            <table class="w-full text-[11px] border-collapse text-left">
-              <thead>
-                <tr class="bg-slate-50 border-b border-slate-300 text-slate-700 font-bold">
-                  <th class="p-2 border-r border-slate-200 text-center w-8">#</th>
-                  <th class="p-2 border-r border-slate-200">Accreditation / Authority</th>
-                  <th class="p-2 border-r border-slate-200 text-center w-24">Form / Std</th>
-                  <th class="p-2 border-r border-slate-200">Registration / License No.</th>
-                  <th class="p-2 border-r border-slate-200 text-center w-24">Validity Type</th>
-                  <th class="p-2 border-r border-slate-200">Valid Till Date</th>
-                  <th class="p-2 border-r border-slate-200">Expiry Alert</th>
-                  <th class="p-2">Document</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${certs.map((c, idx) => {
-                  const cFile = (c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc)) || (certs.length === 1 ? v.certificateFile : '');
-                  const cSeq = getAnnexureSeq(cFile, 'cert', `cert_${idx}`);
-                  return `
-                    <tr class="border-b border-slate-200 ${idx % 2 === 1 ? 'bg-slate-50/50' : 'bg-white'}">
-                      <td class="p-2 border-r border-slate-200 text-center font-bold text-slate-500">${idx + 1}</td>
-                      <td class="p-2 border-r border-slate-200 font-bold text-slate-900">${(c && (c.regulator || c.name)) || 'Statutory Certificate'}</td>
-                      <td class="p-2 border-r border-slate-200 text-center font-mono text-slate-600">${(c && c.formNo) || '-'}</td>
-                      <td class="p-2 border-r border-slate-200 font-mono font-medium text-slate-800">${(c && c.certificateNo) || '-'}</td>
-                      <td class="p-2 border-r border-slate-200 text-center font-semibold text-slate-900">${c && c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
-                      <td class="p-2 border-r border-slate-200 font-mono">${c && c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
-                      <td class="p-2 border-r border-slate-200 text-[10px] text-slate-600">
-                        ${c && c.hasValidity ? `<div class="text-[9px] text-emerald-700 font-semibold flex items-center gap-1"><i data-lucide="mail-check" class="w-3 h-3 text-emerald-600"></i> Auto-Mail: Active (7:00 AM)</div>` : ''}
-                      </td>
-                      <td class="p-2">
-                        ${cFile ? `
-                          <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${cFile}">${cFile}</div>
-                          ${cSeq ? `<div class="text-[9px] text-slate-900 font-bold">Annexure #${cSeq}</div>` : ''}
-                          ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${cFile}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
-                        ` : '<span class="text-slate-400 italic text-[10px]">None</span>'}
-                      </td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
+            <div class="overflow-x-auto">
+              <table class="w-full text-[11px] border-collapse text-left">
+                <thead>
+                  <tr class="border-b border-slate-200 text-slate-400 font-semibold uppercase text-[10px] tracking-wider">
+                    <th class="py-2 px-2 text-center w-8">#</th>
+                    <th class="py-2 px-2">Accreditation / Authority</th>
+                    <th class="py-2 px-2 text-center w-24">Form / Std</th>
+                    <th class="py-2 px-2">Registration / License No.</th>
+                    <th class="py-2 px-2 text-center w-24">Validity Type</th>
+                    <th class="py-2 px-2">Valid Till Date</th>
+                    <th class="py-2 px-2">Expiry Alert</th>
+                    <th class="py-2 px-2">Document</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  ${certs.map((c, idx) => {
+                    const cFile = (c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc)) || (certs.length === 1 ? v.certificateFile : '');
+                    const cSeq = getAnnexureSeq(cFile, 'cert', `cert_${idx}`);
+                    return `
+                      <tr class="hover:bg-slate-50/50 transition">
+                        <td class="py-2 px-2 text-center font-bold text-slate-400">${idx + 1}</td>
+                        <td class="py-2 px-2 font-bold text-slate-900">${(c && (c.regulator || c.name)) || 'Statutory Certificate'}</td>
+                        <td class="py-2 px-2 text-center font-mono text-slate-600">${(c && c.formNo) || '-'}</td>
+                        <td class="py-2 px-2 font-mono font-medium text-slate-800">${(c && c.certificateNo) || '-'}</td>
+                        <td class="py-2 px-2 text-center font-medium text-slate-700">${c && c.hasValidity ? 'Time-Bound' : 'Perpetual'}</td>
+                        <td class="py-2 px-2 font-mono text-slate-800">${c && c.hasValidity && c.validTill ? formatDate(c.validTill) : 'Lifetime / No Expiry'}</td>
+                        <td class="py-2 px-2 text-[10px] text-slate-600">
+                          ${c && c.hasValidity ? `<div class="text-[9px] text-emerald-700 font-medium flex items-center gap-1"><i data-lucide="mail-check" class="w-3 h-3 text-emerald-600"></i> Auto-Mail: Active</div>` : ''}
+                        </td>
+                        <td class="py-2 px-2">
+                          ${cFile ? `
+                            <div class="text-[10px] text-slate-700 font-mono truncate max-w-[120px]" title="${cFile}">${cFile}</div>
+                            ${cSeq ? `<div class="text-[9px] text-slate-500">Annexure #${cSeq}</div>` : ''}
+                            ${!isPrint ? `<button type="button" onclick="CMS_APP.previewFile('${cFile}')" class="text-[10px] text-blue-600 hover:underline block mt-0.5">View File</button>` : ''}
+                          ` : '<span class="text-slate-300 italic text-[10px]">None</span>'}
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
           `}
         </div>
 
         <!-- 6. Governance, Administrative Approval & Audit Trail -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>6. Administrative Governance, Sanction & Audit Trail</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 6 of 8</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">6. Administrative Governance, Sanction & Audit Trail</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 6 of 8</span>
           </div>
-          <table class="w-full text-xs border-collapse">
-            <tbody>
-              <tr class="border-b border-slate-200">
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Empanelment Category</td>
-                <td class="w-1/4 p-2 font-medium text-slate-800 border-r border-slate-200">
-                  ${v.approvedForLimitedPeriod ? `
-                    <span class="font-bold text-slate-900">Limited Period Approval</span>
-                    <div class="text-[10px] text-slate-600 font-mono">Valid Till: ${formatDate(v.approvalValidTill)} (Alert: ${v.approvalAlertDays || 15}d prior on ${formatDate(v.approvalAlertDate)})</div>
-                  ` : `
-                    <span class="font-bold text-slate-900">Perpetual / Regular Empanelment</span>
-                  `}
-                </td>
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Risk & Blacklist Status</td>
-                <td class="w-1/4 p-2 font-medium">
-                  ${v.isBlocked ? `
-                    <span class="font-bold text-slate-900">BLACKLISTED / BLOCKED</span>
-                    <div class="text-[10px] text-slate-700">Reason: ${v.blockReason || 'Administrative order'}</div>
-                  ` : `
-                    <span class="font-bold text-slate-900">Cleared & In Good Standing</span>
-                  `}
-                </td>
-              </tr>
-              <tr class="border-b border-slate-200">
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Registration Initiated By</td>
-                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">
-                  <div>${v.createdByName || v.createdBy || 'Store Staff'}</div>
-                  <div class="text-[10px] text-slate-500 font-mono">Initiated: ${formatDate(v.createdAt)}</div>
-                </td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Sanctioning / Approval Authority</td>
-                <td class="p-2 font-medium text-slate-800">
-                  <div>${v.approvedBy || (v.status === 'Approved' ? 'Col. Anita Sharma (Admin)' : 'Pending Review')}</div>
-                  <div class="text-[10px] text-slate-500 font-mono">Date: ${formatDate(v.approvedAt)}</div>
-                </td>
-              </tr>
-              ${v.checkerMistakeRemark ? `
-                <tr>
-                  <td class="p-2 ${isPrint ? 'bg-slate-100 font-semibold text-slate-800' : 'bg-rose-50 font-semibold text-rose-800'} border-r border-slate-200">Checker Review / Mistake Remark</td>
-                  <td colspan="3" class="p-2 font-medium ${isPrint ? 'text-slate-900 bg-white' : 'text-rose-900 bg-rose-50/30'}">
-                    <div>${v.checkerMistakeRemark}</div>
-                    <div class="text-[10px] ${isPrint ? 'text-slate-600' : 'text-rose-600'}">Reviewed By: ${v.rejectedBy || 'Store In-Charge'}</div>
-                  </td>
-                </tr>
-              ` : ''}
-            </tbody>
-          </table>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 pt-1">
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Empanelment Category</div>
+              <div class="text-xs font-bold text-slate-900 mt-0.5">
+                ${v.approvedForLimitedPeriod ? `
+                  <span>Limited Period Approval</span>
+                  <div class="text-[10px] text-slate-500 font-mono">Valid: ${formatDate(v.approvalValidTill)}</div>
+                  ${v.approvalDocFile ? `
+                    <div class="text-[10px] text-blue-600 font-sans mt-0.5 flex items-center gap-1 cursor-pointer hover:underline" onclick="CMS_APP.viewDocument('${v.approvalDocFile}', 'Limited Period Approval Document', { partyName: '${(v.name || '').replace(/'/g, "\\'")}', id: '${v.id}' })">
+                      <i data-lucide="file-check" class="w-3 h-3 text-blue-600"></i>
+                      <span>Doc: ${v.approvalDocFile}</span>
+                    </div>
+                  ` : ''}
+                ` : `
+                  <span>Perpetual / Regular Empanelment</span>
+                `}
+              </div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Risk & Blacklist Status</div>
+              <div class="text-xs font-bold mt-0.5 ${v.isBlocked ? 'text-rose-600' : 'text-emerald-700'}">
+                ${v.isBlocked ? 'BLACKLISTED / BLOCKED' : 'Cleared & In Good Standing'}
+              </div>
+              ${v.isBlocked && v.blockReason ? `<div class="text-[10px] text-slate-600 mt-0.5">Reason: ${v.blockReason}</div>` : ''}
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Registration Initiated By</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.createdByName || v.createdBy || 'Store Staff'}</div>
+              <div class="text-[10px] text-slate-400 font-mono">Date: ${formatDate(v.createdAt)}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Sanctioning / Approval Authority</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${v.approvedBy || (v.status === 'Approved' ? 'Col. Anita Sharma (Admin)' : 'Pending Review')}</div>
+              <div class="text-[10px] text-slate-400 font-mono">Date: ${formatDate(v.approvedAt)}</div>
+            </div>
+            ${v.checkerMistakeRemark ? `
+              <div class="sm:col-span-4 p-3 bg-amber-50 rounded text-xs text-amber-900 mt-1">
+                <div><strong>Checker Review / Mistake Remark:</strong> ${v.checkerMistakeRemark}</div>
+                <div class="text-[10px] text-amber-700 mt-0.5">Reviewed By: ${v.rejectedBy || 'Store In-Charge'}</div>
+              </div>
+            ` : ''}
+          </div>
         </div>
 
         <!-- 7. Undertaking & Tri-Partite Authorization Signatures -->
-        <div class="border border-slate-300 rounded p-4 bg-slate-50/50 space-y-4">
-          <div class="bg-slate-100 -mx-4 -mt-4 mb-3 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>7. Undertaking & Tri-Partite Authorization Signatures</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 7 of 8</span>
+        <div class="space-y-3 pt-3">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">7. Undertaking & Tri-Partite Authorization Signatures</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 7 of 8</span>
           </div>
 
-          <div class="text-[11px] text-slate-600 leading-relaxed italic border-b border-slate-200 pb-2.5">
+          <p class="text-[11px] text-slate-500 leading-relaxed italic mb-4">
             <strong>Statutory Undertaking:</strong> We hereby solemnly affirm and certify that all particulars, statutory registrations, bank credentials, and commercial quotations recorded in this registration form are true, correct, and legally valid. Any misrepresentation shall render this empanelment immediately null and void.
-          </div>
+          </p>
 
-          <div class="grid grid-cols-3 gap-4 pt-2">
-            <!-- Box 1: Vendor Signatory -->
-            <div class="border border-slate-300 bg-white p-3 rounded flex flex-col justify-between h-32">
-              <div class="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Authorized Signatory of Vendor</div>
-              <div class="text-center text-slate-400 italic text-[10px]">[ Seal & Signature ]</div>
-              <div class="border-t border-slate-200 pt-1 text-[10px] text-slate-700">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-4">
+            <!-- Signatory 1 -->
+            <div class="flex flex-col justify-between min-h-[110px]">
+              <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Authorized Signatory of Vendor</div>
+              <div class="my-4 text-center text-slate-400 italic text-[10px]">[ Seal & Signature ]</div>
+              <div class="border-t border-slate-300 pt-2 text-[10px] text-slate-600 space-y-0.5">
                 <div>Name: ______________________</div>
                 <div>Designation: ________________</div>
                 <div>Date: _______________________</div>
               </div>
             </div>
 
-            <!-- Box 2: Store Dealing Assistant -->
-            <div class="border border-slate-300 bg-white p-3 rounded flex flex-col justify-between h-32">
-              <div class="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Store Dealing Assistant (Maker)</div>
-              <div class="text-center font-mono font-bold text-slate-900 text-xs">${v.createdByName || 'Store Staff'}</div>
-              <div class="border-t border-slate-200 pt-1 text-[10px] text-slate-700">
+            <!-- Signatory 2 -->
+            <div class="flex flex-col justify-between min-h-[110px]">
+              <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Store Dealing Assistant (Maker)</div>
+              <div class="my-2 text-center font-mono font-bold text-slate-900 text-xs">${v.createdByName || 'Store Staff'}</div>
+              <div class="border-t border-slate-300 pt-2 text-[10px] text-slate-600 space-y-0.5">
                 <div>Emp ID: CMS-M-01</div>
                 <div>Role: Store Keeper / Maker</div>
                 <div>Verified: ${formatDate(v.createdAt)}</div>
               </div>
             </div>
 
-            <!-- Box 3: Approving Officer -->
-            <div class="border border-slate-300 bg-white p-3 rounded flex flex-col justify-between h-32">
-              <div class="text-[10px] font-bold uppercase text-slate-500 tracking-wider">Store In-Charge / Approver (Checker)</div>
-              <div class="text-center font-bold text-slate-900 text-xs">${v.approvedBy || (v.status === 'Approved' ? 'Col. Anita Sharma' : 'Pending Sanction')}</div>
-              <div class="border-t border-slate-200 pt-1 text-[10px] text-slate-700">
+            <!-- Signatory 3 -->
+            <div class="flex flex-col justify-between min-h-[110px]">
+              <div class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Store In-Charge / Approver (Checker)</div>
+              <div class="my-2 text-center font-bold text-slate-900 text-xs">${v.approvedBy || (v.status === 'Approved' ? 'Col. Anita Sharma' : 'Pending Sanction')}</div>
+              <div class="border-t border-slate-300 pt-2 text-[10px] text-slate-600 space-y-0.5">
                 <div>Rank: Officer In-Charge</div>
                 <div>Designation: Central Stores Head</div>
                 <div>Sanctioned: ${formatDate(v.approvedAt)}</div>
@@ -2814,61 +2833,60 @@ window.CMS_MASTERS = {
         </div>
 
         <!-- 8. Attached Supporting Documents & Statutory Scans (Annexures) -->
-        <div class="border border-slate-300 rounded overflow-hidden mt-6 ${isPrint ? 'break-before-page' : ''}">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+        <div class="space-y-4 pt-4 mt-2 ${isPrint ? 'break-before-page' : ''}">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
             <div class="flex items-center gap-2">
-              <span>8. Attached Supporting Documents & Statutory Scans (Annexures)</span>
-              <span class="bg-slate-900 text-white text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">${attachments.length} ${attachments.length === 1 ? 'Attachment' : 'Attachments'}</span>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">8. Attached Supporting Documents & Statutory Scans (Annexures)</h3>
+              <span class="bg-slate-100 text-slate-700 text-[10px] px-2 py-0.5 rounded font-mono font-bold">${attachments.length} ${attachments.length === 1 ? 'Attachment' : 'Attachments'}</span>
             </div>
-            <span class="text-[10px] text-slate-500 font-normal">Section 8 of 8</span>
+            <span class="text-[10px] text-slate-400 font-medium">Section 8 of 8</span>
           </div>
 
           ${attachments.length === 0 ? `
-            <div class="p-6 text-center text-slate-400 italic text-xs bg-white">
+            <div class="py-6 text-center text-slate-400 italic text-xs">
               No physical or digital supporting documents attached with this vendor registration.
             </div>
           ` : `
-            <div class="p-4 bg-white space-y-6">
-              <div class="text-[11px] text-slate-600 leading-relaxed bg-slate-50 border border-slate-200 rounded p-2.5">
+            <div class="space-y-6">
+              <div class="text-[11px] text-slate-500 leading-relaxed">
                 <strong>Sequential Document Annexures:</strong> All supporting statutory records, regulatory accreditations, commercial quotes, and bank verification mandates are appended below in the exact sequential order of their upload during registration.
               </div>
 
               ${attachments.map((att, index) => {
                 const seq = index + 1;
                 const cachedData = options.fileCache ? options.fileCache[att.filename] : null;
-                const isImage = cachedData ? (cachedData.startsWith('data:image') || cachedData.match(/\.(png|jpg|jpeg|gif)$/i)) : att.filename.match(/\.(png|jpg|jpeg|gif)$/i);
 
                 return `
-                  <div class="border border-slate-300 rounded bg-white overflow-hidden shadow-2xs ${isPrint ? 'break-inside-avoid my-4' : ''}">
+                  <div class="py-3 border-b border-slate-200 last:border-b-0 space-y-3 ${isPrint ? 'break-inside-avoid my-4' : ''}">
                     <!-- Document Header Bar with User Title -->
-                    <div class="bg-slate-100 px-3 py-2 border-b border-slate-300 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-1">
                       <div class="flex items-center gap-2.5 min-w-0">
-                        <span class="inline-flex items-center justify-center w-6 h-6 bg-slate-800 text-white text-[11px] font-bold rounded-full shrink-0 font-mono">
+                        <span class="inline-flex items-center justify-center w-5 h-5 bg-slate-900 text-white text-[10px] font-bold rounded-full shrink-0 font-mono">
                           ${seq}
                         </span>
                         <div>
-                          <div class="text-xs font-bold text-slate-900 tracking-tight uppercase flex items-center gap-2">
-                            <span>${att.title}</span>
+                          <div class="text-xs font-bold text-slate-900 uppercase">
+                            ${att.title}
                           </div>
-                          <div class="text-[10px] text-slate-500 font-mono mt-0.5 flex items-center gap-2">
-                            <span>Filename: <strong class="text-slate-800">${att.filename}</strong></span>
-                            ${att.extraRef ? `<span class="text-slate-400">| Covers: ${att.extraRef}</span>` : ''}
+                          <div class="text-[10px] text-slate-400 font-mono mt-0.5">
+                            <span>File: <strong class="text-slate-700 font-normal">${att.filename}</strong></span>
+                            ${att.extraRef ? `<span class="text-slate-400"> | Covers: ${att.extraRef}</span>` : ''}
                           </div>
                         </div>
                       </div>
 
                       <div class="flex items-center gap-2 shrink-0">
-                        <span class="text-[9px] uppercase font-bold text-slate-900 bg-slate-100 border border-slate-300 px-2 py-0.5 rounded">
+                        <span class="text-[9px] uppercase font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
                           ${att.category}
                         </span>
-                        <span class="text-[10px] font-mono font-bold text-slate-600 bg-white border border-slate-200 px-2 py-0.5 rounded">
+                        <span class="text-[10px] font-mono text-slate-500">
                           Annexure #${seq}
                         </span>
                       </div>
                     </div>
 
                     <!-- Document Body / Scan Preview -->
-                    <div class="p-3 bg-white">
+                    <div class="py-1">
                       ${this.renderDocumentAnnexureContent(att, cachedData, seq, v, { isPrint, quotes, certs, adminCompName, formatDate })}
                     </div>
                   </div>
@@ -2880,7 +2898,7 @@ window.CMS_MASTERS = {
 
         ${isPrint ? '' : `
           <!-- Document Footer -->
-          <div class="border-t border-slate-400 pt-2 flex justify-between items-center text-[10px] text-slate-500">
+          <div class="border-t border-slate-200 pt-3 flex justify-between items-center text-[10px] text-slate-400">
             <span>${adminCompName} | Central Procurement & Consumable Management System (CMS)</span>
             <span>Generated: ${new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</span>
           </div>
@@ -3008,7 +3026,7 @@ window.CMS_MASTERS = {
 </html>`;
   },
 
-  async openVendorPrintWindow(vendorId) {
+  async openVendorPrintWindow(vendorId, minimizeMaterials = false) {
     const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
     if (!v) return;
 
@@ -3023,6 +3041,7 @@ window.CMS_MASTERS = {
     if (bankDocFile) filesToLoad.push(bankDocFile);
     if (v.certificateFile) filesToLoad.push(v.certificateFile);
     if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
+    if (v.approvalDocFile) filesToLoad.push(v.approvalDocFile);
     if (Array.isArray(v.certificates)) {
       v.certificates.forEach(c => {
         const fn = c && (c.fileName || c.filename || c.file || c.documentFile || c.certFile || c.doc);
@@ -3049,7 +3068,7 @@ window.CMS_MASTERS = {
       }
     }
 
-    const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true, fileCache });
+    const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true, fileCache, minimizeMaterials });
     const fullPrintDoc = this.buildVendorPrintDocument(v, paperHtml);
     const win = window.open('', '_blank', 'width=1000,height=900');
     if (win) {
@@ -3134,11 +3153,11 @@ window.CMS_MASTERS = {
 
       <div class="pt-4 border-t border-slate-200 flex flex-wrap justify-between items-center gap-2 print:hidden mt-4 bg-slate-50 p-3 rounded">
         <div class="flex items-center gap-2">
-          <button type="button" onclick="CMS_MASTERS.downloadVendorForm('${v.id}')" class="px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
+          <button type="button" onclick="CMS_MASTERS.confirmDownloadVendorForm('${v.id}', false)" class="px-4 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs cursor-pointer">
             <i data-lucide="printer" class="w-4 h-4 text-white"></i>
             <span>Download Form (Print / Save PDF)</span>
           </button>
-          <button type="button" onclick="CMS_MASTERS.openVendorPrintWindow('${v.id}')" class="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold rounded-sm transition inline-flex items-center gap-1.5 text-xs" title="Open print preview in new window">
+          <button type="button" onclick="CMS_MASTERS.confirmDownloadVendorForm('${v.id}', true)" class="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold rounded-sm transition inline-flex items-center gap-1.5 text-xs cursor-pointer" title="Open print preview in new window">
             <i data-lucide="external-link" class="w-3.5 h-3.5 text-slate-500"></i>
             <span>Open in New Tab</span>
           </button>
@@ -3149,6 +3168,12 @@ window.CMS_MASTERS = {
             <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorModal('${v.id}');" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
               <i data-lucide="edit-3" class="w-4 h-4 text-white"></i>
               <span>${v.status === 'Revision Required' ? 'Edit & Fix Form' : 'Edit Form'}</span>
+            </button>
+          ` : ''}
+          ${role === 'Admin' && (v.isBlocked || v.status === 'Blocked') ? `
+            <button type="button" onclick="CMS_MASTERS.adminUnblockVendor('${v.id}')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs cursor-pointer">
+              <i data-lucide="shield-check" class="w-4 h-4 text-white"></i>
+              <span>Change Status to Unblock</span>
             </button>
           ` : ''}
           ${v.status === 'Pending Approval' && role === 'Admin' ? `
@@ -3179,10 +3204,107 @@ window.CMS_MASTERS = {
     
     // Document previews are rendered with high-fidelity vector components directly
     if (window.lucide) window.lucide.createIcons();
+  },
 
+  toggleVendorPreviewMaterials() {
+    const wrapper = document.getElementById('v-preview-materials-table-wrapper');
+    const banner = document.getElementById('v-preview-materials-collapsed-banner');
+    const btn = document.getElementById('v-preview-mat-toggle-btn');
+    if (!wrapper) return;
+
+    const isCollapsed = wrapper.classList.contains('hidden');
+    if (isCollapsed) {
+      wrapper.classList.remove('hidden');
+      if (banner) banner.classList.add('hidden');
+      if (btn) {
+        btn.innerHTML = `<i data-lucide="chevron-up" class="w-3.5 h-3.5 text-blue-600"></i><span>Minimize List</span>`;
+      }
+    } else {
+      wrapper.classList.add('hidden');
+      if (banner) banner.classList.remove('hidden');
+      if (btn) {
+        btn.innerHTML = `<i data-lucide="chevron-down" class="w-3.5 h-3.5 text-blue-600"></i><span>Expand List</span>`;
+      }
+    }
     if (window.lucide) window.lucide.createIcons();
   },
 
+  confirmDownloadVendorForm(vendorId, openNewTab = false) {
+    const formEl = document.getElementById('vendor-paper-form');
+    const targetId = vendorId || (formEl ? formEl.getAttribute('data-vendor-id') : null);
+    const v = (targetId && window.CMS_STORE && window.CMS_STORE.data && window.CMS_STORE.data.vendors)
+      ? window.CMS_STORE.data.vendors.find(i => i.id === targetId)
+      : null;
+
+    if (!v) {
+      if (window.CMS_APP) window.CMS_APP.toast('Vendor record not found for printing.', 'error');
+      return;
+    }
+
+    const wrapper = document.getElementById('v-preview-materials-table-wrapper');
+    const isMinimized = wrapper ? wrapper.classList.contains('hidden') : false;
+    const quoteCount = Array.isArray(v.quotedItems) ? v.quotedItems.length : (v.quotationDoc ? 1 : 0);
+
+    // If not minimized, or if there are no quotes to omit, proceed immediately without popup
+    if (!isMinimized || quoteCount === 0) {
+      if (openNewTab) {
+        this.openVendorPrintWindow(targetId, false);
+      } else {
+        this.downloadVendorForm(targetId, false);
+      }
+      return;
+    }
+
+    // Show selection modal: Full Form vs Compact Form (omitting itemized material list)
+    const content = `
+      <div class="space-y-4">
+        <div class="p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-900 flex items-start gap-2.5">
+          <i data-lucide="info" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5"></i>
+          <div>
+            <div class="font-bold">Material List is Minimized</div>
+            <div class="text-blue-800 mt-0.5">
+              The approved material list is currently minimized (<strong>${quoteCount}</strong> ${quoteCount === 1 ? 'item' : 'items'}). Please select how you want to download or print this official form:
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+          <button type="button" onclick="CMS_APP.closeStackedModal(); CMS_MASTERS.${openNewTab ? 'openVendorPrintWindow' : 'downloadVendorForm'}('${targetId}', true);" class="p-4 bg-white hover:bg-blue-50/40 border-2 border-blue-600 hover:border-blue-700 rounded-sm text-left transition shadow-xs group cursor-pointer">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="p-1.5 bg-blue-100 text-blue-700 rounded group-hover:bg-blue-600 group-hover:text-white transition">
+                <i data-lucide="file-minus" class="w-4 h-4"></i>
+              </span>
+              <span class="font-bold text-slate-900 text-xs">Exclude Materials (Compact)</span>
+            </div>
+            <p class="text-[11px] text-slate-600 leading-normal">
+              Omits the itemized ${quoteCount}-item table and includes a concise 1-line material summary. Keeps the PDF clean and compact.
+            </p>
+          </button>
+
+          <button type="button" onclick="CMS_APP.closeStackedModal(); CMS_MASTERS.${openNewTab ? 'openVendorPrintWindow' : 'downloadVendorForm'}('${targetId}', false);" class="p-4 bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 rounded-sm text-left transition shadow-xs group cursor-pointer">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="p-1.5 bg-slate-100 text-slate-700 rounded group-hover:bg-slate-800 group-hover:text-white transition">
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+              </span>
+              <span class="font-bold text-slate-900 text-xs">Include All Materials (Full Form)</span>
+            </div>
+            <p class="text-[11px] text-slate-600 leading-normal">
+              Includes all 8 statutory sections and the full itemized table of all ${quoteCount} materials with rates and validity.
+            </p>
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end">
+          <button type="button" onclick="CMS_APP.closeStackedModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-sm transition text-xs cursor-pointer">
+            Cancel
+          </button>
+        </div>
+      </div>
+    `;
+
+    window.CMS_APP.openModal('Print / Download Form Options', content, 'max-w-xl');
+    if (window.lucide) window.lucide.createIcons();
+  },
 
   async uploadMissingDoc(vendorId, docType, fileInput) {
     if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
@@ -3288,7 +3410,7 @@ window.CMS_MASTERS = {
     }
   },
 
-  async downloadVendorForm(vendorId = null) {
+  async downloadVendorForm(vendorId = null, minimizeMaterials = false) {
     const formEl = document.getElementById('vendor-paper-form');
     const targetId = vendorId || (formEl ? formEl.getAttribute('data-vendor-id') : null);
     const v = (targetId && window.CMS_STORE && window.CMS_STORE.data && window.CMS_STORE.data.vendors)
@@ -3337,7 +3459,7 @@ window.CMS_MASTERS = {
       }
     }
 
-    const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true, fileCache });
+    const paperHtml = this.renderVendorPaperFormHtml(v, { forPrint: true, fileCache, minimizeMaterials });
     const fullPrintDoc = this.buildVendorPrintDocument(v, paperHtml);
 
     // Primary: Open dedicated print window (standard established pattern in CMS_PRINT)
@@ -4629,22 +4751,37 @@ window.CMS_MASTERS = {
     }
   },
 
-  openVendorModal(vendorId = null) {
+  openVendorModal(vendorId = null, taskId = null) {
     const role = window.CMS_STORE.getRole();
     const isEdit = Boolean(vendorId);
     let existingVendor = null;
+    let activeTask = null;
     if (isEdit) {
       existingVendor = window.CMS_STORE.data.vendors.find(v => v.id === vendorId);
+      const tasks = window.CMS_STORE.data.adminTasks || [];
+      activeTask = (taskId ? tasks.find(t => t.id === taskId) : null) || tasks.find(t => t.vendorId === vendorId && (t.status === 'Pending' || t.status === 'In Progress'));
+      
       if (existingVendor && (existingVendor.status === 'Approved' || existingVendor.isApproved)) {
-        window.CMS_APP.toast('Approved vendor records are locked and cannot be edited.', 'info');
-        this.viewVendorProfile(vendorId);
-        return;
+        if (!activeTask) {
+          if (role === 'Admin') {
+            window.CMS_APP.toast('Approved vendor records are locked. Raise a task to authorize modifying specific phases.', 'info');
+            this.openRaiseTaskModal(vendorId);
+            return;
+          }
+          window.CMS_APP.toast('Approved vendor records are locked and cannot be edited without an authorized Admin Task.', 'warning');
+          this.viewVendorProfile(vendorId);
+          return;
+        }
       }
-      if (existingVendor && existingVendor.status === 'Pending Approval' && role === 'Admin') {
+      if (existingVendor && existingVendor.status === 'Pending Approval' && role === 'Admin' && !existingVendor.isModificationRevision) {
         this.openVendorSanctionModal(vendorId);
         return;
       }
     }
+    const isTaskMode = Boolean(activeTask);
+    const allowedPhases = isTaskMode ? (activeTask.allowedPhases || [2]) : [1, 2, 3, 4];
+    window.CMS_MASTERS.activeTask = isTaskMode ? activeTask : null;
+    window.CMS_MASTERS.allowedPhases = allowedPhases;
     const vendor = isEdit ? window.CMS_STORE.data.vendors.find(v => v.id === vendorId) : {
       name: '', address: '', addressTaluka: '', addressDistrict: '', addressState: '', addressCountry: '', countryCode: '', addressPinCode: '',
       gstNo: '', panNo: '', gstNotApplicable: false, panNotApplicable: false, certificates: [], contactNo: '', email: '',
@@ -4677,10 +4814,14 @@ window.CMS_MASTERS = {
 
     // Attach step functions
     window.CMS_MASTERS.switchVendorTab = function(step) {
+      if (window.CMS_MASTERS.activeTask && !window.CMS_MASTERS.allowedPhases.includes(step)) {
+        window.CMS_APP.toast(`Security Lock: Phase ${step} is locked by Admin. You are only authorized to modify Phase ${window.CMS_MASTERS.allowedPhases.join(', ')}.`, 'warning');
+        return;
+      }
       const currentStep = window.CMS_MASTERS.currentVendorStep || 1;
       
       // When moving forward, validate all steps from currentStep up to step - 1
-      if (step > currentStep) {
+      if (step > currentStep && !window.CMS_MASTERS.activeTask) {
         for (let s = currentStep; s < step; s++) {
           if (!window.CMS_MASTERS.validateVendorStep(s)) {
             return; // Stop and keep user on the invalid step
@@ -4736,10 +4877,28 @@ window.CMS_MASTERS = {
 
     const content = `
       <div class="flex border-b border-slate-200 mb-4 overflow-x-auto whitespace-nowrap">
-        <button id="v-tab-btn-1" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-blue-600 border-b-2 border-blue-600 bg-blue-50 hover:bg-blue-100 transition" onclick="CMS_MASTERS.switchVendorTab(1)">1. Organization</button>
-        <button id="v-tab-btn-2" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent bg-slate-50 hover:bg-slate-100 transition" onclick="CMS_MASTERS.switchVendorTab(2)">2. Statutory & Certs</button>
-        <button id="v-tab-btn-3" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent bg-slate-50 hover:bg-slate-100 transition" onclick="CMS_MASTERS.switchVendorTab(3)">3. Commercials</button>
-        <button id="v-tab-btn-4" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-slate-500 border-b-2 border-transparent bg-slate-50 hover:bg-slate-100 transition" onclick="CMS_MASTERS.switchVendorTab(4)">4. Bank Details</button>
+        ${[
+          { num: 1, name: '1. Organization' },
+          { num: 2, name: '2. Statutory & Certs' },
+          { num: 3, name: '3. Commercials' },
+          { num: 4, name: '4. Bank Details' }
+        ].map(tab => {
+          const isAllowed = allowedPhases.includes(tab.num);
+          if (isTaskMode && !isAllowed) {
+            return `
+              <button id="v-tab-btn-${tab.num}" type="button" class="flex-1 px-4 py-2 text-xs font-bold text-slate-400 bg-slate-100 cursor-not-allowed border-b-2 border-transparent flex items-center justify-center gap-1.5 opacity-60" onclick="CMS_APP.toast('Security Policy: ${tab.name} is LOCKED by Admin task. Only authorized phase(s) can be modified.', 'warning')">
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span>${tab.name} (Locked)</span>
+              </button>
+            `;
+          }
+          return `
+            <button id="v-tab-btn-${tab.num}" type="button" class="flex-1 px-4 py-2 text-xs font-bold ${tab.num === allowedPhases[0] ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50' : 'text-slate-500 border-b-2 border-transparent bg-slate-50'} hover:bg-slate-100 transition flex items-center justify-center gap-1" onclick="CMS_MASTERS.switchVendorTab(${tab.num})">
+              ${isTaskMode ? '<i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i>' : ''}
+              <span>${tab.name}${isTaskMode ? ' (Authorized)' : ''}</span>
+            </button>
+          `;
+        }).join('')}
       </div>
 
       <form id="vendor-form" autocomplete="new-password" class="space-y-4 text-xs" onsubmit="event.preventDefault(); CMS_MASTERS.saveVendor('${vendorId || ''}');">
@@ -5164,6 +5323,69 @@ window.CMS_MASTERS = {
                   <input type="hidden" id="v-approval-mail-yes" value="yes" />
 
                   <input type="hidden" id="v-approval-alert-date" value="${vendor.approvalAlertDate || (vendor.approvalValidTill ? CMS_MASTERS.calculateAlertDate(vendor.approvalValidTill, vendor.approvalAlertDays || minAlertPolicy) : '')}" />
+
+                  <!-- 3. Limited Period Approval Document Upload Field (Strictly Mandatory when Limited Period is Selected) -->
+                  <div id="v-limited-doc-box" class="mt-3 pt-3 border-t border-slate-200/80">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <label class="block text-xs font-bold text-slate-800">
+                        Limited Period Approval / Justification Document (PDF/Image) <span class="text-rose-600 font-bold">*</span>
+                      </label>
+                      <span class="text-[10px] text-slate-500 font-medium">Max 10MB</span>
+                    </div>
+
+                    <!-- Hidden native file input -->
+                    <input type="file" id="v-limited-doc-file" accept=".pdf,image/*" class="hidden" data-cms-dropzone="true" data-current="${vendor.approvalDocFile || ''}" onchange="CMS_MASTERS.onDropzoneFileChange(this, 'v-limited-doc-card-preview', 'v-limited-doc-dropzone')" />
+
+                    <!-- Dropzone (visible when no file attached) -->
+                    <div id="v-limited-doc-dropzone" onclick="document.getElementById('v-limited-doc-file').click()"
+                         ondragover="event.preventDefault(); this.classList.add('border-blue-500', 'bg-blue-50/50');"
+                         ondragleave="this.classList.remove('border-blue-500', 'bg-blue-50/50');"
+                         ondrop="CMS_MASTERS.handleFileDrop(event, 'v-limited-doc-file', 'v-limited-doc-card-preview', 'v-limited-doc-dropzone')"
+                         class="${vendor.approvalDocFile ? 'hidden' : ''} cms-dropzone group">
+                      <div class="w-8 h-8 rounded-full bg-blue-100 group-hover:bg-blue-200 text-blue-700 flex items-center justify-center shrink-0 transition">
+                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                      </div>
+                      <div class="text-left min-w-0">
+                        <div class="text-xs font-bold text-slate-800 group-hover:text-blue-700 transition">
+                          Click to Browse or Drag File Here
+                        </div>
+                        <div class="text-[10px] text-slate-500">Attach scanned Limited Period Approval Document / Agreement (PDF, JPG, PNG)</div>
+                      </div>
+                    </div>
+
+                    <!-- File Card Preview (visible when file is attached) -->
+                    <div id="v-limited-doc-card-preview" class="${vendor.approvalDocFile ? '' : 'hidden'} p-2.5 bg-white border border-blue-200 rounded-sm shadow-2xs">
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                          <div class="w-7 h-7 rounded bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                          </div>
+                          <div class="min-w-0">
+                            <div class="text-xs font-bold text-slate-800 truncate file-name-display">${vendor.approvalDocFile || ''}</div>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                              <span class="inline-flex items-center gap-1 px-1.5 py-0.2 text-[9px] font-bold rounded bg-emerald-100 text-emerald-800">
+                                <i data-lucide="check" class="w-2.5 h-2.5"></i> Attached
+                              </span>
+                              <span class="text-[10px] text-slate-400 file-size-display"></span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                          <button type="button" onclick="CMS_MASTERS.previewAttachedDoc('v-limited-doc-file', '${vendor.approvalDocFile || ''}')" class="px-2 py-1 text-[11px] font-semibold text-slate-700 hover:text-blue-700 hover:bg-slate-100 rounded border border-slate-200 transition flex items-center gap-1 cursor-pointer" title="Preview Document">
+                            <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                            <span>View</span>
+                          </button>
+                          <button type="button" onclick="document.getElementById('v-limited-doc-file').click()" class="px-2 py-1 text-[11px] font-semibold text-blue-700 hover:bg-blue-50 rounded border border-blue-200 transition flex items-center gap-1 cursor-pointer" title="Replace File">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                            <span>Change</span>
+                          </button>
+                          <button type="button" onclick="CMS_MASTERS.clearAttachedDoc('v-limited-doc-file', 'v-limited-doc-card-preview', 'v-limited-doc-dropzone')" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer" title="Remove Document">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -5291,48 +5513,87 @@ window.CMS_MASTERS = {
         </div>
 
         <div class="pt-4 border-t border-slate-200 flex justify-between gap-2.5">
-          <div>
-            <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
-          </div>
-          <div class="flex items-center justify-between w-full"><div id="v-autosave-status" class="flex-1 text-xs text-emerald-600 font-semibold italic"></div><div class="flex gap-2.5">
-            <button id="v-prev-btn" type="button" onclick="CMS_MASTERS.prevVendorTab()" class="hidden px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded-sm transition text-xs">Previous Step</button>
-            <button id="v-next-btn" type="button" onclick="CMS_MASTERS.nextVendorTab()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition text-xs">Next Step <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i></button>
-            <button id="v-draft-btn" type="button" onclick="CMS_MASTERS.saveVendorDraft()" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-sm transition flex items-center gap-1.5 text-xs">
-              <i data-lucide="save" class="w-4 h-4"></i>
-              <span>Save Draft</span>
-            </button>
-            <button id="v-submit-btn" type="button" onclick="CMS_MASTERS.saveVendor('${vendorId || ''}', true)" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs">
-              <i data-lucide="send" class="w-4 h-4"></i>
-              <span>Submit for Admin Approval</span>
-            </button>
+          ${isTaskMode ? `
+            <div>
+              <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
             </div>
-          </div>
+            <div class="flex items-center gap-2">
+              <button id="v-task-submit-btn" type="button" onclick="CMS_MASTERS.submitTaskModification('${vendorId}', '${activeTask.id}')" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs cursor-pointer">
+                <i data-lucide="send-check" class="w-4 h-4 text-white"></i>
+                <span>Submit for Admin Approval</span>
+              </button>
+            </div>
+          ` : `
+            <div>
+              <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm transition">Cancel</button>
+            </div>
+            <div class="flex items-center justify-between w-full"><div id="v-autosave-status" class="flex-1 text-xs text-emerald-600 font-semibold italic"></div><div class="flex gap-2.5">
+              <button id="v-prev-btn" type="button" onclick="CMS_MASTERS.prevVendorTab()" class="hidden px-4 py-2.5 bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold rounded-sm transition text-xs">Previous Step</button>
+              <button id="v-next-btn" type="button" onclick="CMS_MASTERS.nextVendorTab()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition text-xs">Next Step <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i></button>
+              <button id="v-draft-btn" type="button" onclick="CMS_MASTERS.saveVendorDraft()" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-sm transition flex items-center gap-1.5 text-xs">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>Save Draft</span>
+              </button>
+              <button id="v-submit-btn" type="button" onclick="CMS_MASTERS.saveVendor('${vendorId || ''}', true)" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Submit for Admin Approval</span>
+              </button>
+              </div>
+            </div>
+          `}
           </div>
         </form>
     `;
 
-    const modalTitle = isEdit ? ((!vendor.status || vendor.status === 'Draft') ? 'Continue Working on Vendor Draft' : (vendor.status === 'Revision Required' ? 'Revise Vendor Registration' : 'Modify Vendor Record')) : 'Register New Vendor';
+    const modalTitle = isTaskMode ? (`Admin Task Authorized: Modify Vendor (${vendor.name || vendorId})`) : (isEdit ? ((!vendor.status || vendor.status === 'Draft') ? 'Continue Working on Vendor Draft' : (vendor.status === 'Revision Required' ? 'Revise Vendor Registration' : 'Modify Vendor Record')) : 'Register New Vendor');
     window.CMS_APP.openModal(modalTitle, content, 'max-w-4xl');
+    if (isTaskMode) {
+      setTimeout(() => {
+        for (let i = 1; i <= 4; i++) {
+          if (!allowedPhases.includes(i)) {
+            const stepEl = document.getElementById('v-step-' + i);
+            if (stepEl) {
+              stepEl.querySelectorAll('input, select, textarea, button').forEach(el => {
+                if (el.id !== 'v-task-submit-btn') {
+                  el.disabled = true;
+                  el.readOnly = true;
+                  el.classList.add('bg-slate-100', 'cursor-not-allowed');
+                }
+              });
+            }
+          }
+        }
+        window.CMS_MASTERS.switchVendorTab(allowedPhases[0] || 1);
+      }, 60);
+    }
     this.populateDistrictDropdown(vendor.addressState || '', vendor.addressDistrict || '');
 
       // Auto-clear error styling and Auto-Save Draft
         const vendorForm = document.getElementById('vendor-form');
         if (vendorForm) {
           
-          let draftTimeout;
+          if (window.CMS_MASTERS._draftTimeout) {
+            clearTimeout(window.CMS_MASTERS._draftTimeout);
+            window.CMS_MASTERS._draftTimeout = null;
+          }
           const triggerAutoSave = () => {
              // Only auto-save if they've at least typed a Company Name or something basic, to avoid blank drafts.
              const n = document.getElementById('v-name')?.value.trim();
              if (!n) return;
-             clearTimeout(draftTimeout);
-             draftTimeout = setTimeout(() => {
+             if (window.CMS_MASTERS._draftTimeout) {
+               clearTimeout(window.CMS_MASTERS._draftTimeout);
+             }
+             window.CMS_MASTERS._draftTimeout = setTimeout(() => {
+                // Safety check: if user has already closed modal or navigated away, abort auto-save
+                const formCheck = document.getElementById('vendor-form');
+                if (!formCheck) return;
+
                 // Determine ID: if we opened an edit modal, vendorId is passed. 
-                // Wait, openVendorModal passes vendorId into the HTML string: saveVendor('${vendorId || ''}')
                 // We need to know the active ID. Let's just parse it from the submit button.
                 const btn = document.getElementById('v-submit-btn');
                 let activeId = null;
                 if (btn) {
-                  const match = btn.getAttribute('onclick').match(/'([^']+)'/);
+                  const match = btn.getAttribute('onclick')?.match(/'([^']+)'/);
                   if (match && match[1]) activeId = match[1];
                 }
                 
@@ -5340,7 +5601,8 @@ window.CMS_MASTERS = {
                 if (!activeId) {
                   activeId = 'VEN-' + String(Math.floor(Date.now() / 1000)).padStart(3, '0');
                   if (btn) btn.setAttribute('onclick', `CMS_MASTERS.saveVendor('${activeId}', true)`);
-                  vendorForm.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${activeId}', true);`);
+                  const vf = document.getElementById('vendor-form');
+                  if (vf) vf.setAttribute('onsubmit', `event.preventDefault(); CMS_MASTERS.saveVendor('${activeId}', true);`);
                 }
                 
                 // Save quietly as draft
@@ -5348,11 +5610,12 @@ window.CMS_MASTERS = {
                 const statusEl = document.getElementById('v-autosave-status');
                 if (statusEl) {
                    statusEl.innerText = 'Draft auto-saved at ' + new Date().toLocaleTimeString();
-                   setTimeout(() => { if (statusEl.innerText.includes('auto-saved')) statusEl.innerText = ''; }, 3000);
+                   setTimeout(() => { if (statusEl && statusEl.innerText.includes('auto-saved')) statusEl.innerText = ''; }, 3000);
                 }
-                if (!vendorForm.dataset.toastShown) {
+                const vf = document.getElementById('vendor-form');
+                if (vf && !vf.dataset.toastShown) {
                    window.CMS_APP.toast('Draft successfully auto-saved in the background!', 'success');
-                   vendorForm.dataset.toastShown = 'true';
+                   vf.dataset.toastShown = 'true';
                 }
              }, 1000); // 1-second debounce
           };
@@ -6024,6 +6287,18 @@ window.CMS_MASTERS = {
           }
           return highlightError(limAlertDaysInput, `Number of days Fixation For Expiry alerts for Limited Period Approval cannot be less than Admin benchmark (${minAlertPolicy} days).`);
         }
+
+        // Strict validation: Limited Period Approval Document must be attached
+        const limDocInput = document.getElementById('v-limited-doc-file');
+        const hasLimDoc = Boolean(
+          (limDocInput?.files && limDocInput.files.length > 0) ||
+          (limDocInput?.dataset?.current && limDocInput.dataset.removed !== 'true') ||
+          (limDocInput?.dataset?.removed !== 'true' && existingVendor?.approvalDocFile)
+        );
+        if (!hasLimDoc) {
+          const dropzone = document.getElementById('v-limited-doc-dropzone');
+          return highlightError(dropzone, 'Limited Period Approval Document is strictly mandatory when limited period approval is selected.');
+        }
       }
 
       return true;
@@ -6102,6 +6377,10 @@ window.CMS_MASTERS = {
   },
 
   async saveVendor(vendorId = null, directSubmit = true, isManualDraft = false) {
+    if (window.CMS_MASTERS._draftTimeout) {
+      clearTimeout(window.CMS_MASTERS._draftTimeout);
+      window.CMS_MASTERS._draftTimeout = null;
+    }
     try {
     const store = window.CMS_STORE;
     const readFileAsDataUrl = (file) => {
@@ -6226,6 +6505,24 @@ window.CMS_MASTERS = {
     }
 
     // Bank Details
+    // Limited period approval document extraction and persistence
+    const limDocFileInput = document.getElementById('v-limited-doc-file');
+    let approvalDocFile = '';
+    if (limDocFileInput?.files?.[0]) {
+      approvalDocFile = limDocFileInput.files[0].name;
+    } else if (limDocFileInput?.dataset?.current && limDocFileInput.dataset.removed !== 'true') {
+      approvalDocFile = limDocFileInput.dataset.current;
+    } else if (limDocFileInput?.dataset?.removed !== 'true' && existingVendor?.approvalDocFile) {
+      approvalDocFile = existingVendor.approvalDocFile;
+    }
+
+    if (limDocFileInput?.files?.[0]) {
+      const dataUrl = await readFileAsDataUrl(limDocFileInput.files[0]);
+      if (dataUrl && window.CMS_FILE_STORE) {
+        await window.CMS_FILE_STORE.saveFile(limDocFileInput.files[0].name, dataUrl);
+      }
+    }
+
     const bankName = document.getElementById('v-bank-name')?.value.trim() || '';
     const accountName = document.getElementById('v-account-name')?.value.trim() || name;
     const accountNo = document.getElementById('v-account-no')?.value.trim() || '';
@@ -6454,13 +6751,28 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       if (directSubmit) return window.CMS_APP.toast(`Bank IFSC Code must be exactly 11 characters (e.g. HDFC0001234). Currently: "${ifscCode}" (${ifscCode.length} chars).`, 'error');
     }
 
-    // Limited period approval validation
+    // Limited period approval validation (Strict enforcement)
     if (approvedForLimitedPeriod) {
       if (!approvalValidTill) {
-        if (directSubmit) return window.CMS_APP.toast('Approval Expiry Date is mandatory when limited period approval is selected.', 'error');
+        if (directSubmit) {
+          this.switchVendorTab(3);
+          return window.CMS_APP.toast('Approval Expiry Date is mandatory when limited period approval is selected.', 'error');
+        }
       }
       if (approvalValidTill < today) {
-        if (directSubmit) return window.CMS_APP.toast('Approval Expiry Date cannot be a past date.', 'error');
+        if (directSubmit) {
+          this.switchVendorTab(3);
+          return window.CMS_APP.toast('Approval Expiry Date cannot be a past date.', 'error');
+        }
+      }
+      if (directSubmit && !approvalDocFile) {
+        this.switchVendorTab(3);
+        const dropzone = document.getElementById('v-limited-doc-dropzone');
+        if (dropzone) {
+          dropzone.classList.add('border-rose-500', 'bg-rose-50');
+          dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return window.CMS_APP.toast('Strictness Enforcement: You must upload the Limited Period Approval Document before submitting the vendor form.', 'error');
       }
     }
 
@@ -6548,6 +6860,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
  quotationDate, quotationValidTill, quotationDoc, 
           quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
           approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate, approvalSendEmailNotification, limAlertFreq,
+          approvalDocFile,
           isBlocked, blockReason, quotedItems,
           certificates,
           certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || store.data.vendors[idx].certificateFile || '',
@@ -6585,6 +6898,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         quotationNo, quotationDate, quotationValidTill, quotationDoc,
         quotedMaterialId, quotedMaterialName, quotedMaterialRate, quotedMaterialUnit, quotedMaterialHsn,
         approvedForLimitedPeriod, approvalValidTill, approvalAlertDays, approvalAlertDate, approvalSendEmailNotification,
+        approvalDocFile,
         isBlocked, blockReason, quotedItems,
         certificates,
         certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || '',
@@ -6736,12 +7050,8 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         }
       }
     } else {
-      // Quiet background save for drafts: update localStorage directly without triggering global UI rebuilds
-      const storageKey = window.CMS_TENANT_ID ? 'CMS_DATA_' + window.CMS_TENANT_ID : 'CMS_DATA';
-      localStorage.setItem(storageKey, JSON.stringify(store.data));
-      if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
-          window.CMS_SUPABASE.from('master_tenants').update({ cms_db: store.data }).eq('id', window.CMS_TENANT_ID).then(() => {});
-      }
+      // Background auto-save for drafts: use store.save() to ensure proper _lastUpdatedAt timestamp, storage key, and clean cloud payload
+      store.save();
     }
   } catch (err) {
     console.error('Error in saveVendor:', err);
@@ -6842,7 +7152,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
 
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200">
             <div class="flex items-center gap-2">
-              <button type="button" onclick="CMS_MASTERS.downloadVendorForm('${v.id}')" class="px-3.5 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-sm transition text-xs flex items-center gap-1.5 shadow">
+              <button type="button" onclick="CMS_MASTERS.confirmDownloadVendorForm('${v.id}', false)" class="px-3.5 py-2 bg-slate-900 hover:bg-black text-white font-bold rounded-sm transition text-xs flex items-center gap-1.5 shadow cursor-pointer">
                 <i data-lucide="printer" class="w-3.5 h-3.5 text-white"></i>
                 <span>Download / Print Form (PDF)</span>
               </button>
@@ -6902,8 +7212,26 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     v.approvedBy = currentUser.id;
     v.approvedByName = currentUser.name;
     v.checkerMistakeRemark = '';
+
+    // Handle modification task completion & finalization
+    if (v.pendingModificationTaskId || v.activeTaskId) {
+      const taskId = v.pendingModificationTaskId || v.activeTaskId;
+      const tasks = store.data.adminTasks || [];
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        task.status = 'Completed';
+        task.finalizedAt = new Date().toISOString();
+        task.finalizedBy = currentUser.name;
+      }
+      v.pendingModificationTaskId = null;
+      v.activeTaskId = null;
+      v.isModificationRevision = false;
+    }
+    v.isBlocked = false;
+    v.blockReason = '';
+
     store.save();
-    window.CMS_APP.toast(`Vendor "${v.name}" sanctioned and approved by ${currentUser.name}!`, 'success');
+    window.CMS_APP.toast(`Vendor "${v.name}" sanctioned and finalized by ${currentUser.name}!`, 'success');
     window.CMS_APP.refreshView();
     if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
       const container = document.getElementById('view-container');
@@ -6923,6 +7251,10 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
   },
 
   deleteVendor(vendorId, force = false) {
+    if (window.CMS_MASTERS && window.CMS_MASTERS._draftTimeout) {
+      clearTimeout(window.CMS_MASTERS._draftTimeout);
+      window.CMS_MASTERS._draftTimeout = null;
+    }
     const store = window.CMS_STORE;
     const v = store.data.vendors.find(i => i.id === vendorId);
     if (!v) {
@@ -6962,6 +7294,10 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     const idx = store.data.vendors.findIndex(i => i.id === vendorId);
     if (idx !== -1) {
       store.data.vendors.splice(idx, 1);
+      // Clean up any orphan draft consumables created strictly for this draft vendor
+      if (Array.isArray(store.data.consumables)) {
+        store.data.consumables = store.data.consumables.filter(c => !(c.vendor1Id === vendorId && (c.status === 'Draft' || !c.status)));
+      }
       store.save();
       window.CMS_APP.toast(`Draft vendor "${name}" deleted successfully.`, 'success');
       this.refreshVendorsView();
@@ -6976,6 +7312,398 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     }
   },
   
+
+  adminUnblockVendor(vendorId) {
+    const role = window.CMS_STORE.getRole();
+    if (role !== 'Admin') {
+      window.CMS_APP.toast('Only Admin is authorized to change vendor status from Blocked to Unblock.', 'error');
+      return;
+    }
+    const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
+    if (!v) return;
+    v.isBlocked = false;
+    v.status = 'Approved';
+    v.blockReason = '';
+    v.unblockedAt = new Date().toISOString();
+    v.unblockedByName = window.CMS_STORE.getCurrentUser()?.name || 'Admin';
+    window.CMS_STORE.save();
+    window.CMS_APP.toast(`Vendor "${v.name}" status changed from Blocked to Unblock (Approved).`, 'success');
+    this.viewVendorProfile(vendorId);
+    window.CMS_APP.refreshView();
+  },
+
+  openRaiseTaskModal(preselectedVendorId = null) {
+    if (window.CMS_DASHBOARD && typeof window.CMS_DASHBOARD.openTaskModal === 'function') {
+      window.CMS_DASHBOARD.openTaskModal(preselectedVendorId);
+      return;
+    }
+    const store = window.CMS_STORE.data;
+    const role = window.CMS_STORE.getRole();
+    if (role !== 'Admin') {
+      window.CMS_APP.toast('Only Admin can raise vendor modification tasks for users.', 'error');
+      return;
+    }
+
+    const vendors = (store.vendors || []).filter(v => v.status === 'Approved' || v.isApproved || v.status === 'Blocked' || v.isBlocked);
+    const users = (window.CMS_STORE.getUsers ? window.CMS_STORE.getUsers() : []).filter(u => u.role !== 'Admin');
+    const defaultUser = users[0] || { id: 'USR-STORE-01', name: 'Rajesh Kumar (Store Staff)' };
+    const selectedVendor = preselectedVendorId ? vendors.find(v => v.id === preselectedVendorId) : (vendors[0] || null);
+
+    const content = `
+      <form id="raise-task-form" onsubmit="event.preventDefault(); CMS_MASTERS.handleCreateAdminTaskSubmit();" class="space-y-4 text-xs">
+        <!-- 1. Predefined Task Selection -->
+        <div>
+          <label class="block font-bold text-slate-800 uppercase tracking-wider text-[11px] mb-1.5">Select Predefined Task Type *</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label class="flex items-start gap-2.5 p-2.5 border rounded cursor-pointer hover:bg-slate-50 transition border-blue-500 bg-blue-50/50">
+              <input type="radio" name="task-predefined-type" value="modify_approved_vendor" checked onchange="CMS_MASTERS.onTaskTypeChange(this.value)" class="mt-0.5 text-blue-600" />
+              <div>
+                <span class="font-bold text-slate-900 block">Modify Approved Vendor</span>
+                <span class="text-[10px] text-slate-500">Custom phase selection to update vendor record</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 p-2.5 border rounded cursor-pointer hover:bg-slate-50 transition border-slate-200">
+              <input type="radio" name="task-predefined-type" value="update_statutory_certs" onchange="CMS_MASTERS.onTaskTypeChange(this.value)" class="mt-0.5 text-blue-600" />
+              <div>
+                <span class="font-bold text-slate-900 block">Update Statutory & Regulatory Certificates</span>
+                <span class="text-[10px] text-slate-500">Authorize Phase 2 (Certs, GST, PAN, Expiry dates)</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 p-2.5 border rounded cursor-pointer hover:bg-slate-50 transition border-slate-200">
+              <input type="radio" name="task-predefined-type" value="update_commercials" onchange="CMS_MASTERS.onTaskTypeChange(this.value)" class="mt-0.5 text-blue-600" />
+              <div>
+                <span class="font-bold text-slate-900 block">Update Commercial Quotations & Pricing</span>
+                <span class="text-[10px] text-slate-500">Authorize Phase 3 (Quoted materials, rates, validity)</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 p-2.5 border rounded cursor-pointer hover:bg-slate-50 transition border-slate-200">
+              <input type="radio" name="task-predefined-type" value="update_bank_details" onchange="CMS_MASTERS.onTaskTypeChange(this.value)" class="mt-0.5 text-blue-600" />
+              <div>
+                <span class="font-bold text-slate-900 block">Update Bank & Financial Details</span>
+                <span class="text-[10px] text-slate-500">Authorize Phase 4 (Account, IFSC, Bank doc)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded">
+          <!-- Vendor Selection -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Target Vendor *</label>
+            ${preselectedVendorId && selectedVendor ? `
+              <input type="hidden" id="task-vendor-id" value="${selectedVendor.id}" />
+              <div class="p-2 bg-white border border-slate-300 rounded font-bold text-slate-900">${selectedVendor.name} <span class="text-slate-500 font-mono text-[11px]">(${selectedVendor.id})</span></div>
+            ` : `
+              <select id="task-vendor-id" required class="w-full p-2 bg-white border border-slate-300 rounded text-xs font-semibold">
+                ${vendors.map(v => `<option value="${v.id}" ${preselectedVendorId === v.id ? 'selected' : ''}>${v.name} (${v.id})${v.isBlocked ? ' - [BLOCKED]' : ''}</option>`).join('')}
+              </select>
+            `}
+          </div>
+
+          <!-- Assign User -->
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Assign Task To User (Store Staff / Maker) *</label>
+            <select id="task-assignee-id" required class="w-full p-2 bg-white border border-slate-300 rounded text-xs font-semibold">
+              ${users.map(u => `<option value="${u.id}">${u.name} (${u.role || 'Maker'})</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <!-- 2. Phase Authorization -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded">
+          <label class="block font-bold text-slate-900 uppercase tracking-wider text-[11px] mb-1">Authorize Form Phase for Modification *</label>
+          <p class="text-[11px] text-slate-500 mb-2.5">Select which phase the user is authorized to edit. All other phases will be locked with read-only view.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="task-phases-container">
+            <label class="flex items-center gap-2 p-2 bg-white border border-slate-300 rounded cursor-pointer hover:bg-slate-50">
+              <input type="checkbox" name="task-phase-choice" value="1" class="task-phase-chk" />
+              <span class="font-bold text-slate-800">Phase 1: Organization & Address</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 bg-white border border-blue-400 bg-blue-50/50 rounded cursor-pointer hover:bg-slate-50">
+              <input type="checkbox" name="task-phase-choice" value="2" checked class="task-phase-chk" />
+              <span class="font-bold text-slate-800">Phase 2: Statutory & Regulatory Certs</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 bg-white border border-slate-300 rounded cursor-pointer hover:bg-slate-50">
+              <input type="checkbox" name="task-phase-choice" value="3" class="task-phase-chk" />
+              <span class="font-bold text-slate-800">Phase 3: Commercials & Quotations</span>
+            </label>
+            <label class="flex items-center gap-2 p-2 bg-white border border-slate-300 rounded cursor-pointer hover:bg-slate-50">
+              <input type="checkbox" name="task-phase-choice" value="4" class="task-phase-chk" />
+              <span class="font-bold text-slate-800">Phase 4: Bank & Financial Details</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Task Instructions / Reason for Form Update *</label>
+          <textarea id="task-instructions" required rows="2" class="w-full p-2 border border-slate-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500" placeholder="e.g. Vendor submitted renewed ISO certificate via email. Update validity date and replace certificate document."></textarea>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-200">
+          <button type="button" onclick="CMS_APP.closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-sm text-xs">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs cursor-pointer">
+            <i data-lucide="clipboard-check" class="w-4 h-4 text-white"></i>
+            <span>Generate Task & Authorize User</span>
+          </button>
+        </div>
+      </form>
+    `;
+
+    window.CMS_APP.openModal('Generate Form Update Task for User', content, 'max-w-xl');
+    if (window.lucide) window.lucide.createIcons();
+  },
+
+  onTaskTypeChange(type) {
+    const chks = document.querySelectorAll('.task-phase-chk');
+    chks.forEach(chk => chk.checked = false);
+    if (type === 'update_statutory_certs') {
+      const p2 = document.querySelector('.task-phase-chk[value="2"]');
+      if (p2) p2.checked = true;
+    } else if (type === 'update_commercials') {
+      const p3 = document.querySelector('.task-phase-chk[value="3"]');
+      if (p3) p3.checked = true;
+    } else if (type === 'update_bank_details') {
+      const p4 = document.querySelector('.task-phase-chk[value="4"]');
+      if (p4) p4.checked = true;
+    } else if (type === 'update_organization') {
+      const p1 = document.querySelector('.task-phase-chk[value="1"]');
+      if (p1) p1.checked = true;
+    } else {
+      const p2 = document.querySelector('.task-phase-chk[value="2"]');
+      if (p2) p2.checked = true;
+    }
+  },
+
+  handleCreateAdminTaskSubmit() {
+    const vEl = document.getElementById('task-vendor-id');
+    const uEl = document.getElementById('task-assignee-id');
+    const instEl = document.getElementById('task-instructions');
+    const typeEl = document.querySelector('input[name="task-predefined-type"]:checked');
+
+    const chks = document.querySelectorAll('.task-phase-chk:checked');
+    const phases = Array.from(chks).map(c => parseInt(c.value, 10));
+
+    if (phases.length === 0) {
+      window.CMS_APP.toast('Please select at least one phase to authorize for modification.', 'error');
+      return;
+    }
+
+    const vendorId = vEl ? vEl.value : null;
+    const assigneeId = uEl ? uEl.value : null;
+    const instructions = instEl ? instEl.value.trim() : '';
+    const taskType = typeEl ? typeEl.value : 'modify_approved_vendor';
+
+    const taskTypeName = {
+      modify_approved_vendor: 'Modify Approved Vendor',
+      update_statutory_certs: 'Update Statutory & Regulatory Certificates',
+      update_commercials: 'Update Commercial Quotations & Pricing',
+      update_bank_details: 'Update Bank & Financial Details',
+      update_organization: 'Update Organization & Business Address'
+    }[taskType] || 'Modify Approved Vendor';
+
+    this.createAdminTask({
+      vendorId,
+      assigneeId,
+      allowedPhases: phases,
+      instructions,
+      taskType,
+      taskTypeName
+    });
+  },
+
+  createAdminTask(payload) {
+    const store = window.CMS_STORE;
+    const vendor = store.data.vendors.find(v => v.id === payload.vendorId);
+    if (!vendor) {
+      window.CMS_APP.toast('Vendor not found.', 'error');
+      return;
+    }
+
+    const users = store.getUsers ? store.getUsers() : [];
+    const assignee = users.find(u => u.id === payload.assigneeId) || { id: payload.assigneeId, name: 'Store Staff', role: 'Store Staff' };
+    const currentUser = store.getCurrentUser();
+
+    if (!Array.isArray(store.data.adminTasks)) {
+      store.data.adminTasks = [];
+    }
+
+    const newTask = {
+      id: 'TASK-' + Date.now().toString().slice(-6),
+      taskType: payload.taskType,
+      taskTypeName: payload.taskTypeName,
+      vendorId: vendor.id,
+      vendorName: vendor.name,
+      allowedPhases: payload.allowedPhases,
+      assignedToUserId: assignee.id,
+      assignedToName: assignee.name,
+      assignedToRole: assignee.role || 'Store Staff',
+      createdByUserId: currentUser.id,
+      createdByName: currentUser.name,
+      instructions: payload.instructions,
+      status: 'Pending',
+      createdAt: new Date().toISOString()
+    };
+
+    store.data.adminTasks.unshift(newTask);
+    vendor.activeTaskId = newTask.id;
+    store.save();
+
+    window.CMS_APP.closeModal();
+    window.CMS_APP.toast(`Task #${newTask.id} raised! User ${assignee.name} authorized to edit Phase ${payload.allowedPhases.join(', ')}.`, 'success');
+    window.CMS_APP.refreshView();
+    if (this.currentViewVendorId) {
+      this.viewVendorProfile(this.currentViewVendorId);
+    }
+  },
+
+  async submitTaskModification(vendorId, taskId) {
+    const readFileAsDataUrl = (file) => {
+      return new Promise((resolve) => {
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      });
+    };
+    const store = window.CMS_STORE;
+    const vendor = store.data.vendors.find(v => v.id === vendorId);
+    const tasks = store.data.adminTasks || [];
+    const task = tasks.find(t => t.id === taskId);
+    if (!vendor || !task) {
+      window.CMS_APP.toast('Task or vendor record not found.', 'error');
+      return;
+    }
+
+    const allowedPhases = task.allowedPhases || [2];
+    for (const phase of allowedPhases) {
+      if (!this.validateVendorStep(phase)) return;
+    }
+
+    // Update authorized phase fields
+    if (allowedPhases.includes(1)) {
+      const nameEl = document.getElementById('v-name');
+      if (nameEl) vendor.name = nameEl.value.trim();
+      const addrEl = document.getElementById('v-address');
+      if (addrEl) vendor.address = addrEl.value.trim();
+      const talukaEl = document.getElementById('v-taluka');
+      if (talukaEl) vendor.addressTaluka = talukaEl.value.trim();
+      const distEl = document.getElementById('v-district');
+      if (distEl) vendor.addressDistrict = distEl.value.trim();
+      const stateEl = document.getElementById('v-state');
+      if (stateEl) vendor.addressState = stateEl.value.trim();
+      const countryEl = document.getElementById('v-country');
+      if (countryEl) vendor.addressCountry = countryEl.value.trim();
+      const pinEl = document.getElementById('v-pincode');
+      if (pinEl) vendor.addressPinCode = pinEl.value.trim();
+      const phoneEl = document.getElementById('v-phone');
+      if (phoneEl) vendor.contactNo = phoneEl.value.trim();
+      const emailEl = document.getElementById('v-email');
+      if (emailEl) vendor.email = emailEl.value.trim();
+    }
+
+    if (allowedPhases.includes(2)) {
+      const panEl = document.getElementById('v-pan');
+      if (panEl) vendor.panNo = panEl.value.trim().toUpperCase();
+      const gstVal = this.assembleGst();
+      if (gstVal) vendor.gstNo = gstVal;
+
+      const certRows = document.querySelectorAll('.cert-row');
+      if (certRows.length > 0) {
+        const certs = [];
+        certRows.forEach((row, idx) => {
+          const regEl = row.querySelector('.cert-regulator');
+          const nameEl = row.querySelector('.cert-name');
+          const noEl = row.querySelector('.cert-no');
+          const dateEl = row.querySelector('.cert-valid-till');
+          const fileEl = row.querySelector('.cert-file-name');
+          const alertEl = row.querySelector('.cert-alert-days');
+          const mailEl = row.querySelector('.cert-send-mail');
+          certs.push({
+            regulator: regEl ? regEl.value : 'ISO',
+            name: nameEl ? nameEl.value.trim() : 'Certificate',
+            formNo: '',
+            certificateNo: noEl ? noEl.value.trim() : `CERT-${idx + 1}`,
+            hasValidity: Boolean(dateEl && dateEl.value),
+            validTill: dateEl ? dateEl.value : '',
+            fileName: fileEl ? fileEl.value : '',
+            alertDays: alertEl ? parseInt(alertEl.value, 10) : 15,
+            sendEmailNotification: mailEl ? mailEl.checked : true
+          });
+        });
+        vendor.certificates = certs;
+      }
+    }
+
+    if (allowedPhases.includes(3)) {
+      const qNo = document.getElementById('v-quotation-no');
+      if (qNo) vendor.quotationNo = qNo.value.trim();
+      const qDate = document.getElementById('v-quotation-date');
+      if (qDate) vendor.quotationDate = qDate.value;
+      const qValid = document.getElementById('v-quotation-valid');
+      if (qValid) vendor.quotationValidTill = qValid.value;
+      const qDoc = document.getElementById('v-quotation-doc-filename');
+      if (qDoc && qDoc.value) vendor.quotationDoc = qDoc.value;
+
+      if (Array.isArray(this.tempQuotedItems) && this.tempQuotedItems.length > 0) {
+        vendor.quotedItems = JSON.parse(JSON.stringify(this.tempQuotedItems));
+      }
+
+      const limEl = document.getElementById('v-limited');
+      if (limEl) {
+        vendor.approvedForLimitedPeriod = limEl.checked;
+        if (limEl.checked) {
+          const validEl = document.getElementById('v-approval-valid-till');
+          if (validEl) vendor.approvalValidTill = validEl.value;
+          const limDocInput = document.getElementById('v-limited-doc-file');
+          if (limDocInput?.files?.[0]) {
+            vendor.approvalDocFile = limDocInput.files[0].name;
+            const dataUrl = await readFileAsDataUrl(limDocInput.files[0]);
+            if (dataUrl && window.CMS_FILE_STORE) {
+              await window.CMS_FILE_STORE.saveFile(limDocInput.files[0].name, dataUrl);
+            }
+          }
+        } else {
+          vendor.approvalValidTill = '';
+          vendor.approvalDocFile = '';
+        }
+      }
+    }
+
+    if (allowedPhases.includes(4)) {
+      const bName = document.getElementById('v-bank-name');
+      if (bName) vendor.bankName = bName.value.trim();
+      const bAcc = document.getElementById('v-account-no');
+      if (bAcc) vendor.accountNo = bAcc.value.trim();
+      const bAccName = document.getElementById('v-account-name');
+      if (bAccName) vendor.accountName = bAccName.value.trim();
+      const bIfsc = document.getElementById('v-ifsc');
+      if (bIfsc) vendor.ifscCode = bIfsc.value.trim().toUpperCase();
+      const bBranch = document.getElementById('v-branch');
+      if (bBranch) vendor.branchName = bBranch.value.trim();
+      const bDoc = document.getElementById('v-bank-doc-filename');
+      if (bDoc && bDoc.value) vendor.bankDoc = bDoc.value;
+    }
+
+    vendor.status = 'Pending Approval';
+    vendor.isApproved = false;
+    vendor.isModificationRevision = true;
+    vendor.pendingModificationTaskId = taskId;
+    vendor.modifiedPhases = allowedPhases;
+    vendor.modifiedAt = new Date().toISOString();
+    vendor.modifiedBy = store.getCurrentUser()?.name || 'Store Staff';
+
+    task.status = 'Submitted for Approval';
+    task.submittedAt = new Date().toISOString();
+    task.submittedBy = store.getCurrentUser()?.name || 'Store Staff';
+
+    store.save();
+    window.CMS_APP.closeModal();
+    window.CMS_APP.toast(`Phase ${allowedPhases.join(', ')} modifications submitted for Admin Approval!`, 'success');
+    window.CMS_APP.refreshView();
+  },
+
   promptBlockVendor(vendorId, willBlock) {
     const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
     if (!v) return;
@@ -8309,108 +9037,114 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         </div>
 
         <!-- 1. Item Classification & General Particulars -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>1. Item Identification & Classification</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 1 of 6</span>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">1. Item Identification & Classification</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 1 of 6</span>
           </div>
-          <table class="w-full text-xs border-collapse">
-            <tbody>
-              <tr class="border-b border-slate-200">
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Material / Asset Name</td>
-                <td class="w-1/4 p-2 font-bold text-slate-900 border-r border-slate-200">${m.materialName}</td>
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Classification Sub-Type</td>
-                <td class="w-1/4 p-2 font-medium text-slate-800">${isFixed ? 'Fixed Capital Equipment (Tracked by Tag)' : 'Consumable Material (Stock Ledger)'}</td>
-              </tr>
-              <tr class="border-b border-slate-200">
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Product Category</td>
-                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">${m.categoryName || '-'}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Manufacturer / Brand</td>
-                <td class="p-2 font-medium text-slate-800">${m.brand || '-'}</td>
-              </tr>
-              <tr class="border-b border-slate-200">
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Supplier Part / SKU Code</td>
-                <td class="p-2 font-mono font-medium text-slate-800 border-r border-slate-200">${m.supplierProductCode || 'N/A'}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Unit of Measurement (UoM)</td>
-                <td class="p-2 font-bold text-slate-900">${m.unit || 'Nos'}</td>
-              </tr>
-              ${isFixed ? `
-                <tr>
-                  <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Capital Asset Tag</td>
-                  <td class="p-2 font-mono font-bold text-indigo-700 border-r border-slate-200">${m.assetTag || 'Pending Tagging'}</td>
-                  <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Serial No & Custodian</td>
-                  <td class="p-2 font-mono text-slate-800">${m.serialNo || '-'} | Dept: ${m.custodianDept || 'General'}</td>
-                </tr>
-              ` : ''}
-            </tbody>
-          </table>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 pt-1">
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Material / Asset Name</div>
+              <div class="text-xs font-bold text-slate-900 mt-0.5">${m.materialName}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Classification Sub-Type</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${isFixed ? 'Fixed Capital Equipment (Tracked by Tag)' : 'Consumable Material (Stock Ledger)'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Product Category</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${m.categoryName || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Manufacturer / Brand</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${m.brand || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Supplier Part / SKU Code</div>
+              <div class="text-xs font-mono font-medium text-slate-800 mt-0.5">${m.supplierProductCode || 'N/A'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Unit of Measurement (UoM)</div>
+              <div class="text-xs font-bold text-slate-900 mt-0.5">${m.unit || 'Nos'}</div>
+            </div>
+            ${isFixed ? `
+              <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Capital Asset Tag</div>
+                <div class="text-xs font-mono font-bold text-indigo-700 mt-0.5">${m.assetTag || 'Pending Tagging'}</div>
+              </div>
+              <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Serial No & Custodian</div>
+                <div class="text-xs font-mono text-slate-800 mt-0.5">${m.serialNo || '-'} | Dept: ${m.custodianDept || 'General'}</div>
+              </div>
+            ` : ''}
+          </div>
         </div>
 
         <!-- 2. Statutory Taxation & HSN Code -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>2. Statutory HSN & GST Taxation Particulars</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 2 of 6</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">2. Statutory HSN & GST Taxation Particulars</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 2 of 6</span>
           </div>
-          <table class="w-full text-xs border-collapse">
-            <tbody>
-              <tr class="border-b border-slate-200">
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Statutory HSN / SAC Code</td>
-                <td class="w-1/4 p-2 font-mono font-bold text-blue-600 border-r border-slate-200 text-sm">${m.hsnCode || '-'}</td>
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Assigned GST Slab</td>
-                <td class="w-1/4 p-2 font-bold text-slate-900">${slabLabel}</td>
-              </tr>
-              <tr>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Tax Application Mode</td>
-                <td class="p-2 font-medium text-slate-800 border-r border-slate-200">${m.taxMode === 'IGST' ? 'Inter-state IGST' : 'Intra-state Dual (CGST + SGST)'}</td>
-                <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Tax Breakdown Rates</td>
-                <td class="p-2 font-mono text-slate-800">${m.taxMode === 'IGST' ? `IGST: ${m.igst || 18}%` : `CGST: ${m.cgst || 9}% + SGST: ${m.sgst || 9}% (Total: ${Number(m.cgst || 9) + Number(m.sgst || 9)}%)`}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 pt-1">
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Statutory HSN / SAC Code</div>
+              <div class="text-xs font-mono font-bold text-blue-600 mt-0.5">${m.hsnCode || '-'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Assigned GST Slab</div>
+              <div class="text-xs font-bold text-slate-900 mt-0.5">${slabLabel}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Tax Application Mode</div>
+              <div class="text-xs font-medium text-slate-800 mt-0.5">${m.taxMode === 'IGST' ? 'Inter-state IGST' : 'Intra-state Dual (CGST + SGST)'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Tax Breakdown Rates</div>
+              <div class="text-xs font-mono text-slate-800 mt-0.5">${m.taxMode === 'IGST' ? `IGST: ${m.igst || 18}%` : `CGST: ${m.cgst || 9}% + SGST: ${m.sgst || 9}% (Total: ${Number(m.cgst || 9) + Number(m.sgst || 9)}%)`}</div>
+            </div>
+          </div>
         </div>
 
         <!-- 3. Warehouse Buffer & Reorder Targets -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>3. Warehouse Stock Balance & Buffer Targets</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 3 of 6</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">3. Warehouse Stock Balance & Buffer Targets</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 3 of 6</span>
           </div>
-          <div class="p-3 bg-white">
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center mb-2">
-              <div class="p-2 bg-slate-50 border border-slate-200 rounded">
-                <span class="text-[10px] uppercase font-bold text-slate-500 block">Current Stock</span>
-                <span class="font-mono font-bold text-slate-800 text-sm">${liveStock} ${m.unit}</span>
-              </div>
-              <div class="p-2 bg-slate-50 border border-slate-200 rounded">
-                <span class="text-[10px] uppercase font-bold text-slate-500 block">Monthly Buffer Target</span>
-                <span class="font-mono font-bold text-blue-600 text-sm">${buffer} ${m.unit}</span>
-              </div>
-              <div class="p-2 bg-slate-50 border border-slate-200 rounded">
-                <span class="text-[10px] uppercase font-bold text-slate-500 block">Buffer Health</span>
-                <span class="font-mono font-bold ${liveStock < buffer * 0.5 ? 'text-amber-600' : 'text-emerald-700'} text-sm">${pct}%</span>
-              </div>
-              <div class="p-2 bg-slate-50 border border-slate-200 rounded">
-                <span class="text-[10px] uppercase font-bold text-slate-500 block">Initial Opening Balance</span>
-                <span class="font-mono font-bold text-slate-700 text-sm">${m.initialStock || 0} ${m.unit}</span>
-              </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-1">
+            <div class="p-3 bg-slate-50/70 rounded">
+              <span class="text-[10px] uppercase font-semibold text-slate-400 block">Current Stock</span>
+              <span class="font-mono font-bold text-slate-900 text-sm mt-0.5 block">${liveStock} ${m.unit}</span>
+            </div>
+            <div class="p-3 bg-slate-50/70 rounded">
+              <span class="text-[10px] uppercase font-semibold text-slate-400 block">Monthly Buffer Target</span>
+              <span class="font-mono font-bold text-blue-600 text-sm mt-0.5 block">${buffer} ${m.unit}</span>
+            </div>
+            <div class="p-3 bg-slate-50/70 rounded">
+              <span class="text-[10px] uppercase font-semibold text-slate-400 block">Buffer Health</span>
+              <span class="font-mono font-bold ${liveStock < buffer * 0.5 ? 'text-amber-600' : 'text-emerald-700'} text-sm mt-0.5 block">${pct}%</span>
+            </div>
+            <div class="p-3 bg-slate-50/70 rounded">
+              <span class="text-[10px] uppercase font-semibold text-slate-400 block">Initial Opening Balance</span>
+              <span class="font-mono font-bold text-slate-700 text-sm mt-0.5 block">${m.initialStock || 0} ${m.unit}</span>
             </div>
           </div>
         </div>
 
         <!-- 4. Multi-Vendor Commercial Quotations & Rate Contracts -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>4. Approved Commercial Quotations & Multi-Vendor Pricing (${vendorsList.length})</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 4 of 6</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">4. Approved Commercial Quotations & Multi-Vendor Pricing (${vendorsList.length})</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 4 of 6</span>
           </div>
-          <div class="p-3 bg-white space-y-2.5">
+          <div class="space-y-2.5 pt-1">
             ${vendorsList.length === 0 ? `
               <div class="text-slate-400 italic text-center py-2">No vendor rates or commercial contracts attached.</div>
             ` : `
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 ${vendorsList.map((v, i) => `
-                  <div class="p-3 border-2 ${v.isPrimary ? 'border-blue-400 bg-blue-50/20' : 'border-slate-200 bg-slate-50/50'} rounded-sm space-y-1.5">
+                  <div class="p-3 bg-slate-50/60 rounded space-y-1.5">
                     <div class="flex items-center justify-between">
                       <span class="font-bold text-xs uppercase flex items-center gap-1.5 ${v.isPrimary ? 'text-blue-700' : 'text-slate-700'}">
                         <i data-lucide="${v.isPrimary ? 'award' : 'building'}" class="w-3.5 h-3.5 ${v.isPrimary ? 'text-blue-600' : 'text-slate-500'}"></i>
@@ -8419,16 +9153,16 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
                       <span class="font-mono font-black text-emerald-700 text-sm">₹${Number(v.rate || 0).toFixed(2)} / ${m.unit || 'Unit'}</span>
                     </div>
                     <p class="font-bold text-slate-900 text-xs truncate">${v.vendorName || v.vendorId || 'Approved Vendor'}</p>
-                    <div class="text-[11px] text-slate-600 flex items-center justify-between pt-1 border-t border-slate-200">
-                      <span>Quote No: <strong class="font-mono text-slate-800">${v.quotationNo || 'Direct'}</strong></span>
-                      <span>Effective: <strong class="font-mono text-slate-800">${v.effectiveFrom || 'Current'}</strong></span>
+                    <div class="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-200/60">
+                      <span>Quote No: <strong class="font-mono text-slate-700 font-medium">${v.quotationNo || 'Direct'}</strong></span>
+                      <span>Effective: <strong class="font-mono text-slate-700 font-medium">${v.effectiveFrom || 'Current'}</strong></span>
                     </div>
                   </div>
                 `).join('')}
               </div>
             `}
             ${m.mrpBooked ? `
-              <div class="p-2.5 bg-slate-50 border border-slate-200 rounded flex justify-between items-center text-[11px]">
+              <div class="p-2.5 bg-slate-50/60 rounded flex justify-between items-center text-[11px]">
                 <span class="text-slate-600">Recorded Consumer MRP: <strong class="font-mono text-slate-900 text-xs">₹${Number(m.mrpBooked).toFixed(2)}</strong></span>
                 <span class="text-emerald-700 font-bold">Commercial contract rate negotiated under institutional procurement mandate.</span>
               </div>
@@ -8437,44 +9171,46 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         </div>
 
         <!-- 5. Warranty & Maintenance Policy -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>5. Warranty & Maintenance Policy Particulars</span>
-            <span class="text-[10px] text-slate-500 font-normal">Section 5 of 6</span>
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
+            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">5. Warranty & Maintenance Policy Particulars</h3>
+            <span class="text-[10px] text-slate-400 font-medium">Section 5 of 6</span>
           </div>
-          <table class="w-full text-xs border-collapse">
-            <tbody>
-              <tr class="border-b border-slate-200">
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Warranty Coverage</td>
-                <td class="w-1/4 p-2 font-bold ${m.hasWarranty ? 'text-emerald-700' : 'text-slate-500'} border-r border-slate-200">${m.hasWarranty ? 'Active Warranty Policy' : 'No Manufacturer Warranty'}</td>
-                <td class="w-1/4 p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Warranty Validity</td>
-                <td class="w-1/4 p-2 font-mono text-slate-800">${m.hasWarranty ? `${m.warrantyPeriod || '1 Year'} (Till: ${m.warrantyValidTill || 'N/A'})` : '-'}</td>
-              </tr>
-              ${isFixed ? `
-                <tr>
-                  <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Preventive Maintenance (PM)</td>
-                  <td class="p-2 font-bold ${m.hasPm ? 'text-purple-700' : 'text-slate-500'} border-r border-slate-200">${m.hasPm ? `Scheduled (${m.pmFrequency || 'Quarterly'})` : 'Not Scheduled'}</td>
-                  <td class="p-2 bg-slate-50 font-semibold text-slate-600 border-r border-slate-200">Technician / Agency</td>
-                  <td class="p-2 text-slate-800">${m.repairmanName || '-'} (${m.repairmanAgency || m.pmVendor || 'Authorized'}) | ${m.repairmanContact || '-'}</td>
-                </tr>
-              ` : ''}
-            </tbody>
-          </table>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 pt-1">
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Warranty Coverage</div>
+              <div class="text-xs font-bold ${m.hasWarranty ? 'text-emerald-700' : 'text-slate-500'} mt-0.5">${m.hasWarranty ? 'Active Warranty Policy' : 'No Manufacturer Warranty'}</div>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Warranty Validity</div>
+              <div class="text-xs font-mono text-slate-800 mt-0.5">${m.hasWarranty ? `${m.warrantyPeriod || '1 Year'} (Till: ${m.warrantyValidTill || 'N/A'})` : '-'}</div>
+            </div>
+            ${isFixed ? `
+              <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Preventive Maintenance (PM)</div>
+                <div class="text-xs font-bold ${m.hasPm ? 'text-purple-700' : 'text-slate-500'} mt-0.5">${m.hasPm ? `Scheduled (${m.pmFrequency || 'Quarterly'})` : 'Not Scheduled'}</div>
+              </div>
+              <div>
+                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Technician / Agency</div>
+                <div class="text-xs text-slate-800 mt-0.5">${m.repairmanName || '-'} (${m.repairmanAgency || m.pmVendor || 'Authorized'}) | ${m.repairmanContact || '-'}</div>
+              </div>
+            ` : ''}
+          </div>
         </div>
 
-        <!-- 6. Attached Statutory & Commercial Documents (Live Inline Previews) -->
-        <div class="border border-slate-300 rounded overflow-hidden">
-          <div class="bg-slate-100 px-3.5 py-1.5 border-b border-slate-300 font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center justify-between">
+        <!-- 6. Attached Statutory & Commercial Documents -->
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between pb-1.5 border-b border-slate-200">
             <div class="flex items-center gap-2">
-              <span>6. Attached Statutory Quotations & Warranty Policy Documents</span>
-              <span class="bg-slate-900 text-white text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">${filesToLoad.length} Attached</span>
+              <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">6. Attached Statutory Quotations & Warranty Policy Documents</h3>
+              <span class="bg-slate-100 text-slate-700 text-[10px] px-2 py-0.5 rounded font-mono font-bold">${filesToLoad.length} Attached</span>
             </div>
-            <span class="text-[10px] text-slate-500 font-normal">Section 6 of 6</span>
+            <span class="text-[10px] text-slate-400 font-medium">Section 6 of 6</span>
           </div>
 
-          <div class="p-4 bg-white space-y-4">
+          <div class="space-y-4 pt-1">
             ${filesToLoad.length === 0 ? `
-              <div class="p-6 text-center text-slate-400 italic text-xs bg-slate-50 border border-dashed border-slate-200 rounded">
+              <div class="py-6 text-center text-slate-400 italic text-xs">
                 No external document scans attached. Rates are verified against master vendor agreements.
               </div>
             ` : `
@@ -8486,38 +9222,38 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
                   const isPdf = fname.toLowerCase().endsWith('.pdf') || (cachedData && cachedData.startsWith('data:application/pdf'));
 
                   return `
-                    <div class="border border-slate-300 rounded bg-white overflow-hidden shadow-2xs">
-                      <div class="bg-slate-100 px-3 py-2 border-b border-slate-300 flex items-center justify-between gap-2">
+                    <div class="py-3 border-b border-slate-200 last:border-b-0 space-y-3">
+                      <div class="flex items-center justify-between gap-2 pb-1">
                         <div class="flex items-center gap-2">
                           <span class="w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-bold flex items-center justify-center font-mono">${idx + 1}</span>
                           <div>
                             <span class="font-bold text-slate-900 text-xs block">${docTitle}</span>
-                            <span class="text-slate-500 font-mono text-[10px] block">${fname}</span>
+                            <span class="text-slate-400 font-mono text-[10px] block">${fname}</span>
                           </div>
                         </div>
                         <div class="flex items-center gap-1.5">
-                          <button type="button" onclick="CMS_APP.viewDocument('${fname}', '${docTitle.replace(/'/g, "\\'")}', { id: '${m.id}', partyName: '${m.materialName.replace(/'/g, "\\'")}' })" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-blue-600 border border-slate-300 rounded text-[11px] font-bold inline-flex items-center gap-1">
+                          <button type="button" onclick="CMS_APP.viewDocument('${fname}', '${docTitle.replace(/'/g, "\\'")}', { id: '${m.id}', partyName: '${m.materialName.replace(/'/g, "\\'")}' })" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-blue-600 border border-slate-200 rounded text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer">
                             <i data-lucide="maximize-2" class="w-3 h-3"></i> Full Screen
                           </button>
-                          <button type="button" onclick="CMS_APP.downloadDocument('${fname}')" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded text-[11px] font-bold inline-flex items-center gap-1">
+                          <button type="button" onclick="CMS_APP.downloadDocument('${fname}')" class="px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer">
                             <i data-lucide="download" class="w-3 h-3"></i> Download
                           </button>
                         </div>
                       </div>
 
-                      <div class="p-3 bg-slate-50 flex items-center justify-center">
+                      <div class="py-1 flex items-center justify-center">
                         ${cachedData ? (
                           isPdf ? `
-                            <iframe src="${cachedData.includes('#') ? cachedData : cachedData + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH'}" class="w-full h-80 border border-slate-300 rounded shadow-xs" title="${docTitle}"></iframe>
+                            <iframe src="${cachedData.includes('#') ? cachedData : cachedData + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH'}" class="w-full h-80 rounded shadow-xs" title="${docTitle}"></iframe>
                           ` : `
-                            <div class="w-full text-center bg-white p-2 border border-slate-200 rounded">
+                            <div class="w-full text-center bg-white p-2 rounded">
                               <img src="${cachedData}" alt="${docTitle}" class="max-h-80 max-w-full object-contain mx-auto rounded shadow-xs" />
                             </div>
                           `
                         ) : `
-                          <div class="py-8 text-center text-slate-500 text-xs">
-                            <i data-lucide="file-text" class="w-8 h-8 text-slate-400 mx-auto mb-1.5"></i>
-                            <span class="font-bold block text-slate-700">${docTitle}</span>
+                          <div class="py-6 text-center text-slate-400 text-xs">
+                            <i data-lucide="file-text" class="w-6 h-6 text-slate-300 mx-auto mb-1"></i>
+                            <span class="font-medium block text-slate-600">${docTitle}</span>
                             <span class="font-mono text-[10px] text-slate-400 block">${fname}</span>
                           </div>
                         `}
@@ -8737,6 +9473,13 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           store.save();
           window.CMS_APP.toast('Draft material deleted successfully.', 'success');
           window.CMS_APP.refreshView();
+          if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
+            const container = document.getElementById('view-container');
+            if (container && window.CMS_APP.currentView === 'draft-workspace') {
+              container.innerHTML = window.CMS_DRAFTS.render();
+              if (window.lucide) window.lucide.createIcons();
+            }
+          }
         }
       }
     } else {

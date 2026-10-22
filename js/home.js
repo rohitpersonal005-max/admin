@@ -67,15 +67,31 @@ window.CMS_HOME = {
     return [...new Set(roles)];
   },
 
-  toggleGmailConnection(connect) {
+  toggleEmailSystemConnection(connect) {
     if (connect) {
-      if (window.CMS_NOTIFICATIONS) window.CMS_NOTIFICATIONS.connectGmail();
-      window.CMS_APP.toast('Gmail sending connection enabled.', 'info');
+      if (window.CMS_NOTIFICATIONS) {
+        if (typeof window.CMS_NOTIFICATIONS.connectEmailSystem === 'function') {
+          window.CMS_NOTIFICATIONS.connectEmailSystem();
+        } else if (typeof window.CMS_NOTIFICATIONS.connectGmail === 'function') {
+          window.CMS_NOTIFICATIONS.connectGmail();
+        }
+      }
+      window.CMS_APP.toast('Email Sending System connection enabled.', 'info');
     } else {
-      if (window.CMS_NOTIFICATIONS) window.CMS_NOTIFICATIONS.disconnectGmail();
-      window.CMS_APP.toast('Gmail sending completely disconnected.', 'warning');
+      if (window.CMS_NOTIFICATIONS) {
+        if (typeof window.CMS_NOTIFICATIONS.disconnectEmailSystem === 'function') {
+          window.CMS_NOTIFICATIONS.disconnectEmailSystem();
+        } else if (typeof window.CMS_NOTIFICATIONS.disconnectGmail === 'function') {
+          window.CMS_NOTIFICATIONS.disconnectGmail();
+        }
+      }
+      window.CMS_APP.toast('Email Sending System completely disconnected.', 'warning');
     }
     this.render();
+  },
+
+  toggleGmailConnection(connect) {
+    return this.toggleEmailSystemConnection(connect);
   },
 
   onMailProviderChange(provider) {
@@ -85,7 +101,7 @@ window.CMS_HOME = {
     if (provider === 'none') {
       if (emailjsContainer) emailjsContainer.classList.add('hidden');
       if (webhookContainer) webhookContainer.classList.add('hidden');
-      if (statusDesc) statusDesc.innerHTML = '<span class="text-rose-700 font-bold flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Gmail Sending is completely disconnected. No emails will be sent.</span>';
+      if (statusDesc) statusDesc.innerHTML = '<span class="text-rose-700 font-bold flex items-center gap-1"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Email Sending System is completely disconnected. No emails will be sent.</span>';
     } else if (provider === 'webhook') {
       if (emailjsContainer) emailjsContainer.classList.add('hidden');
       if (webhookContainer) webhookContainer.classList.remove('hidden');
@@ -242,7 +258,7 @@ window.CMS_HOME = {
     const currentUser = window.CMS_STORE.getCurrentUser() || {};
     const users = window.CMS_STORE.getUsers() || [];
     const roles = this.getCustomRoles();
-    const notifSettings = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings() : { minAlertDays: 15, senderGmail: '', autoSendVendorEmail: true };
+    const notifSettings = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings() : { minAlertDays: 15, senderEmail: '', senderGmail: '', autoSendVendorEmail: true };
     const expiringItems = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getAllExpiringItems() : [];
     const emailLogs = window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getEmailLogs() : [];
     
@@ -302,7 +318,7 @@ window.CMS_HOME = {
                 <div class="font-mono text-slate-800 text-sm font-semibold">${currentUser.id || '-'}</div>
               </div>
               <div>
-                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Gmail / Email</span>
+                <span class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email Address</span>
                 <div class="text-slate-800 text-sm font-medium">${currentUser.email || '-'}</div>
               </div>
             </div>
@@ -327,8 +343,8 @@ window.CMS_HOME = {
                 <input type="text" id="home-prof-id" value="${currentUser.id || ''}" class="w-full bg-slate-50 border border-slate-200 px-3 py-2 rounded-sm font-mono" readonly disabled />
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Gmail / Email</label>
-                <input type="email" id="home-prof-email" value="${currentUser.email || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-sm" placeholder="example@gmail.com" />
+                <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email Address</label>
+                <input type="email" id="home-prof-email" value="${currentUser.email || ''}" class="w-full border border-slate-200 px-3 py-2 rounded-sm" placeholder="user@example.com" />
               </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
@@ -576,30 +592,31 @@ window.CMS_HOME = {
             </div>
             <div>
               <h3 class="font-bold text-slate-800 text-base">Number of days Fixation For Expiry alerts & Email Settings</h3>
-              <p class="text-xs text-slate-500">Fix the minimum alert lead time policy for the entire system, and configure the sender Gmail for automated vendor document change & renewal notices.</p>
+              <p class="text-xs text-slate-500">Fix the minimum alert lead time policy for the entire system, and configure the Email Sending System for automated vendor document change & renewal notices.</p>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            ${notifSettings.gmailConnected ? `
+            ${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? `
               <span class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-sm flex items-center gap-1">
-                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Gmail Sending Connected
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Email Sending System Connected
               </span>
-              <button type="button" onclick="CMS_HOME.toggleGmailConnection(false)" class="px-2.5 py-1 text-[11px] font-bold text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 rounded-sm transition flex items-center gap-1 cursor-pointer" title="Disconnect automated and direct Gmail sending">
+              <button type="button" onclick="CMS_HOME.toggleEmailSystemConnection(false)" class="px-2.5 py-1 text-[11px] font-bold text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 rounded-sm transition flex items-center gap-1 cursor-pointer" title="Disconnect automated and direct Email Sending System">
                 <i data-lucide="power-off" class="w-3.5 h-3.5"></i> Disconnect
               </button>
             ` : `
               <span class="px-2.5 py-1 text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-sm flex items-center gap-1">
-                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-600"></i> Gmail Sending Disconnected
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-600"></i> Email Sending System Disconnected
               </span>
-              <button type="button" onclick="CMS_HOME.toggleGmailConnection(true)" class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:text-white bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 rounded-sm transition flex items-center gap-1 cursor-pointer" title="Enable Gmail sending connection">
-                <i data-lucide="link" class="w-3.5 h-3.5"></i> Connect Gmail
+              <button type="button" onclick="CMS_HOME.toggleEmailSystemConnection(true)" class="px-2.5 py-1 text-[11px] font-bold text-emerald-700 hover:text-white bg-emerald-50 hover:bg-emerald-600 border border-emerald-200 rounded-sm transition flex items-center gap-1 cursor-pointer" title="Enable Email Sending System connection">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i> Connect Email Sending System
               </button>
             `}
           </div>
         </div>
 
         <form id="home-notif-settings-form" onsubmit="event.preventDefault(); CMS_NOTIFICATIONS.handleAdminSaveSettings();" class="space-y-4">
-          <input type="hidden" id="home-notif-gmail-connected" value="${notifSettings.gmailConnected ? 'true' : 'false'}" />
+          <input type="hidden" id="home-notif-gmail-connected" value="${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? 'true' : 'false'}" />
+          <input type="hidden" id="home-notif-email-system-connected" value="${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? 'true' : 'false'}" />
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- 1. Number of Days Fixation (Minimum Alert Time Policy) -->
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-2.5">
@@ -626,21 +643,21 @@ window.CMS_HOME = {
               </div>
             </div>
 
-            <!-- 2. Sender Gmail -->
+            <!-- 2. Sender Email Address -->
             <div class="p-4 bg-slate-50 border border-slate-200 rounded-sm space-y-2.5">
               <div class="flex items-center justify-between">
                 <label class="block text-xs font-bold text-slate-800">
-                  Sender Gmail Address ${notifSettings.gmailConnected ? '<span class="text-rose-600">*</span>' : '<span class="text-slate-400 font-normal">(Optional when disconnected)</span>'}
+                  Sender Email Address (Email Sending System) ${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? '<span class="text-rose-600">*</span>' : '<span class="text-slate-400 font-normal">(Optional when disconnected)</span>'}
                 </label>
-                <span class="text-[10px] font-mono font-bold ${notifSettings.gmailConnected ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-slate-500 bg-slate-100 border-slate-200'} border px-2 py-0.5 rounded">
-                  ${notifSettings.gmailConnected ? 'Outgoing Sender' : 'Disconnected'}
+                <span class="text-[10px] font-mono font-bold ${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? 'text-purple-700 bg-purple-50 border-purple-200' : 'text-slate-500 bg-slate-100 border-slate-200'} border px-2 py-0.5 rounded">
+                  ${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? 'Outgoing Sender' : 'Disconnected'}
                 </span>
               </div>
               <p class="text-[11px] text-slate-500">
-                The official Gmail from which document change and renewal notification emails will be dispatched to the vendor.
+                The official email address from which document change and renewal notification emails will be dispatched to the vendor via the Email Sending System.
               </p>
               <div class="relative pt-1">
-                <input type="email" id="home-notif-sender-gmail" ${notifSettings.gmailConnected ? 'required' : ''} value="${notifSettings.senderGmail || ''}" placeholder="${notifSettings.gmailConnected ? 'e.g. procurement.compliance@gmail.com' : 'Optional (Gmail Sending is Disconnected)'}" class="w-full pl-3 pr-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                <input type="email" id="home-notif-sender-gmail" ${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? 'required' : ''} value="${notifSettings.senderEmail || notifSettings.senderGmail || ''}" placeholder="${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? 'e.g. procurement.compliance@company.com' : 'Optional (Email Sending System is Disconnected)'}" class="w-full pl-3 pr-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none" />
               </div>
             </div>
           </div>
@@ -656,7 +673,7 @@ window.CMS_HOME = {
                   <label class="block text-xs font-bold text-slate-800">
                     Live Background Email Sending Gateway (Direct Silent Delivery)
                   </label>
-                  <p class="text-[11px] text-slate-500">Transmits real emails to vendors silently without opening Gmail.</p>
+                  <p class="text-[11px] text-slate-500">Transmits real emails to vendors silently in the background via the Email Sending System.</p>
                 </div>
               </div>
               <div class="flex items-center gap-2 shrink-0">
@@ -673,14 +690,14 @@ window.CMS_HOME = {
               <div>
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">Dispatch Method / Gateway</label>
                 <select id="home-notif-provider" onchange="CMS_HOME.onMailProviderChange(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded text-xs bg-white focus:ring-2 focus:ring-blue-500">
-                  <option value="none" ${(!notifSettings.gmailConnected || notifSettings.mailProvider === 'none') ? 'selected' : ''}>Disconnected (No Emails Sent)</option>
-                  <option value="emailjs" ${(notifSettings.gmailConnected && notifSettings.mailProvider === 'emailjs') ? 'selected' : ''}>EmailJS (Free, Connects to Gmail)</option>
-                  <option value="webhook" ${(notifSettings.gmailConnected && notifSettings.mailProvider === 'webhook') ? 'selected' : ''}>Google Apps Script / Webhook (100% Free)</option>
+                  <option value="none" ${(!(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) || notifSettings.mailProvider === 'none') ? 'selected' : ''}>Disconnected (No Emails Sent)</option>
+                  <option value="emailjs" ${((notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) && notifSettings.mailProvider === 'emailjs') ? 'selected' : ''}>EmailJS (Cloud Mail Gateway)</option>
+                  <option value="webhook" ${((notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) && notifSettings.mailProvider === 'webhook') ? 'selected' : ''}>Google Apps Script / Webhook (100% Free)</option>
                 </select>
               </div>
 
               <!-- EmailJS Settings (Show when emailjs selected) -->
-              <div id="emailjs-fields-container" class="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-2 ${(!notifSettings.gmailConnected || notifSettings.mailProvider !== 'emailjs') ? 'hidden' : ''}">
+              <div id="emailjs-fields-container" class="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-2 ${(!(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) || notifSettings.mailProvider !== 'emailjs') ? 'hidden' : ''}">
                 <div>
                   <label class="block text-[11px] font-bold text-slate-600 mb-1">Service ID</label>
                   <input type="text" id="home-notif-emailjs-service" value="${notifSettings.emailjsServiceId || ''}" placeholder="e.g. service_xxxx" class="w-full px-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white" />
@@ -696,7 +713,7 @@ window.CMS_HOME = {
               </div>
 
               <!-- Webhook URL Field (Show when webhook selected) -->
-              <div id="webhook-fields-container" class="md:col-span-2 ${(!notifSettings.gmailConnected || notifSettings.mailProvider !== 'webhook') ? 'hidden' : ''}">
+              <div id="webhook-fields-container" class="md:col-span-2 ${(!(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) || notifSettings.mailProvider !== 'webhook') ? 'hidden' : ''}">
                 <label class="block text-[11px] font-bold text-slate-600 mb-1">Google Apps Script / Webhook Endpoint URL</label>
                 <input type="url" id="home-notif-webhook-url" value="${notifSettings.webhookUrl || ''}" placeholder="https://script.google.com/macros/s/.../exec" class="w-full px-3 py-2 border border-slate-300 rounded text-xs font-mono bg-white" />
               </div>
@@ -704,9 +721,9 @@ window.CMS_HOME = {
 
             <div class="text-[11px] text-slate-500 bg-white p-2.5 rounded border border-slate-200 flex items-center justify-between">
               <span id="gateway-status-desc">
-                ${!notifSettings.gmailConnected || notifSettings.mailProvider === 'none' ? `
+                ${!(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) || notifSettings.mailProvider === 'none' ? `
                   <span class="text-rose-700 font-bold flex items-center gap-1">
-                    <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Gmail Sending is completely disconnected. Automated alerts will be recorded on dashboard only; no real emails will be dispatched.
+                    <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> Email Sending System is completely disconnected. Automated alerts will be recorded on dashboard only; no real emails will be dispatched.
                   </span>
                 ` : (notifSettings.mailProvider === 'webhook' && notifSettings.webhookUrl ? `
                   <span class="text-emerald-700 font-bold flex items-center gap-1"><i data-lucide="check" class="w-3.5 h-3.5"></i> Google Apps Script Webhook Configured & Active</span>
@@ -797,13 +814,13 @@ window.CMS_HOME = {
                           <span class="inline-block px-2 py-0.5 rounded text-[10px] ${expBadge}">${expText}</span>
                         </td>
                         <td class="py-2.5 px-3">
-                          ${notifSettings.gmailConnected ? `
+                          ${(notifSettings.emailSystemConnected ?? notifSettings.gmailConnected) ? `
                           <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded whitespace-nowrap">
                             <i data-lucide="mail-check" class="w-3.5 h-3.5 text-emerald-600"></i> Auto-Mail (7:00 AM)
                           </span>
                           ` : `
-                          <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded whitespace-nowrap" title="Gmail sending is disconnected in Admin Settings">
-                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-slate-500"></i> Alert Only (Gmail Disconnected)
+                          <span class="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded whitespace-nowrap" title="Email Sending System is disconnected in Admin Settings">
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-slate-500"></i> Alert Only (Email System Disconnected)
                           </span>
                           `}
                         </td>
@@ -841,7 +858,7 @@ window.CMS_HOME = {
                     <th class="py-2 px-3">Time</th>
                     <th class="py-2 px-3">Recipient Vendor</th>
                     <th class="py-2 px-3">Document</th>
-                    <th class="py-2 px-3">From Gmail</th>
+                    <th class="py-2 px-3">From Sender Email</th>
                     <th class="py-2 px-3">Status</th>
                   </tr>
                 </thead>
@@ -851,7 +868,7 @@ window.CMS_HOME = {
                       <td class="py-2 px-3 text-slate-500">${new Date(log.timestamp).toLocaleDateString('en-GB')} ${new Date(log.timestamp).toLocaleTimeString('en-GB', {hour: '2-digit', minute: '2-digit'})}</td>
                       <td class="py-2 px-3 font-sans font-bold text-slate-800">${log.vendorName} (${log.vendorEmail})</td>
                       <td class="py-2 px-3 font-sans text-slate-700">${log.docName}</td>
-                      <td class="py-2 px-3 text-purple-700">${log.senderGmail}</td>
+                      <td class="py-2 px-3 text-purple-700">${log.senderEmail || log.senderGmail || ''}</td>
                       <td class="py-2 px-3">
                         <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">${log.status}</span>
                       </td>

@@ -200,6 +200,10 @@ assert(mastersCode.includes('id="v-gst-bracket-container"'), 'Vendor modal conta
 assert(mastersCode.includes('id="v-gst-normal-container"'), 'Vendor modal contains #v-gst-normal-container for Foreign single standard input');
 assert(mastersCode.includes('this.updateGstFieldMode(isForeign)'), 'onCountryChange dynamically invokes updateGstFieldMode(isForeign)');
 assert(mastersCode.includes('if (countryVal && !countryVal.includes(\'India\')) return;'), 'assembleGst() guards against overwriting foreign tax IDs');
+assert(mastersCode.includes('toggleVendorPreviewMaterials()'), 'masters.js declares toggleVendorPreviewMaterials()');
+assert(mastersCode.includes('id="v-preview-materials-table-wrapper"'), 'Vendor paper form preview contains #v-preview-materials-table-wrapper');
+assert(mastersCode.includes('id="v-preview-mat-toggle-btn"'), 'Vendor paper form preview contains #v-preview-mat-toggle-btn');
+assert(mastersCode.includes('id="v-preview-materials-collapsed-banner"'), 'Vendor paper form preview contains #v-preview-materials-collapsed-banner');
 
 // -------------------------------------------------------------
 // SECTION 7: Local Server HTTP Health Check

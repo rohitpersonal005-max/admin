@@ -41,20 +41,10 @@ window.CMS_FILE_STORE = {
     } catch (err) {
       console.warn('IndexedDB save failed, kept in memory cache:', err);
     }
-    // Synchronize to cloud database (Supabase) via CMS_STORE.data.files
+    // Cache in memory store
     if (window.CMS_STORE && window.CMS_STORE.data) {
       if (!window.CMS_STORE.data.files) window.CMS_STORE.data.files = {};
       window.CMS_STORE.data.files[name] = dataUrl;
-      if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
-        try {
-          window.CMS_SUPABASE.from('master_tenants').update({ cms_db: window.CMS_STORE.data }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
-            if (error) console.error("Cloud file sync failed:", error);
-            else console.log("Cloud file synced successfully:", name);
-          });
-        } catch (e) {
-          console.warn('Supabase file update dispatch:', e);
-        }
-      }
     }
   },
 
@@ -1103,6 +1093,10 @@ window.CMS_APP = {
   },
 
   closeModal() {
+    if (window.CMS_MASTERS && window.CMS_MASTERS._draftTimeout) {
+      clearTimeout(window.CMS_MASTERS._draftTimeout);
+      window.CMS_MASTERS._draftTimeout = null;
+    }
     const stacked = document.getElementById('stacked-modal-container');
     if (stacked && !stacked.classList.contains('hidden')) {
       this.closeStackedModal();

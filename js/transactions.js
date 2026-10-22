@@ -653,6 +653,13 @@ window.CMS_TRANSACTIONS = {
       store.save();
       window.CMS_APP.toast(`Draft receipt "${docLabel}" deleted successfully.`, 'info');
       window.CMS_APP.refreshView();
+      if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {
+        const container = document.getElementById('view-container');
+        if (container && window.CMS_APP && window.CMS_APP.currentView === 'draft-workspace') {
+          container.innerHTML = window.CMS_DRAFTS.render();
+          if (window.lucide) window.lucide.createIcons();
+        }
+      }
     }
   },
 

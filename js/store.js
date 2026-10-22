@@ -4,7 +4,7 @@
  * and User-Admin approval workflow.
  */
 
-const getStorageKey = () => 'CMS_DATABASE_V2_' + (window.CMS_TENANT_ID || 'UNASSIGNED');
+const getStorageKey = () => 'CMS_DATABASE_V2_' + (window.CMS_TENANT_ID || (typeof localStorage !== 'undefined' ? localStorage.getItem('CMS_TENANT_ID_CACHE') : null) || 'UNASSIGNED');
 const ROLE_KEY = 'CMS_USER_ROLE_V1';
 const USER_KEY = 'CMS_CURRENT_USER_ID_V1';
 
@@ -1149,6 +1149,12 @@ class Store {
 
   async applyCloudUpdate(val, writeLocal = true) {
     if (!val) return;
+    const remoteTime = Number(val._lastUpdatedAt || 0);
+    const localTime = Number(this.data._lastUpdatedAt || 0);
+    if (remoteTime && localTime && remoteTime < localTime) {
+      console.log(`[CMS Realtime] Ignoring stale cloud snapshot (remote: ${remoteTime} < local: ${localTime})`);
+      return;
+    }
     try {
       this.data = {
         ...EMPTY_DATABASE,
@@ -1227,12 +1233,8 @@ class Store {
         const remoteTime = Number(remote._lastUpdatedAt || 0);
         const localTime = Number(this.data._lastUpdatedAt || 0);
 
-        const remoteVendorStatusKey = (remote.vendors || []).map(v => `${v.id}:${v.status}:${v.isApproved}`).join('|');
-        const localVendorStatusKey = (this.data.vendors || []).map(v => `${v.id}:${v.status}:${v.isApproved}`).join('|');
-        const hasVendorStatusChange = remoteVendorStatusKey !== localVendorStatusKey;
-
-        if (remoteTime > localTime || hasVendorStatusChange) {
-          console.log('[CMS Realtime] Live vendor/store update received from cloud session.');
+        if (remoteTime > localTime) {
+          console.log('[CMS Realtime] Newer database update received from cloud session.');
           await this.applyCloudUpdate(remote);
         }
       }
@@ -1322,11 +1324,11 @@ class Store {
         console.warn('localStorage quota handled safely in save():', storageErr);
       }
 
-      // 2. Replicate complete dataset including all documents to cloud Supabase backend
+      // 2. Replicate complete dataset to cloud Supabase backend (files stripped to avoid statement timeout)
       if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
-        window.CMS_SUPABASE.from('master_tenants').update({ cms_db: this.data }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
+        window.CMS_SUPABASE.from('master_tenants').update({ cms_db: localData }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
           if (error) console.error("Cloud database sync failed:", error);
-          else console.log("Cloud database and documents synced successfully!");
+          else console.log("Cloud database synced successfully!");
         });
       }
       const currentUser = this.getCurrentUser();
@@ -1566,6 +1568,14 @@ class Store {
     if (!v) return false;
     v.isBlocked = Boolean(isBlocked);
     v.blockReason = isBlocked ? (reason || 'Blocked by Store In-Charge') : '';
+    if (!isBlocked) {
+      v.autoBlockedOnExpiry = false;
+      if (v.status === 'Blocked') {
+        v.status = 'Approved';
+      }
+    } else {
+      v.status = 'Blocked';
+    }
     this.save();
     return true;
   }
