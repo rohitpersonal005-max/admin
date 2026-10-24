@@ -1566,6 +1566,11 @@ class Store {
   toggleBlockVendor(vendorId, isBlocked, reason = '') {
     const v = this.data.vendors.find(item => item.id === vendorId);
     if (!v) return false;
+    // Statutory Restriction: Only approved vendors can be blocked; vendors pending approval or in draft cannot be banned
+    if (isBlocked && v.status !== 'Approved' && !v.isApproved) {
+      console.warn('Statutory Restriction: Pending or Draft vendors cannot be blocked. Only Approve or Reject permitted.');
+      return false;
+    }
     v.isBlocked = Boolean(isBlocked);
     v.blockReason = isBlocked ? (reason || 'Blocked by Store In-Charge') : '';
     if (!isBlocked) {

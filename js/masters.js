@@ -1340,7 +1340,7 @@ window.CMS_MASTERS = {
             </button>
 
             <!-- Assigned Modification Task Action -->
-            ${v.pendingModificationTaskId ? `
+            ${v.pendingModificationTaskId && role !== 'Admin' ? `
               <button onclick="CMS_MASTERS.openVendorModal('${v.id}', '${v.pendingModificationTaskId}')" class="px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-100 hover:bg-blue-200 border border-blue-300 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Update Authorized Phase of Vendor Form">
                 <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-600"></i>
                 <span>Update Form</span>
@@ -1349,16 +1349,18 @@ window.CMS_MASTERS = {
 
             <!-- Continue Working on Draft & Edit/Revise Buttons -->
             ${!isApproved && (v.status === 'Draft' || isRevision) ? `
-              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Continue Working on Vendor Draft'}">
-                <i data-lucide="edit-3" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-purple-600'}"></i>
-                <span>${isRevision ? 'Edit & Fix' : 'Continue Working'}</span>
-              </button>
+              ${role !== 'Admin' ? `
+                <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Continue Working on Vendor Draft'}">
+                  <i data-lucide="edit-3" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-purple-600'}"></i>
+                  <span>${isRevision ? 'Edit & Fix' : 'Continue Working'}</span>
+                </button>
+              ` : ''}
               <button onclick="CMS_MASTERS.deleteVendor('${v.id}')" class="px-2 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Delete Draft Vendor">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
               </button>
             ` : ''}
 
-            <!-- Action Buttons for Pending Approval -->
+            <!-- Action Buttons for Pending Approval (Strict Maker-Checker Separation) -->
             ${isPending ? (role === 'Admin' ? `
               <button onclick="CMS_MASTERS.openVendorSanctionModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-sm transition shadow-sm inline-flex items-center gap-1 cursor-pointer" title="Sanction & Approve Vendor">
                 <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
@@ -1367,10 +1369,11 @@ window.CMS_MASTERS = {
               <button onclick="CMS_MASTERS.openVendorRejectModal('${v.id}')" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-100 hover:bg-rose-200 rounded-sm transition cursor-pointer" title="Reject / Return for Revision">
                 Reject
               </button>
-              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Modify Vendor Details">
-                <i data-lucide="pencil" class="w-3.5 h-3.5 text-slate-600"></i>
-              </button>
             ` : `
+              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Edit Form & Resend for Admin Approval">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-amber-700"></i>
+                <span>Edit Form</span>
+              </button>
               <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded">
                 <i data-lucide="clock" class="w-3 h-3 text-amber-600"></i>
                 Pending Approval
@@ -1382,8 +1385,8 @@ window.CMS_MASTERS = {
               </span>
             ` : ''}
 
-            <!-- Ban / Blacklist with confirmation prompt (Checker only) -->
-            ${role === 'Admin' ? `
+            <!-- Ban / Blacklist with confirmation prompt (Checker only - strictly restricted from Pending Approval and Draft vendors) -->
+            ${(role === 'Admin' && !isPending && !isDraft && (isApproved || isBlocked)) ? `
               <button onclick="CMS_MASTERS.promptBlockVendor('${v.id}', ${!isBlocked})" class="px-2 py-1 text-xs font-semibold ${isBlocked ? 'text-emerald-700 bg-emerald-100 hover:bg-emerald-200' : 'text-amber-700 bg-amber-100 hover:bg-amber-200'} rounded-sm transition" title="${isBlocked ? 'Unblock Vendor' : 'Blacklist / Block Vendor'}">
                 <i data-lucide="${isBlocked ? 'check-circle' : 'ban'}" class="w-3.5 h-3.5"></i>
               </button>
@@ -3167,7 +3170,7 @@ window.CMS_MASTERS = {
           ${(role !== 'Admin' && !v.isApproved && v.status !== 'Approved' && (v.status === 'Pending Approval' || v.status === 'Revision Required' || v.status === 'Draft')) ? `
             <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorModal('${v.id}');" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
               <i data-lucide="edit-3" class="w-4 h-4 text-white"></i>
-              <span>${v.status === 'Revision Required' ? 'Edit & Fix Form' : 'Edit Form'}</span>
+              <span>${v.status === 'Revision Required' ? 'Edit & Fix Form' : (v.status === 'Pending Approval' ? 'Edit & Resubmit Form' : 'Edit Form')}</span>
             </button>
           ` : ''}
           ${role === 'Admin' && (v.isBlocked || v.status === 'Blocked') ? `
@@ -4773,9 +4776,19 @@ window.CMS_MASTERS = {
           return;
         }
       }
-      if (existingVendor && existingVendor.status === 'Pending Approval' && role === 'Admin' && !existingVendor.isModificationRevision) {
-        this.openVendorSanctionModal(vendorId);
-        return;
+      if (existingVendor && existingVendor.status === 'Pending Approval') {
+        if (role === 'Admin') {
+          window.CMS_APP.toast('As Admin / Approver, you can sanction or return vendor submissions, but direct editing is reserved for Maker.', 'info');
+          this.openVendorSanctionModal(vendorId);
+          return;
+        }
+      }
+      if (existingVendor && (existingVendor.status === 'Draft' || existingVendor.status === 'Revision Required')) {
+        if (role === 'Admin') {
+          window.CMS_APP.toast('Vendor form editing is reserved for Maker. Admins inspect and sanction submissions.', 'info');
+          this.viewVendorProfile(vendorId);
+          return;
+        }
       }
     }
     const isTaskMode = Boolean(activeTask);
@@ -5536,7 +5549,7 @@ window.CMS_MASTERS = {
               </button>
               <button id="v-submit-btn" type="button" onclick="CMS_MASTERS.saveVendor('${vendorId || ''}', true)" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs">
                 <i data-lucide="send" class="w-4 h-4"></i>
-                <span>Submit for Admin Approval</span>
+                <span>${vendor.status === 'Pending Approval' ? 'Resend for Admin Approval' : 'Submit for Admin Approval'}</span>
               </button>
               </div>
             </div>
@@ -5545,7 +5558,7 @@ window.CMS_MASTERS = {
         </form>
     `;
 
-    const modalTitle = isTaskMode ? (`Admin Task Authorized: Modify Vendor (${vendor.name || vendorId})`) : (isEdit ? ((!vendor.status || vendor.status === 'Draft') ? 'Continue Working on Vendor Draft' : (vendor.status === 'Revision Required' ? 'Revise Vendor Registration' : 'Modify Vendor Record')) : 'Register New Vendor');
+    const modalTitle = isTaskMode ? (`Admin Task Authorized: Modify Vendor (${vendor.name || vendorId})`) : (isEdit ? ((!vendor.status || vendor.status === 'Draft') ? 'Continue Working on Vendor Draft' : (vendor.status === 'Revision Required' ? 'Revise Vendor Registration' : (vendor.status === 'Pending Approval' ? 'Edit & Resubmit Vendor Form for Approval' : 'Modify Vendor Record'))) : 'Register New Vendor');
     window.CMS_APP.openModal(modalTitle, content, 'max-w-4xl');
     if (isTaskMode) {
       setTimeout(() => {
@@ -7707,6 +7720,10 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
   promptBlockVendor(vendorId, willBlock) {
     const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
     if (!v) return;
+    if (willBlock && v.status !== 'Approved' && !v.isApproved) {
+      window.CMS_APP.toast('Restriction: Vendors submitted for approval or in draft cannot be banned. Only Approve or Reject actions are permitted.', 'warning');
+      return;
+    }
     if (willBlock) {
       const content = `
         <form class="space-y-4 text-xs" onsubmit="event.preventDefault(); const reason = document.getElementById('ban-reason-input').value.trim(); if (!reason) { CMS_APP.toast('Please provide a reason for blocking.', 'error'); return; } CMS_APP.closeModal(); CMS_MASTERS.confirmBlockVendor('${vendorId}', true, reason);">
@@ -7732,6 +7749,11 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
   },
 
   confirmBlockVendor(vendorId, willBlock, reason) {
+    const v = window.CMS_STORE.data.vendors.find(i => i.id === vendorId);
+    if (willBlock && v && v.status !== 'Approved' && !v.isApproved) {
+      window.CMS_APP.toast('Restriction: Cannot block a vendor pending approval. Please use Approve or Reject.', 'error');
+      return;
+    }
     const success = window.CMS_STORE.toggleBlockVendor(vendorId, willBlock, reason);
     if (success) {
       window.CMS_APP.toast(willBlock ? 'Vendor has been blocked / banned from new transactions.' : 'Vendor unblocked successfully.', willBlock ? 'error' : 'success');
