@@ -730,12 +730,17 @@ window.CMS_DASHBOARD = {
               <h3 class="font-bold text-slate-900 text-base">${task.title}</h3>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-              ${(task.targetVendorId || task.vendorId) && (task.status === 'Open' || task.status === 'In Progress' || task.status === 'Pending') ? `
+              ${(task.targetVendorId || task.vendorId) && (task.status === 'Open' || task.status === 'In Progress' || task.status === 'Pending') ? (role !== 'Admin' ? `
                 <button onclick="CMS_MASTERS.openVendorModal('${task.targetVendorId || task.vendorId}', '${task.id}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded shadow transition flex items-center gap-1.5 cursor-pointer" title="Open vendor form with authorized phase editable">
                   <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                   <span>Modify Vendor Form</span>
                 </button>
-              ` : ''}
+              ` : `
+                <button onclick="CMS_MASTERS.viewVendorProfile('${task.targetVendorId || task.vendorId}')" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded border border-slate-300 transition flex items-center gap-1.5 cursor-pointer" title="Inspect vendor profile">
+                  <i data-lucide="eye" class="w-3.5 h-3.5 text-slate-600"></i>
+                  <span>Inspect Vendor</span>
+                </button>
+              `) : ''}
               ${(task.targetVendorId || task.vendorId) && task.status === 'Submitted for Approval' && role === 'Admin' ? `
                 <button onclick="CMS_MASTERS.viewVendorProfile('${task.targetVendorId || task.vendorId}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded shadow transition flex items-center gap-1.5 cursor-pointer" title="Review submitted changes and sanction vendor">
                   <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>

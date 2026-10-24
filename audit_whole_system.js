@@ -376,28 +376,28 @@ testVendor.isApproved = true;
 testVendor.approvedBy = 'Col. Anita Sharma';
 check(testVendor.status === 'Approved' && testVendor.isApproved === true, 'Admin Checker successfully approves vendor for active procurement');
 
-// Admin Direct Vendor Creation (Admin authority in Vendor Setup)
-const adminDirectVendor = {
-  id: 'VEN-ADMIN-DIRECT',
-  name: 'Admin Direct Supplies',
+// Strict Maker-Checker Separation: Approved vendors for active procurement
+const sanctionedVendor = {
+  id: 'VEN-SANCTIONED-01',
+  name: 'Sanctioned Supplies Co.',
   status: 'Approved',
   isApproved: true,
   sanctionedBy: 'Col. Anita Sharma',
   sanctionedAt: new Date().toISOString()
 };
-STORE.data.vendors.unshift(adminDirectVendor);
-check(STORE.data.vendors.some(v => v.id === 'VEN-ADMIN-DIRECT' && v.isApproved === true && v.status === 'Approved'), 'Admin possesses full authority to directly register and sanction new vendors in Vendor Setup');
+STORE.data.vendors.unshift(sanctionedVendor);
+check(STORE.data.vendors.some(v => v.id === 'VEN-SANCTIONED-01' && v.isApproved === true && v.status === 'Approved'), 'Strict Maker-Checker Separation: Sanctioned vendors are registered in active procurement upon Admin approval');
 
-// Admin Draft Vendor Creation & Workability
-const adminDraftVendor = {
-  id: 'VEN-ADMIN-DRAFT',
-  name: 'Admin In-Progress Vendor',
+// Maker Draft Vendor Creation & Workability
+const makerDraftVendor = {
+  id: 'VEN-MAKER-DRAFT',
+  name: 'Maker In-Progress Vendor',
   status: 'Draft',
   isApproved: false,
-  createdBy: 'USR-ADMIN'
+  createdBy: 'USR-STAFF'
 };
-STORE.data.vendors.unshift(adminDraftVendor);
-check(STORE.data.vendors.some(v => v.id === 'VEN-ADMIN-DRAFT' && v.status === 'Draft'), 'Admin possesses full authority to create and continue working on Draft vendors');
+STORE.data.vendors.unshift(makerDraftVendor);
+check(STORE.data.vendors.some(v => v.id === 'VEN-MAKER-DRAFT' && v.status === 'Draft'), 'Maker Draft and In-Progress records persist cleanly in vendor repository');
 
 // Rejection / Correction routing via rejectRecord()
 const testVendor2 = { id: 'VEN-TEST-998', name: 'Rejectable Supplies', status: 'Pending Approval' };

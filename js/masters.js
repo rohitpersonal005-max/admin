@@ -1348,14 +1348,12 @@ window.CMS_MASTERS = {
               </button>
             ` : ''}
 
-            <!-- Continue Working on Draft & Edit/Revise Buttons -->
-            ${!isApproved && (v.status === 'Draft' || isRevision) ? `
-              ${(role !== 'Admin' || v.status === 'Draft') ? `
-                <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Continue Working on Vendor Draft'}">
-                  <i data-lucide="edit-3" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-purple-600'}"></i>
-                  <span>${isRevision ? 'Edit & Fix' : 'Continue Working'}</span>
-                </button>
-              ` : ''}
+            <!-- Continue Working on Draft & Edit/Revise Buttons (Maker only - strictly hidden from Admin) -->
+            ${role !== 'Admin' && !isApproved && (v.status === 'Draft' || isRevision) ? `
+              <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Continue Working on Vendor Draft'}">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-purple-600'}"></i>
+                <span>${isRevision ? 'Edit & Fix' : 'Continue Working'}</span>
+              </button>
               <button onclick="CMS_MASTERS.deleteVendor('${v.id}')" class="px-2 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="Delete Draft Vendor">
                 <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-600"></i>
               </button>
@@ -1420,10 +1418,12 @@ window.CMS_MASTERS = {
           </div>
 
           <div class="flex flex-wrap items-center gap-2.5">
-            <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition text-xs cursor-pointer">
-              <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
-              <span>Register New Vendor</span>
-            </button>
+            ${role !== 'Admin' ? `
+              <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-black text-white font-bold rounded-sm shadow transition text-xs cursor-pointer">
+                <i data-lucide="plus-circle" class="w-4 h-4 text-white"></i>
+                <span>Register New Vendor</span>
+              </button>
+            ` : ''}
           </div>
         </div>
 
@@ -3184,7 +3184,7 @@ window.CMS_MASTERS = {
         </div>
 
         <div class="flex items-center gap-2">
-          ${(((role !== 'Admin' && (v.status === 'Pending Approval' || v.status === 'Revision Required')) || v.status === 'Draft') && !v.isApproved && v.status !== 'Approved') ? `
+          ${(role !== 'Admin' && !v.isApproved && v.status !== 'Approved' && (v.status === 'Pending Approval' || v.status === 'Revision Required' || v.status === 'Draft' || !v.status)) ? `
             <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorModal('${v.id}');" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
               <i data-lucide="edit-3" class="w-4 h-4 text-white"></i>
               <span>${v.status === 'Revision Required' ? 'Edit & Fix Form' : (v.status === 'Pending Approval' ? 'Edit & Resubmit Form' : 'Edit Form')}</span>
@@ -4775,6 +4775,13 @@ window.CMS_MASTERS = {
   openVendorModal(vendorId = null, taskId = null) {
     const role = window.CMS_STORE.getRole();
     const isEdit = Boolean(vendorId);
+
+    // Strict Maker-Checker Separation: Vendor registration is reserved for Store Staff / Maker
+    if (!isEdit && role === 'Admin') {
+      window.CMS_APP.toast('Strict Maker-Checker Separation: Vendor registration must be initiated by Store Staff / Maker. Admins review and sanction vendor submissions.', 'warning');
+      return;
+    }
+
     let existingVendor = null;
     let activeTask = null;
     if (isEdit) {
@@ -4801,9 +4808,9 @@ window.CMS_MASTERS = {
           return;
         }
       }
-      if (existingVendor && existingVendor.status === 'Revision Required') {
+      if (existingVendor && (existingVendor.status === 'Draft' || existingVendor.status === 'Revision Required')) {
         if (role === 'Admin') {
-          window.CMS_APP.toast('Vendor revision is reserved for Maker to fix reported mistakes. Admins inspect and sanction submissions.', 'info');
+          window.CMS_APP.toast('Strict Maker-Checker Separation: Vendor form drafting and revision is reserved for Maker. Admins review and sanction submissions.', 'info');
           this.viewVendorProfile(vendorId);
           return;
         }
@@ -6446,6 +6453,16 @@ window.CMS_MASTERS = {
     }
     const isEdit = Boolean(vendorId && store.data.vendors.some(v => v.id === vendorId));
     const existingVendor = isEdit ? store.data.vendors.find(v => v.id === vendorId) : null;
+
+    // Strict Maker-Checker Policy: Vendor registration and direct form editing is reserved for Store Staff / Maker
+    if (!isEdit && role === 'Admin') {
+      window.CMS_APP.toast('Strict Maker-Checker Policy: Vendor registration must be initiated by Store Staff / Maker.', 'error');
+      return;
+    }
+    if (isEdit && role === 'Admin' && !window.CMS_MASTERS.activeTask) {
+      window.CMS_APP.toast('Strict Maker-Checker Separation: Direct vendor editing is reserved for Maker. Admins review and sanction via Approval Modal.', 'warning');
+      return;
+    }
     const today = new Date().toISOString().split('T')[0];
     const minAlertPolicy = (window.CMS_NOTIFICATIONS ? window.CMS_NOTIFICATIONS.getSettings().minAlertDays : 15) || 15;
 

@@ -52,10 +52,12 @@ window.CMS_DRAFTS = {
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-sm text-xs shadow-sm transition cursor-pointer" title="Create a new vendor registration draft">
-              <i data-lucide="building" class="w-3.5 h-3.5"></i>
-              New Vendor Draft
-            </button>
+            ${role !== 'Admin' ? `
+              <button onclick="CMS_MASTERS.openVendorModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-sm text-xs shadow-sm transition cursor-pointer" title="Create a new vendor registration draft">
+                <i data-lucide="building" class="w-3.5 h-3.5"></i>
+                New Vendor Draft
+              </button>
+            ` : ''}
             <button onclick="CMS_MASTERS.openConsumableModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-sm text-xs shadow-sm transition cursor-pointer" title="Create a new material / quotation draft">
               <i data-lucide="file-plus-2" class="w-3.5 h-3.5"></i>
               New Quotation / Material
@@ -129,14 +131,21 @@ window.CMS_DRAFTS = {
               <div class="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-slate-100">
                 <span class="text-[11px] text-slate-400 font-mono">ID: ${item.id}</span>
                 <div class="flex items-center gap-1.5 shrink-0">
-                  <button onclick="CMS_MASTERS.openVendorModal('${item.id}')" class="px-3 py-1 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 rounded shadow-2xs transition inline-flex items-center gap-1.5 cursor-pointer" title="Continue Working on Vendor Draft">
-                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
-                    <span>Continue Working</span>
-                  </button>
-                  <button onclick="CMS_MASTERS.deleteVendor('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition flex items-center gap-1 cursor-pointer" title="Delete Draft Vendor">
-                    <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
-                    <span>Delete</span>
-                  </button>
+                  ${role !== 'Admin' ? `
+                    <button onclick="CMS_MASTERS.openVendorModal('${item.id}')" class="px-3 py-1 text-[11px] font-bold text-white bg-purple-600 hover:bg-purple-700 rounded shadow-2xs transition inline-flex items-center gap-1.5 cursor-pointer" title="Continue Working on Vendor Draft">
+                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                      <span>Continue Working</span>
+                    </button>
+                    <button onclick="CMS_MASTERS.deleteVendor('${item.id}')" class="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition flex items-center gap-1 cursor-pointer" title="Delete Draft Vendor">
+                      <i data-lucide="trash-2" class="w-3 h-3 text-rose-600"></i>
+                      <span>Delete</span>
+                    </button>
+                  ` : `
+                    <button onclick="CMS_MASTERS.viewVendorProfile('${item.id}')" class="px-3 py-1 text-[11px] font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded border border-slate-300 transition inline-flex items-center gap-1.5 cursor-pointer" title="View Draft Record (Read-Only)">
+                      <i data-lucide="eye" class="w-3.5 h-3.5 text-slate-600"></i>
+                      <span>View Record</span>
+                    </button>
+                  `}
                 </div>
               </div>
             </div>
