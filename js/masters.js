@@ -1242,10 +1242,11 @@ window.CMS_MASTERS = {
     });
 
     return sortedList.map(v => {
-      const isBlocked = Boolean(v.isBlocked);
-      const isPending = v.status === 'Pending Approval';
-      const isRevision = v.status === 'Revision Required' || v.status === 'Rejected';
-      const isApproved = v.status === 'Approved' || Boolean(v.isApproved);
+      const isBlocked = Boolean(v.isBlocked || v.status === 'Blocked');
+      const isPending = Boolean(v.status === 'Pending Approval' || v.status === 'Pending');
+      const isRevision = Boolean(v.status === 'Revision Required' || v.status === 'Rejected');
+      const isApproved = Boolean(v.status === 'Approved' || v.isApproved);
+      const isDraft = Boolean(v.status === 'Draft' || !v.status);
       const stateInfo = this.getStateInfo(v.addressState);
 
       return `
