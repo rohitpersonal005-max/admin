@@ -146,6 +146,38 @@ function runPreFlightGate(rootDir = __dirname) {
     console.log('  ✓ Cache buster check completed.');
   }
 
+  // 4. Role Governance & Admin Creation Rights Verification
+  console.log('\nPhase 4: Governance & Admin Creation Rights Verification...');
+  const adminTestPath = path.join(rootDir, 'test_admin_vendor_creation_rights.js');
+  if (fs.existsSync(adminTestPath)) {
+    const res = spawnSync(process.execPath, [adminTestPath], { encoding: 'utf8' });
+    if (res.status !== 0) {
+      errors.push({
+        file: 'test_admin_vendor_creation_rights.js',
+        type: 'Governance Failure',
+        details: (res.stderr || res.stdout || 'Admin vendor creation rights broken').trim()
+      });
+      console.log('  ❌ FAIL: Admin vendor creation rights compromised!');
+    } else {
+      console.log('  ✓ PASS: Admin vendor creation & direct sanction authority verified 100%');
+    }
+  }
+
+  const mcTestPath = path.join(rootDir, 'test_maker_checker_vendor_restrictions.js');
+  if (fs.existsSync(mcTestPath)) {
+    const res = spawnSync(process.execPath, [mcTestPath], { encoding: 'utf8' });
+    if (res.status !== 0) {
+      errors.push({
+        file: 'test_maker_checker_vendor_restrictions.js',
+        type: 'Governance Failure',
+        details: (res.stderr || res.stdout || 'Maker-checker pending restrictions broken').trim()
+      });
+      console.log('  ❌ FAIL: Maker-checker restrictions compromised!');
+    } else {
+      console.log('  ✓ PASS: Maker-checker pending review separation verified 100%');
+    }
+  }
+
   console.log('---------------------------------------------------------------');
   if (errors.length > 0) {
     console.error('\n❌ ===========================================================');

@@ -1350,7 +1350,7 @@ window.CMS_MASTERS = {
 
             <!-- Continue Working on Draft & Edit/Revise Buttons -->
             ${!isApproved && (v.status === 'Draft' || isRevision) ? `
-              ${role !== 'Admin' ? `
+              ${(role !== 'Admin' || v.status === 'Draft') ? `
                 <button onclick="CMS_MASTERS.openVendorModal('${v.id}')" class="px-2.5 py-1 text-xs font-bold ${isRevision ? 'text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300' : 'text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200'} rounded-sm transition inline-flex items-center gap-1 cursor-pointer" title="${isRevision ? 'Edit & Correct Reverted Vendor Form' : 'Continue Working on Vendor Draft'}">
                   <i data-lucide="edit-3" class="w-3.5 h-3.5 ${isRevision ? 'text-amber-700' : 'text-purple-600'}"></i>
                   <span>${isRevision ? 'Edit & Fix' : 'Continue Working'}</span>
@@ -3184,7 +3184,7 @@ window.CMS_MASTERS = {
         </div>
 
         <div class="flex items-center gap-2">
-          ${(role !== 'Admin' && !v.isApproved && v.status !== 'Approved' && (v.status === 'Pending Approval' || v.status === 'Revision Required' || v.status === 'Draft')) ? `
+          ${(((role !== 'Admin' && (v.status === 'Pending Approval' || v.status === 'Revision Required')) || v.status === 'Draft') && !v.isApproved && v.status !== 'Approved') ? `
             <button onclick="CMS_APP.closeModal(); CMS_MASTERS.openVendorModal('${v.id}');" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-sm shadow transition inline-flex items-center gap-1.5 text-xs">
               <i data-lucide="edit-3" class="w-4 h-4 text-white"></i>
               <span>${v.status === 'Revision Required' ? 'Edit & Fix Form' : (v.status === 'Pending Approval' ? 'Edit & Resubmit Form' : 'Edit Form')}</span>
@@ -4801,9 +4801,9 @@ window.CMS_MASTERS = {
           return;
         }
       }
-      if (existingVendor && (existingVendor.status === 'Draft' || existingVendor.status === 'Revision Required')) {
+      if (existingVendor && existingVendor.status === 'Revision Required') {
         if (role === 'Admin') {
-          window.CMS_APP.toast('Vendor form editing is reserved for Maker. Admins inspect and sanction submissions.', 'info');
+          window.CMS_APP.toast('Vendor revision is reserved for Maker to fix reported mistakes. Admins inspect and sanction submissions.', 'info');
           this.viewVendorProfile(vendorId);
           return;
         }
@@ -5566,8 +5566,8 @@ window.CMS_MASTERS = {
                 <span>Save Draft</span>
               </button>
               <button id="v-submit-btn" type="button" onclick="CMS_MASTERS.saveVendor('${vendorId || ''}', true)" class="hidden px-5 py-2.5 bg-slate-900 hover:bg-slate-900 text-white font-bold rounded-sm shadow transition flex items-center gap-1.5 text-xs">
-                <i data-lucide="send" class="w-4 h-4"></i>
-                <span>${vendor.status === 'Pending Approval' ? 'Resend for Admin Approval' : 'Submit for Admin Approval'}</span>
+                <i data-lucide="${role === 'Admin' ? 'check-circle' : 'send'}" class="w-4 h-4"></i>
+                <span>${role === 'Admin' ? (isEdit ? 'Save & Approve Vendor' : 'Register & Approve Vendor') : (vendor.status === 'Pending Approval' ? 'Resend for Admin Approval' : 'Submit for Admin Approval')}</span>
               </button>
               </div>
             </div>
@@ -5576,7 +5576,17 @@ window.CMS_MASTERS = {
         </form>
     `;
 
-    const modalTitle = isTaskMode ? (`Admin Task Authorized: Modify Vendor (${vendor.name || vendorId})`) : (isEdit ? ((!vendor.status || vendor.status === 'Draft') ? 'Continue Working on Vendor Draft' : (vendor.status === 'Revision Required' ? 'Revise Vendor Registration' : (vendor.status === 'Pending Approval' ? 'Edit & Resubmit Vendor Form for Approval' : 'Modify Vendor Record'))) : 'Register New Vendor');
+    const modalTitle = isTaskMode 
+      ? (`Admin Task Authorized: Modify Vendor (${vendor.name || vendorId})`) 
+      : (isEdit 
+          ? ((!vendor.status || vendor.status === 'Draft') 
+              ? 'Continue Working on Vendor Draft' 
+              : (vendor.status === 'Revision Required' 
+                  ? 'Revise Vendor Registration' 
+                  : (vendor.status === 'Pending Approval' 
+                      ? 'Edit & Resubmit Vendor Form for Approval' 
+                      : 'Modify Vendor Record'))) 
+          : (role === 'Admin' ? 'Register New Vendor (Admin Direct Approval)' : 'Register New Vendor'));
     window.CMS_APP.openModal(modalTitle, content, 'max-w-4xl');
     if (isTaskMode) {
       setTimeout(() => {
@@ -6895,7 +6905,10 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
           isBlocked, blockReason, quotedItems,
           certificates,
           certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || store.data.vendors[idx].certificateFile || '',
-          status: directSubmit ? 'Pending Approval' : (store.data.vendors[idx].status || 'Draft'),
+          status: (role === 'Admin') ? 'Approved' : (directSubmit ? 'Pending Approval' : (store.data.vendors[idx].status || 'Draft')),
+          isApproved: (role === 'Admin') ? true : Boolean(store.data.vendors[idx].isApproved),
+          sanctionedBy: (role === 'Admin') ? (currentUser?.name || 'Admin') : store.data.vendors[idx].sanctionedBy,
+          sanctionedAt: (role === 'Admin') ? new Date().toISOString() : store.data.vendors[idx].sanctionedAt,
           updatedAt: new Date().toISOString(),
           // Clear previous rejection remarks upon resubmission
           checkerMistakeRemark: directSubmit ? '' : store.data.vendors[idx].checkerMistakeRemark
@@ -6934,9 +6947,13 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
         certificates,
         certificateFile: (certificates[0] && (certificates[0].fileName || certificates[0].filename)) || '',
         status: (role === 'Admin') ? 'Approved' : (directSubmit ? 'Pending Approval' : 'Draft'),
+        isApproved: (role === 'Admin') ? true : false,
+        sanctionedBy: (role === 'Admin') ? (currentUser ? currentUser.name : 'Admin') : '',
+        sanctionedAt: (role === 'Admin') ? new Date().toISOString() : '',
+        approvalDate: (role === 'Admin') ? today : '',
         createdAt: new Date().toISOString(),
         createdBy: currentUser ? currentUser.id : 'system',
-        createdByName: currentUser ? currentUser.name : 'Store Staff'
+        createdByName: currentUser ? currentUser.name : (role === 'Admin' ? 'Admin' : 'Store Staff')
       });
 
       const btn = document.getElementById('v-submit-btn');
@@ -7052,7 +7069,11 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
       this.vendorStateFilter = 'ALL';
       store.save(); // full UI update & cloud broadcast
       window.CMS_APP.closeModal();
-      window.CMS_APP.toast('Vendor credentials and statutory certificates submitted for Admin approval!', 'success');
+      if (role === 'Admin') {
+        window.CMS_APP.toast('Vendor registered and directly sanctioned by Admin!', 'success');
+      } else {
+        window.CMS_APP.toast('Vendor credentials and statutory certificates submitted for Admin approval!', 'success');
+      }
       this.refreshVendorsView();
       window.CMS_APP.refreshView();
       if (window.CMS_DRAFTS && typeof window.CMS_DRAFTS.render === 'function') {

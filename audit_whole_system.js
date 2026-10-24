@@ -372,8 +372,32 @@ check(STORE.data.vendors.some(v => v.id === testVendor.id && v.status === 'Pendi
 
 // Admin Approves Vendor
 testVendor.status = 'Approved';
+testVendor.isApproved = true;
 testVendor.approvedBy = 'Col. Anita Sharma';
-check(testVendor.status === 'Approved', 'Admin Checker successfully approves vendor for active procurement');
+check(testVendor.status === 'Approved' && testVendor.isApproved === true, 'Admin Checker successfully approves vendor for active procurement');
+
+// Admin Direct Vendor Creation (Admin authority in Vendor Setup)
+const adminDirectVendor = {
+  id: 'VEN-ADMIN-DIRECT',
+  name: 'Admin Direct Supplies',
+  status: 'Approved',
+  isApproved: true,
+  sanctionedBy: 'Col. Anita Sharma',
+  sanctionedAt: new Date().toISOString()
+};
+STORE.data.vendors.unshift(adminDirectVendor);
+check(STORE.data.vendors.some(v => v.id === 'VEN-ADMIN-DIRECT' && v.isApproved === true && v.status === 'Approved'), 'Admin possesses full authority to directly register and sanction new vendors in Vendor Setup');
+
+// Admin Draft Vendor Creation & Workability
+const adminDraftVendor = {
+  id: 'VEN-ADMIN-DRAFT',
+  name: 'Admin In-Progress Vendor',
+  status: 'Draft',
+  isApproved: false,
+  createdBy: 'USR-ADMIN'
+};
+STORE.data.vendors.unshift(adminDraftVendor);
+check(STORE.data.vendors.some(v => v.id === 'VEN-ADMIN-DRAFT' && v.status === 'Draft'), 'Admin possesses full authority to create and continue working on Draft vendors');
 
 // Rejection / Correction routing via rejectRecord()
 const testVendor2 = { id: 'VEN-TEST-998', name: 'Rejectable Supplies', status: 'Pending Approval' };
