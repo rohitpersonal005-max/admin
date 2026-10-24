@@ -46,6 +46,12 @@ window.CMS_FILE_STORE = {
       if (!window.CMS_STORE.data.files) window.CMS_STORE.data.files = {};
       window.CMS_STORE.data.files[name] = dataUrl;
     }
+    // Also store in localStorage if small (< 1.5MB) for immediate same-browser cross-session access
+    try {
+      if (typeof dataUrl === 'string' && dataUrl.length < 1.5 * 1024 * 1024) {
+        localStorage.setItem('CMS_FILE_' + name, dataUrl);
+      }
+    } catch (e) {}
   },
 
   async getFile(name) {

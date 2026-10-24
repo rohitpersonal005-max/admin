@@ -2143,10 +2143,24 @@ window.CMS_MASTERS = {
     }
 
     return `
-      <div class="p-8 text-center bg-slate-50 border border-dashed border-slate-300 rounded text-slate-600">
-        <i data-lucide="file-text" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
-        <div class="font-bold text-xs">${att.title || att.filename}</div>
-        <div class="text-[11px] text-slate-500 mt-1">Uploaded document: <span class="font-mono text-slate-800">${att.filename}</span></div>
+      <div class="p-6 text-center bg-slate-50/70 border border-dashed border-slate-300 rounded-sm text-slate-600">
+        <div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center mx-auto mb-2.5">
+          <i data-lucide="file-text" class="w-5 h-5"></i>
+        </div>
+        <div class="font-bold text-sm text-slate-800">${att.title || 'Attached Document'}</div>
+        <div class="text-xs text-slate-500 mt-1 flex items-center justify-center gap-1.5 flex-wrap">
+          <span>Uploaded file:</span>
+          <span class="font-mono font-semibold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">${att.filename}</span>
+        </div>
+        <div class="text-[11px] text-slate-500 mt-2 max-w-md mx-auto">
+          Document record registered. If the digital scan is stored in workstation cache, click below to open in full viewer.
+        </div>
+        <div class="mt-3.5 flex items-center justify-center gap-2">
+          <button type="button" onclick="CMS_APP.viewDocument('${att.filename}', '${(att.title || 'Document').replace(/'/g, "\\'")}', { id: '${(v && v.id) || ''}', partyName: '${(v && v.name ? v.name.replace(/'/g, "\\'") : '')}' })" class="px-3.5 py-1.5 text-xs font-bold text-blue-700 bg-white hover:bg-blue-50 border border-blue-300 rounded-sm transition inline-flex items-center gap-1.5 shadow-2xs cursor-pointer">
+            <i data-lucide="eye" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span>Inspect / View Document</span>
+          </button>
+        </div>
       </div>
     `;
   },
@@ -3043,6 +3057,7 @@ window.CMS_MASTERS = {
     if (v.gstFile) filesToLoad.push(v.gstFile);
     const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile));
     if (bankDocFile) filesToLoad.push(bankDocFile);
+    if (v.approvalDocFile) filesToLoad.push(v.approvalDocFile);
     if (v.certificateFile) filesToLoad.push(v.certificateFile);
     if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
     if (v.approvalDocFile) filesToLoad.push(v.approvalDocFile);
@@ -3098,6 +3113,7 @@ window.CMS_MASTERS = {
     if (v.gstFile) filesToLoad.push(v.gstFile);
     const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile));
     if (bankDocFile) filesToLoad.push(bankDocFile);
+    if (v.approvalDocFile) filesToLoad.push(v.approvalDocFile);
     if (v.certificateFile) filesToLoad.push(v.certificateFile);
     if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
     if (Array.isArray(v.certificates)) {
@@ -3435,6 +3451,7 @@ window.CMS_MASTERS = {
     if (v.gstFile) filesToLoad.push(v.gstFile);
     const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile));
     if (bankDocFile) filesToLoad.push(bankDocFile);
+    if (v.approvalDocFile) filesToLoad.push(v.approvalDocFile);
     if (v.certificateFile) filesToLoad.push(v.certificateFile);
     if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
     if (Array.isArray(v.certificates)) {
@@ -7088,6 +7105,7 @@ if (directSubmit && !name) return window.CMS_APP.toast('Vendor / Supplier Compan
     if (v.gstFile) filesToLoad.push(v.gstFile);
     const bankDocFile = v.bankDoc || v.bankFile || v.bankCertificate || v.bankDocFile || (v.bankDetails && (v.bankDetails.bankDoc || v.bankDetails.bankFile));
     if (bankDocFile) filesToLoad.push(bankDocFile);
+    if (v.approvalDocFile) filesToLoad.push(v.approvalDocFile);
     if (v.certificateFile) filesToLoad.push(v.certificateFile);
     if (v.quotationDoc) filesToLoad.push(v.quotationDoc);
     if (Array.isArray(v.certificates)) {

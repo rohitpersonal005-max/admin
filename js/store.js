@@ -1324,9 +1324,21 @@ class Store {
         console.warn('localStorage quota handled safely in save():', storageErr);
       }
 
-      // 2. Replicate complete dataset to cloud Supabase backend (files stripped to avoid statement timeout)
+      // 2. Replicate complete dataset to cloud Supabase backend (retaining document files within safe transfer limits)
       if (window.CMS_TENANT_ID && window.CMS_SUPABASE) {
-        window.CMS_SUPABASE.from('master_tenants').update({ cms_db: localData }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
+        const cloudData = { ...this.data };
+        if (cloudData.files && typeof cloudData.files === 'object') {
+          const safeFiles = {};
+          let totalBytes = 0;
+          for (const [fname, fdata] of Object.entries(cloudData.files)) {
+            if (typeof fdata === 'string' && fdata.length < 3 * 1024 * 1024 && (totalBytes + fdata.length) < 8 * 1024 * 1024) {
+              safeFiles[fname] = fdata;
+              totalBytes += fdata.length;
+            }
+          }
+          cloudData.files = safeFiles;
+        }
+        window.CMS_SUPABASE.from('master_tenants').update({ cms_db: cloudData }).eq('id', window.CMS_TENANT_ID).then(({error}) => {
           if (error) console.error("Cloud database sync failed:", error);
           else console.log("Cloud database synced successfully!");
         });
