@@ -1223,19 +1223,27 @@ class Store {
     if (this._syncing) return;
     this._syncing = true;
     try {
-      const { data: tenants, error } = await window.CMS_SUPABASE
+      // Ultra-lightweight check: Fetch ONLY the timestamp (30 bytes instead of 300KB full database)
+      const { data: checkData, error: checkErr } = await window.CMS_SUPABASE
         .from('master_tenants')
-        .select('cms_db')
+        .select('cms_db->_lastUpdatedAt')
         .eq('id', window.CMS_TENANT_ID);
 
-      if (!error && tenants && tenants.length > 0 && tenants[0].cms_db) {
-        const remote = tenants[0].cms_db;
-        const remoteTime = Number(remote._lastUpdatedAt || 0);
+      if (!checkErr && checkData && checkData.length > 0) {
+        const remoteTime = Number(checkData[0]?._lastUpdatedAt || 0);
         const localTime = Number(this.data._lastUpdatedAt || 0);
 
+        // Download full database ONLY when remote actually changed
         if (remoteTime > localTime) {
-          console.log('[CMS Realtime] Newer database update received from cloud session.');
-          await this.applyCloudUpdate(remote);
+          console.log('[CMS Realtime] Newer database update detected from cloud. Fetching payload...');
+          const { data: tenants, error } = await window.CMS_SUPABASE
+            .from('master_tenants')
+            .select('cms_db')
+            .eq('id', window.CMS_TENANT_ID);
+
+          if (!error && tenants && tenants.length > 0 && tenants[0].cms_db) {
+            await this.applyCloudUpdate(tenants[0].cms_db);
+          }
         }
       }
     } catch (err) {
@@ -1292,13 +1300,13 @@ class Store {
       }
     }
 
-    // 3. Heartbeat Polling Fallback (runs every 3.5 seconds when active)
+    // 3. Heartbeat Polling Fallback (runs every 60 seconds as safety net; primary is instant WebSocket push)
     if (typeof window !== 'undefined') {
       setInterval(() => {
         if (document.visibilityState === 'visible') {
           this.syncIfRemoteChanged();
         }
-      }, 3500);
+      }, 60000);
 
       window.addEventListener('focus', () => {
         this.syncIfRemoteChanged();
